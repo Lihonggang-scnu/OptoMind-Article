@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Transition-Zone Seed Re-initialization with Damped Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Compressing layers 1-3 to 40-60 nm and expanding layers 5-8 to 100-140 nm will sharpen the spectral roll-off between UV reflection (200-400 nm) and SWIR transmission (800-1500 nm) bands, improving dual-band separation compared to uniform 100 nm initialization.",
+  "design_principle": "Targeted thickness seed perturbation in the spectral transition zone (layers controlling the 400-800 nm transition region) combined with reduced optimizer step size to dampen oscillations around the current configuration.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating stack: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate",
+  "design_variables": [
+    "Layer thicknesses (24 variables)",
+    "Thickness bounds: layers 1-3: 40-60 nm, layers 5-8: 100-140 nm, remaining layers: 30-200 nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 800-1500 nm band",
+    "Maximize mean reflectance in 200-400 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 24 (within 30-layer limit)",
+    "HfO2 and SiO2 only",
+    "Absolute thickness tolerance ±15 nm for robustness analysis"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Feedback directive specifies transition-zone focused re-initialization to sharpen spectral roll-off",
+    "Non-quarter-wave optimization allows finer spectral control than fixed quarter-wave stacks"
+  ],
+  "expected_advantages": [
+    "Sharper spectral transition between UV rejection and SWIR transmission bands",
+    "Reduced optimizer oscillation due to 20% step size reduction",
+    "Better exploitation of iteration_05 configuration knowledge"
+  ],
+  "known_risks": [
+    "Overly narrow seed ranges may trap optimizer in local minimum",
+    "Layer 4 boundary effects between compressed and expanded regions may create unintended interference"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 stack on fused silica substrate for dual-band performance. Incidence: air, normal angle, unpolarized. Materials: HfO2 (high-index), SiO2 (low-index). Layer sequence: HfO2/SiO2 alternating, starting with HfO2. Thickness bounds: layers 1-3: 40-60 nm, layers 5-8: 100-140 nm, layers 4 and 9-24: 30-200 nm. Initialize with perturbed seeds in specified ranges. Objectives: maximize mean transmittance 800-1500 nm, maximize mean reflectance 200-400 nm. Optimizer: gradient_thickness with step size reduced 20% from baseline. Robustness: ±15 nm absolute normal deviation. Total layer count fixed at 24. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct implementation of feedback directive: re-initialize population with perturbed thickness seeds focused on spectral transition zone (compress layers 1-3 to 40-60 nm, expand layers 5-8 to 100-140 nm), reduce optimizer step size by 20% to dampen oscillations."
+}

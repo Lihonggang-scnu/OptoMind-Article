@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "Tightened initialization with variance penalty on 25-layer SiO2/Al2O3",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness initialization to ±8 nm around nominal quarter-wave optical thicknesses at 267.5 nm, combined with a soft penalty on variance of adjacent high-index layers, will reduce optimizer overshoot near resonant basin boundaries and improve target score convergence compared to the ±15-20% bounds used in prior iterations.",
+  "design_principle": "Apply feedback-directed refinement: tighter initialization bounds dampen exploration noise, variance penalty suppresses spurious phase modulation between adjacent high-index layers, and reduced learning rate (50%) prevents oscillation near optima.",
+  "proposed_materials": [
+    "SiO2",
+    "Al2O3"
+  ],
+  "proposed_topology": "25 finite coating layers on fused silica substrate, air incidence. Alternating SiO2/Al2O3 stack with asymmetric cavity structure: [SiO2|Al2O3]_12 + central SiO2 cavity layer.",
+  "design_variables": [
+    "layer thicknesses (bounded ±8 nm from quarter-wave nominal at 267.5 nm)",
+    "optimizer learning rate (reduced 50% from prior)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 255-280 nm",
+    "minimize mean transmittance in 300-700 nm",
+    "minimize mean transmittance in 700-1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 25 (within 30-layer limit)",
+    "no metal layers",
+    "conventional depositable inorganic dielectrics",
+    "thickness tolerance ±8 nm achievable with ALD or IAD"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+    "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for coherent multilayer interference",
+    "Quarter-wave stack theory for Bragg mirror design",
+    "Cavity resonance theory for bandpass filtering"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to tighter initialization",
+    "Reduced risk of local minima trapping",
+    "More reproducible thickness profiles across candidates"
+  ],
+  "known_risks": [
+    "Overly tight bounds may prevent escape from suboptimal basins",
+    "Variance penalty may suppress beneficial asymmetry"
+  ],
+  "execution_request_english": "Optimize a 25-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating SiO2 and Al2O3 starting with SiO2, total 25 finite coating layers. Initialize thicknesses at quarter-wave optical thickness for 267.5 nm center wavelength (SiO2 ~45 nm, Al2O3 ~67 nm based on typical UV indices). Apply optimization bounds of ±8 nm from nominal for all layers. Include soft penalty term proportional to variance of adjacent Al2O3 layer thicknesses. Use gradient-based thickness optimizer with learning rate reduced to 50% of default value. Evaluate coherent TMM transmission across three bands: 255-280 nm (maximize), 300-700 nm (minimize), 700-1100 nm (minimize). No metal layers permitted. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Direct response to feedback directives: tighten initialization bounds to ±8 nm, add variance penalty on adjacent high-index layers, reduce learning rate by 50% to dampen overshoot."
+}

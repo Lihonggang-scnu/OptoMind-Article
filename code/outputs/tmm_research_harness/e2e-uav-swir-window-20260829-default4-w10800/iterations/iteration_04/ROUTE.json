@@ -1,0 +1,53 @@
+{
+  "route_id": "route_01",
+  "title": "Reduced-Layer Periodic UV Bragg Reflector with Thickness Bounds",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "A periodic quarter-wave HfO2/SiO2 Bragg stack with reduced pair count (8 pairs = 16 layers) and hard thickness bounds (20-800 nm) will produce physically valid candidates that achieve high UV reflection (200-400 nm) while maintaining SWIR transmission (800-1500 nm), resolving the numerical convergence failure of the original 10-pair design.",
+  "design_principle": "Quarter-wave optical thickness at UV center wavelength (300 nm) creates constructive interference for reflection in UV band. At SWIR wavelengths (800-1500 nm), the optical thickness is 2.7-5x quarter-wave, placing the stack outside the Bragg reflection band, enabling high transmission.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | (HfO2 | SiO2) x 8 | Fused Silica substrate. Total 16 finite layers. First layer (incident side) is HfO2, alternating with SiO2, terminating at substrate.",
+  "design_variables": [
+    "Layer thicknesses for all 16 layers, bounded 20-800 nm",
+    "Initial thickness values centered at quarter-wave: HfO2 ~38 nm, SiO2 ~51 nm at 300 nm center wavelength"
+  ],
+  "soft_objectives": [
+    "Maximize average reflectance in 200-400 nm band",
+    "Maximize average transmittance in 800-1500 nm band",
+    "Minimize total layer count while meeting performance targets"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 16, well under 30-layer limit",
+    "Thickness bounds 20-800 nm prevent numerical instability",
+    "Pre-flight validation filters NaN/Inf in refractive index lookup",
+    "Quarter-wave design is fabrication-friendly with standard deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225908385:s2chunk:225908385:3717:5827:fa8289d4f398aab2",
+    "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory: alternating high-low index layers with optical thickness λ/4 at center wavelength creates high reflectance band",
+    "Bragg condition: reflection band center wavelength λ0 = 4*nH*dH = 4*nL*dL",
+    "Bandwidth scales with refractive index contrast: Δλ/λ0 ≈ (4/π)*arcsin((nH-nL)/(nH+nL))"
+  ],
+  "expected_advantages": [
+    "Reduced layer count (16 vs original ~20) lowers numerical complexity and improves convergence",
+    "Hard thickness bounds prevent extreme values causing numerical instability",
+    "Quarter-wave design provides predictable starting point for optimization",
+    "16 layers leaves margin under 30-layer constraint for future refinement"
+  ],
+  "known_risks": [
+    "16 layers may not achieve sufficient UV reflectance if index contrast is limited",
+    "Quarter-wave design has narrower bandwidth than optimized non-quarter-wave stacks",
+    "Reduced layer count may limit achievable reflectance in 200-400 nm band"
+  ],
+  "execution_request_english": "Execute TMM optimization for a 16-layer periodic stack on fused silica substrate with air incidence. Stack topology: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Materials: HfO2 (high index) and SiO2 (low index). Wavelength bands: 200-400 nm (target: maximize reflectance), 800-1500 nm (target: maximize transmittance). Design variables: thickness of each of 16 layers, bounded 20-800 nm. Initialize thicknesses at quarter-wave values for 300 nm center wavelength (HfO2 ~38 nm, SiO2 ~51 nm). Apply pre-flight validation to discard candidates with NaN/Inf in refractive index lookup. Use evolutionary optimization with population size 50, 100 generations. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for top 5 candidates. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Reduced layer count from original design to address numerical convergence failure. Added hard thickness bounds (20-800 nm) and pre-flight validation per feedback directives. Maintains same scientific hypothesis (periodic quarter-wave UV Bragg reflector) but with concrete execution changes to produce valid candidates."
+}

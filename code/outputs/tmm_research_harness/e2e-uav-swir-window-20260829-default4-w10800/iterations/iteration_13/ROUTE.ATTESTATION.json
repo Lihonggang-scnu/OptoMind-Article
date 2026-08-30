@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_13/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "1fb4a41b52a70126c3cb1235a1f8af320a784bad66fe0df24ab5da0585b65d1c",
+  "recorded_at_utc": "2026-08-28T17:31:32.873715+00:00",
+  "elapsed_seconds": 2887.4568467999925,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_13",
+  "route_id": "route_02",
+  "scientific_hypothesis": "The 120 nm thickness clustering in prior iterations represents a local minimum artifact from bound-constrained gradient descent. Randomly reinitializing layers previously pinned at 120 nm within a 30-150 nm window, followed by simulated annealing optimization, will escape this local minimum and achieve higher dual-band performance.",
+  "expected_advantages": [
+    "Breaks local minimum trapping from prior gradient-only optimization",
+    "Simulated annealing explores broader solution space",
+    "Maintains proven 24-layer topology while improving thickness distribution"
+  ],
+  "known_risks": [
+    "Simulated annealing may require more iterations to converge",
+    "Random initialization may temporarily reduce target score before improvement",
+    "No guarantee of finding global optimum"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should rise across rounds as thickness optimization decouples the two bands, and tightest_margin should not fall",
+    "Aperiodic design should show lower reflectance in 800-1500 nm compared to Route 1's periodic stack",
+    "UV reflectance 200-400 nm should match or exceed Route 1 with fewer layers (24 vs 28)",
+    "If hypothesis fails, best_target_score will not exceed Route 1's score and valid_candidates will decrease as thickness combinations become physically invalid"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, expand the thickness bounds to 20-250 nm and continue",
+    "If tightest_margin remains below 0.05 for four consecutive rounds, fix the 6 thinnest layers and optimize only the remaining 18"
+  ]
+}

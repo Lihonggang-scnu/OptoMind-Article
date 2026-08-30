@@ -1,0 +1,55 @@
+{
+  "route_id": "control_route_01",
+  "title": "HfO2/MgF2 29-layer UV bandpass with relaxed edge bounds and reduced curvature regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack with asymmetric thickness tuning can produce a transmission peak in 255-280 nm while maintaining suppression in 300-700 nm and 700-1100 nm bands, and broader thickness perturbation ranges will escape the rigid alternating pattern observed in prior rounds.",
+  "design_principle": "Recalled thin-film physics: alternating high/low index layers create distributed Bragg reflectors; transmission bands appear at wavelengths where the optical thickness condition is violated or at intentional defect layers. MgF2 has low absorption in deep UV; HfO2 provides high index contrast. Breaking quarter-wave symmetry can shift the passband.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | SiO2 substrate (29 film layers total)",
+  "design_variables": [
+    "individual layer thicknesses for all 29 layers with bounds relaxed to ±2.0 nm from initial quarter-wave values",
+    "curvature regularization weight reduced from 0.15 to 0.08",
+    "thickness reinitialization with broader uniform perturbation to break alternating pattern"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm band",
+    "minimize transmittance in 300-700 nm band",
+    "minimize transmittance in 700-1100 nm band",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (under 30-layer limit)",
+    "no metal layers used",
+    "HfO2 and MgF2 are conventional e-beam or thermal evaporable dielectrics",
+    "individual layer thicknesses should remain in depositable range 30-200 nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stack reflectance bandwidth scales with index ratio nH/nL",
+    "Recalled: MgF2 remains transparent down to ~120 nm, suitable for 255-280 nm UV",
+    "Recalled: HfO2 has high index (~2.0-2.4 in UV) and low extinction in solar-blind region",
+    "Recalled: Breaking periodicity in layer thicknesses can create transmission defects in Bragg mirrors",
+    "Recalled: Edge layers have disproportionate effect on impedance matching and passband shape"
+  ],
+  "expected_advantages": [
+    "Relaxed edge bounds allow larger impedance-matching adjustments at air and substrate interfaces",
+    "Reduced curvature regularization permits more aggressive thickness variation between adjacent layers",
+    "Broader perturbation ranges should escape local minima from rigid alternating patterns",
+    "HfO2/MgF2 pair offers sufficient index contrast for UV bandpass without metal absorption losses"
+  ],
+  "known_risks": [
+    "I am uncertain whether 29 layers is optimal versus fewer layers; this was chosen to stay under 30-layer limit while maximizing design freedom",
+    "I recall HfO2 absorption increases below 250 nm but am uncertain of exact extinction coefficient at 255 nm; measured dataset will resolve this",
+    "The exact quarter-wave thickness at 265 nm (center of passband) depends on refractive indices I have not looked up; initial guesses may be off by 10-20%",
+    "Curvature regularization weight reduction from 0.15 to 0.08 is a heuristic choice; optimal value is unknown without literature",
+    "I am uncertain whether MgF2 stress or adhesion issues would affect 29-layer deposition; this route assumes ideal layers"
+  ],
+  "execution_request_english": "Optimize a 29-layer planar multilayer thin-film stack on fused silica substrate with air incidence. Stack sequence: HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2 (29 film layers). Optimize all 29 layer thicknesses simultaneously. Initial thicknesses: quarter-wave at 265 nm center wavelength using measured n values from hfo2 and MgF2 (Rodriguez-de_Marcos) datasets. Thickness bounds: ±2.0 nm relaxation from initial quarter-wave values for edge layers (layers 1, 2, 28, 29), ±1.5 nm for interior layers. Curvature regularization weight: 0.08. Reinitialize thickness parameters with uniform perturbation range ±5 nm to break alternating patterns. Spectral targets: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. No metal layers. Use gradient_thickness optimizer. Total layers fixed at 29.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with relaxed edge layer bounds (±1.0 nm to ±2.0 nm), reduced curvature regularization (0.15 to 0.08), and broader thickness perturbation ranges to escape rigid alternating pattern observed in prior rounds per feedback directives."
+}

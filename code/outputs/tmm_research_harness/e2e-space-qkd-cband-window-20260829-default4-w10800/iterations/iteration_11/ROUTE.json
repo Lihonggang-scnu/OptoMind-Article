@@ -1,0 +1,47 @@
+{
+  "route_id": "route_01",
+  "title": "Strict 550 nm Quarter-Wave Initialization with Expanded Search",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing all layer pairs at strict quarter-wave optical thickness centered at 550 nm (visible stopband center) with expanded thickness bounds and increased optimization evaluations will escape the local minimum observed in iteration_06 and recover or exceed the iteration_01 target score.",
+  "design_principle": "Quarter-wave Bragg stack centered at stopband center wavelength maximizes reflectance in the stopband; optimization refines thicknesses to maintain high visible reflectance while recovering telecom transmittance.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20-layer alternating HfO2/SiO2 stack on fused silica substrate, air incidence. Layer 1 (adjacent to air): HfO2. Layer 20 (adjacent to substrate): SiO2. Exact count: 20 finite layers, 10 HfO2/SiO2 pairs.",
+  "design_variables": [
+    "All 20 layer thicknesses (nm)"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Maintain total thickness within manufacturable range"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Individual layer thicknesses should remain above 30 nm for deposition control",
+    "HfO2/SiO2 material pair is industry-standard for space optics"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Quarter-wave Bragg reflector theory: maximum stopband reflectance when optical thickness = λ_center/4 for each layer",
+    "Transfer-matrix method for coherent multilayer interference"
+  ],
+  "expected_advantages": [
+    "Strict 550 nm initialization places optimizer in visible stopband basin",
+    "Expanded bounds allow thickness exploration beyond iteration_06 local minimum",
+    "Multi-start strategy reduces risk of stagnation"
+  ],
+  "known_risks": [
+    "Quarter-wave at 550 nm may degrade telecom transmittance if not properly optimized",
+    "20 layers may be insufficient for simultaneous dual-band performance",
+    "Optimizer may still converge to similar local minimum despite re-initialization"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric stack on fused silica substrate with air incidence. Materials: alternate HfO2 and SiO2 starting with HfO2 at air interface. Initialize all odd layers (HfO2) at thickness = 550/(4*n_HfO2) nm and all even layers (SiO2) at thickness = 550/(4*n_SiO2) nm using material registry refractive indices at 550 nm. Optimization bounds: each layer thickness ±40% from initialization value. Use gradient_thickness optimizer with max_evaluations = 5000, multi_start_count = 20. Objective: maximize weighted sum of (average transmittance 1530-1565 nm) and (average reflectance 400-700 nm) with equal weights. Normal incidence, unpolarized light. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all valid candidates. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Iteration_06 showed score degradation from 0.8497 to 0.6163, indicating optimizer stagnation in local minimum. Feedback directive specifies strict 550 nm quarter-wave initialization with expanded bounds and increased evaluations to escape current spectral basin."
+}

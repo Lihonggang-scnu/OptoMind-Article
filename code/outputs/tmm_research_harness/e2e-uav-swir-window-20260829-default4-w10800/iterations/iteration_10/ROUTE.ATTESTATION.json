@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_10/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "bce86eb8e9e0cf92dc64ceefb86fa15a1cb51f7455a798981e21c2e032191b41",
+  "recorded_at_utc": "2026-08-28T17:22:38.519118+00:00",
+  "elapsed_seconds": 2353.1015157999936,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_10",
+  "route_id": "route_01",
+  "scientific_hypothesis": "A 16-layer alternating HfO2/SiO2 stack with thickness bounds relaxed by ±8% from quarter-wave values and uniform random initialization will escape the local minimum observed in iteration_04, achieving higher dual-band performance through non-quarter-wave optimization.",
+  "expected_advantages": [
+    "16 layers matched prior best-performing configuration",
+    "±8% bounds allow escape from quarter-wave local minimum",
+    "Random initialization increases design space exploration"
+  ],
+  "known_risks": [
+    "May converge to similar local minimum as iteration_04 if bounds too restrictive",
+    "16 layers may be insufficient for simultaneous UV reflection and SWIR transmission optimization"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should increase with period scaling optimization and tightest_margin should remain stable across rounds",
+    "Reflectance in 200-400 nm band should exceed 90% with 14 pairs",
+    "Transmittance in 800-1500 nm band should exceed 85% if secondary bands do not overlap",
+    "If hypothesis fails, best_target_score will plateau early and tightest_margin will decrease as optimization attempts to suppress SWIR reflection bands"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If tightest_margin falls below 0.1 for three consecutive rounds while adjusting period scaling, relax the scaling range constraint and continue",
+    "If valid_candidates drops to zero for two rounds, reduce the number of pairs by 2 and restart optimization"
+  ]
+}

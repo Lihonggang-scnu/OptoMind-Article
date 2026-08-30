@@ -1,0 +1,34 @@
+{
+  "artifact": "iterations/iteration_16/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "f099bc5c77db11353a9261ba43f53fc6f327743b2dd2254ffaa68a1df5126d95",
+  "recorded_at_utc": "2026-08-29T06:36:56.198174+00:00",
+  "elapsed_seconds": 4594.541972800042,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_16",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "Increasing thickness initialization perturbation from ±10 nm to ±50 nm around the previous best candidate will yield a higher best_target_score by escaping shallow local maxima in the 22-layer optimization landscape.",
+  "expected_advantages": [
+    "Better exploration of thickness space around the known good solution",
+    "Potential to find higher best_target_score than iteration_12's 0.9163",
+    "Maintains material pair that already compiled successfully",
+    "Tests whether prior result was limited by initialization tightness rather than material choice"
+  ],
+  "known_risks": [
+    "Uncertain whether ±50 nm perturbation is optimal magnitude -- could be too large (escaping useful basin) or too small (still trapped). Literature search on IR filter optimization basin sizes would clarify.",
+    "Uncertain whether ZnS/Al2O3 is the best material pair for this specific dual-band requirement -- other pairs like ZnS/MgF2 or Si/SiO2 might offer better index contrast in IR, but MgF2 had material_data issues in iteration_04.",
+    "Daimon-20 substrate refractive index dispersion in 2.5-5 μm range is recalled but not verified against registry data.",
+    "The 22-layer count was chosen heuristically; a different layer count might achieve better performance but would require a separate route."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase relative to iteration_12's 0.9163 as the broader perturbation finds a deeper optimum",
+    "If the hypothesis does not hold, best_target_score should remain similar or decrease, indicating the prior solution was already near a local optimum for this material pair",
+    "valid_candidates count should remain comparable to iteration_12 (around 9) if the perturbation stays within feasible bounds",
+    "tightest_margin should not systematically decrease across rounds if the broader search maintains physical validity"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops below 3 for two consecutive rounds, reduce perturbation magnitude to ±25 nm and continue",
+    "If tightest_margin falls below 0.1 for two consecutive rounds, tighten thickness bounds to 100-1200 nm and continue"
+  ]
+}

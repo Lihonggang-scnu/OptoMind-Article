@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_06/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "59faeb0e0795017aec2201a03af91897e4395f0cc1d7d2ccc4ab83b741ae432d",
+  "recorded_at_utc": "2026-08-29T01:11:16.454564+00:00",
+  "elapsed_seconds": 2155.858348399983,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_06",
+  "route_id": "route_01",
+  "scientific_hypothesis": "The thickness profile of Candidate 0 from iteration_01 represents a feasible region near a local optimum; refining within a narrow neighborhood (σ = 8 nm) with reduced optimizer step-size will yield incremental improvements in target score without escaping the verified feasible basin.",
+  "expected_advantages": [
+    "Faster convergence than global search due to informed initialization",
+    "Lower risk of infeasible candidates since starting from verified valid profile",
+    "Incremental score improvement if local optimum exists near Candidate 0"
+  ],
+  "known_risks": [
+    "May converge to local optimum rather than global optimum",
+    "Narrow search region may miss better configurations outside the 8 nm neighborhood",
+    "Diminishing returns if Candidate 0 is already near local peak"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase as reference wavelength approaches 550 nm (visible band center), with valid_candidates remaining stable across rounds",
+    "If hypothesis fails: best_target_score should plateau below 0.7 regardless of reference wavelength, indicating periodic structure cannot satisfy both bands simultaneously",
+    "tightest_margin should remain positive if both bands are achievable with this topology"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops to zero for three consecutive rounds, relax the quarter-wave constraint and stop"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Resonance-Seeded Three-Cavity Filter with 500nm Thickness Cap",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses near theoretical half-wave resonance values (λ/2n) for cavity layers and quarter-wave values (λ/4n) for mirror sections, with a 500nm upper bound, will concentrate the search in physically meaningful interference regimes and improve best_target_score convergence compared to uniform-random initialization in route_02.",
+  "design_principle": "Fabry-Perot cavity resonance occurs when optical thickness equals half-wavelength multiples. Seeding optimization near these values reduces unphysical search volume and accelerates convergence to high-transmittance solutions.",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (21 layers total: 3 cavities with alternating Ge/ZnS mirrors)",
+  "design_variables": [
+    "layer thicknesses (50-500nm bounded)",
+    "initialization centered on λ/2n for cavities and λ/4n for mirrors"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+    "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+    "improve best_target_score over route_02 baseline of 0.909"
+  ],
+  "manufacturing_considerations": [
+    "500nm maximum thickness per layer improves deposition uniformity",
+    "21 layers within 24-layer constraint",
+    "Ge/ZnS material pair verified for mid-IR transparency"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Fabry-Perot resonance condition: optical thickness = m·λ/2 for constructive interference",
+    "Quarter-wave stack theory: alternating λ/4n layers create high-reflectance mirrors"
+  ],
+  "expected_advantages": [
+    "Faster convergence to high-scoring candidates",
+    "Reduced risk of unphysical thickness combinations",
+    "Better alignment with constructive interference regimes from round 2 onward"
+  ],
+  "known_risks": [
+    "500nm cap may restrict optimal solutions if thicker cavities are physically required",
+    "Resonance seeding may bias search away from non-obvious optimal configurations"
+  ],
+  "execution_request_english": "Optimize a 21-layer dielectric bandpass filter on CaF2 substrate using Ge (high-index) and ZnS (low-index) materials in a three-cavity Fabry-Perot topology. Initialize cavity layer thicknesses near theoretical half-wave resonance values (λ/2n) at 4.45 μm center wavelength, and mirror section thicknesses near quarter-wave values (λ/4n). Enforce hard thickness bounds of 50-500 nm per layer. Seed 40% of initial population with deterministic λ/4n multiples for mirror sections. Optimize for high transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands, low transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands, at normal incidence in air. Use gradient-based thickness optimizer with resonance-centered initialization. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive to replace uniform-random initialization with bounded sampling centered on theoretical half-wave resonance values (λ/2n) for cavity layers, enforce 500nm upper thickness limit, and seed 40% of initial population using deterministic λ/4n multiples for mirror sections. This collapses unphysical search volume compared to route_02's broad initialization."
+}

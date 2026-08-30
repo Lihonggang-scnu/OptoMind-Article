@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_15/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "20bf55bdfb517240f97e2a1bfd0be16a80aee34e5951606eea75602b9b2989a9",
+  "recorded_at_utc": "2026-08-29T06:35:41.631884+00:00",
+  "elapsed_seconds": 4519.976386499999,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_15",
+  "route_id": "route_03",
+  "scientific_hypothesis": "A 22-layer dual-cavity defect structure using Si (high-index) and Al2O3 (low-index) will produce two distinct transmission peaks at 3.30 μm and 4.25 μm with adequate out-of-band blocking, and quarter-wave initialized thicknesses will converge faster than uniform random initialization under the same optimization budget.",
+  "expected_advantages": [
+    "Si/Al2O3 pair has better mid-IR optical constant data availability than Ge/YbF3",
+    "Quarter-wave initialization reduces optimization iterations to convergence",
+    "Tighter bounds prevent solver numerical overflow"
+  ],
+  "known_risks": [
+    "Si absorption may increase beyond 4.5 μm affecting long-wavelength blocking",
+    "Al2O3 index contrast with Si lower than Ge/YbF3 may require more layers for equivalent blocking",
+    "Material registry may still lack complete n,k data for this pair in full 2.5-5.0 μm range"
+  ],
+  "expected_observations": [
+    "best_target_score should show improvement in blocking bands if additional layers help",
+    "tightest_margin may decrease if transmission drops in passbands",
+    "valid_candidates count should remain positive if 24-layer constraint is feasible",
+    "If hypothesis is false: best_target_score will not improve despite additional layers, indicating 22-layer is near-optimal"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to route_02 is < 1e-3 for 2 consecutive rounds, judge additional layers as not beneficial -> stop and prefer 22-layer design",
+    "If valid_candidates = 0, judge 24-layer constraint set as infeasible -> revert to 22-layer topology"
+  ]
+}

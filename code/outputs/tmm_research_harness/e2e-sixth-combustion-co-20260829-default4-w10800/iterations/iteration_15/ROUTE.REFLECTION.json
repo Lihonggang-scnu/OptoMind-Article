@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-declaration expected 'valid_candidates should remain high' due to low-loss dielectrics, but actual observation shows valid_candidates: 0 with run_status: failed and rounds_executed: 0. Consequently, best_target_score and tightest_margin are null. Deviation is absolute (direction: nonexistent/lower, magnitude: 100% drop from expected active candidate population to zero). All three expected observations regarding score progression, margin sufficiency, and candidate validity cannot manifest because the pipeline aborted prior to physical evaluation.",
+  "deviation_mechanism": "Zero candidates indicate a pre-propagation abort at the synthesis/generation gate. At the physical level, this typically occurs when the initial thickness vector violates hard geometric or spectral bounds (e.g., total physical stack exceeds deposition equipment limits, or layer count exceeds solver memory constraints for the chosen basis set), or when material dispersion data for Si3N4/MgF2 fails interpolation across the target bandwidth. Without resolved refractive index n(k) and extinction coefficient k(k) distributions, the characteristic transfer matrix cannot be assembled, halting wave-interference physics before they begin. This is testable by inspecting the initialization log for bound-violation rejections or k-vector extrapolation errors.",
+  "continue_recommended": true,
+  "continue_rationale": "With rounds_executed: 0 and valid_candidates: 0, the route has generated zero empirical data points. The hypotheses concerning reduced index contrast slowing score convergence, potential 12-pair margin insufficiency, and the utility of Si3N4/MgF2 combinations remain entirely untested. Continuing is mandatory to capture baseline physical behavior and establish a non-null score-history before any optimization trajectory or marginal-gain assessment can be scientifically justified.",
+  "insight_for_next": "Re-initialize the candidate pool using deterministic quarter-wave scaling t_i = λ_target/(4n_i) constrained to [0.75·t_q, 1.25·t_q], explicitly verify that both Si3N4 and MgF2 dispersion curves contain ≥3 validated data points within the passband prior to engine invocation, and add a lightweight sanity-check step that computes scalar optical path length ∑n_i·t_i before submitting to the full TMM propagator.",
+  "insight_grounding": "Directly grounded in the recorded valid_candidates: 0, run_status: failed, rounds_executed: 0, and empty candidate_thicknesses_nm: [] arrays. These values confirm total synthesis gate failure prior to any electromagnetic propagation, indicating the failure originated in parameter validation or material lookup rather than in optical performance evaluation.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-29T09:44:03.282369+00:00",
+  "attestation_sha256": "9427a042a01563c48ef5d69dc30e9b5d8bac31f5fbefc449d488812278de5824",
+  "observed_metrics": {
+    "best_target_score": null,
+    "valid_candidates": 0,
+    "run_status": "failed",
+    "tightest_margin": null
+  },
+  "reflection_available": true
+}

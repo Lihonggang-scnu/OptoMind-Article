@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_11/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d4699215e4c03d66d879e3121251d06997a480864c314eee4b9b5442bed1c373",
+  "recorded_at_utc": "2026-08-28T13:40:08.613697+00:00",
+  "elapsed_seconds": 2764.775085800007,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_11",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Expanding low-index (SiO2) layer initialization bounds by ±25% while freezing high-index (HfO2) layers near their observed optimal cluster (150-200 nm) will increase the probability of landing within the dual-band feasible basin, and adding mild thickness variance regularization between adjacent layers will reduce numerically unstable oscillatory solutions that consume computational budget.",
+  "expected_advantages": [
+    "Wider SiO2 search space increases feasible basin capture probability",
+    "Variance regularization reduces numerical instability",
+    "Preserves HfO2 optima from prior iteration"
+  ],
+  "known_risks": [
+    "Regularization may constrain optimizer from finding global optimum",
+    "Wider bounds may increase convergence time"
+  ],
+  "expected_observations": [
+    "valid_candidates should be >= 15 if reduced layer count eases constraint satisfaction",
+    "best_target_score should remain >= 0.45 if 20 layers suffice for dual-band operation",
+    "total thickness should decrease compared to route_02 if fewer layers reduce cumulative thickness",
+    "If best_target_score drops below 0.40, hypothesis that 20 layers maintain acceptable performance is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to historical best is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds or increase layer count",
+    "If best_target_score < 0.40 consistently across 3 rounds, judge 20-layer topology insufficient -> should increase to 24 or 28 layers"
+  ]
+}

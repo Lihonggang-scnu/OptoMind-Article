@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_19/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "245d79b8f1f356e753d3b2af74434e8d54e9806a86913fef8e135c125d8bf011",
+  "recorded_at_utc": "2026-08-29T06:50:53.166704+00:00",
+  "elapsed_seconds": 5431.510850800027,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_19",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "Constraining thickness perturbations to ±15 nm around the iteration-16 best candidate will improve target score by resolving fine-scale interference conditions without disrupting the established macroscopic topology that already achieves ~0.92 target performance.",
+  "expected_advantages": [
+    "Focused local search avoids wasting iterations on topologically inferior regions",
+    "±15 nm constraint preserves the macroscopic interference pattern already optimized",
+    "Fine tuning may resolve phase mismatches that limit the 0.9202 score",
+    "Maintains material pair consistency for fair comparison across control route iterations"
+  ],
+  "known_risks": [
+    "Uncertain whether ±15 nm window is wide enough to escape local optima - if no improvement occurs, widening to ±30 nm would need to be tested",
+    "Recalled ZnS and Al2O3 mid-IR extinction coefficients are approximate; actual absorption may limit achievable transmittance",
+    "Uncertain whether 22 layers is optimal vs. fewer layers with different topology - but changing layer count would be a different axis",
+    "Daimon-20 substrate refractive index dispersion in mid-IR not precisely recalled; registry data will resolve this",
+    "No polarization or angle specification in original request; assuming normal incidence which may not match actual sensor geometry"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase from 0.9202 toward 0.93+ over 2-3 rounds while tightest_margin remains stable or improves",
+    "If hypothesis fails: best_target_score should plateau within 1e-3 of 0.9202 despite constrained optimization, indicating the topology itself limits further improvement",
+    "valid_candidates should remain high (≥5) since ±15 nm constraints keep designs near physically valid region",
+    "thicknesses_nm should show small deviations from center values, not wholesale restructuring"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If tightest_margin falls below 0.30 consistently across rounds, relax the ±15 nm constraint to ±30 nm and continue",
+    "If valid_candidates drops below 3 for two consecutive rounds, widen thickness bounds to ±25 nm and recenter on the best valid candidate"
+  ]
+}

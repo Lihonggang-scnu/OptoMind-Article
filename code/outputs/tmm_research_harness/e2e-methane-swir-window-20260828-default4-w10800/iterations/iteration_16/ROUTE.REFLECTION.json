@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expected quarter-wave convergence to 90–100 nm (high-index) and 130–140 nm (low-index) was not realized. Instead, low-index layers stabilized tightly around 60–65 nm, while high-index layers dispersed widely between 110–190 nm. Despite this geometric deviation, the best_target_score progressed strongly from 0.5346 to 0.8422 over five rounds, exceeding the expectation that periodicity would drive performance. The tightest_margin remained stable at 0.4408, indicating constraint satisfaction rather than spectral collapse.",
+  "deviation_mechanism": "The low-index layers cluster at ~62 nm, which mathematically matches λ/4n ≈ 62.5 nm for a refractive index of ~1.5 at 375 nm, confirming fundamental quarter-wave resonance. The high-index layers expand to 110–190 nm because strict Bragg periodicity inherently limits achievable bandwidth for a fixed layer count. The optimizer is exploiting non-periodic, chirped thickness variations to perform effective amplitude apodization, broadening the reflection plateau. This physical trade-off sacrifices strict periodicity to increase integrated spectral performance, explaining why the score climbs despite diverging from the initial quarter-wave hypothesis.",
+  "continue_recommended": true,
+  "continue_rationale": "The route exhibits robust, monotonic improvement across all five executed rounds, with a recent single-round gain of 0.0492 (from 0.7929 to 0.8422) that vastly exceeds the reference epsilon of 0.0001. The design space remains well-conditioned with valid_candidates=9, and no compiler or runtime failures have occurred. Halting now would abandon a trajectory that is actively extracting scientific value from non-periodic degrees of freedom before reaching a physical performance ceiling.",
+  "insight_for_next": "Apply a 40% reduction in optimizer step size and introduce a lightweight adjacency-smoothing penalty to regularize the high-index layer dispersion. Specifically, constrain the search to encourage gradual thickness gradients rather than abrupt jumps, then restart 3–5 trajectories initialized within ±15 nm of the current best (round 5) to probe whether smoother periodic approximations can extract the remaining fraction of performance without introducing fabrication-sensitive discontinuities.",
+  "insight_grounding": "Candidate 0 in round 5 shows extreme high-index layer variance (L0=113.65 nm, L2=156.31 nm, L4=170.70 nm, L14=190.57 nm, L18=189.79 nm), revealing unresolved optical path degeneracy that prevents clean convergence. The score history [0.5346, 0.7414, 0.7738, 0.7929, 0.8422] demonstrates sustained gradient engagement without plateauing, and valid_candidates=9 confirms the feasible region is intact. These metrics indicate the current optimizer step is oversampling flat regions rather than following steeper spectral gradients.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-28T14:11:19.562074+00:00",
+  "attestation_sha256": "8d728979003835695f42623940900692831b252ae34d6f6c2779a17801a17e6d",
+  "observed_metrics": {
+    "best_target_score": 0.8421873412081172,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.44083757344204183
+  },
+  "reflection_available": true
+}

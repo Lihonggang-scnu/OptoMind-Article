@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 dichroic with gradient thickness optimization and relaxed perturbation bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individually tunable layer thicknesses can simultaneously achieve high reflectance in 300-450 nm and high transmittance in 1000-1700 nm at normal incidence on fused silica, with the gradient-thickness optimizer finding a non-quarter-wave solution that balances both bands.",
+  "design_principle": "Recalled thin-film physics: dielectric mirrors use alternating high/low index layers to create photonic stopbands via constructive interference of reflections. Quarter-wave thicknesses (λ/4n) center stopbands at design wavelengths, but deviating from quarter-wave can broaden bands or create multiple passbands. HfO2 (high index ~2.0-2.1 in SWIR) and SiO2 (low index ~1.45) provide sufficient index contrast for reflectance in UV/blue while remaining transparent in SWIR.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 coating layers total, alternating starting with HfO2 at air interface)",
+  "design_variables": [
+    "individual layer thicknesses for all 24 layers",
+    "thickness perturbation bounds ±18 nm for initial feasibility search"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "maintain physical validity (no negative thicknesses, no material property violations)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 24 (within 30-layer limit)",
+    "all thicknesses must be positive and within depositor capability (20-200 nm range)",
+    "HfO2 and SiO2 are standard evaporatable/sputterable dielectrics"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stacks produce stopbands centered at design wavelength; deviating from quarter-wave shifts and broadens stopbands.",
+    "Recalled: Index contrast between HfO2 and SiO2 is sufficient for high reflectance with ~12-15 layer pairs in UV/blue.",
+    "Recalled: Both HfO2 and SiO2 have low extinction coefficients in 1000-1700 nm, enabling high transmittance.",
+    "Recalled: Gradient-based thickness optimization can find local optima in multilayer design spaces when initialized near quarter-wave values.",
+    "Recalled: Normal incidence simplifies design as polarization splitting is not a factor."
+  ],
+  "expected_advantages": [
+    "24 layers provides sufficient degrees of freedom for dual-band optimization without exceeding manufacturing limits",
+    "Alternating high/low index pattern is a known working topology for dichroics",
+    "Gradient optimizer successfully produced target scores above 0.81 in prior iterations 04 and 12",
+    "Relaxed perturbation bounds (±18 nm vs ±12 nm) should increase feasible candidate yield"
+  ],
+  "known_risks": [
+    "Uncertain whether 24 layers is optimal vs 20 or 28 layers - this route does not explore layer count as a variable, so the true optimum pair count is unknown.",
+    "Uncertain exact refractive index values of hfo2 and sio2 datasets in the registry at 300 nm and 1700 nm endpoints - these are measured data, not design variables, but affect achievable performance.",
+    "Uncertain whether gradient optimizer will converge to global vs local optimum - multiple starting points would be needed to verify, but this route uses single initialization.",
+    "The ±18 nm perturbation bound is a hypothesis based on feedback directive; if it still produces zero valid candidates, the bound may need further relaxation or a different optimizer method.",
+    "No angle or polarization specified in original request - assumed normal incidence and unpolarized or average polarization; if actual use requires oblique angles, performance may degrade."
+  ],
+  "execution_request_english": "Design a planar multilayer dielectric coating on fused silica substrate with air incidence at normal angle (0 degrees). Use exactly 24 layers in alternating sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand) (HfO2 first at air interface, SiO2 (Lemarchand) last at substrate). Optimize all 24 layer thicknesses individually within bounds 20-200 nm using gradient_thickness optimizer with perturbation bounds ±18 nm. Maximize dual-band objective: mean transmittance in 1000-1700 nm band and mean reflectance in 300-450 nm band with equal weighting. Use coherent transfer-matrix method. Total layer count is fixed at 24. Materials are hfo2 and SiO2 (Lemarchand) from the guaranteed registry.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Repair compilation failure from iteration 15 (unsupported optimizer method) by reverting to gradient_thickness optimizer that succeeded in iterations 04, 08, 12. Implement feedback directive to relax thickness perturbation bounds from ±12 nm to ±18 nm to increase feasible candidate yield. Maintain 24-layer topology and material sequence from prior successful iterations."
+}

@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_09/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "e4674e6b0af47f8ebcf75fcb3579e7ee2e520e504ddd2589732c69aaf5b8d3f0",
+  "recorded_at_utc": "2026-08-29T01:15:20.995878+00:00",
+  "elapsed_seconds": 2400.3996802999754,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_09",
+  "route_id": "route_04",
+  "scientific_hypothesis": "Enforcing strict monotonic thickness progression during optimization will prevent layer inversion and improve spectral band separation compared to unconstrained chirped optimization.",
+  "expected_advantages": [
+    "Prevents optimization from collapsing chirp structure",
+    "More predictable spectral response",
+    "Better convergence stability than unconstrained gradient search"
+  ],
+  "known_risks": [
+    "Hard constraints may reduce feasible search space",
+    "May trap optimizer in local minimum if initialization is poor",
+    "Monotonicity may not be optimal for dual-band separation"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should show improved average reflectance across 400-700 nm compared to route_01, with tightest_margin indicating broader band coverage",
+    "If hypothesis fails: best_target_score should match or fall below route_01, indicating chirp does not benefit this band combination",
+    "thicknesses_nm should show monotonic increase or decrease across the stack if chirp is utilized"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If chirp factor converges to 1.0 (no chirp), periodic design is optimal; stop and keep uniform thickness design"
+  ]
+}

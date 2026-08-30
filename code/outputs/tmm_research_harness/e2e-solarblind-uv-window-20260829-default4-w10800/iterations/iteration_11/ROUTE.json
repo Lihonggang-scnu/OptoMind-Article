@@ -1,0 +1,51 @@
+{
+  "route_id": "route_03",
+  "title": "Asymmetric cavity seed with expanded Bragg mirrors (29-layer SiO2/Al2O3)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Breaking the central cavity symmetry (layers 11-13 initialized at 66.0/67.5/69.0 nm instead of uniform 67.5 nm) while adding 2 period pairs to each Bragg mirror will enable the optimizer to redistribute spectral gain into sharper transition slopes, improving the target score beyond the 0.379 plateau observed in prior route_03 iterations.",
+  "design_principle": "1-D photonic crystal filter with periodic main-function units sandwiched between anti-reflection coatings, following the SiO2/SiNx design methodology but adapted to SiO2/Al2O3 material pair for UV transparency.",
+  "proposed_materials": [
+    "SiO2",
+    "Al2O3",
+    "fused_silica_substrate"
+  ],
+  "proposed_topology": "29 finite coating layers: [SiO2/Al2O3]_7 Bragg mirror | asymmetric 3-layer cavity (SiO2/Al2O3/SiO2) | [Al2O3/SiO2]_7 Bragg mirror, total 29 layers on fused silica substrate",
+  "design_variables": [
+    "all 29 layer thicknesses",
+    "optimization bounds ±20% around quarter-wave at 267.5 nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance 255-280 nm",
+    "minimize mean transmittance 300-700 nm",
+    "minimize mean transmittance 700-1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "29 layers within 30-layer limit",
+    "conventional inorganic dielectrics only",
+    "no metal layers",
+    "ALD or IAD recommended for thickness uniformity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+    "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for periodic stack optimization",
+    "Asymmetric cavity initialization breaks optimization symmetry lock-in",
+    "Expanded Bragg mirror periods widen stopband bandwidth"
+  ],
+  "expected_advantages": [
+    "Wider stopband from additional mirror periods",
+    "Escaped local minimum from asymmetric seed",
+    "Improved transition sharpness between passband and stopband"
+  ],
+  "known_risks": [
+    "Increased layer count may amplify thickness tolerance sensitivity",
+    "Asymmetric seed may converge to different local minimum not necessarily better"
+  ],
+  "execution_request_english": "Optimize a 29-layer SiO2/Al2O3 multilayer coating on fused silica substrate for solar-blind UV bandpass filtering. Layer sequence: alternating SiO2/Al2O3 starting with SiO2 (layer 1), total 29 finite layers. Initialize layers 1-10 as quarter-wave at 267.5 nm (SiO2 ~39 nm, Al2O3 ~67.5 nm), layers 11-13 as asymmetric cavity (66.0 nm SiO2, 67.5 nm Al2O3, 69.0 nm SiO2), layers 14-29 as alternating Al2O3/SiO2 quarter-wave. Optimization bounds: ±20% around initialization. Objective: maximize mean transmittance in 255-280 nm, minimize mean transmittance in 300-700 nm and 700-1100 nm. Use gradient-based thickness optimizer with coherent TMM solver. Air incidence, unpolarized or average of s/p. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Per feedback directive: break symmetry lock-in by seeding central cavity block (layers 11-13) with asymmetric profile (66.0/67.5/69.0 nm) instead of identical 67.5 nm; add 2 period pairs to Bragg mirrors (25→29 layers) to widen stopband and force optimizer to redistribute gain into sharper transition slopes."
+}

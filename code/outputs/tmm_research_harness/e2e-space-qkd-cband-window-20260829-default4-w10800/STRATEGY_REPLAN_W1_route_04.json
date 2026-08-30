@@ -1,0 +1,192 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_4a589c82df08530b",
+    "planning_summary": "Refining route_04 (Chirped Bragg Stack) based on feedback directives. Three complementary routes address the monotonicity deviation observed in prior iteration: (1) enforce hard monotonic chirp constraints during optimization, (2) expand to 24 layers while preserving chirp principle, (3) test asymmetric chirp rates for high/low index layers. All routes maintain the 20-30 layer constraint, HfO2/SiO2 material pair, and dual-band spectral objectives. Parent route_id is fixed to route_04 per refinement_chain instruction.",
+    "routes": [
+      {
+        "route_id": "route_04_refinement_01",
+        "title": "Monotonic Chirped DBR with Hard Inequality Constraints",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "Enforcing strict monotonic thickness progression during optimization will prevent layer inversion and improve spectral band separation compared to unconstrained chirped optimization.",
+        "design_principle": "Linear chirp envelope with hard inequality constraints penalizing any thickness inversion between adjacent same-material layers. Initialize HfO2 layers from 50nm to 120nm monotonically, SiO2 layers from 80nm to 150nm monotonically.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica Substrate",
+          "Air Incidence"
+        ],
+        "proposed_topology": "exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers)",
+        "design_variables": [
+          "Individual layer thicknesses (20 variables)",
+          "Monotonicity inequality constraints"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 1530-1565 nm band",
+          "Maximize average reflectance in 400-700 nm band",
+          "Maintain monotonic thickness progression within each material type"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (within 30 layer limit)",
+          "Thickness range 50-150nm compatible with ion-beam sputtering",
+          "Monotonic chirp simplifies deposition rate programming"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for multilayer interference",
+          "Chirped Bragg reflector theory for broadband reflection",
+          "Quarter-wave stack principle at center wavelengths"
+        ],
+        "expected_advantages": [
+          "Prevents optimization from collapsing chirp structure",
+          "More predictable spectral response",
+          "Better convergence stability than unconstrained gradient search"
+        ],
+        "known_risks": [
+          "Hard constraints may reduce feasible search space",
+          "May trap optimizer in local minimum if initialization is poor",
+          "Monotonicity may not be optimal for dual-band separation"
+        ],
+        "execution_request_english": "Design and optimize a 20-layer chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Use HfO2 and SiO2 only. Initialize HfO2 layers (odd positions 1,3,5...19) with linear chirp from 50nm to 120nm. Initialize SiO2 layers (even positions 2,4,6...20) with linear chirp from 80nm to 150nm. Apply hard inequality constraints during gradient-based thickness optimization: thickness[i] <= thickness[i+2] for all same-material adjacent pairs. Optimize for maximum transmittance in 1530-1565nm band and maximum reflectance in 400-700nm band at normal incidence, unpolarized light. Total layer count fixed at 20. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 1,
+        "parent_route_id": "route_04",
+        "revision_reason": "Addresses feedback directive to enforce monotonic chirp with hard inequality constraints. Prior route_04 showed thickness inversion in optimized candidates (e.g., candidate 2 had non-monotonic sequence 65,137,74,82...). This route adds explicit monotonicity constraints to preserve chirp structure during optimization."
+      },
+      {
+        "route_id": "route_04_refinement_02",
+        "title": "Expanded 24-Layer Chirped DBR with Monotonic Initialization",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "Increasing layer count from 20 to 24 while maintaining chirped structure will improve dual-band spectral separation by providing more degrees of freedom for reflection band broadening without compromising transmission band.",
+        "design_principle": "Extend chirped Bragg stack to 24 layers (12 bilayer pairs) with monotonic thickness initialization. More layers allow finer spectral shaping of the 400-700nm reflection band while maintaining 1530-1565nm transmission.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica Substrate",
+          "Air Incidence"
+        ],
+        "proposed_topology": "exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers)",
+        "design_variables": [
+          "Individual layer thicknesses (24 variables)",
+          "Chirp rate parameters (implicit in initialization)"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 1530-1565 nm band",
+          "Maximize average reflectance in 400-700 nm band",
+          "Minimize thickness variation between adjacent same-material layers to maintain chirp smoothness"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 24 (within 30 layer limit)",
+          "Additional 4 layers increase deposition time but remain feasible",
+          "Thickness tolerance +/-5% acceptable for space qualification"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Chirped Bragg reflector bandwidth scales with layer count",
+          "Transfer-matrix method predicts improved stopband with more periods",
+          "Quarter-wave condition at multiple center wavelengths"
+        ],
+        "expected_advantages": [
+          "Broader reflection band coverage across 400-700nm",
+          "Steeper band edges between reflection and transmission bands",
+          "More robust to thickness variations due to redundancy"
+        ],
+        "known_risks": [
+          "Increased layer count may increase absorption losses",
+          "May exceed practical deposition uniformity limits",
+          "Optimization complexity increases with more variables"
+        ],
+        "execution_request_english": "Design and optimize a 24-layer chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Use HfO2 and SiO2 only. Initialize HfO2 layers (odd positions 1,3,5...23) with linear chirp from 45nm to 125nm. Initialize SiO2 layers (even positions 2,4,6...24) with linear chirp from 75nm to 155nm. Apply soft monotonicity penalty during gradient-based thickness optimization. Optimize for maximum transmittance in 1530-1565nm band and maximum reflectance in 400-700nm band at normal incidence, unpolarized light. Total layer count fixed at 24. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 2,
+        "parent_route_id": "route_04",
+        "revision_reason": "Expands layer count from route_04's 20 layers to 24 layers while preserving chirped DBR principle. Tests whether additional degrees of freedom improve dual-band performance beyond route_04's best_target_score of 0.918. Addresses feedback to make concrete executable change while preserving verified scientific principle."
+      },
+      {
+        "route_id": "route_04_refinement_03",
+        "title": "Asymmetric Chirp Rates for High/Low Index Layers",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "Using different chirp rates for HfO2 (high-index) and SiO2 (low-index) layers will better optimize the dual-band requirement by independently tuning reflection band edge steepness and transmission band ripple.",
+        "design_principle": "Apply faster chirp rate to HfO2 layers (controls reflection band edge) and slower chirp rate to SiO2 layers (controls transmission band ripple). Decouple the two material thickness progressions.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica Substrate",
+          "Air Incidence"
+        ],
+        "proposed_topology": "exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers)",
+        "design_variables": [
+          "HfO2 layer thicknesses (10 variables)",
+          "SiO2 layer thicknesses (10 variables)",
+          "Chirp rate ratio between materials"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 1530-1565 nm band",
+          "Maximize average reflectance in 400-700 nm band",
+          "Minimize transmission band ripple in 1530-1565nm"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (within 30 layer limit)",
+          "Asymmetric chirp requires independent rate control for each material",
+          "Compatible with dual-source ion-beam sputtering"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "High-index layers dominate reflection band characteristics",
+          "Low-index layers influence transmission band phase response",
+          "Asymmetric chirp enables independent spectral control"
+        ],
+        "expected_advantages": [
+          "Better control over reflection/transmission band trade-off",
+          "Reduced transmission band ripple compared to symmetric chirp",
+          "More flexible design space than fixed chirp ratio"
+        ],
+        "known_risks": [
+          "Asymmetric optimization may converge slower",
+          "May require more iterations to find optimal chirp rate ratio",
+          "Risk of overfitting to specific wavelength points"
+        ],
+        "execution_request_english": "Design and optimize a 20-layer asymmetric chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Use HfO2 and SiO2 only. Initialize HfO2 layers (odd positions 1,3,5...19) with linear chirp from 55nm to 130nm (faster chirp rate). Initialize SiO2 layers (even positions 2,4,6...20) with linear chirp from 85nm to 140nm (slower chirp rate). Apply independent monotonicity constraints for HfO2 and SiO2 subsequences. Optimize for maximum transmittance in 1530-1565nm band and maximum reflectance in 400-700nm band at normal incidence, unpolarized light. Total layer count fixed at 20. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 3,
+        "parent_route_id": "route_04",
+        "revision_reason": "Tests asymmetric chirp hypothesis as alternative to route_04's symmetric chirp. Maintains 20-layer count but decouples HfO2 and SiO2 thickness progressions. Addresses feedback to preserve scientific principle while making concrete executable change in chirp parameterization."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493 confirms telecom C-band (1550nm) importance for satellite quantum communication, motivating the 1530-1565nm transmission band priority in all routes.",
+      "No literature evidence was found for optimal chirped DBR design for dual-band spectral separation, so all routes are theory-based with TMM solver as the physics judge.",
+      "Prior iteration route_04 achieved best_target_score 0.918 with 20-layer chirped stack, establishing baseline for refinement comparisons."
+    ],
+    "unresolved_decisions": [
+      "Whether monotonicity constraint should be hard inequality or soft penalty (route_04_refinement_01 tests hard, may need adjustment)",
+      "Optimal layer count between 20-30 layers for this dual-band requirement (route_04_refinement_02 tests 24)",
+      "Whether asymmetric chirp provides measurable advantage over symmetric chirp (route_04_refinement_03 tests this)"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_04_refinement_01 symbolic topology was instantiated as a fixed 16-layer starting hypothesis",
+    "route route_04_refinement_02 symbolic topology was instantiated as a fixed 16-layer starting hypothesis",
+    "route route_04_refinement_03 symbolic topology was instantiated as a fixed 16-layer starting hypothesis",
+    "route route_04_refinement_01 received canonical user controls from the problem contract",
+    "route route_04_refinement_02 received canonical user controls from the problem contract",
+    "route route_04_refinement_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 5996,
+      "completion_tokens": 4781,
+      "total_tokens": 10777
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

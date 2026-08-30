@@ -1,0 +1,38 @@
+{
+  "artifact": "iterations/iteration_04/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "f55a7d24128fd09d3226c9bd871a143e019ccab506397a1e88db0e73edce3ece",
+  "recorded_at_utc": "2026-08-29T04:04:13.287615+00:00",
+  "elapsed_seconds": 1121.3953991999733,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_04",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A symmetric 29-layer Fabry-Perot structure with HfO2/MgF2 quarter-wave mirrors and a half-wave HfO2 cavity, optimized for layer thicknesses, can achieve high transmission in 255-280 nm while suppressing 300-700 nm and 700-1100 nm bands without exceeding 30 layers.",
+  "expected_advantages": [
+    "Fixed topology allows clean isolation of thickness optimization effects",
+    "29 layers provides sufficient mirror pairs (7 per side) for deep stopbands in visible/NIR",
+    "HfO2/MgF2 pair has adequate index contrast for UV bandpass applications",
+    "Symmetric design should produce clean passband without sidelobes"
+  ],
+  "known_risks": [
+    "Refractive index values for HfO2 and MgF2 at 255-280 nm are recalled estimates; actual n/k data from the registry may differ and affect quarter-wave thickness calculations",
+    "Material absorption in deep UV (especially HfO2) is uncertain from memory; k values from registry will determine actual transmission limits",
+    "Quarter-wave thickness estimates (~32 nm for HfO2, ~48 nm for MgF2 at 267.5 nm) are approximate and will be tuned by the optimizer",
+    "Cavity layer being single HfO2 may not provide optimal passband width; multi-layer cavity could be better but would require different topology",
+    "Angle of incidence not specified in request; assumed normal incidence but space platform may have off-axis rays",
+    "Polarization effects not addressed; s and p polarization may split at non-normal incidence",
+    "Did not explore alternative material pairs (Al2O3/MgF2, SiO2/HfO2) which might have better UV transmission or index contrast",
+    "Did not explore different layer counts (25, 27, 30) which might offer better performance within constraint"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase across optimization rounds as thicknesses converge toward quarter-wave and half-wave conditions",
+    "If the hypothesis holds, valid_candidates should remain high (near total candidate count) since all-thickness variations on dielectric stacks are typically physically valid",
+    "If the hypothesis does not hold, best_target_score will plateau early and tightest_margin will show no improvement across rounds, indicating the fixed topology cannot achieve the required bandpass behavior",
+    "If material absorption in UV is higher than recalled, transmittance in 255-280 nm will be limited regardless of thickness optimization"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops below 10 percent of total candidates for two consecutive rounds, reduce thickness search range and continue",
+    "If tightest_margin becomes negative for more than half of candidates, the topology may be fundamentally unsuitable; stop and record the failure mode"
+  ]
+}

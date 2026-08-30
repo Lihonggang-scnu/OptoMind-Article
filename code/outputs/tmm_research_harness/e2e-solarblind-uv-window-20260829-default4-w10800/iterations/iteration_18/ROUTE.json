@@ -1,0 +1,54 @@
+{
+  "route_id": "control_route_01",
+  "title": "29-layer HfO2/MgF2 UV bandpass filter with damped thickness optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack with individually tunable thicknesses can produce a transmission passband at 255-280 nm while maintaining suppression at 300-700 nm and 700-1100 nm, and reducing the thickness perturbation envelope will stabilize convergence without sacrificing final performance.",
+  "design_principle": "Recalled thin-film interference physics: alternating high-index (HfO2) and low-index (MgF2) layers create distributed Bragg reflector stopbands. Passbands emerge from deliberate thickness deviations from quarter-wave condition at the target wavelength. The perturbation envelope controls how far each layer can deviate from its starting thickness during optimization.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica substrate (29 film layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 29 layers",
+    "thickness perturbation envelope reduced to ±2.5 nm from prior ±5.0 nm"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm band",
+    "minimize transmittance in 300-700 nm band",
+    "minimize transmittance in 700-1100 nm band",
+    "maintain physically valid candidates throughout optimization"
+  ],
+  "manufacturing_considerations": [
+    "total layers fixed at 29 (within 30-layer limit)",
+    "no metal layers used",
+    "HfO2 and MgF2 are conventional evaporatable/sputterable dielectrics",
+    "individual layer thicknesses should remain in manufacturable range 30-200 nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stacks produce stopbands centered at design wavelength with bandwidth proportional to index contrast",
+    "Recalled: HfO2 has higher refractive index than MgF2 in UV-visible range, creating useful index contrast for interference filters",
+    "Recalled: Passbands in Bragg mirrors can be created by introducing thickness defects or varying layer thicknesses away from quarter-wave condition",
+    "Recalled: Smaller optimization perturbation envelopes reduce oscillatory behavior in gradient-based thickness optimization",
+    "Recalled: L-BFGS quasi-Newton methods converge more smoothly than simple gradient descent for smooth objective functions like thin-film transmission spectra"
+  ],
+  "expected_advantages": [
+    "Reduced perturbation envelope (±2.5 nm) should suppress high-frequency thickness oscillations seen in prior iterations",
+    "L-BFGS optimizer should provide more stable convergence than previous gradient_thickness routine",
+    "Maintaining 29-layer topology preserves comparability across all prior iterations of this control route",
+    "Alternating HfO2/MgF2 provides maximum index contrast from available dielectric materials in catalog"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient remains low enough at 255 nm - would need to verify measured k values in material registry",
+    "Uncertain whether 29 layers is optimal count vs. fewer layers with different topology - this route does not test layer count variation",
+    "Uncertain whether MgF2 maintains sufficient transparency at 255 nm - some fluoride materials show absorption edges in deep UV",
+    "The ±2.5 nm envelope may be too restrictive if prior iterations were stuck in local minima requiring larger moves to escape",
+    "No literature verification of HfO2/MgF2 compatibility for solar-blind UV filters - this is recalled design practice only"
+  ],
+  "execution_request_english": "Optimize a 29-layer planar multilayer thin-film stack on fused silica substrate with air incidence. Layer sequence: HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2 (29 film layers total). Optimize all 29 individual layer thicknesses using L-BFGS quasi-Newton optimizer for 150 fixed iterations. Thickness perturbation bounds: ±2.5 nm from current best candidate thicknesses. Spectral targets: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. No metal layers. Materials: hfo2, MgF2 (Rodriguez-de_Marcos), SiO2 (Gao) substrate. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm for each round.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with damped optimization: reduced thickness perturbation envelope from ±5.0 nm to ±2.5 nm and switched to L-BFGS quasi-Newton optimizer for 150 iterations to suppress high-frequency oscillations while preserving the 29-layer HfO2/MgF2 alternating topology from prior iterations."
+}

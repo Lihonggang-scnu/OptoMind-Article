@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_17/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "cbea4b11d1c2272028d4b114b8b0e3111e812fef35714db9ec76a501dff784da",
+  "recorded_at_utc": "2026-08-28T14:05:08.379770+00:00",
+  "elapsed_seconds": 4264.5410919999995,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_17",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Layers below 70 nm thickness are numerically sensitive and contribute to convergence ceilings; applying ±15% uniform random perturbation exclusively to these thin layers while relaxing tightest_margin by 0.02 will expand the valid candidate pool and enable escape from local optima observed in iterations 07, 11, and 14.",
+  "expected_advantages": [
+    "Breaks numerical convergence ceiling observed in prior iterations",
+    "Expands valid candidate pool via margin relaxation",
+    "Preserves proven 28-layer topology while introducing controlled variation"
+  ],
+  "known_risks": [
+    "Perturbation may reduce best_target_score temporarily",
+    "Thin layers remain fabrication-sensitive",
+    "Margin relaxation may admit physically marginal designs"
+  ],
+  "expected_observations": [
+    "valid_candidates should be >= 15 if reduced layer count eases constraint satisfaction",
+    "best_target_score should remain >= 0.45 if 20 layers suffice for dual-band operation",
+    "total thickness should decrease compared to route_02 if fewer layers reduce cumulative thickness",
+    "If best_target_score drops below 0.40, hypothesis that 20 layers maintain acceptable performance is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to historical best is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds or increase layer count",
+    "If best_target_score < 0.40 consistently across 3 rounds, judge 20-layer topology insufficient -> should increase to 24 or 28 layers"
+  ]
+}

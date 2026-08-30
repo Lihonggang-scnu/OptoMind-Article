@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_14/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "740761343875b90fd4edc0294cfb30bb0f7f762dd0044840898e61dbeef9705b",
+  "recorded_at_utc": "2026-08-29T04:39:57.705231+00:00",
+  "elapsed_seconds": 3265.813619399967,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_14",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Constraining thickness initialization to ±8 nm around nominal quarter-wave optical thicknesses at 267.5 nm, combined with a soft penalty on variance of adjacent high-index layers, will reduce optimizer overshoot near resonant basin boundaries and improve target score convergence compared to the ±15-20% bounds used in prior iterations.",
+  "expected_advantages": [
+    "Faster convergence due to tighter initialization",
+    "Reduced risk of local minima trapping",
+    "More reproducible thickness profiles across candidates"
+  ],
+  "known_risks": [
+    "Overly tight bounds may prevent escape from suboptimal basins",
+    "Variance penalty may suppress beneficial asymmetry"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improved edge steepness (transition from 280 nm to 300 nm) compared to route_01, and tightest_margin should remain stable.",
+    "If the hypothesis fails, best_target_score will not exceed route_01 despite higher layer count, indicating the multi-cavity complexity does not pay off for this wavelength combination.",
+    "thicknesses_nm should show three distinct cavity layers with approximately half-wave optical thickness if mode coupling is achieved."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If valid_candidates falls below 3 for two consecutive rounds, reduce the layer count by removing one mirror pair from each Bragg section and continue for one more round before stopping."
+  ]
+}

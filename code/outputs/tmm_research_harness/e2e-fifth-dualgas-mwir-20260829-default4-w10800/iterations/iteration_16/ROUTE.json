@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Expanded Perturbation Refinement on 22-Layer ZnS/Al2O3 IR Dual-Band Filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Increasing thickness initialization perturbation from ±10 nm to ±50 nm around the previous best candidate will yield a higher best_target_score by escaping shallow local maxima in the 22-layer optimization landscape.",
+  "design_principle": "Gradient-based thickness optimization on multilayer stacks can converge to local rather than global optima when initialization is too close to a prior solution. Broader perturbation samples the basin more thoroughly, allowing the optimizer to find steeper descent paths that tight initialization misses.",
+  "proposed_materials": [
+    "zns",
+    "Al2O3 (Kischkat)",
+    "CaF2 (Daimon-20)"
+  ],
+  "proposed_topology": "Air | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | Daimon-20 substrate (22 coating layers)",
+  "design_variables": [
+    "All 22 layer thicknesses initialized with ±50 nm perturbation around the iteration_12 best candidate, then optimized via bounded quasi-Newton gradient descent"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3250-3350 nm band",
+    "Maximize mean transmittance in 4200-4300 nm band",
+    "Minimize mean transmittance in 2500-3100 nm band",
+    "Minimize mean transmittance in 4450-5000 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 22 (within 24-layer limit)",
+    "All materials are conventional depositable IR dielectrics",
+    "Individual layer thicknesses should remain within 50-1500 nm for deposition feasibility",
+    "No metal layers used"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled thin-film design practice: gradient-based optimizers on multilayer stacks benefit from broader initialization to escape local maxima",
+    "Recalled IR material behavior: ZnS provides high refractive index contrast against Al2O3 in the 2.5-5 μm range",
+    "Recalled design pattern: alternating high/low index pairs create stopbands; deviations from quarter-wave enable multiple passbands",
+    "Recalled optimization heuristic: ±50 nm perturbation is large enough to sample basin topology but small enough to remain in feasible manufacturing region"
+  ],
+  "expected_advantages": [
+    "Better exploration of thickness space around the known good solution",
+    "Potential to find higher best_target_score than iteration_12's 0.9163",
+    "Maintains material pair that already compiled successfully",
+    "Tests whether prior result was limited by initialization tightness rather than material choice"
+  ],
+  "known_risks": [
+    "Uncertain whether ±50 nm perturbation is optimal magnitude -- could be too large (escaping useful basin) or too small (still trapped). Literature search on IR filter optimization basin sizes would clarify.",
+    "Uncertain whether ZnS/Al2O3 is the best material pair for this specific dual-band requirement -- other pairs like ZnS/MgF2 or Si/SiO2 might offer better index contrast in IR, but MgF2 had material_data issues in iteration_04.",
+    "Daimon-20 substrate refractive index dispersion in 2.5-5 μm range is recalled but not verified against registry data.",
+    "The 22-layer count was chosen heuristically; a different layer count might achieve better performance but would require a separate route."
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer thin film stack on CaF2 (Daimon-20) substrate with air incidence. Stack sequence: ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat) (22 coating layers total). Initialize all 22 layer thicknesses with random perturbation of ±50 nm around the iteration_12 best candidate thicknesses [967.0, 625.0, 727.5, 670.5, 446.0, 1179.0, 372.5, 588.5, 873.0, 492.0, 472.0, 1135.0, 328.0, 448.0, 854.0, 441.5, 832.0, 1240.5, 932.5, 391.5, 818.5, 871.5] nm, then optimize using bounded quasi-Newton gradient descent with thickness bounds 50-1500 nm. Evaluate coherent transfer matrix method in frequency domain. Score four independent mean-transmittance targets: maximize in 3250-3350 nm, maximize in 4200-4300 nm, minimize in 2500-3100 nm, minimize in 4450-5000 nm. No metal layers. Materials resolved from registry: zns, Al2O3 (Kischkat), CaF2 (Daimon-20) substrate.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Replaced ambiguous CaF2 substrate name with Daimon-20 dataset identifier per registry resolution requirement; expanded thickness initialization perturbation from ±10 nm to ±50 nm around iteration_12 best candidate to test basin topology and prevent trapping in shallow local maxima."
+}

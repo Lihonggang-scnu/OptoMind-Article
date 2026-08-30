@@ -1,0 +1,56 @@
+{
+  "route_id": "route_01",
+  "title": "22-Layer ZnS/MgF2 with Bounded Thickness and Optical-Path Smoothness Penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining layer thicknesses to 700-1100 nm range while penalizing optical-path differences between adjacent layers will suppress the 1200+ nm excursions observed in prior iterations, yielding smoother phase progression across the stack while maintaining dual-band transmittance performance for CH4 and CO2 sensing bands.",
+  "design_principle": "Alternating high-low index quarter-wave stack with thickness bounds informed by prior iteration deviations. Optical-path smoothness penalty enforces gradual phase accumulation rather than abrupt thickness jumps that complicate deposition control.",
+  "proposed_materials": [
+    "ZnS",
+    "MgF2",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate. Total 22 finite layers.",
+  "design_variables": [
+    "All 22 layer thicknesses bounded to [700, 1100] nm",
+    "Optical-path difference penalty weight in loss function"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3250-3350 nm band",
+    "Maximize mean transmittance in 4200-4300 nm band",
+    "Minimize mean transmittance in 2500-3100 nm band",
+    "Minimize mean transmittance in 4450-5000 nm band",
+    "Minimize thickness excursion beyond 700-1100 nm bounds",
+    "Minimize optical-path difference between adjacent layer pairs"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 22 within 24-layer limit",
+    "Thickness bounds 700-1100 nm avoid extreme deposition times",
+    "No metal layers per requirement",
+    "ZnS and MgF2 are conventional depositable IR dielectrics"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+    "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for coherent multilayer interference",
+    "Quarter-wave stack principle for bandpass filter construction",
+    "Optical-path smoothness reduces deposition stress and thickness control errors"
+  ],
+  "expected_advantages": [
+    "Suppresses 1200+ nm thickness excursions seen in iterations 01, 09, 13",
+    "Enforces smoother phase progression across stack",
+    "Maintains 22-layer count that achieved 0.955 target score in iteration 01",
+    "Bounds are physically motivated by prior observation, not arbitrary"
+  ],
+  "known_risks": [
+    "Tighter bounds may limit optimizer's ability to find global optimum",
+    "Smoothness penalty may conflict with dual-band resonance requirements",
+    "ZnS absorption may increase at longer wavelengths"
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer filter on CaF2 substrate under air incidence. Stack sequence: ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2 (22 finite layers total). All layer thicknesses bounded to [700, 1100] nm. Optimize for high mean transmittance in 3250-3350 nm and 4200-4300 nm passbands, low mean transmittance in 2500-3100 nm and 4450-5000 nm stopbands. Include optical-path difference penalty in loss function to suppress thickness excursions and enforce smooth phase progression. Use gradient-based thickness optimizer with coherent TMM solver. Normal unpolarized illumination. No metal layers. Evaluate all 22 thicknesses as continuous design variables. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Refines route_01 based on feedback directive to constrain thickness search to 700-1100 nm and introduce optical-path difference penalty. Prior iterations showed thickness excursions beyond 1200 nm (iteration 01: 1601 nm, 1865 nm; iteration 09: 1575 nm, 1506 nm; iteration 13: 1249 nm). This revision directly addresses those deviations while preserving the 22-layer topology that achieved highest target score (0.955) in iteration 01."
+}

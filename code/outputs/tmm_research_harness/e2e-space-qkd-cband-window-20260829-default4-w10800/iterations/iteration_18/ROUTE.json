@@ -1,0 +1,58 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 dichroic stack with thickness optimization and phase-jump repair",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individually optimized thicknesses can simultaneously achieve high transmittance in the 1530-1565 nm telecom band and high reflectance in the 400-700 nm visible band, without requiring more than 30 layers or additional materials.",
+  "design_principle": "Recalled knowledge: Dichroic filters use alternating high and low refractive index layers to create constructive interference for reflection at certain wavelengths. The HfO2/SiO2 pair provides sufficient index contrast (~2.0 vs ~1.45 in the visible) to build broadband reflectors. Quarter-wave optical thickness at the center of the reflection band maximizes reflectance, but deviating from quarter-wave can open transmission windows at desired wavelengths. With 24 layers, there are enough degrees of freedom to shape both the visible rejection band and the telecom passband.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "Individual thickness of each of the 24 layers (24 independent variables, range 20-400 nm per layer)",
+    "Global perturbation amplitude for optimization (fixed at 5 nm for this iteration)",
+    "Phase-jump repair: 10% of population receives stochastic thickness offsets of ±50 nm"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Maintain layer thicknesses within manufacturable range (20-400 nm)",
+    "Keep total layer count at exactly 24 (within 30-layer constraint)"
+  ],
+  "manufacturing_considerations": [
+    "24 layers is within the 30-layer maximum constraint",
+    "HfO2 and SiO2 are both depositable by ion-assisted deposition or sputtering",
+    "Individual layer thicknesses should remain above 20 nm to avoid pinhole defects",
+    "Thicknesses above 400 nm may introduce stress and adhesion issues",
+    "Uniform initialization weights applied across all 24 layers (no asymmetric weighting on specific layers)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Alternating high/low index layers create photonic bandgaps where reflectance is high",
+    "Recalled knowledge: HfO2 has refractive index approximately 1.9-2.1 in visible/near-IR, SiO2 approximately 1.45-1.47",
+    "Recalled knowledge: Quarter-wave stacks centered at ~550 nm would give high visible reflectance but may not optimally transmit 1550 nm",
+    "Recalled knowledge: Non-quarter-wave thickness tuning can create transmission windows within a high-reflectance band",
+    "Recalled knowledge: 12 pairs (24 layers) is a common starting point for dichroic filters with moderate bandwidth requirements",
+    "Recalled knowledge: Gradient-based optimization with periodic large perturbations can escape local minima in multimodal thickness spaces"
+  ],
+  "expected_advantages": [
+    "24 layers provides sufficient degrees of freedom for dual-band shaping",
+    "HfO2/SiO2 is a robust, space-qualified material pair with low absorption in both bands",
+    "Fixed topology with thickness-only optimization isolates the effect of geometric tuning",
+    "Phase-jump repair mechanism should help escape local interference minima that trapped previous iterations",
+    "5 nm perturbation amplitude provides more exploration range than 2 nm while maintaining convergence"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive index dispersion of HfO2 and SiO2 at 1530-1565 nm - recalled values are approximate and would need to be confirmed from the material catalog datasets",
+    "Uncertainty: Whether 24 layers is optimal or if fewer layers could achieve similar performance with better robustness",
+    "Uncertainty: Angle sensitivity not explicitly specified in the original request - this design assumes near-normal incidence but satellite windows may see off-axis light",
+    "Uncertainty: The phase-jump repair with ±50 nm offsets may disrupt convergence if applied too aggressively; 10% population rate is a heuristic guess",
+    "Uncertainty: Starting thickness values from prior iterations may be in a poor local minimum; the phase-jump should help but success is not guaranteed",
+    "Known risk: Previous iteration 14 showed degraded performance (0.78 vs 0.93 in iteration 10); this revision attempts to recover the higher performance through modified optimization parameters"
+  ],
+  "execution_request_english": "Design a 24-layer planar dielectric thin film stack on fused silica substrate with air incidence. Layer materials alternate between HfO2 and SiO2 (Lemarchand), starting with HfO2 at the air side. Optimize the individual thickness of each of the 24 layers to maximize transmittance in the 1530-1565 nm wavelength band while maximizing reflectance in the 400-700 nm wavelength band. Each layer thickness is an independent variable constrained between 20 nm and 400 nm. Use gradient-based thickness optimization with global perturbation amplitude of 5 nm. Apply uniform initialization weights across all 24 layers (no asymmetric weighting on layers 3 or 6). Include a phase-jump repair step: at each optimization round, randomly select 10% of the candidate population and apply stochastic thickness offsets of ±50 nm to forcibly cross local interference minima before resuming gradient refinement. Total layer count is fixed at exactly 24 layers. Materials are HfO2 and SiO2 (Lemarchand) only. Substrate is fused silica. Incident medium is air. Evaluate performance using frequency-domain plane-wave illumination at normal incidence.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with modified optimization parameters: reverted perturbation amplitude from 2 nm to 5 nm, decoupled asymmetric refinement weights to uniform across all layers, and added phase-jump repair mechanism with 10% population at ±50 nm offsets to escape local minima observed in iteration 14"
+}

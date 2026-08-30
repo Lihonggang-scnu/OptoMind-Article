@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_11/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "24d60c35d1d07eab52237088bae1bf36aa44a52a001e17573fb8e59bc3f0e5e3",
+  "recorded_at_utc": "2026-08-28T17:23:36.783714+00:00",
+  "elapsed_seconds": 2411.366191499983,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_11",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Reinitializing the optimizer from iteration 05's best candidate (target_score 0.7407) with thickness bounds restricted to 45-120 nm and 50% reduced step size will recover or exceed the iteration 05 performance while eliminating the >140 nm thickness drift that caused iteration 08 degradation.",
+  "expected_advantages": [
+    "Faster convergence from verified seed point",
+    "Elimination of thickness drift beyond productive regime",
+    "Recovery of iteration 05 performance level"
+  ],
+  "known_risks": [
+    "May converge to same local optimum as iteration 05 without improvement",
+    "Tight bounds may prevent discovery of better solutions outside 45-120 nm range",
+    "Reduced step size may require more optimization iterations"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should rise across rounds as thickness optimization decouples the two bands, and tightest_margin should not fall",
+    "Aperiodic design should show lower reflectance in 800-1500 nm compared to Route 1's periodic stack",
+    "UV reflectance 200-400 nm should match or exceed Route 1 with fewer layers (24 vs 28)",
+    "If hypothesis fails, best_target_score will not exceed Route 1's score and valid_candidates will decrease as thickness combinations become physically invalid"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, expand the thickness bounds to 20-250 nm and continue",
+    "If tightest_margin remains below 0.05 for four consecutive rounds, fix the 6 thinnest layers and optimize only the remaining 18"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "route_id": "route_04",
+  "title": "Smoothness-Regularized 20-Layer Chirped DBR with Bounded Chirp Envelope",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "Adding a gradient smoothness penalty (lambda ~0.1) to the objective function targeting adjacent layer thickness differences will suppress the erratic thickness jumps observed in iteration_13 candidates while preserving the coherent phase-matching structure, leading to improved robustness without sacrificing target score.",
+  "design_principle": "Chirped dielectric mirror with smoothness regularization to maintain monotonic or gently varying thickness progression that supports broadband reflection in 400-700 nm while maintaining transmission window at 1530-1565 nm.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica (substrate)",
+    "Air (incidence)"
+  ],
+  "proposed_topology": "Air | [HfO2, SiO2] x10 | Fused Silica substrate (20 finite layers total, starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses (20 continuous variables)",
+    "Smoothness penalty weight lambda"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1530-1565 nm band",
+    "Maximize reflectance in 400-700 nm band",
+    "Minimize adjacent thickness differences variance"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Thickness bounds initialized near iteration_13 winning pattern: odd layers 45-90 nm, even layers 65-130 nm with ±10% chirp envelope"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Chirped DBR theory for broadband reflection",
+    "Regularization theory for smooth optimization trajectories"
+  ],
+  "expected_advantages": [
+    "Reduced thickness variance improves manufacturing tolerance",
+    "Smooth chirp maintains phase coherence across reflection band",
+    "Better convergence stability compared to unregularized gradient optimization"
+  ],
+  "known_risks": [
+    "Over-regularization may trap optimizer in suboptimal local minimum",
+    "Smoothness constraint may limit achievable reflection bandwidth"
+  ],
+  "execution_request_english": "Design and optimize a 20-layer HfO2/SiO2 chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2 (alternating, 10 pairs, starting with HfO2). Optimize all 20 layer thicknesses using gradient-based optimizer with smoothness regularization penalty (lambda = 0.1) applied to adjacent thickness differences. Initialize thickness bounds: odd-indexed layers (HfO2) 45-90 nm, even-indexed layers (SiO2) 65-130 nm, with ±10% chirp envelope around linear progression. Evaluate at normal incidence, unpolarized or both TE/TM. Spectral bands: 400-700 nm (maximize reflectance), 1530-1565 nm (maximize transmittance). Total layer count fixed at 20. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Added smoothness regularization penalty and chirp-constrained initialization bounds per feedback directives to address erratic thickness jumps in iteration_13 candidates while preserving the ~0.919 target score achievement."
+}

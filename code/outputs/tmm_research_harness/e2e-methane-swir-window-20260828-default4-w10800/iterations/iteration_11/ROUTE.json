@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "28-Layer Stack with Expanded SiO2 Initialization and Variance Regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Expanding low-index (SiO2) layer initialization bounds by ±25% while freezing high-index (HfO2) layers near their observed optimal cluster (150-200 nm) will increase the probability of landing within the dual-band feasible basin, and adding mild thickness variance regularization between adjacent layers will reduce numerically unstable oscillatory solutions that consume computational budget.",
+  "design_principle": "Asymmetric initialization strategy: SiO2 layers initialized with wider bounds to explore thickness space more thoroughly, HfO2 layers initialized near converged values from iteration_07 to preserve learned optima. Variance penalty discourages abrupt thickness jumps that cause numerical convergence issues.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "28 finite layers on fused silica substrate, air incidence. Sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 (14 HfO2 + 14 SiO2). No protective capping layer specified.",
+  "design_variables": [
+    "all 28 layer thicknesses with asymmetric initialization bounds",
+    "thickness variance regularization weight"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "minimize thickness variance between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "total layer count = 28 (within 30-layer limit)",
+    "HfO2/SiO2 material pair only",
+    "thickness bounds: HfO2 120-230 nm, SiO2 40-95 nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Dual-band filter design requires non-quarter-wave optimization"
+  ],
+  "expected_advantages": [
+    "Wider SiO2 search space increases feasible basin capture probability",
+    "Variance regularization reduces numerical instability",
+    "Preserves HfO2 optima from prior iteration"
+  ],
+  "known_risks": [
+    "Regularization may constrain optimizer from finding global optimum",
+    "Wider bounds may increase convergence time"
+  ],
+  "execution_request_english": "Optimize a 28-layer HfO2/SiO2 multilayer coating on fused silica substrate with air incidence. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 (14 bilayers). Initialize HfO2 layer thicknesses uniformly in range 120-230 nm. Initialize SiO2 layer thicknesses uniformly in range 40-95 nm. Apply gradient-based thickness optimization with objective: maximize mean transmittance in 1000-1700 nm band and maximize mean reflectance in 300-450 nm band. Add regularization penalty proportional to variance of thickness differences between adjacent layers (weight=0.01). Use smatrix solver with unpolarized normal incidence. Total layer count fixed at 28. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive: expand SiO2 initialization bounds by ±25% (from ~55-73 nm observed cluster to 40-95 nm), freeze HfO2 near observed optimal cluster (120-230 nm encompasses 150-200 nm), add thickness variance regularization to reduce numerical instability."
+}

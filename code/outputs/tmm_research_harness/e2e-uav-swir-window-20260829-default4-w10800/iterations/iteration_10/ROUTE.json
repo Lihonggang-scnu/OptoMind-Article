@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "16-Layer HfO2/SiO2 Dual-Band Filter with Expanded Bounds and Random Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 16-layer alternating HfO2/SiO2 stack with thickness bounds relaxed by ±8% from quarter-wave values and uniform random initialization will escape the local minimum observed in iteration_04, achieving higher dual-band performance through non-quarter-wave optimization.",
+  "design_principle": "Quarter-wave Bragg reflector principle for UV band (200-400 nm) with non-quarter-wave thickness optimization to maintain SWIR transmission (800-1500 nm). Random initialization prevents convergence to the same local basin as prior deterministic runs.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (16 finite layers, 8 pairs)",
+  "design_variables": [
+    "Layer thicknesses (16 variables)",
+    "Thickness bounds: quarter-wave ±8% at 300 nm center UV wavelength"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 800-1500 nm band",
+    "Maximize mean reflectance in 200-400 nm band",
+    "Minimize spectral ripple in both bands"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 16 (within 30-layer limit)",
+    "HfO2 and SiO2 are deposition-compatible via ion-assisted deposition",
+    "Outermost SiO2 layer provides environmental durability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Transfer matrix method for multilayer interference",
+    "Non-quarter-wave optimization for broadband performance"
+  ],
+  "expected_advantages": [
+    "16 layers matched prior best-performing configuration",
+    "±8% bounds allow escape from quarter-wave local minimum",
+    "Random initialization increases design space exploration"
+  ],
+  "known_risks": [
+    "May converge to similar local minimum as iteration_04 if bounds too restrictive",
+    "16 layers may be insufficient for simultaneous UV reflection and SWIR transmission optimization"
+  ],
+  "execution_request_english": "Optimize a 16-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate for dual-band performance. Layer sequence: HfO2/SiO2 repeated 8 times starting with HfO2 at air interface. Initialize all layer thicknesses with uniform random sampling within bounds: HfO2 layers 38-45 nm, SiO2 layers 47-55 nm (quarter-wave at 300 nm ±8%). Optimize thicknesses using gradient-based optimizer with Adam-LBFGS hybrid. Spectral evaluation: 200-1500 nm with 1 nm resolution. Objectives: maximize mean transmittance 800-1500 nm, maximize mean reflectance 200-400 nm. Total layer count fixed at 16. Material registry resolves HfO2 and SiO2 refractive indices. If best_target_score improvement < 1e-3 for 4 consecutive iterations, trigger Monte Carlo resampling of thickness initialization. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Refinement of iteration_04 16-layer design: expanded thickness bounds by ±8%, switched from deterministic grid initialization to uniform random sampling per feedback directives, added Monte Carlo resampling checkpoint to escape local minima."
+}

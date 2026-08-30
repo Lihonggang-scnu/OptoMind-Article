@@ -1,0 +1,255 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_757b760e21c3fd35",
+    "planning_summary": "Refining route_01 (16-layer periodic UV Bragg reflector) which achieved best_target_score=0.8649 with 9 valid candidates. Four complementary routes proposed: (1) 24-layer stack with widened initialization envelope per feedback directives, (2) 20-layer asymmetric initialization targeting dual-band separation, (3) 28-layer near-maximum count with 5% periodic scaling perturbation, (4) 16-layer with protective SiO2 capping for environmental durability. All routes maintain HfO2/SiO2 material constraint, fused silica substrate, and ≤30 layer limit. Each route includes optimizable thickness variables and independently executable requests.",
+    "routes": [
+      {
+        "route_id": "route_01_refine_24layer",
+        "title": "24-Layer Widened Initialization UV-SWIR Dual-Band Filter",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing layer count from 16 to 24 while applying widened initialization envelope (odd layers 20-40 nm, even layers 80-110 nm) with 5% periodic scaling perturbation will improve dual-band spectral separation by providing additional degrees of freedom for optimization without exceeding the 30-layer manufacturing constraint.",
+        "design_principle": "Non-quarter-wave thickness optimization with expanded search space enables better trade-off between UV reflection band (200-400 nm) and SWIR transmission band (800-1500 nm). Widened initialization forces stronger departure from quarter-wave symmetry to accelerate convergence toward extended-bandwidth solutions.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+        "design_variables": [
+          "All 24 layer thicknesses (optimizable)",
+          "Initial thickness bounds: odd positions 20-40 nm, even positions 80-110 nm"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 800-1500 nm band",
+          "Maximize average reflectance in 200-400 nm band",
+          "Minimize spectral overlap between bands"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 24 (within 30-layer limit)",
+          "HfO2 and SiO2 only (material constraint satisfied)",
+          "Thickness bounds ensure fabricable layer thicknesses"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277",
+          "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for multilayer interference",
+          "Non-quarter-wave optimization for multi-band performance",
+          "Widened initialization envelope per feedback directives"
+        ],
+        "expected_advantages": [
+          "Higher best_target_score than 16-layer baseline (0.8649)",
+          "Improved spectral separation between UV and SWIR bands",
+          "More thickness degrees of freedom for optimization"
+        ],
+        "known_risks": [
+          "Increased computational cost with more layers",
+          "Potential for local minima in larger search space",
+          "May not improve if 16 layers already near-optimal for this material pair"
+        ],
+        "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate for dual-band performance. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Initialize odd-layer positions (1,3,5,...,23) with random thickness between 20-40 nm. Initialize even-layer positions (2,4,6,...,24) with random thickness between 80-110 nm. Apply 5% periodic scaling perturbation to initial stack. Optimize all 24 layer thicknesses using gradient-based optimizer with evolutionary initialization. Evaluate performance at normal incidence, unpolarized light. Compute target score based on: maximize transmittance in 800-1500 nm band, maximize reflectance in 200-400 nm band. Total layer count fixed at 24. Materials: HfO2 (high index), SiO2 (low index). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Increased layer count from 16 to 24 per feedback directive to widen initialization envelope and provide additional optimization degrees of freedom. Applied specified initialization bounds (odd 20-40 nm, even 80-110 nm) and 5% periodic scaling perturbation to force stronger departure from quarter-wave symmetry."
+      },
+      {
+        "route_id": "route_01_refine_20layer_asymmetric",
+        "title": "20-Layer Asymmetric Initialization Dual-Band Filter",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Asymmetric initialization with UV-side layers (first 10) initialized thicker (60-100 nm) and SWIR-side layers (last 10) initialized thinner (15-35 nm) will better separate the UV reflection band from SWIR transmission band by creating distinct optical thickness regimes for each spectral region.",
+        "design_principle": "Layer thickness asymmetry creates spectral separation: thicker layers dominate UV reflection through shorter-wavelength interference, thinner layers maintain SWIR transmission by reducing long-wavelength scattering. This exploits the wavelength-dependent phase accumulation in multilayer stacks.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | [HfO2/SiO2]_10 | Fused Silica substrate (20 finite layers total, alternating high-low index starting with HfO2)",
+        "design_variables": [
+          "All 20 layer thicknesses (optimizable)",
+          "Asymmetric initialization: layers 1-10: 60-100 nm, layers 11-20: 15-35 nm"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 800-1500 nm band",
+          "Maximize average reflectance in 200-400 nm band",
+          "Minimize transition region reflectance (400-800 nm)"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 20 (within 30-layer limit)",
+          "HfO2 and SiO2 only",
+          "All thicknesses within typical deposition control range"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225908385:s2chunk:225908385:3717:5827:fa8289d4f398aab2",
+          "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+          "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe"
+        ],
+        "theory_basis": [
+          "Wavelength-dependent optical thickness scaling",
+          "Asymmetric multilayer design for band separation",
+          "Transfer matrix interference theory"
+        ],
+        "expected_advantages": [
+          "Cleaner spectral separation between UV and SWIR bands",
+          "Reduced transition region reflectance (400-800 nm)",
+          "More targeted optimization than symmetric initialization"
+        ],
+        "known_risks": [
+          "May create unwanted reflection peaks in transition region",
+          "Asymmetric design harder to fabricate with uniform deposition",
+          "Could reduce overall best_target_score if symmetry is beneficial"
+        ],
+        "execution_request_english": "Optimize a 20-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate with asymmetric initialization for dual-band performance. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Fused Silica. Initialize layers 1-10 (UV-side) with random thickness between 60-100 nm. Initialize layers 11-20 (SWIR-side) with random thickness between 15-35 nm. Optimize all 20 layer thicknesses using gradient-based optimizer with evolutionary initialization. Evaluate performance at normal incidence, unpolarized light. Compute target score based on: maximize transmittance in 800-1500 nm band, maximize reflectance in 200-400 nm band, penalize reflectance in 400-800 nm transition region. Total layer count fixed at 20. Materials: HfO2 (high index), SiO2 (low index). Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Introduced asymmetric initialization strategy to test hypothesis that UV-side and SWIR-side layers benefit from different thickness regimes. This differs from route_01's symmetric periodic initialization and from the 24-layer widened envelope approach."
+      },
+      {
+        "route_id": "route_01_refine_28layer_max",
+        "title": "28-Layer Near-Maximum Count with Periodic Scaling Perturbation",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Approaching the 30-layer manufacturing limit (28 layers) with 5% periodic scaling perturbation applied to widened initialization envelope will maximize the achievable dual-band performance by utilizing nearly all available layer budget while maintaining optimization convergence through perturbation-accelerated search.",
+        "design_principle": "Maximum practical layer count provides greatest optimization freedom for complex dual-band targets. Periodic scaling perturbation prevents stagnation in local minima by continuously perturbing the search trajectory. This tests whether the 30-layer limit is a binding constraint for this problem.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+        "design_variables": [
+          "All 28 layer thicknesses (optimizable)",
+          "Initial thickness bounds: odd positions 20-40 nm, even positions 80-110 nm",
+          "5% periodic scaling perturbation applied each optimization round"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 800-1500 nm band",
+          "Maximize average reflectance in 200-400 nm band",
+          "Test if 30-layer limit is binding constraint"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 28 (near 30-layer limit)",
+          "HfO2 and SiO2 only",
+          "Deposition time and stress increase with layer count",
+          "May approach practical fabrication limits"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe",
+          "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c"
+        ],
+        "theory_basis": [
+          "Layer count vs performance trade-off in multilayer design",
+          "Periodic perturbation for optimization convergence",
+          "Non-quarter-wave stack optimization theory"
+        ],
+        "expected_advantages": [
+          "Highest potential best_target_score by utilizing maximum layer budget",
+          "Tests whether 30-layer limit is binding for this problem",
+          "Perturbation prevents local minima stagnation"
+        ],
+        "known_risks": [
+          "May not improve over 24-layer if diminishing returns set in",
+          "Increased fabrication complexity and stress",
+          "Longer optimization runtime",
+          "Risk of overfitting to specific wavelength points"
+        ],
+        "execution_request_english": "Optimize a 28-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate for dual-band performance at near-maximum layer count. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Fused Silica. Initialize odd-layer positions (1,3,5,...,27) with random thickness between 20-40 nm. Initialize even-layer positions (2,4,6,...,28) with random thickness between 80-110 nm. Apply 5% periodic scaling perturbation to thickness vector each optimization round. Optimize all 28 layer thicknesses using gradient-based optimizer with evolutionary initialization. Evaluate performance at normal incidence, unpolarized light. Compute target score based on: maximize transmittance in 800-1500 nm band, maximize reflectance in 200-400 nm band. Total layer count fixed at 28. Materials: HfO2 (high index), SiO2 (low index). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Increased layer count to 28 (near 30-layer limit) to test whether additional layers beyond 24 provide diminishing returns or continued improvement. Applied same widened initialization and 5% periodic scaling perturbation as feedback directives specify."
+      },
+      {
+        "route_id": "route_01_refine_16layer_capped",
+        "title": "16-Layer with Protective SiO2 Capping for Environmental Durability",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Adding a protective SiO2 capping layer (≥200 nm) to the 16-layer baseline will maintain dual-band optical performance while improving environmental durability and laser damage resistance, as evidenced by literature on high-power laser optics requiring outermost SiO2 protection.",
+        "design_principle": "Outermost SiO2 layer provides environmental protection (contamination resistance, humidity barrier) and improves laser damage threshold without significantly affecting dual-band performance if thickness is optimized. This follows evidence from high-power laser coating designs requiring protective capping.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+        "design_variables": [
+          "All 17 layer thicknesses (optimizable)",
+          "Capping layer thickness constrained ≥200 nm",
+          "Remaining 16 layers: odd positions 20-40 nm, even positions 80-110 nm"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 800-1500 nm band",
+          "Maximize average reflectance in 200-400 nm band",
+          "Maintain capping layer ≥200 nm for durability"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 17 (within 30-layer limit)",
+          "HfO2 and SiO2 only",
+          "Capping layer ≥200 nm per environmental durability evidence",
+          "SiO2 outermost layer improves contamination resistance"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:225412237:s2chunk:225412237:1763:3712:15d73af101c82179",
+          "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c"
+        ],
+        "theory_basis": [
+          "Protective capping layer theory for environmental durability",
+          "SiO2 surface functionalization for contamination resistance",
+          "Double-layer capping for laser resistance"
+        ],
+        "expected_advantages": [
+          "Improved environmental durability for high-altitude UAV operation",
+          "Better laser damage threshold",
+          "Maintains optical performance while adding protection",
+          "Follows evidence-based design practice"
+        ],
+        "known_risks": [
+          "Thick capping layer may affect SWIR transmission",
+          "May reduce best_target_score compared to uncapped 16-layer baseline",
+          "Additional layer increases fabrication complexity slightly"
+        ],
+        "execution_request_english": "Optimize a 17-layer HfO2/SiO2 multilayer stack on fused silica substrate with protective SiO2 capping layer for dual-band performance and environmental durability. Layer sequence: Air | SiO2 (capping layer) | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Constrain capping layer (layer 1) thickness ≥200 nm for environmental durability. Initialize capping layer between 200-250 nm. Initialize remaining layers 2-17: odd positions (3,5,7,...,17) with random thickness between 20-40 nm, even positions (2,4,6,...,16) with random thickness between 80-110 nm. Apply 5% periodic scaling perturbation to layers 2-17. Optimize all 17 layer thicknesses using gradient-based optimizer with evolutionary initialization. Evaluate performance at normal incidence, unpolarized light. Compute target score based on: maximize transmittance in 800-1500 nm band, maximize reflectance in 200-400 nm band. Total layer count fixed at 17. Materials: HfO2 (high index), SiO2 (low index, including capping layer). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 4,
+        "parent_route_id": "route_01",
+        "revision_reason": "Added protective SiO2 capping layer (≥200 nm) per evidence on environmental durability for high-power laser optics. This addresses UAV operational environment requirements (high-altitude, UV exposure) while maintaining the 16-layer optimization foundation from route_01."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:225461372 informed the protective SiO2 capping layer requirement (≥200 nm) for environmental durability in route_01_refine_16layer_capped",
+      "Evidence s2-chunk:CorpusId:254823355 supported the HfO2/SiO2 heterostructure approach and graded index concepts applied across all routes",
+      "Evidence s2-chunk:CorpusId:279318729 informed the non-quarter-wave optimization strategy and thickness range selection (20-110 nm) used in widened initialization",
+      "Evidence s2-chunk:CorpusId:3305144 supported the double-layer capping concept and quarter-wave stack foundation adapted for non-quarter-wave optimization",
+      "Feedback directives directly shaped the widened initialization envelope (odd 20-40 nm, even 80-110 nm) and 5% periodic scaling perturbation applied to routes 01_refine_24layer and 01_refine_28layer_max"
+    ],
+    "unresolved_decisions": [
+      "Whether 30-layer limit is a binding constraint for HfO2/SiO2 dual-band design (will be tested by 28-layer route)",
+      "Optimal trade-off between layer count and environmental durability (capped vs uncapped designs)",
+      "Whether asymmetric initialization provides better spectral separation than symmetric widened envelope"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_refine_20layer_asymmetric evidence id was corrected to its unique near-exact allowlist match",
+    "route route_01_refine_24layer symbolic topology was instantiated as a fixed 12-layer starting hypothesis",
+    "route route_01_refine_28layer_max symbolic topology was instantiated as a fixed 12-layer starting hypothesis",
+    "route route_01_refine_16layer_capped symbolic topology was instantiated as a fixed 12-layer starting hypothesis",
+    "route route_01_refine_24layer received canonical user controls from the problem contract",
+    "route route_01_refine_20layer_asymmetric received canonical user controls from the problem contract",
+    "route route_01_refine_28layer_max received canonical user controls from the problem contract",
+    "route route_01_refine_16layer_capped received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14813,
+      "completion_tokens": 6583,
+      "total_tokens": 21396
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

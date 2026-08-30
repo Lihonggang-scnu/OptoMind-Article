@@ -1,0 +1,236 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_02 (21-layer three-cavity Ge/ZnS Fabry-Perot filter) based on iteration_10 results showing 0.909 best_target_score with 9 valid candidates. Feedback directives specify: (1) replace uniform-random initialization with resonance-centered sampling at λ/2n for cavities, (2) enforce 500nm hard thickness upper bound, (3) seed 40% of population with λ/4n quarter-wave mirrors. Four complementary routes explore: resonance-seeded gradient optimization, evolutionary optimizer comparison, reduced layer count for manufacturability, and two-cavity simplified topology. All routes preserve the verified Ge/ZnS material pair and CaF2 substrate from route_02.",
+    "routes": [
+      {
+        "route_id": "route_02_refine_01",
+        "title": "Resonance-Seeded Three-Cavity Filter with 500nm Thickness Cap",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Initializing layer thicknesses near theoretical half-wave resonance values (λ/2n) for cavity layers and quarter-wave values (λ/4n) for mirror sections, with a 500nm upper bound, will concentrate the search in physically meaningful interference regimes and improve best_target_score convergence compared to uniform-random initialization in route_02.",
+        "design_principle": "Fabry-Perot cavity resonance occurs when optical thickness equals half-wavelength multiples. Seeding optimization near these values reduces unphysical search volume and accelerates convergence to high-transmittance solutions.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (21 layers total: 3 cavities with alternating Ge/ZnS mirrors)",
+        "design_variables": [
+          "layer thicknesses (50-500nm bounded)",
+          "initialization centered on λ/2n for cavities and λ/4n for mirrors"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "improve best_target_score over route_02 baseline of 0.909"
+        ],
+        "manufacturing_considerations": [
+          "500nm maximum thickness per layer improves deposition uniformity",
+          "21 layers within 24-layer constraint",
+          "Ge/ZnS material pair verified for mid-IR transparency"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Fabry-Perot resonance condition: optical thickness = m·λ/2 for constructive interference",
+          "Quarter-wave stack theory: alternating λ/4n layers create high-reflectance mirrors"
+        ],
+        "expected_advantages": [
+          "Faster convergence to high-scoring candidates",
+          "Reduced risk of unphysical thickness combinations",
+          "Better alignment with constructive interference regimes from round 2 onward"
+        ],
+        "known_risks": [
+          "500nm cap may restrict optimal solutions if thicker cavities are physically required",
+          "Resonance seeding may bias search away from non-obvious optimal configurations"
+        ],
+        "execution_request_english": "Optimize a 21-layer dielectric bandpass filter on CaF2 substrate using Ge (high-index) and ZnS (low-index) materials in a three-cavity Fabry-Perot topology. Initialize cavity layer thicknesses near theoretical half-wave resonance values (λ/2n) at 4.45 μm center wavelength, and mirror section thicknesses near quarter-wave values (λ/4n). Enforce hard thickness bounds of 50-500 nm per layer. Seed 40% of initial population with deterministic λ/4n multiples for mirror sections. Optimize for high transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands, low transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands, at normal incidence in air. Use gradient-based thickness optimizer with resonance-centered initialization. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Implements feedback directive to replace uniform-random initialization with bounded sampling centered on theoretical half-wave resonance values (λ/2n) for cavity layers, enforce 500nm upper thickness limit, and seed 40% of initial population using deterministic λ/4n multiples for mirror sections. This collapses unphysical search volume compared to route_02's broad initialization."
+      },
+      {
+        "route_id": "route_02_refine_02",
+        "title": "Evolutionary Optimization of Three-Cavity Filter with Resonance Seeding",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "An evolutionary optimizer with resonance-centered initialization will explore the thickness parameter space more thoroughly than gradient-based optimization, potentially discovering non-local optima that gradient methods miss while maintaining the 500nm thickness constraint.",
+        "design_principle": "Evolutionary algorithms maintain population diversity and can escape local optima that trap gradient-based methods, particularly in multi-modal optimization landscapes typical of multi-cavity filter design.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (21 layers total: 3 cavities with alternating Ge/ZnS mirrors)",
+        "design_variables": [
+          "layer thicknesses (50-500nm bounded)",
+          "evolutionary population initialization centered on λ/2n resonance values"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "achieve best_target_score ≥ 0.90 to match route_02 performance"
+        ],
+        "manufacturing_considerations": [
+          "500nm maximum thickness per layer",
+          "21 layers within manufacturing constraint",
+          "Ge/ZnS verified material pair"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba"
+        ],
+        "theory_basis": [
+          "Evolutionary optimization maintains diversity in multi-modal search spaces",
+          "Fabry-Perot cavity resonance theory for initialization"
+        ],
+        "expected_advantages": [
+          "Better exploration of thickness parameter space",
+          "Potential to discover non-obvious high-performing configurations",
+          "More robust to local optima than gradient methods"
+        ],
+        "known_risks": [
+          "Slower convergence than gradient methods",
+          "May require more evaluation rounds to reach comparable scores"
+        ],
+        "execution_request_english": "Optimize a 21-layer dielectric bandpass filter on CaF2 substrate using Ge (high-index) and ZnS (low-index) materials in a three-cavity Fabry-Perot topology. Initialize all layer thicknesses near theoretical half-wave resonance values (λ/2n) at 4.45 μm center wavelength with 50-500 nm bounds. Use evolutionary optimizer with population size 50, mutation rate 0.1, and crossover rate 0.7. Seed 40% of initial population with deterministic λ/4n quarter-wave values for mirror sections. Optimize for high transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands, low transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands, at normal incidence in air. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests alternative optimization strategy (evolutionary vs gradient) while preserving route_02's 21-layer Ge/ZnS three-cavity topology. Complements route_02_refine_01 by comparing optimizer effectiveness with same resonance-seeded initialization."
+      },
+      {
+        "route_id": "route_02_refine_03",
+        "title": "Reduced Layer Count Three-Cavity Filter for Manufacturability",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 21 to 19 layers while maintaining three-cavity topology will preserve most optical performance (best_target_score ≥ 0.88) while improving manufacturability through reduced deposition time and cumulative thickness error.",
+        "design_principle": "Fewer layers reduce cumulative deposition error and stress, but may reduce stopband rejection. Three-cavity topology with 19 layers should maintain adequate passband shaping while being more manufacturable than 21-layer design.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (19 layers total: 3 cavities with reduced mirror pairs)",
+        "design_variables": [
+          "layer thicknesses (50-500nm bounded)",
+          "19-layer topology with resonance-centered initialization"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "achieve best_target_score within 0.03 of route_02 baseline (≥ 0.88)"
+        ],
+        "manufacturing_considerations": [
+          "19 layers reduces deposition time by ~10% compared to 21 layers",
+          "500nm maximum thickness per layer",
+          "Reduced cumulative thickness error from fewer interfaces"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:126309152:s2chunk:126309152:17879:19440:f0797a0ab3ee18b2",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba"
+        ],
+        "theory_basis": [
+          "Layer count affects bandwidth and stopband rejection per evidence on BPF design",
+          "Fewer layers reduce cumulative deposition error and stress"
+        ],
+        "expected_advantages": [
+          "Improved manufacturability with fewer deposition steps",
+          "Reduced cumulative thickness error",
+          "Lower material cost and deposition time"
+        ],
+        "known_risks": [
+          "Reduced stopband rejection with fewer mirror pairs",
+          "May not achieve route_02's 0.909 score with only 19 layers"
+        ],
+        "execution_request_english": "Optimize a 19-layer dielectric bandpass filter on CaF2 substrate using Ge (high-index) and ZnS (low-index) materials in a three-cavity Fabry-Perot topology with reduced mirror pairs. Initialize cavity layer thicknesses near theoretical half-wave resonance values (λ/2n) at 4.45 μm center wavelength, and mirror section thicknesses near quarter-wave values (λ/4n). Enforce hard thickness bounds of 50-500 nm per layer. Seed 40% of initial population with deterministic λ/4n multiples for mirror sections. Optimize for high transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands, low transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands, at normal incidence in air. Use gradient-based thickness optimizer with resonance-centered initialization. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests whether 19-layer topology can achieve comparable performance to route_02's 21-layer design while improving manufacturability. Preserves three-cavity Fabry-Perot principle and resonance-seeded initialization from feedback directives."
+      },
+      {
+        "route_id": "route_02_refine_04",
+        "title": "Two-Cavity Simplified Topology with Resonance Seeding",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot topology with 17 layers will achieve acceptable dual-band performance (best_target_score ≥ 0.85) while significantly simplifying the design and improving manufacturability compared to three-cavity route_02, though with potentially broader passbands.",
+        "design_principle": "Two-cavity designs have fewer degrees of freedom but are simpler to fabricate and may provide adequate performance if passband width requirements are flexible. Resonance seeding should help maximize performance within reduced design space.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (17 layers total: 2 cavities with alternating Ge/ZnS mirrors)",
+        "design_variables": [
+          "layer thicknesses (50-500nm bounded)",
+          "17-layer two-cavity topology with resonance-centered initialization"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "achieve best_target_score ≥ 0.85 as acceptable simplification trade-off"
+        ],
+        "manufacturing_considerations": [
+          "17 layers reduces deposition time by ~19% compared to 21 layers",
+          "500nm maximum thickness per layer",
+          "Simplest topology among all routes for highest manufacturability"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:126309152:s2chunk:126309152:17879:19440:f0797a0ab3ee18b2"
+        ],
+        "theory_basis": [
+          "Fabry-Perot cavity count affects passband shape: more cavities produce squarer passbands",
+          "Two-cavity designs trade passband sharpness for manufacturability"
+        ],
+        "expected_advantages": [
+          "Significantly improved manufacturability with 17 layers",
+          "Reduced cumulative thickness error",
+          "Lower risk of deposition failures"
+        ],
+        "known_risks": [
+          "Broader passbands may reduce gas selectivity",
+          "Lower stopband rejection with fewer cavities",
+          "May not achieve route_02's 0.909 score"
+        ],
+        "execution_request_english": "Optimize a 17-layer dielectric bandpass filter on CaF2 substrate using Ge (high-index) and ZnS (low-index) materials in a two-cavity Fabry-Perot topology. Initialize cavity layer thicknesses near theoretical half-wave resonance values (λ/2n) at 4.45 μm center wavelength, and mirror section thicknesses near quarter-wave values (λ/4n). Enforce hard thickness bounds of 50-500 nm per layer. Seed 40% of initial population with deterministic λ/4n multiples for mirror sections. Optimize for high transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands, low transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands, at normal incidence in air. Use gradient-based thickness optimizer with resonance-centered initialization. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 4,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests whether simplified two-cavity topology can achieve acceptable performance with significantly reduced layer count (17 vs 21). Preserves resonance-seeded initialization and 500nm thickness bound from feedback directives while exploring topology simplification trade-off."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02 motivated Ge/ZnS material pair selection for mid-IR filters with high index contrast and low absorption",
+      "Evidence s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49 supported three-cavity Fabry-Perot topology for square passband profiles in gas sensing applications",
+      "Evidence s2-chunk:CorpusId:126309152:s2chunk:126309152:17879:19440:f0797a0ab3ee18b2 informed bandwidth-layer count trade-off understanding for CO detection filters",
+      "Evidence s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba supported thickness minimization principle for manufacturability"
+    ],
+    "unresolved_decisions": [
+      "Optimal layer count trade-off between performance (21 layers) and manufacturability (17-19 layers) requires experimental validation",
+      "Gradient vs evolutionary optimizer effectiveness for this specific Ge/ZnS three-cavity topology remains unconfirmed"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_02_refine_01 received canonical user controls from the problem contract",
+    "route route_02_refine_02 received canonical user controls from the problem contract",
+    "route route_02_refine_03 received canonical user controls from the problem contract",
+    "route route_02_refine_04 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 12936,
+      "completion_tokens": 6396,
+      "total_tokens": 19332
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

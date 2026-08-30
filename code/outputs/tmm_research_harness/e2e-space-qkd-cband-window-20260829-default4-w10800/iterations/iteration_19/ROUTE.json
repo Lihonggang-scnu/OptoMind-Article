@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "24-Layer Dual-Band Filter with Simulated Annealing and ±20% Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Increasing layer count from 20 to 24 while applying simulated annealing with ±20% thickness perturbation around quarter-wave initialization will enable the optimizer to escape local minima observed in iteration_15 and achieve higher dual-band spectral separation scores through broader search space exploration.",
+  "design_principle": "Quarter-wave Bragg stack principle with stopband centered near 550 nm for visible rejection, optimized thickness distribution to maintain telecom band transmission while maximizing visible reflectance. Simulated annealing allows temporary acceptance of worse solutions to cross energy barriers between thickness basins.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2] × 12 | Fused Silica substrate (24 finite layers total, alternating sequence starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses (24 variables)",
+    "Optimization trajectory via simulated annealing temperature schedule"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain physically valid candidates throughout optimization"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 24 is within 30-layer limit",
+    "Thickness tolerance analysis via relative uniform perturbation",
+    "All layers treated as coherent for TMM computation"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Thin-film interference theory for quarter-wave stacks",
+    "Transfer matrix method for multilayer optical computation",
+    "Simulated annealing optimization for non-convex thickness landscapes"
+  ],
+  "expected_advantages": [
+    "Higher layer count provides more degrees of freedom for spectral shaping",
+    "Simulated annealing reduces risk of convergence to iteration_15 local minimum",
+    "±20% perturbation enables broader exploration than iteration_15 ±30 nm absolute bounds"
+  ],
+  "known_risks": [
+    "Increased layer count may reduce robustness to thickness variations",
+    "Simulated annealing requires more iterations to converge",
+    "May still converge to similar solution if landscape has single dominant basin"
+  ],
+  "execution_request_english": "Design and optimize a 24-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (24 finite layers total). Initialize thicknesses at quarter-wave optical thickness for 550 nm reference wavelength (HfO2: ~68.75 nm, SiO2: ~94.83 nm assuming n_HfO2≈2.0, n_SiO2≈1.46). Apply ±20% perturbation bounds around initialization values. Use simulated annealing optimizer with temperature schedule over first 50 iterations to enable cross-basin exploration. Optimize for mean transmittance maximization in 1530-1565 nm band and mean reflectance maximization in 400-700 nm band at normal unpolarized incidence. Treat all layers as coherent. Compute spectrum from 400-1565 nm with sufficient resolution to capture both bands. Include relative uniform thickness tolerance analysis for robustness scoring. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Responds to feedback directive to increase thickness initialization perturbation to ±20% and apply simulated annealing temperature schedule during first 50 iterations. Increases layer count from 20 to 24 to test scaling while staying within 30-layer manufacturing constraint."
+}

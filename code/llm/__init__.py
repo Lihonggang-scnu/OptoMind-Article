@@ -1,0 +1,1 @@
+﻿"""Minimal handoff package namespace."""

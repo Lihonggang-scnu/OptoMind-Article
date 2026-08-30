@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_16/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "04d7593a4f7e8fe946f50eb2c2db00ec18b1a6948b78ce596929e1a4190b08ba",
+  "recorded_at_utc": "2026-08-28T17:40:31.190557+00:00",
+  "elapsed_seconds": 3425.7734923999524,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_16",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with individually tunable thicknesses can achieve simultaneous high UV reflection and high SWIR transmission, and further refinement with reduced perturbation bounds (±0.5 nm) will improve target score convergence without destabilizing the solution.",
+  "expected_advantages": [
+    "Narrower perturbation bounds (±0.5 nm vs prior ±0.8 nm) reduce oscillatory jumps in optimization",
+    "Initialization from proven 0.8279 score candidate focuses search on promising region",
+    "20 layers provide sufficient pairs for UV stopband while leaving margin under 30-layer limit",
+    "Alternating structure is manufacturable with standard thin-film deposition processes"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient remains negligible at 200 nm UV edge - would need measured n/k data verification",
+    "Recalled quarter-wave thickness estimates may not be exact for this specific material dataset - actual optimal thicknesses emerge from optimization",
+    "Uncertain if 20 layers is optimal vs 22, 24, or 26 for this specific band separation - layer count is fixed for this axis",
+    "Fused silica substrate dispersion in UV not precisely recalled - relies on registry dataset",
+    "No literature verification of HfO2/SiO2 UV durability under prolonged exposure - design assumes optical performance only"
+  ],
+  "expected_observations": [
+    "best_target_score should rise or remain stable across rounds as perturbation bounds narrow",
+    "valid_candidates count should remain high (≥7) given small perturbation from valid seed",
+    "tightest_margin should not fall significantly across rounds if optimization converges smoothly",
+    "thicknesses_nm should show reduced variance compared to prior ±0.8 nm rounds",
+    "run_status should remain 'completed' without physical validity failures"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 5 for two consecutive rounds, relax perturbation bounds to ±0.7 nm and continue",
+    "if tightest_margin falls below 0.3 for two consecutive rounds, reduce optimization step size and continue"
+  ]
+}

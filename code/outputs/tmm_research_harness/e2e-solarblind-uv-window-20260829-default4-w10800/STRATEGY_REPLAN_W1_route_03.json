@@ -1,0 +1,239 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_03 (SiO2/Al2O3 multi-cavity UV bandpass filter) based on observed layer merging behavior. Four complementary routes address the merging issue through: (1) explicit spacer fixation and thickness diversity penalties, (2) alternative high-index material pair (HfO2/SiO2) for better index contrast, (3) reduced layer count with stronger cavity definition, and (4) systematic thickness grading to prevent collapse. All routes maintain the 255-280 nm passband and 300-1100 nm rejection objectives while preserving the ≤30 layer constraint.",
+    "routes": [
+      {
+        "route_id": "route_04",
+        "title": "Constrained multi-cavity with fixed spacers and diversity penalty",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Fixing three central cavity spacer layers at exactly 67.5 nm while applying a thickness diversity penalty will prevent the layer merging observed in route_03, enabling distinct cavity resonances that improve UV passband transmission while maintaining visible/NIR rejection.",
+        "design_principle": "Multi-cavity bandpass filter with explicitly constrained spacer thicknesses and optimization bounds tightened around quarter-wave values at 267.5 nm center wavelength. Add cost penalty for consecutive layers with >95% thickness similarity.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "25 finite coating layers: Air | [SiO2/Al2O3]_12 | SiO2 | Fused Silica substrate. Three central spacer layers (layers 12, 13, 14) fixed at 67.5 nm.",
+        "design_variables": [
+          "thicknesses of layers 1-11 and 15-25",
+          "optimization bounds tightened to ±15% around quarter-wave targets"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255-280 nm",
+          "minimize transmittance in 300-700 nm",
+          "minimize transmittance in 700-1100 nm",
+          "maintain thickness diversity across adjacent layers"
+        ],
+        "manufacturing_considerations": [
+          "ALD or IAD deposition for thickness precision",
+          "quarter-wave layers at 267.5 nm approximately 45-70 nm depending on material index"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for multi-cavity interference",
+          "Quarter-wave stack theory for high-reflectivity mirrors",
+          "Cavity resonance theory for bandpass transmission peaks"
+        ],
+        "expected_advantages": [
+          "Prevents layer merging collapse observed in route_03",
+          "Maintains distinct cavity resonances for sharper bandpass edges",
+          "Preserves the successful SiO2/Al2O3 material pair from route_03"
+        ],
+        "known_risks": [
+          "Fixed spacer thickness may limit optimization freedom",
+          "Diversity penalty may conflict with optimal physics solution",
+          "May still achieve similar target score if merging was not the primary limitation"
+        ],
+        "execution_request_english": "Optimize a 25-layer SiO2/Al2O3 multi-cavity bandpass filter on fused silica substrate with air incidence. Layers 1-25 alternate SiO2/Al2O3 starting with SiO2. Fix layers 12, 13, and 14 at exactly 67.5 nm thickness (non-optimizable). Optimize layers 1-11 and 15-25 with bounds ±15% around quarter-wave thickness at 267.5 nm center wavelength (SiO2 ~45 nm, Al2O3 ~67 nm). Apply optimization cost penalty of 0.01 per pair of consecutive layers with thickness similarity >95%. Wavelength bands: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. Total layer count exactly 25 finite coating layers. No metal layers. Use gradient-based thickness optimizer with diversity constraint. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Directly addresses route_03 layer merging observation by fixing three central spacers at 67.5 nm and adding thickness diversity penalty per feedback directives. Maintains same material pair and layer count topology."
+      },
+      {
+        "route_id": "route_05",
+        "title": "HfO2/SiO2 material pair for higher index contrast",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing Al2O3 with HfO2 as the high-index material will provide greater refractive index contrast (HfO2 n~2.0-2.2 vs Al2O3 n~1.6-1.7 in UV), enabling stronger stopband rejection with the same 25-layer count and potentially higher UV passband transmission.",
+        "design_principle": "Same multi-cavity topology as route_03 but with HfO2/SiO2 material pair. Literature evidence supports HfO2/SiO2 for UV filters with moisture-stable IAD deposition.",
+        "proposed_materials": [
+          "SiO2",
+          "HfO2"
+        ],
+        "proposed_topology": "25 finite coating layers: Air | [SiO2/HfO2]_12 | SiO2 | Fused Silica substrate. No fixed layers; all thicknesses optimizable.",
+        "design_variables": [
+          "thicknesses of all 25 layers",
+          "optimization bounds ±25% around quarter-wave targets at 267.5 nm"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255-280 nm",
+          "minimize transmittance in 300-700 nm",
+          "minimize transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "HfO2 requires IAD for moisture stability and index homogeneity",
+          "HfO2 may exhibit thickness inhomogeneity without ion assistance",
+          "Lower substrate temperature deposition possible (100-130°C)"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Higher index contrast produces wider stopbands for same layer count",
+          "HfO2 transparency in UV range with low absorption",
+          "IAD deposition produces dense, stable films"
+        ],
+        "expected_advantages": [
+          "Higher index contrast may improve stopband rejection without increasing layer count",
+          "HfO2/SiO2 system has literature precedent for UV filters",
+          "May achieve better target score than SiO2/Al2O3 with same topology"
+        ],
+        "known_risks": [
+          "HfO2 may have higher absorption near 255 nm than Al2O3",
+          "HfO2 thickness inhomogeneity without IAD",
+          "Material registry must support HfO2 optical constants in UV range"
+        ],
+        "execution_request_english": "Optimize a 25-layer HfO2/SiO2 multi-cavity bandpass filter on fused silica substrate with air incidence. Layers 1-25 alternate SiO2/HfO2 starting with SiO2. All 25 layer thicknesses optimizable with bounds ±25% around quarter-wave thickness at 267.5 nm center wavelength (SiO2 ~45 nm, HfO2 ~35 nm based on higher index). Wavelength bands: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. Total layer count exactly 25 finite coating layers. No metal layers. Use gradient-based thickness optimizer. Assume IAD deposition conditions for HfO2 optical constants. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests alternative material pair hypothesis while maintaining route_03's 25-layer multi-cavity topology. Addresses potential index contrast limitation of SiO2/Al2O3 system. Independent test of whether material selection rather than optimization constraints limited route_03 performance."
+      },
+      {
+        "route_id": "route_06",
+        "title": "Reduced 21-layer stack with stronger cavity definition",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 25 to 21 while maintaining three-cavity topology will reduce optimization complexity and layer merging tendency, allowing clearer cavity resonance definition and potentially better convergence to optimal thicknesses.",
+        "design_principle": "Simplified multi-cavity with fewer mirror pairs per cavity but same three-cavity structure. Fewer variables may reduce optimizer confusion and layer collapse.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "21 finite coating layers: Air | [SiO2/Al2O3]_3 | SiO2 (cavity 1) | [SiO2/Al2O3]_3 | SiO2 (cavity 2) | [SiO2/Al2O3]_3 | SiO2 (cavity 3) | [SiO2/Al2O3]_3 | SiO2 | Fused Silica substrate.",
+        "design_variables": [
+          "thicknesses of all 21 layers",
+          "optimization bounds ±20% around quarter-wave targets"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255-280 nm",
+          "minimize transmittance in 300-700 nm",
+          "minimize transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "Fewer layers reduces deposition time and cumulative thickness error",
+          "Simpler stack may be more robust to thickness variations",
+          "ALD precision still required for cavity spacers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b"
+        ],
+        "theory_basis": [
+          "Multi-cavity bandpass theory with reduced mirror pair count",
+          "Optimization convergence improves with fewer variables",
+          "Cavity resonance strength depends on mirror reflectivity, not just layer count"
+        ],
+        "expected_advantages": [
+          "Reduced optimization complexity may prevent layer merging",
+          "Fewer layers reduces cumulative deposition error",
+          "May achieve comparable performance with simpler manufacturable stack"
+        ],
+        "known_risks": [
+          "Fewer mirror pairs may reduce stopband rejection strength",
+          "May not achieve same target score as 25-layer design",
+          "Three-cavity structure with fewer mirrors may have broader passband than desired"
+        ],
+        "execution_request_english": "Optimize a 21-layer SiO2/Al2O3 three-cavity bandpass filter on fused silica substrate with air incidence. Topology: Air | (SiO2/Al2O3)×3 | SiO2 | (SiO2/Al2O3)×3 | SiO2 | (SiO2/Al2O3)×3 | SiO2 | (SiO2/Al2O3)×3 | SiO2 | Fused Silica. All 21 layer thicknesses optimizable with bounds ±20% around quarter-wave thickness at 267.5 nm center wavelength. Wavelength bands: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. Total layer count exactly 21 finite coating layers. No metal layers. Use gradient-based thickness optimizer. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests whether route_03's 25-layer count contributed to optimization complexity and layer merging. Reduces variable count while preserving three-cavity topology. Independent test of layer count vs performance tradeoff."
+      },
+      {
+        "route_id": "route_07",
+        "title": "Graded thickness multi-cavity to prevent collapse",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Initializing layer thicknesses with systematic grading (varying quarter-wave target across the stack) rather than uniform quarter-wave will prevent the optimizer from collapsing layers to identical thicknesses, maintaining distinct optical functions for each layer.",
+        "design_principle": "Same 25-layer SiO2/Al2O3 topology as route_03 but with graded initial thicknesses: mirror layers near substrate use quarter-wave at longer wavelength (280 nm), mirror layers near air use quarter-wave at shorter wavelength (255 nm), creating natural thickness variation.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "25 finite coating layers: Air | [SiO2/Al2O3]_12 | SiO2 | Fused Silica substrate. All thicknesses optimizable but initialized with wavelength-graded quarter-wave targets.",
+        "design_variables": [
+          "thicknesses of all 25 layers",
+          "initialization uses graded quarter-wave from 255 nm to 280 nm across stack"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255-280 nm",
+          "minimize transmittance in 300-700 nm",
+          "minimize transmittance in 700-1100 nm",
+          "maintain thickness variation across stack"
+        ],
+        "manufacturing_considerations": [
+          "Graded initialization may require more precise deposition control",
+          "Natural thickness variation may improve robustness to deposition errors",
+          "Same material pair as route_03 for direct comparison"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Chirped mirror theory for broadband reflection",
+          "Thickness grading prevents degeneracy in optimization landscape",
+          "Multi-cavity filters benefit from asymmetric mirror design"
+        ],
+        "expected_advantages": [
+          "Prevents layer merging by design through graded initialization",
+          "May provide broader stopband rejection through chirped mirror effect",
+          "Maintains route_03 topology for direct performance comparison"
+        ],
+        "known_risks": [
+          "Graded design may complicate optimization convergence",
+          "May not significantly improve target score if merging was not the primary issue",
+          "Chirped mirrors may shift passband center wavelength"
+        ],
+        "execution_request_english": "Optimize a 25-layer SiO2/Al2O3 multi-cavity bandpass filter on fused silica substrate with air incidence. Layers 1-25 alternate SiO2/Al2O3 starting with SiO2. Initialize layer thicknesses with graded quarter-wave targets: layers 1-8 use quarter-wave at 255 nm, layers 9-17 use quarter-wave at 267.5 nm, layers 18-25 use quarter-wave at 280 nm. All 25 thicknesses optimizable with bounds ±20% around their respective initial values. Wavelength bands: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. Total layer count exactly 25 finite coating layers. No metal layers. Use gradient-based thickness optimizer with graded initialization. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 4,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests initialization strategy as the cause of route_03 layer merging rather than constraint structure. Graded quarter-wave initialization provides natural thickness diversity without explicit penalties. Maintains same material pair and layer count for fair comparison."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:199509322 supports SiO2/SiNx photonic crystal UV filter design with periodic (L/2 H L/2) units and AR coatings, informing multi-cavity topology in routes 04, 06, 07.",
+      "Evidence s2-chunk:CorpusId:211025653 supports HfO2/SiO2 material pair for UV filters with IAD deposition, motivating route_05 material substitution.",
+      "Evidence s2-chunk:CorpusId:16516444 supports ALD for precise thickness control in UV coatings, informing manufacturing considerations across all routes.",
+      "Route_03 observations (layer merging at ~67 nm, target score 0.296) directly motivated route_04's fixed spacer constraints and diversity penalty, route_06's reduced layer count, and route_07's graded initialization."
+    ],
+    "unresolved_decisions": [
+      "Whether SiO2/Al2O3 or HfO2/SiO2 provides better UV transmission with adequate visible/NIR rejection remains untested.",
+      "Optimal layer count (21 vs 25) for balancing performance and manufacturability not yet determined.",
+      "Whether layer merging was caused by initialization, constraint structure, or optimizer dynamics requires comparison across routes 04, 06, 07."
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_04 received canonical user controls from the problem contract",
+    "route route_05 received canonical user controls from the problem contract",
+    "route route_06 received canonical user controls from the problem contract",
+    "route route_07 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 12822,
+      "completion_tokens": 6009,
+      "total_tokens": 18831
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

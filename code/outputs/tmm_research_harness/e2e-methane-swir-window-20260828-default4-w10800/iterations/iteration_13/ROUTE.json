@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "Precision Refinement of 24-Layer Stack with Reduced Perturbation Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing thickness perturbation amplitude by approximately 50% around the iteration 09 best candidate (thicknesses: [123, 90, 122, 90, 136, 168, 98, 157, 116, 140, 111, 91, 153, 90, 118, 140, 129, 90, 119, 155, 112, 90, 121, 117] nm) will enable finer convergence to local optimum while maintaining the verified alternating HfO2/SiO2 topology.",
+  "design_principle": "Lock layer ordering to alternating HfO2/SiO2 sequence starting with HfO2 on substrate. Apply gradient-based thickness optimization with bounds ±20nm around iteration 09 best candidate instead of wider search ranges. This transitions from coarse sweeping to precision refinement.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 finite layers total, 12 bilayers)",
+  "design_variables": [
+    "layer thicknesses (24 variables, bounded ±20nm around iteration 09 best candidate)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "minimize transmittance in 300-450 nm band",
+    "minimize reflectance in 1000-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 24 (within 30-layer limit)",
+    "alternating order locked to prevent deposition sequence errors",
+    "thickness tolerance analysis with ±5% relative uniform error"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Needle optimization principle for non-quarter-wave refinement"
+  ],
+  "expected_advantages": [
+    "Finer convergence to local optimum compared to iteration 09",
+    "Maintained topological stability from locked layer ordering",
+    "Potential improvement in best_target_score beyond 0.7738"
+  ],
+  "known_risks": [
+    "May converge to local rather than global optimum",
+    "Reduced search space may miss better solutions outside ±20nm bounds",
+    "Robustness score may not improve if solution is already at stability limit"
+  ],
+  "execution_request_english": "Optimize a 24-layer dielectric coating on fused silica substrate with air incidence using alternating HfO2 and SiO2 layers. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 (24 finite layers, starting with HfO2 on substrate, ending with SiO2 at air interface). Initialize thicknesses at [123, 90, 122, 90, 136, 168, 98, 157, 116, 140, 111, 91, 153, 90, 118, 140, 129, 90, 119, 155, 112, 90, 121, 117] nm from iteration 09 best candidate. Apply gradient_thickness optimizer with bounds ±20nm around initialization. Evaluate over 300-450 nm and 1000-1700 nm wavelength bands at normal incidence. Maximize transmittance in 1000-1700 nm band and reflectance in 300-450 nm band simultaneously. Use coherent smatrix solver. Include ±5% relative uniform thickness tolerance robustness analysis. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Reduced perturbation bounds from iteration 09 wide search to ±20nm precision refinement per feedback directive. Locked alternating HfO2/SiO2 ordering to prevent topological drift. Initialized from iteration 09 best candidate thicknesses."
+}

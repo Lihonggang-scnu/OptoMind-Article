@@ -1,0 +1,401 @@
+{
+  "schema_version": "tournament-state.v1",
+  "updated_at_utc": "2026-08-29T02:14:24.705877+00:00",
+  "wave": 6,
+  "budget_snapshot": {
+    "iterations_used": 24,
+    "maximum_iterations": 30,
+    "configured_maximum_iterations": 6,
+    "rounds_per_route": 6,
+    "shared_iteration_pool": false,
+    "wall_seconds_elapsed": 5944.109
+  },
+  "tracks": [
+    {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.9211424663373396,
+        0.934208579741109,
+        0.7823508899327729,
+        0.8780377010639967,
+        0.8683395628591497,
+        0.9109597572253965
+      ],
+      "best_candidate_ids": [
+        "dichroic_stack_24layer_opt__gradie__deb2932d33a7",
+        "dichroic_stack_24layer_opt__differ__dfbdf828ea66",
+        "opt_24layer_dualband__gradient_thickness__01",
+        "opt_24layer_dualband__gradient_thickness__02",
+        "opt_24layer_dualband__differential__4bf66c0a64b1",
+        "opt_24l_hfosio2_visi_nir_dual_band__c75863714054",
+        "opt_24l_hfosio2_visi_nir_dual_band__baseline",
+        "opt_24l_hfosio2_visi_nir_dual_band__3b27eb6f6c9d",
+        "dbr_dichroic_24l_opt__gradient_thickness__01",
+        "dbr_dichroic_24l_opt__baseline",
+        "dbr_dichroic_24l_opt__differential__72a4cce1dc20",
+        "hfo2_sio2_dual_band_opt__gradient_thickness__04",
+        "hfo2_sio2_dual_band_opt__gradient_thickness__01",
+        "hfo2_sio2_dual_band_opt__baseline",
+        "hfo2_sio2_dual_band_opt__different__c4e99b42d8e8",
+        "opt_24layer_dielectric_stack__grad__28a740aeb3cd",
+        "opt_24layer_dielectric_stack__grad__2a226e19d3b6",
+        "opt_24layer_dielectric_stack__baseline",
+        "opt_24layer_dielectric_stack__diff__bb122b36abc5"
+      ],
+      "current_route": {
+        "route_id": "control_route_01",
+        "title": "HfO2/SiO2 Dichroic Stack with Hybrid Thickness Initialization",
+        "route_kind": "custom_layered_stack",
+        "scientific_hypothesis": "A hybrid initialization scheme combining 60% QWOT-centered candidates with 40% harmonic half/double-multiple thickness candidates, plus ±5nm noise injection in the first optimization step, will produce higher best_target_score and maintain tightest_margin compared to pure QWOT±10% initialization across iteration rounds.",
+        "design_principle": "Quarter-wave optical thickness (QWOT) stacks create constructive interference for reflection at design wavelengths. For a dichroic filter blocking 400-700nm while passing 1530-1565nm, the high-index HfO2 and low-index SiO2 layers should have optical thicknesses near λ/4 at a center wavelength in the visible blocking band. However, pure QWOT initialization creates symmetry that can trap gradient-based optimizers; harmonic perturbations (λ/8, λ/2 multiples) break this symmetry while remaining physically meaningful.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Lemarchand)"
+        ],
+        "proposed_topology": "24-layer stack starting from air: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, terminated on fused silica substrate",
+        "design_variables": [
+          "Individual layer thicknesses for all 24 layers",
+          "Initialization scheme: 60% QWOT±10%, 40% harmonic multiples (λ/8, λ/2) with ±5nm noise injection in first optimization step"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 1530-1565nm band",
+          "Maximize mean reflectance in 400-700nm band",
+          "Maintain tightest_margin above 0.4 across rounds"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count fixed at 24 (under 30-layer limit)",
+          "All thicknesses should remain in manufacturable range 40-350nm",
+          "HfO2 and SiO2 are standard evaporated/sputtered coating materials"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled knowledge: Quarter-wave stacks produce high reflectance at design wavelength through constructive interference of reflected waves from each interface",
+          "Recalled knowledge: High/low index contrast (HfO2 n≈2.0, SiO2 n≈1.45 at visible wavelengths) determines reflectance bandwidth and peak value",
+          "Recalled knowledge: Gradient-based thickness optimization can converge to local minima when starting from symmetric initial conditions",
+          "Recalled knowledge: Harmonic thickness perturbations (half-wave, quarter-wave multiples) maintain physical meaning while breaking optimizer symmetry",
+          "Recalled knowledge: Dichroic filters for quantum applications typically prioritize transmission in signal band over reflection in blocking band"
+        ],
+        "expected_advantages": [
+          "Hybrid initialization should escape the 130nm attractor basin observed in prior iterations",
+          "40% harmonic candidates may discover thickness combinations that pure QWOT initialization cannot reach",
+          "Noise injection prevents exact symmetry that causes gradient cancellation",
+          "Should improve best_target_score from prior 0.868-0.934 range while maintaining robustness"
+        ],
+        "known_risks": [
+          "Uncertain whether HfO2 extinction coefficient is negligible at 1530-1565nm - would need to check material dataset for k values",
+          "Uncertain optimal center wavelength for QWOT calculation (550nm vs 600nm for visible blocking) - this choice affects all baseline thicknesses",
+          "Recalled refractive indices are approximate: HfO2 n≈1.9-2.1, SiO2 n≈1.45-1.48 depending on deposition method and wavelength",
+          "Harmonic initialization may produce some candidates with thicknesses outside manufacturable range (<40nm or >350nm)",
+          "Did not verify whether 24 layers is optimal vs 20 or 28 layers - fixed by prior iteration convention"
+        ],
+        "execution_request_english": "Design a 24-layer planar dielectric stack on fused silica substrate with air incidence. Layer materials alternate HfO2 and SiO2 (Lemarchand), starting with HfO2 at the air interface. Optimize all 24 individual layer thicknesses to maximize transmittance in 1530-1565nm band while maximizing reflectance in 400-700nm band. Use hybrid initialization: 60% of candidates start from quarter-wave optical thickness (center wavelength 550nm) with ±10% perturbation, 40% start from harmonic multiples (λ/8 and λ/2 optical thicknesses) with ±5nm random noise injection in the first optimization step. All thicknesses must remain between 40nm and 350nm. Total layer count is exactly 24. Materials are hfo2 and SiO2 (Lemarchand) from the material catalog. Evaluate at normal incidence, unpolarized light. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for each round.",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Hybrid initialization scheme per feedback directive: replacing strict QWOT-centered Gaussian with 60% QWOT±10% plus 40% harmonic half/double multiples with ±5nm noise injection to escape local minima observed in prior iterations"
+      }
+    },
+    {
+      "route_id": "route_01",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.8497367027464725,
+        0.6163349648355376,
+        0.9093890026693847,
+        0.6859039582588472,
+        0.9112472597890423
+      ],
+      "best_candidate_ids": [
+        "opt_20layer_qwave_dbr_ht__gradient_thickness__01",
+        "opt_20layer_qwave_dbr_ht__differen__9992bcd64da2",
+        "opt_20layer_hfosio2_tbands__baseline",
+        "opt_20layer_hfosio2_tbands__gradie__6b87bb84868b",
+        "opt_20layer_hfosio2_tbands__differ__00b0d041f2fd",
+        "opt_hfo2_sio2_20l_dual_band__gradi__b2990f97ede2",
+        "opt_hfo2_sio2_20l_dual_band__gradi__1416d05b0e4e",
+        "opt_24l_hfosio2_dualband__gradient_thickness__01",
+        "opt_24l_hfosio2_dualband__gradient_thickness__04",
+        "opt_24l_hfosio2_dualband__gradient_thickness__02",
+        "opt_24l_hfosio2_dualband__differen__40b433a3873f",
+        "optimize_20layer_HfO2_SiO2_coated___fc08616070f0",
+        "optimize_20layer_HfO2_SiO2_coated___f9b67e75fc0b",
+        "optimize_20layer_HfO2_SiO2_coated_fused_silica__baseline",
+        "optimize_20layer_HfO2_SiO2_coated___91f9fb7ee791"
+      ],
+      "current_route": {
+        "route_id": "route_01",
+        "title": "20-Layer Dual-Band Filter with Reduced Perturbation and Outer-Layer Locking",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing thickness perturbation bounds by 50% around iteration_15's best candidate (65/114/77/93/69/108/70/96/66/67/42/83/51/89/60/67/46/70/50/70 nm) while freezing outer 4 layers after 2 optimization iterations will improve convergence stability and maintain dual-band performance without degrading the 0.909 target score baseline.",
+        "design_principle": "Local exploitation with constrained search space: tight bounds prevent escape from proven high-performing region; outer-layer locking reduces effective dimensionality and prevents edge-effect instability during late-stage optimization.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica substrate",
+          "Air incidence"
+        ],
+        "proposed_topology": "20 finite layers: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 on fused silica substrate, air superstrate",
+        "design_variables": [
+          "Layer thicknesses (20 variables)",
+          "Outer 4 layers (2 top + 2 bottom) locked after iteration 2"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 1530-1565 nm band",
+          "Maximize mean reflectance in 400-700 nm band",
+          "Maintain target_score >= 0.85 baseline from iteration_15"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (within 30-layer limit)",
+          "Relative uniform thickness tolerance ±20% for robustness evaluation",
+          "Outer layers frozen to reduce deposition sequence sensitivity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for coherent multilayer interference",
+          "Quarter-wave stack theory for broadband reflection",
+          "Gradient-based optimization with bound constraints"
+        ],
+        "expected_advantages": [
+          "Faster convergence due to reduced search space",
+          "Improved robustness from outer-layer stabilization",
+          "Preserves iteration_15's high-performing thickness distribution"
+        ],
+        "known_risks": [
+          "Over-constraining may prevent discovery of better local optimum",
+          "Outer-layer locking may reduce ability to correct edge impedance mismatch"
+        ],
+        "execution_request_english": "Design and optimize a 20-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air superstrate. Initialize thicknesses at [65, 114, 77, 93, 69, 108, 70, 96, 66, 67, 42, 83, 51, 89, 60, 67, 46, 70, 50, 70] nm (iteration_15 best candidate). Apply optimization bounds of ±15 nm (50% reduction from iteration_15's ±30 nm). Implement cooldown schedule: after 2 optimization iterations, lock layers 1-2 and 19-20 (outermost 4 layers) at their current values. Optimize remaining 16 layers using gradient_thickness optimizer. Evaluate at normal incidence, unpolarized light, coherent assumption across all layers. Spectrum: 400-1600 nm with 2001 points. Objectives: maximize mean transmittance in 1530-1565 nm, maximize mean reflectance in 400-700 nm. Robustness: relative uniform thickness uncertainty ±20% across 400-1600 nm. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directive: 50% perturbation reduction (±30nm to ±15nm) and outer-layer locking after 2 iterations. Builds on iteration_15's best_target_score=0.9094 while adding convergence stability mechanisms."
+      }
+    },
+    {
+      "route_id": "route_02",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.6013577457640783,
+        0.691127343172347,
+        0.907323889538703,
+        0.9090772505193907,
+        0.915771446138159,
+        0.9154195342254583
+      ],
+      "best_candidate_ids": [
+        "HfO2_SiO2_24lp_aperiodic_opt__grad__9d1700066ba2",
+        "HfO2_SiO2_24lp_aperiodic_opt__diff__7a440dcef950",
+        "opt_24layer_hfo2_sio2_dichroic__gr__c462fd6902fe",
+        "opt_24layer_hfo2_sio2_dichroic__baseline",
+        "opt_24layer_hfo2_sio2_dichroic__di__943a6e0a114a",
+        "dichroic_stack_opt_24layer__baseline",
+        "dichroic_stack_opt_24layer__gradie__0fe508fedf6e",
+        "dichroic_stack_opt_24layer__differ__1d21e549276c",
+        "dichroic_stack_opt_24l__gradient_thickness__02",
+        "dichroic_stack_opt_24l__gradient_thickness__06",
+        "dichroic_stack_opt_24l__differenti__da2424fddcbd",
+        "exp_hfosi_dichroic_24opt__gradient_thickness__04",
+        "exp_hfosi_dichroic_24opt__gradient_thickness__03",
+        "exp_hfosi_dichroic_24opt__differen__a32eba691aa2",
+        "dichroic_stack_opt_24l__gradient_thickness__01",
+        "dichroic_stack_opt_24l__gradient_thickness__05",
+        "dichroic_stack_opt_24l__differenti__e78929230c70"
+      ],
+      "current_route": {
+        "route_id": "route_02",
+        "title": "Boundary-Decoupled Edge Optimization on 24-Layer Stack",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "The latest score improvement (0.909 to 0.916) originated primarily from boundary-layer adjustments rather than central resonant layers; isolating boundary degrees of freedom (layers 0-3 and 20-23) while freezing central layers (4-19) at iteration_20 best values will reveal whether edge-coupling optimization can further improve dual-band performance without disrupting internal interference conditions.",
+        "design_principle": "Decouple edge-coupling optimization from internal resonance tuning by fixing proven central layer thicknesses and allowing full optimizer freedom only at air-film and film-substrate interfaces where impedance matching most strongly affects broadband transmission and reflection.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica (substrate)",
+          "Air (incident medium)"
+        ],
+        "proposed_topology": "24-layer alternating HfO2/SiO2 stack on fused silica substrate, air incidence. Layer sequence: HfO2(0), SiO2(1), HfO2(2), SiO2(3), HfO2(4), SiO2(5), HfO2(6), SiO2(7), HfO2(8), SiO2(9), HfO2(10), SiO2(11), HfO2(12), SiO2(13), HfO2(14), SiO2(15), HfO2(16), SiO2(17), HfO2(18), SiO2(19), HfO2(20), SiO2(21), HfO2(22), SiO2(23). Total finite layers: 24.",
+        "design_variables": [
+          "thicknesses_nm for layers 0-3 and 20-23 (8 variables); layers 4-19 fixed to iteration_20 best candidate values"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 1530-1565 nm band",
+          "Maximize mean reflectance in 400-700 nm band",
+          "Maintain robustness_score above historical trend"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 24 (within 30-layer limit)",
+          "Thickness bounds 50-280 nm for optimized layers",
+          "Fixed layers retain proven manufacturable values"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for coherent thin-film interference",
+          "Impedance matching theory for air-film and film-substrate interfaces",
+          "Quarter-wave stack principle for high-reflectance band formation"
+        ],
+        "expected_advantages": [
+          "Isolates boundary-layer contribution to performance improvement",
+          "Reduces optimization dimensionality from 24 to 8 variables for faster convergence",
+          "Preserves proven internal resonance structure from iteration_20"
+        ],
+        "known_risks": [
+          "Boundary-layer changes may disrupt carefully tuned internal interference if coupling is stronger than hypothesized",
+          "Freezing 16 layers may prevent discovery of globally superior configurations"
+        ],
+        "execution_request_english": "Design a 24-layer alternating HfO2/SiO2 dichroic stack on fused silica substrate with air incidence at normal angle. Initialize layer thicknesses to iteration_20 best candidate values: [77.18, 127.42, 59.02, 106.51, 103.69, 102.04, 251.49, 58.47, 224.32, 105.91, 53.27, 91.43, 222.25, 66.18, 67.71, 74.85, 55.68, 94.62, 161.84, 234.50, 54.81, 81.35, 186.93, 53.33] nm. Fix layers 4-19 (indices 4 through 19 inclusive) to these exact values. Allow gradient-based thickness optimization only on layers 0-3 and 20-23 with bounds 50-280 nm. Score using coherent TMM at normal incidence, unpolarized light, over 400-1600 nm wavelength range. Optimize for simultaneous mean transmittance maximization in 1530-1565 nm and mean reflectance maximization in 400-700 nm bands. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Following feedback directive to apply systematic boundary-scan protocol: decouple edge-coupling from internal resonance by fixing central layers 4-19 to iteration_20 best values and optimizing only boundary layers 0-3 and 20-23."
+      }
+    },
+    {
+      "route_id": "route_03",
+      "source": "literature_planned",
+      "status": "stopped_llm_advice",
+      "termination_reason": "LLM explicitly assessed no further benefit after 2 executed rounds (stop_basis=physically_infeasible)",
+      "rounds_used": 2,
+      "score_history": [
+        0.608540012701423,
+        0.7620741421270707
+      ],
+      "best_candidate_ids": [
+        "AR_DBR_20layer_optimize__gradient_thickness__01",
+        "AR_DBR_20layer_optimize__different__d8940f889e2a",
+        "optimize_hfo2_sio2_dual_band__grad__887c49f78964",
+        "optimize_hfo2_sio2_dual_band__grad__a6d44ea4a065",
+        "optimize_hfo2_sio2_dual_band__diff__ce9ced818c80"
+      ],
+      "current_route": {
+        "route_id": "route_03",
+        "title": "QW-AR-Anchored 20-Layer Bragg Stack with Gradient Optimization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Anchoring the first 4 AR-matching layers to quarter-wavelength thickness estimates at the telecom band center (1547.5 nm) will reduce early-round search entropy and enable the optimizer to more efficiently discover high-transmittance solutions in the 1530-1565 nm band while maintaining visible reflectance through the remaining 16 Bragg layers.",
+        "design_principle": "Quarter-wave AR matching at the passband center wavelength reduces initial parameter space volume for the impedance-graded entrance section, allowing the optimizer to focus computational budget on tuning the Bragg reflector section for visible band rejection.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | [HfO2 | SiO2] x 8 | Fused Silica substrate. Total 20 coating layers: 4 AR-matching entrance layers + 16 Bragg reflector layers (8 high-low pairs).",
+        "design_variables": [
+          "All 20 layer thicknesses (nm) with layers 0-3 initialized to quarter-wavelength estimates at 1547.5 nm"
+        ],
+        "soft_objectives": [
+          "Maximize average transmittance in 1530-1565 nm band",
+          "Maximize average reflectance in 400-700 nm band",
+          "Minimize total optical thickness variation"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (within 30-layer limit)",
+          "Individual layer thicknesses should remain within typical deposition tolerances (50-400 nm range)"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Quarter-wave impedance matching theory for reducing Fresnel reflection at dielectric interfaces",
+          "Transfer matrix method for coherent multilayer interference",
+          "Bragg reflector theory for high-reflectance band formation"
+        ],
+        "expected_advantages": [
+          "Reduced search space dimensionality for AR section accelerates convergence",
+          "Quarter-wave initialization provides physically meaningful starting point",
+          "Maintains full optimization freedom for Bragg section to tune visible rejection"
+        ],
+        "known_risks": [
+          "Quarter-wave anchoring may constrain AR section from discovering superior non-quarter-wave solutions",
+          "Fixed 20-layer count may not be optimal for this dual-band requirement"
+        ],
+        "execution_request_english": "Design a 20-layer dielectric thin-film stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (20 coating layers total). Initialize layers 0-3 (first 4 layers) to quarter-wavelength optical thickness at 1547.5 nm center wavelength (HfO2: n≈2.05, target physical thickness ~189 nm; SiO2: n≈1.46, target physical thickness ~265 nm). Allow all 20 layer thicknesses to be optimized by gradient-based optimizer with bounds 50-400 nm. Evaluate coherent plane-wave transmittance and reflectance across 400-700 nm and 1530-1565 nm bands at normal incidence. Objective: maximize transmittance in 1530-1565 nm band while maximizing reflectance in 400-700 nm band. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Implements feedback directive to anchor AR section (layers 0-3) to quarter-wavelength estimates at central operating frequency while maintaining full search freedom for interior Bragg reflectors (layers 4-19). This reduces early-round combinatorial entropy compared to route_03's unconstrained initialization."
+      }
+    },
+    {
+      "route_id": "route_04",
+      "source": "literature_planned",
+      "status": "stopped_llm_advice",
+      "termination_reason": "LLM explicitly assessed no further benefit after 4 executed rounds (stop_basis=physically_infeasible)",
+      "rounds_used": 4,
+      "score_history": [
+        0.9180676663491005,
+        0.6664881062247974,
+        0.9193071302149594,
+        0.9146174707481038
+      ],
+      "best_candidate_ids": [
+        "chirped_dbr_r_t_optimization__grad__787f0519282f",
+        "chirped_dbr_r_t_optimization__diff__ef7b2a8a9e53",
+        "chirped_dichroic_opt_16l__gradient_thickness__02",
+        "chirped_dichroic_opt_16l__differen__874402be348b",
+        "chirped_dichroic_opt_16l__gradient_thickness__05",
+        "opt_20layer_hf_sio2_t_r_chirp__gra__d8d80bdbc0b9",
+        "opt_20layer_hf_sio2_t_r_chirp__dif__85b3c32edf0e",
+        "hfo2_sio2_20l_dualband_opt__gradie__269a68b7df16",
+        "hfo2_sio2_20l_dualband_opt__gradie__cf44dbfba9c9",
+        "hfo2_sio2_20l_dualband_opt__differ__f7baa1b29159"
+      ],
+      "current_route": {
+        "route_id": "route_04",
+        "title": "Smoothness-Regularized 20-Layer Chirped DBR with Bounded Chirp Envelope",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "Adding a gradient smoothness penalty (lambda ~0.1) to the objective function targeting adjacent layer thickness differences will suppress the erratic thickness jumps observed in iteration_13 candidates while preserving the coherent phase-matching structure, leading to improved robustness without sacrificing target score.",
+        "design_principle": "Chirped dielectric mirror with smoothness regularization to maintain monotonic or gently varying thickness progression that supports broadband reflection in 400-700 nm while maintaining transmission window at 1530-1565 nm.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica (substrate)",
+          "Air (incidence)"
+        ],
+        "proposed_topology": "Air | [HfO2, SiO2] x10 | Fused Silica substrate (20 finite layers total, starting with HfO2)",
+        "design_variables": [
+          "Individual layer thicknesses (20 continuous variables)",
+          "Smoothness penalty weight lambda"
+        ],
+        "soft_objectives": [
+          "Maximize transmittance in 1530-1565 nm band",
+          "Maximize reflectance in 400-700 nm band",
+          "Minimize adjacent thickness differences variance"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (within 30-layer limit)",
+          "Thickness bounds initialized near iteration_13 winning pattern: odd layers 45-90 nm, even layers 65-130 nm with ±10% chirp envelope"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for multilayer interference",
+          "Chirped DBR theory for broadband reflection",
+          "Regularization theory for smooth optimization trajectories"
+        ],
+        "expected_advantages": [
+          "Reduced thickness variance improves manufacturing tolerance",
+          "Smooth chirp maintains phase coherence across reflection band",
+          "Better convergence stability compared to unregularized gradient optimization"
+        ],
+        "known_risks": [
+          "Over-regularization may trap optimizer in suboptimal local minimum",
+          "Smoothness constraint may limit achievable reflection bandwidth"
+        ],
+        "execution_request_english": "Design and optimize a 20-layer HfO2/SiO2 chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2 (alternating, 10 pairs, starting with HfO2). Optimize all 20 layer thicknesses using gradient-based optimizer with smoothness regularization penalty (lambda = 0.1) applied to adjacent thickness differences. Initialize thickness bounds: odd-indexed layers (HfO2) 45-90 nm, even-indexed layers (SiO2) 65-130 nm, with ±10% chirp envelope around linear progression. Evaluate at normal incidence, unpolarized or both TE/TM. Spectral bands: 400-700 nm (maximize reflectance), 1530-1565 nm (maximize transmittance). Total layer count fixed at 20. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+        "priority": 1,
+        "parent_route_id": "route_04",
+        "revision_reason": "Added smoothness regularization penalty and chirp-constrained initialization bounds per feedback directives to address erratic thickness jumps in iteration_13 candidates while preserving the ~0.919 target score achievement."
+      }
+    }
+  ]
+}

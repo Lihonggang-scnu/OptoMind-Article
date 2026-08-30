@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_10/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "a9bab4c95b38b376ae1d2cb92427b641315d486e1a6583a7d6b398cb6d6053c7",
+  "recorded_at_utc": "2026-08-29T04:28:39.429165+00:00",
+  "elapsed_seconds": 2587.5367629999528,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_10",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Freezing layers 1-9 at iteration_06 optimal values while applying ±3 nm perturbation bounds to layers 10-20 will reduce residual ripple artifacts in the 400-700 nm sub-band without degrading passband transmission, as the thinner rear layers dominate phase accumulation errors in the visible stopband.",
+  "expected_advantages": [
+    "Reduced optimization search space improves convergence",
+    "Frozen front section preserves established stopband edge shaping",
+    "Tight bounds on rear layers target ripple sources identified in iteration_06 spectra"
+  ],
+  "known_risks": [
+    "Over-constraining may prevent global optimum discovery",
+    "Fixed front layers may lock in suboptimal phase relationships"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improvement in stopband rejection (300-1100 nm) compared to route_01 while maintaining comparable passband transmission, and tightest_margin should not degrade across rounds.",
+    "If the hypothesis fails, best_target_score will remain below route_01 due to HfO2 absorption in the 255-280 nm passband, visible in reduced valid_candidates count.",
+    "thicknesses_nm should show monotonic or graded progression if the chirp optimization converges, rather than uniform quarter-wave values."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If mean transmittance in 255-280 nm falls below 0.6 for three consecutive rounds, flag HfO2 absorption risk and stop, keeping the current best for comparison."
+  ]
+}

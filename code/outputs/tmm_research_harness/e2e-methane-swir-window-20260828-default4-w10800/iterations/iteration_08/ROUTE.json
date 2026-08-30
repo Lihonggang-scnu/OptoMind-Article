@@ -1,0 +1,47 @@
+{
+  "route_id": "control_route_01",
+  "title": "Dual-band QWOT-seeded 24-layer HfO2/SiO2 dichroic stack optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses near quarter-wave optical thickness for both the reflection band center (~375 nm) and transmission band center (~1350 nm) will produce higher target scores and faster convergence than uniform-random initialization for the same 24-layer alternating HfO2/SiO2 topology.",
+  "design_principle": "Quarter-wave stacks produce maximum reflectance when each layer has optical thickness lambda/4 at the design wavelength. For a dichroic filter, seeding thicknesses that simultaneously approximate lambda_reflect/4n for the high-index layers and lambda_transmit/4n for the low-index layers should create constructive interference in the reflection band while maintaining transmission in the SWIR band. This is recalled from standard thin-film interference theory.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 coating layers, alternating HfO2/SiO2 starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 24 layers, initialized from dual-band QWOT calculation and optimized within [20, 200] nm bounds"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "maintain physical validity (no negative thickness, no absorption violations)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 24 (within 30-layer limit)",
+    "all thicknesses constrained to [20, 200] nm for manufacturability",
+    "alternating material order fixed to simplify deposition sequencing"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave optical thickness (lambda/4n) produces maximum reflectance for a given material pair at the design wavelength, recalled from thin-film interference theory",
+    "Dichroic filters can be designed by balancing optical thicknesses for multiple wavelength bands, recalled from standard coating design practice",
+    "HfO2 has higher refractive index than SiO2 in the visible and SWIR, making it the high-index material in this pair, recalled from material property knowledge",
+    "Starting optimization near a physically meaningful point (QWOT) typically converges faster than random initialization, recalled from numerical optimization practice"
+  ],
+  "expected_advantages": [
+    "QWOT seeding should reduce the number of optimization iterations needed to reach high target scores",
+    "Dual-band seeding may find better local optima than single-band or uniform-random starts",
+    "Fixed 24-layer alternating topology keeps the search space bounded and interpretable"
+  ],
+  "known_risks": [
+    "The exact refractive index values of hfo2 and sio2 at 375 nm and 1350 nm are recalled approximately; the local registry will provide measured data",
+    "I am uncertain whether 24 layers is optimal versus 20 or 28 layers for this specific band combination; this route does not explore layer count",
+    "The QWOT calculation assumes normal incidence; if the actual camera operates at oblique angles, the optimal thicknesses would shift",
+    "I recall HfO2 extinction coefficient is low in SWIR but cannot guarantee it without checking the dataset; high absorption would degrade transmission"
+  ],
+  "execution_request_english": "Optimize a 24-layer dielectric coating on fused silica substrate with air incidence. Materials alternate HfO2 and SiO2 (Lemarchand) starting with HfO2 as layer 1. Optimize all 24 layer thicknesses within bounds [20, 200] nm. Initialize thicknesses using dual-band quarter-wave optical thickness: for HfO2 layers use t ≈ 375 nm / (4 * n_HfO2_at_375nm) and for SiO2 (Lemarchand) layers use t ≈ 1350 nm / (4 * n_SiO2 (Lemarchand)_at_1350nm), then apply gradient-based optimization with mutation step-size reduced by 50% compared to uniform-perturbation baseline. Score candidates by mean transmittance in 1000-1700 nm plus mean reflectance in 300-450 nm with equal weighting. Use coherent transfer-matrix method at normal incidence for unpolarized light.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refinement based on iteration_04 results: replacing uniform-perturbation initialization with dual-band QWOT seeded population as directed by feedback, reducing mutation step-size by 50% to stabilize coarse interference alignment before fine-tuning"
+}

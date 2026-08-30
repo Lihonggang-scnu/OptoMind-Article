@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_19/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "28f2e4954bc37267c0706a1298d595ebb8b76b11206ea44ee30458fb52f53bdc",
+  "recorded_at_utc": "2026-08-29T05:04:23.520327+00:00",
+  "elapsed_seconds": 4731.627940699982,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_19",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Initializing optimization from iteration_16's best thickness vector [33.0, 74.0, 101.0, 34.0, 109.0, 53.0, 21.0, 12.0, 114.0, 26.0, 74.0, 43.0, 52.0, 59.0, 138.0, 16.0, 22.0, 71.0, 190.0, 67.0] with ±8% perturbation bounds and enforcing maximum 45 nm thickness difference between adjacent layers will reduce spectral oscillations and improve best_target_score above the iteration_16 value of 0.433, potentially recovering toward the iteration_06 peak of 0.647.",
+  "expected_advantages": [
+    "Focused search around known good candidate reduces optimization iterations",
+    "Smoothness constraint prevents non-manufacturable abrupt transitions",
+    "May recover iteration_06 performance while maintaining iteration_16 structural insights"
+  ],
+  "known_risks": [
+    "±8% bounds may be too restrictive to escape local optimum",
+    "Smoothness constraint may prevent optimal chirp profiles",
+    "MgF2/HfO2 material pair may have intrinsic limitations below 0.647 score ceiling"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improvement in stopband rejection (300-1100 nm) compared to route_01 while maintaining comparable passband transmission, and tightest_margin should not degrade across rounds.",
+    "If the hypothesis fails, best_target_score will remain below route_01 due to HfO2 absorption in the 255-280 nm passband, visible in reduced valid_candidates count.",
+    "thicknesses_nm should show monotonic or graded progression if the chirp optimization converges, rather than uniform quarter-wave values."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If mean transmittance in 255-280 nm falls below 0.6 for three consecutive rounds, flag HfO2 absorption risk and stop, keeping the current best for comparison."
+  ]
+}

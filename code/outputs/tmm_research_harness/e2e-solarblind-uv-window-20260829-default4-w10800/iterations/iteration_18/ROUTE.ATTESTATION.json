@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_18/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "b04cdbe589445e71dc7dec6f1acf03e43893e6f10acd547ccf589b0b9d8c8958",
+  "recorded_at_utc": "2026-08-29T04:52:38.580510+00:00",
+  "elapsed_seconds": 4026.688129099959,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_18",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack with individually tunable thicknesses can produce a transmission passband at 255-280 nm while maintaining suppression at 300-700 nm and 700-1100 nm, and reducing the thickness perturbation envelope will stabilize convergence without sacrificing final performance.",
+  "expected_advantages": [
+    "Reduced perturbation envelope (±2.5 nm) should suppress high-frequency thickness oscillations seen in prior iterations",
+    "L-BFGS optimizer should provide more stable convergence than previous gradient_thickness routine",
+    "Maintaining 29-layer topology preserves comparability across all prior iterations of this control route",
+    "Alternating HfO2/MgF2 provides maximum index contrast from available dielectric materials in catalog"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient remains low enough at 255 nm - would need to verify measured k values in material registry",
+    "Uncertain whether 29 layers is optimal count vs. fewer layers with different topology - this route does not test layer count variation",
+    "Uncertain whether MgF2 maintains sufficient transparency at 255 nm - some fluoride materials show absorption edges in deep UV",
+    "The ±2.5 nm envelope may be too restrictive if prior iterations were stuck in local minima requiring larger moves to escape",
+    "No literature verification of HfO2/MgF2 compatibility for solar-blind UV filters - this is recalled design practice only"
+  ],
+  "expected_observations": [
+    "best_target_score should stabilize or improve slightly compared to iteration 15's 0.174 as oscillations are suppressed",
+    "valid_candidates count should remain similar to prior iterations (around 9) if physical validity constraints are unchanged",
+    "thicknesses_nm should show smaller round-to-round variation due to reduced perturbation envelope",
+    "tightest_margin should not decrease across rounds if the damping prevents constraint violations",
+    "If hypothesis fails: best_target_score would drop below 0.10 or valid_candidates would fall below 5 indicating over-constrained optimization"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 3 for two consecutive rounds, relax thickness bounds to ±5.0 nm and continue for 50 more iterations then stop",
+    "if tightest_margin becomes negative for three consecutive rounds, stop and keep the last physically valid candidate"
+  ]
+}

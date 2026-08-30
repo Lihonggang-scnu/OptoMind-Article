@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected increases in best_target_score and improvements in tightest_margin were not observed because the route failed to execute any rounds (run_status='not_run', rounds_executed=0, best_target_score=null, tightest_margin=null). The expectation that valid_candidates may decrease due to coupling constraints was also not reflected; instead, zero candidates passed initial feasibility checks (valid_candidates=0), resulting in an empty candidate_thicknesses_nm array.",
+  "deviation_mechanism": "The computational pipeline terminated at the candidate-generation and pre-simulation validation stage. The initialization constraints (hard thickness bounds, total-stack budget, or layer-count parity rules) produced a feasible-parameter intersection containing zero points. Because no candidate satisfied the baseline physical realizability filters, the TMM solver was never invoked, making it impossible to compute resonant phase conditions, reflectivity margins, or objective scores.",
+  "continue_recommended": true,
+  "continue_rationale": "Fewer than two rounds have been executed (zero rounds total). A single initialization or execution failure represents a technical blockage, not a demonstration of physical infeasibility. Continuing is required to restore a non-empty candidate pool so the optimizer can actually evaluate resonance physics and test the stated hypothesis under measurable conditions.",
+  "insight_for_next": "Relax the hard thickness lower/upper bounds and total-optical-thickness cap applied during seed generation. Implement a deterministic fallback initializer that forces each candidate to span exactly half-wavelength phases at the target wavelengths within looser geometric bounds, then rerun the validation pass to guarantee at least one executable candidate enters the solver.",
+  "insight_grounding": "Based on observed_metrics.run_status='not_run', observed_metrics.rounds_executed=0, and observed_metrics.valid_candidates=0: the complete absence of measured thicknesses_nm confirms the search space was entirely collapsed by pre-solver validation filters. Loosening those specific initialization bounds will unblock the feasibility gate and allow the TMM routine to produce measurable target_score and tightest_margin values for round 1.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-29T09:14:49.717528+00:00",
+  "attestation_sha256": "0f95b59b8aa8ae4214f274bef37c7d84c15202bf08638474d5c4a69ee631047c",
+  "observed_metrics": {
+    "best_target_score": null,
+    "valid_candidates": 0,
+    "run_status": "not_run",
+    "tightest_margin": null
+  },
+  "reflection_available": true
+}

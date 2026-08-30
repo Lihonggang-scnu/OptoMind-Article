@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_16/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "5fdf04bf8465be32ea6eebb4738a46173e150ae227c157c78cf5ba1b45c15c52",
+  "recorded_at_utc": "2026-08-29T09:38:32.034517+00:00",
+  "elapsed_seconds": 4831.907387599989,
+  "run_id": "e2e-sixth-combustion-co-20260829-default4-w10800",
+  "iteration_id": "iteration_16",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "Applying wider perturbation bounds to the front half of the stack (layers 1-12) while restricting the back half (layers 13-22) to narrow local adjustments will improve the dual-band transmittance score without degrading stopband rejection, compared to uniform perturbation across all layers.",
+  "expected_advantages": [
+    "Hybrid perturbation should find better local optima than uniform bounds",
+    "Restricting back layers prevents destructive interference pattern shifts",
+    "Front layer exploration can improve overall transmission efficiency",
+    "Builds on iteration 08 best result (target score 0.698) as seed"
+  ],
+  "known_risks": [
+    "MgF2 absorption coefficient at 4-5 μm is uncertain from memory; actual k values may reduce transmission more than expected",
+    "Daimon-20 dataset selection was required because generic CaF2 name matched 4 datasets equally; this specific dataset may not match all prior iteration assumptions",
+    "The ±3 nm cap on layers 13-22 may be too restrictive if iteration 08 seed is not near optimum",
+    "ZnS stress and adhesion properties not verified; may affect manufacturability",
+    "What would settle this: Look up measured n/k data for MgF2 and ZnS at 4-5 μm from handbook or vendor data sheets"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase from iteration 08 value of 0.698 across rounds while tightest_margin does not fall",
+    "If hypothesis fails: best_target_score should plateau or decrease while valid_candidates count drops due to over-restriction on layers 13-22",
+    "thicknesses_nm for layers 1-12 should show wider variation across candidates than layers 13-22",
+    "run_status should remain completed with physically_valid_candidate_count >= 5 per round"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 3 for two consecutive rounds, relax layers 13-22 cap from ±3 nm to ±5 nm and continue",
+    "If run_status shows compilation failure for two consecutive rounds, stop and report the error"
+  ]
+}

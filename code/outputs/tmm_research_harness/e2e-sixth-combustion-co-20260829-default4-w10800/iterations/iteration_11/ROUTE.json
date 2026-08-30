@@ -1,0 +1,54 @@
+{
+  "route_id": "route_03",
+  "title": "20-Layer Ge/ZnS Two-Cavity Fabry-Perot with Quarter-Wave Seeding",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A two-cavity Fabry-Perot bandpass filter using Ge (high-index) and ZnS (low-index) dielectric materials, initialized with quarter-wave thicknesses at 4.45 μm center wavelength, will achieve dual-band transmission at 4.15-4.35 μm and 4.55-4.75 μm with stopband suppression at 3.60-4.00 μm and 4.85-5.20 μm when thicknesses are computationally optimized within [80, 600] nm bounds.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter design: alternating quarter-wave layers of high and low index transparent materials form Bragg reflectors around cavity spacer layers. Computational optimization adjusts layer thicknesses from quarter-wave seeds to shape passband profile and enhance out-of-band blocking.",
+  "proposed_materials": [
+    "Germanium (Ge)",
+    "Zinc Sulfide (ZnS)"
+  ],
+  "proposed_topology": "Air | [Ge/ZnS]_4 | Ge (cavity1) | [ZnS/Ge]_2 | ZnS (cavity2) | [Ge/ZnS]_4 | CaF2 substrate. Total 20 finite layers: 8 mirror pairs + 2 cavity layers + coupling stack.",
+  "design_variables": [
+    "Individual layer thicknesses (20 variables)",
+    "Initial values set to t = λ₀/(4n) at λ₀ = 4450 nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 4.15-4.35 μm band",
+    "Maximize mean transmittance in 4.55-4.75 μm band",
+    "Minimize mean transmittance in 3.60-4.00 μm band",
+    "Minimize mean transmittance in 4.85-5.20 μm band"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 20 layers (within 24-layer limit)",
+    "No metal layers",
+    "Thickness bounds [80, 600] nm for deposition feasibility",
+    "Conventional IR dielectric materials"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory: t_layer = λ₀/(4n_material) for Bragg reflector center wavelength",
+    "Fabry-Perot cavity resonance condition: (φ₁ + φ₂ - 2δ)/2 = kπ for maximum transmittance",
+    "Multi-cavity coupling produces square-shaped passband profiles"
+  ],
+  "expected_advantages": [
+    "Ge/ZnS has high index contrast (~4.0 vs ~2.3) in mid-IR for strong reflectivity",
+    "20 layers balances performance with fabrication complexity",
+    "Quarter-wave seeding provides physically meaningful initialization",
+    "Two cavities enable dual-band or broadened single-band response"
+  ],
+  "known_risks": [
+    "Material registry may not have Ge or ZnS optical constants in 4-5 μm range",
+    "Quarter-wave initialization may not align with dual-band requirement",
+    "Thickness tolerance sensitivity increases with layer count",
+    "Absorption in Ge may reduce peak transmittance if not properly accounted"
+  ],
+  "execution_request_english": "Design a 20-layer dielectric multilayer bandpass filter on CaF2 substrate under air incidence at normal angle. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge (cavity1) | ZnS | Ge | ZnS | Ge | ZnS (cavity2) | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2. Initialize all layer thicknesses using quarter-wave formula t = 4450 nm / (4 × n_material) where n_Ge ≈ 4.0 and n_ZnS ≈ 2.3 at 4.45 μm, giving initial Ge thickness ~278 nm and ZnS thickness ~484 nm. Set optimization bounds for all thicknesses to [80 nm, 600 nm]. Optimize the 20 thickness variables to maximize mean transmittance in passbands [4150-4350 nm] and [4550-4750 nm] while minimizing mean transmittance in stopbands [3600-4000 nm] and [4850-5200 nm]. Use coherent transfer-matrix method with frequency-domain plane-wave illumination. Validate material refractive indices exist in registry for 3.6-5.2 μm wavelength range before optimization. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Prior route_03 iterations failed on material_data. This revision: (1) uses explicit quarter-wave thickness initialization from analytical formula instead of random bounds, (2) specifies exact 20-layer topology with cavity positions, (3) adds mandatory pre-validation of material optical constants in registry, (4) tightens thickness bounds to [80, 600] nm based on deposition feasibility evidence."
+}

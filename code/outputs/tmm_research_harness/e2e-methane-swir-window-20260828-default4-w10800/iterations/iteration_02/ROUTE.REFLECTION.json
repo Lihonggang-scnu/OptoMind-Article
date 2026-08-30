@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Consistent: valid_candidates=8 meets the stated floor threshold; tightest_margin=0.4699 is reported. Deviant: best_target_score=0.7998 cannot yet be confirmed as higher than route_01 (baseline absent), but critically fails the structural expectation that thicknesses_nm should show monotonic increase from air to substrate. Instead, optimized layers display severe oscillations and reversals.",
+  "deviation_mechanism": "The parameterization allowed all 30 thicknesses to vary independently. In a high-dimensional multilayer stack, the transfer-matrix loss surface contains thousands of quasi-degenerate resonant local minima. Without an explicit monotonicity constraint or smoothness regularizer, the optimizer converged to configurations that satisfy local impedance matching but break the macroscopic chirped gradient, resulting in physically unrealizable thickness jumps that prevent the intended broadband phase accumulation.",
+  "continue_recommended": true,
+  "continue_rationale": "Only 1 round has executed. The route produced 8 valid candidates and a score of 0.7998, proving the engine compiles and evaluates successfully. The lack of monotonic convergence stems from the optimization topology, not a fundamental material or wavelength mismatch. Stopping after one unconstrained pass would conflate a parameterization flaw with physical infeasibility. A second round with a gradient-enforcing parameterization is scientifically necessary.",
+  "insight_for_next": "Implement a monotonicity-enforcing variable mapping for layer thicknesses: define thicknesses via cumulative sums of positive exponents (t_i = t_base + Σ_{j=0}^{i} exp(ξ_j)). This constrains the optimizer to the physically required air-to-substrate increasing regime and reduces the effective DOF, smoothing the loss landscape for faster gradient descent.",
+  "insight_grounding": "Candidate 2 (candidate_thicknesses_nm[1]) breaks the expected gradient immediately after initialization: Layer 0 starts at 40.0741 nm, Layer 1 expands to 76.8244 nm, then Layer 2 collapses to 34.5852 nm. This inversion between adjacent layers demonstrates that unconstrained updates allow the solver to sample non-chirped resonant cavities. Furthermore, valid_candidates stalled at exactly 8 (the minimum acceptable bound), indicating the search is hitting feasibility walls rather than exploring wider margins.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-28T13:19:20.020577+00:00",
+  "attestation_sha256": "3fc9803414f73cff974e3e326bc15f1db31414f8d032edff3970b23f205a94e1",
+  "observed_metrics": {
+    "best_target_score": 0.7998137896399601,
+    "valid_candidates": 8,
+    "run_status": "completed",
+    "tightest_margin": 0.46989786919371507
+  },
+  "reflection_available": true
+}

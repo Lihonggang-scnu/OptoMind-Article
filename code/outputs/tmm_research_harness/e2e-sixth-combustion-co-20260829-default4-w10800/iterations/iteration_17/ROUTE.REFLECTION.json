@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expected observations predict a rising best_target_score as layers converge to quarter-wave conditions, a positive tightest_margin, and high valid_candidates counts. Observations confirm tightest_margin remains positive at 0.6448 and valid_candidates stays high at 9, aligning with expectations. However, best_target_score violates the expected monotonic rise, showing high volatility: 0.9779 (round 1) → 0.3834 (round 2) → 0.9603 (round 3) → 0.8115 (round 4). The latest score deviates downward by ~0.166 relative to the prior peak, contradicting the anticipated convergence trend.",
+  "deviation_mechanism": "Broadband TMM objectives rely on periodic optical path lengths preserving constructive interference across the target band. Round 1's uniform 550.0 nm / 900.0 nm alternation closely approximated a half-wave stack, maximizing spectral overlap. Subsequent optimization steps introduced severe intra-period thickness asymmetry, breaking the resonance condition. When high-index and low-index layers diverge significantly from quarter-wave proportions, the effective refractive index contrast per period drops, phase accumulation becomes non-uniform, and both stopband rejection and passband flatness degrade. This physical mismatch directly lowers the target score despite the materials themselves being lossless.",
+  "continue_recommended": true,
+  "continue_rationale": "The route remains fully executable (valid_candidates=9, tightest_margin=0.6448) and demonstrates optimizer-induced oscillation rather than physical exhaustion. With four rounds completed and scores hovering between 0.38 and 0.98, the parameter space has not converged. A fifth round testing bounded perturbations can isolate whether the score volatility stems from uncontrolled thickness excursions, providing actionable evidence on topology stability without halting prematurely.",
+  "insight_for_next": "Reinitialize the optimization with strict bound constraints: restrict all layer thicknesses to ±15% of the round-1 baseline values (550±82.5 nm and 900±135 nm). Pair this with a trust-region or interior-point solver that penalizes large inter-layer thickness ratios in the gradient step. This preserves the coherent half-wave stacking foundation while permitting localized impedance tuning.",
+  "insight_grounding": "Round 1's symmetric 550.0/900.0 nm initialization produced the highest recorded metric of 0.9779. Introducing unconstrained updates immediately triggered degradation: round 2's best candidate exhibited extreme asymmetry (layer 5: 1344.27 nm vs layer 6: 313.06 nm), collapsing the score to 0.3834. Later rounds partially recovered (round 3: 0.9603) but lost ground again in round 4 (0.8115) as unbounded drift resumed (candidate 3 layer 5: 1063.63 nm vs layer 6: 301.35 nm). Valid candidates consistently remained at 9 across all rounds, confirming the score volatility originates from geometric disruption, not material absorption losses.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-29T10:01:20.887828+00:00",
+  "attestation_sha256": "a5c904d880f277490f8de886be33ad04d06acb6a8f1d8ed8f5ec7ea92e54e588",
+  "observed_metrics": {
+    "best_target_score": 0.8114560356578963,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.6448065168730475
+  },
+  "reflection_available": true
+}

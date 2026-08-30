@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_24/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "ac885bf204a41c10d1c8f99afcd6fdbd2d793b6c605d14fd88ece67667524422",
+  "recorded_at_utc": "2026-08-29T10:10:48.963124+00:00",
+  "elapsed_seconds": 6768.836481300008,
+  "run_id": "e2e-sixth-combustion-co-20260829-default4-w10800",
+  "iteration_id": "iteration_24",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "An alternating high-low index dielectric stack with optimized individual layer thicknesses can produce two distinct transmission bands at 4.15-4.35 μm and 4.55-4.75 μm while suppressing transmission at 3.60-4.00 μm and 4.85-5.20 μm, using only conventional IR-transparent materials.",
+  "expected_advantages": [
+    "ZnS/MgF2 pair is well-established for IR coatings from recalled practice",
+    "22 layers provides sufficient degrees of freedom for dual-band optimization",
+    "Alternating topology is manufacturable with standard deposition equipment",
+    "No metal layers avoids absorption losses in the IR"
+  ],
+  "known_risks": [
+    "Uncertain whether ZnS and MgF2 remain sufficiently transparent at 5.2 μm - may have absorption edges I cannot recall precisely. Would need to check measured k values in the material registry.",
+    "Uncertain about exact refractive index dispersion in the 3.6-5.2 μm range - my recalled values are approximate. The solver will read actual measured data.",
+    "Uncertain whether 22 layers is optimal vs 20 or 24 - chose 22 as a middle value from recalled practice but this is not verified.",
+    "Uncertain about adhesion between ZnS and MgF2 on Daimon-20 - may require adhesion layers not modeled here.",
+    "The quarter-wave starting point may not be optimal for dual-band operation; thickness optimization is essential.",
+    "Daimon-20 is one of four CaF2 datasets in the registry; I cannot verify from memory whether this specific dataset covers the full 3.6-5.2 μm range needed."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase across optimization rounds as thicknesses converge toward dual-band alignment",
+    "If the hypothesis holds, valid_candidates count should remain stable or increase as the optimizer finds physically valid thickness combinations",
+    "If the hypothesis fails, best_target_score will plateau early below 0.5 indicating the material pair or topology cannot achieve the spectral separation",
+    "If the hypothesis fails, tightest_margin will decrease across rounds indicating the design is approaching physical impossibility"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero for two consecutive rounds, relax thickness bounds by 10% and continue",
+    "if tightest_margin falls below 0.1 for three consecutive rounds, reduce layer count to 20 and restart optimization"
+  ]
+}

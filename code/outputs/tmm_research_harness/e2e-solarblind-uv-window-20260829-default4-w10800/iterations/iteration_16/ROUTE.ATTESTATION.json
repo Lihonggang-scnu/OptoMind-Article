@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_16/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "ad99f2c5b436b7b693dea033beefb044f4ba11337bacececbe2e180ca01e0a59",
+  "recorded_at_utc": "2026-08-29T04:49:16.071649+00:00",
+  "elapsed_seconds": 3824.1796984999673,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_16",
+  "route_id": "route_02",
+  "scientific_hypothesis": "A geometric progression thickness template (ratio r∈[1.08,1.12]) with 85nm HfO2 upper bound will produce candidates with higher UV transmission by pre-filtering absorption-dominated thick-HfO2 configurations, enabling the optimizer to focus computational budget on stopband engineering within feasible transmission windows.",
+  "expected_advantages": [
+    "Reduced HfO2 absorption in 255-280nm passband",
+    "Systematic chirp gradient improves visible/NIR rejection bandwidth",
+    "Initialization template guides optimizer toward physically feasible region"
+  ],
+  "known_risks": [
+    "Geometric constraint may limit optimal thickness combinations",
+    "85nm HfO2 cap may reduce stopband depth if insufficient optical thickness"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improvement in stopband rejection (300-1100 nm) compared to route_01 while maintaining comparable passband transmission, and tightest_margin should not degrade across rounds.",
+    "If the hypothesis fails, best_target_score will remain below route_01 due to HfO2 absorption in the 255-280 nm passband, visible in reduced valid_candidates count.",
+    "thicknesses_nm should show monotonic or graded progression if the chirp optimization converges, rather than uniform quarter-wave values."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If mean transmittance in 255-280 nm falls below 0.6 for three consecutive rounds, flag HfO2 absorption risk and stop, keeping the current best for comparison."
+  ]
+}

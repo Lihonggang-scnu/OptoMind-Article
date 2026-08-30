@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_05/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "bf4eb13ae17959abbbf2b0162ec7773525f7a2c1c70885e2fb7e6bd121994aca",
+  "recorded_at_utc": "2026-08-28T13:22:49.936165+00:00",
+  "elapsed_seconds": 1726.097570300015,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_05",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Initializing layer thicknesses near quarter-wave optical thickness (HfO2 ~100-110 nm, SiO2 ~125-135 nm at 450 nm center) rather than uniform 200 nm will reduce boundary collisions during optimization, increasing valid_candidates while maintaining or improving best_target_score above 0.53.",
+  "expected_advantages": [
+    "Higher valid_candidates due to reduced boundary collisions",
+    "Faster convergence from physically meaningful initialization",
+    "Maintained layer count within 30-layer constraint"
+  ],
+  "known_risks": [
+    "Quarter-wave initialization may trap optimizer in local optimum",
+    "Dual-band conflict may still limit best_target_score below 0.7"
+  ],
+  "expected_observations": [
+    "If the periodic hypothesis holds, best_target_score should increase with optimization rounds and stabilize as thicknesses converge to quarter-wave values near 375 nm center wavelength",
+    "If the periodic hypothesis fails, best_target_score will plateau below acceptable levels and tightest_margin will not improve across rounds, indicating bandwidth limitation",
+    "valid_candidates should remain high (above 10 per round) if the design space is well-conditioned",
+    "thicknesses_nm should converge to values near 90-100 nm for HfO2 and 130-140 nm for SiO2 if quarter-wave condition at 375 nm is optimal"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, relax thickness bounds and continue for one more round before stopping"
+  ]
+}

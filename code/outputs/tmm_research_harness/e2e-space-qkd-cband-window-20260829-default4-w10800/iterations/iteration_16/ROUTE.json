@@ -1,0 +1,46 @@
+{
+  "route_id": "route_02",
+  "title": "Transition-Block Smoothed 24-Layer Dichroic Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Applying localized smoothing constraints to the highly reactive transition block (layers 12-15) will reduce oscillatory overshooting while preserving the beneficial non-uniform topology discovered in iteration_12, leading to improved convergence stability and potentially higher best_target_score.",
+  "design_principle": "Gradient-based thickness optimization with bounded step-size modulation on layers 12-15 to prevent abrupt thickness changes that cause spectral oscillations, while allowing full search bounds on outer layers.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "24-layer alternating stack starting with HfO2 on air side, ending with SiO2 on fused silica substrate side. Exact sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2",
+  "design_variables": [
+    "All 24 layer thicknesses with layers 12-15 constrained to +/-10% change per optimization step"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain smooth thickness progression in transition block"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 24 (within 30-layer limit)",
+    "Thickness bounds 50-280 nm for all layers",
+    "Localized smoothing may improve deposition uniformity in transition region"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Thin-film interference theory for dual-band dichroic filters",
+    "Transfer-matrix method for coherent multilayer stacks",
+    "Gradient-based optimization with localized constraints for stability"
+  ],
+  "expected_advantages": [
+    "Improved optimization convergence stability",
+    "Reduced risk of local minima trapping in transition region",
+    "Potentially higher best_target_score than iteration_12 baseline"
+  ],
+  "known_risks": [
+    "Over-constraining layers 12-15 may prevent discovery of optimal thickness configuration",
+    "Smoothing constraint may limit exploration of beneficial non-uniform topologies"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 dichroic stack on fused silica substrate with air incidence at normal angle. Initialize thicknesses from iteration_12 best candidate: [77.71, 177.76, 65.96, 87.63, 94.31, 100.73, 236.5, 85.64, 126.52, 87.8, 60.22, 87.68, 209.35, 88.73, 63.43, 79.31, 63.65, 84.16, 163.16, 212.54, 63.22, 82.93, 177.9, 68.43] nm. Apply gradient-based thickness optimization with bounds 50-280 nm for all layers. Impose localized smoothing constraint on layers 12-15 (indices 11-14 zero-based) limiting thickness change to +/-10% per optimization step. Evaluate coherent TMM at normal incidence unpolarized. Score candidates by mean transmittance in 1530-1565 nm band and mean reflectance in 400-700 nm band with equal weighting. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Applied feedback directive to restrict step size on highly reactive transition block layers 12-15 to prevent oscillatory overshooting while preserving beneficial non-uniform topology from iteration_12."
+}

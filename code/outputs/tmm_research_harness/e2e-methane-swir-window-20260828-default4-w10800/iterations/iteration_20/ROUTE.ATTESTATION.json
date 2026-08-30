@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_20/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "9ede8a902528108ae38aa1bbd7407baa7103b4e4b85d17da1fa6ca50bbbae08a",
+  "recorded_at_utc": "2026-08-28T14:14:20.958981+00:00",
+  "elapsed_seconds": 4817.120122699998,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_20",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Global optimization with differential evolution and Latin Hypercube sampling will escape local optima that trapped the gradient-based optimizer in prior iterations, achieving higher target scores by exploring multi-modal interference landscapes more thoroughly.",
+  "expected_advantages": [
+    "Escapes local optima that limited prior gradient-based runs",
+    "Latin Hypercube ensures uniform coverage of thickness parameter space",
+    "Higher probability of finding globally optimal interference conditions"
+  ],
+  "known_risks": [
+    "Differential evolution requires more function evaluations, may need larger search budget",
+    "May converge slower in early generations before exploiting promising regions"
+  ],
+  "expected_observations": [
+    "valid_candidates should be >= 15 if reduced layer count eases constraint satisfaction",
+    "best_target_score should remain >= 0.45 if 20 layers suffice for dual-band operation",
+    "total thickness should decrease compared to route_02 if fewer layers reduce cumulative thickness",
+    "If best_target_score drops below 0.40, hypothesis that 20 layers maintain acceptable performance is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to historical best is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds or increase layer count",
+    "If best_target_score < 0.40 consistently across 3 rounds, judge 20-layer topology insufficient -> should increase to 24 or 28 layers"
+  ]
+}

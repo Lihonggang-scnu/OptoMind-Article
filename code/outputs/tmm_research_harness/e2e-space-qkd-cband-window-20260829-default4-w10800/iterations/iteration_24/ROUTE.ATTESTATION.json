@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_24/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "30a7afd57ebe28505481c0c5561d614cd00aac1bb69f734954ffab76b0322aa0",
+  "recorded_at_utc": "2026-08-29T02:09:20.206682+00:00",
+  "elapsed_seconds": 5639.609934599954,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_24",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A hybrid initialization scheme combining 60% QWOT-centered candidates with 40% harmonic half/double-multiple thickness candidates, plus ±5nm noise injection in the first optimization step, will produce higher best_target_score and maintain tightest_margin compared to pure QWOT±10% initialization across iteration rounds.",
+  "expected_advantages": [
+    "Hybrid initialization should escape the 130nm attractor basin observed in prior iterations",
+    "40% harmonic candidates may discover thickness combinations that pure QWOT initialization cannot reach",
+    "Noise injection prevents exact symmetry that causes gradient cancellation",
+    "Should improve best_target_score from prior 0.868-0.934 range while maintaining robustness"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient is negligible at 1530-1565nm - would need to check material dataset for k values",
+    "Uncertain optimal center wavelength for QWOT calculation (550nm vs 600nm for visible blocking) - this choice affects all baseline thicknesses",
+    "Recalled refractive indices are approximate: HfO2 n≈1.9-2.1, SiO2 n≈1.45-1.48 depending on deposition method and wavelength",
+    "Harmonic initialization may produce some candidates with thicknesses outside manufacturable range (<40nm or >350nm)",
+    "Did not verify whether 24 layers is optimal vs 20 or 28 layers - fixed by prior iteration convention"
+  ],
+  "expected_observations": [
+    "If hybrid initialization hypothesis holds: best_target_score should rise or remain stable across rounds while tightest_margin does not fall below 0.4",
+    "If hybrid initialization fails to improve convergence: best_target_score should plateau earlier than prior iterations and valid_candidates may decrease",
+    "Thicknesses_nm should show greater variance in the 40% harmonic-initialized candidates compared to QWOT-centered candidates",
+    "Run_status should remain completed with physically_valid_candidate_count >= 5 per round"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 3 for two consecutive rounds, relax thickness bounds from 40-350nm to 30-400nm and continue",
+    "If tightest_margin falls below 0.3 for two consecutive rounds, reduce noise injection amplitude from ±5nm to ±2nm and continue"
+  ]
+}

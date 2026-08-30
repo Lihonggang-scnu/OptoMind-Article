@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_16/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "1dc5f4845df02f8389da9b1ccf194f1a97ba5c1e413ae1fcee789522496a7776",
+  "recorded_at_utc": "2026-08-28T14:03:19.429378+00:00",
+  "elapsed_seconds": 4155.5913334000215,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_16",
+  "route_id": "route_01",
+  "scientific_hypothesis": "The convergent thickness bands discovered in iteration 13 (~70-75 nm and ~135-145 nm) represent local optima for the HfO2/SiO2 material pair. Reinitializing with explicit bimodal distribution centered at these values while relaxing total thickness constraints by 15% will allow the optimizer to explore wider bandwidth solutions previously filtered by validity constraints, potentially improving best_target_score beyond 0.793.",
+  "expected_advantages": [
+    "Wider search space due to relaxed thickness budget",
+    "Better initialization near discovered optima",
+    "Reduced validity constraint filtering"
+  ],
+  "known_risks": [
+    "May converge to similar local optimum as iteration 13",
+    "Relaxed thickness may increase fabrication sensitivity"
+  ],
+  "expected_observations": [
+    "If the periodic hypothesis holds, best_target_score should increase with optimization rounds and stabilize as thicknesses converge to quarter-wave values near 375 nm center wavelength",
+    "If the periodic hypothesis fails, best_target_score will plateau below acceptable levels and tightest_margin will not improve across rounds, indicating bandwidth limitation",
+    "valid_candidates should remain high (above 10 per round) if the design space is well-conditioned",
+    "thicknesses_nm should converge to values near 90-100 nm for HfO2 and 130-140 nm for SiO2 if quarter-wave condition at 375 nm is optimal"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, relax thickness bounds and continue for one more round before stopping"
+  ]
+}

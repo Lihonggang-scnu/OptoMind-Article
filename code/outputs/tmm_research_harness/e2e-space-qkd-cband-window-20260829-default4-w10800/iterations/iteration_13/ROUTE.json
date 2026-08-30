@@ -1,0 +1,49 @@
+{
+  "route_id": "route_04",
+  "title": "20-Layer Chirped DBR with Deterministic Linear Chirp Seed",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "A 20-layer HfO2/SiO2 chirped dielectric stack initialized with explicit linear thickness gradients (odd layers: 45-90 nm ramp, even layers: 65-130 nm ramp) will achieve higher target scores than unseeded optimization by escaping local minima associated with periodic quarter-wave stacks.",
+  "design_principle": "Chirped Bragg reflector with linearly varying optical thickness across the stack to broaden the high-reflectance band (400-700 nm) while maintaining a transmission window at 1530-1565 nm through destructive interference cancellation in the telecom band.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2]_10 | Fused Silica substrate (20 finite layers total, alternating high/low index starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses (20 continuous variables, bounded 30-250 nm)",
+    "Initial thickness profile seeded with linear chirp"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Maintain total layer count at exactly 20"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Individual layer thicknesses within typical ion-beam sputtering capability (30-250 nm)",
+    "No thickness coupling constraints to allow optimizer full freedom"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Chirped DBR bandwidth broadening theory: varying layer optical thickness expands reflection band beyond periodic stack limit",
+    "Prior iteration_04 achieved 0.918 target score with 20-layer chirped design"
+  ],
+  "expected_advantages": [
+    "Deterministic initialization reduces optimizer dependence on random seed",
+    "Linear chirp profile explicitly targets broad visible reflection band",
+    "20-layer count matches best-performing prior iteration"
+  ],
+  "known_risks": [
+    "Chirp profile may not be optimal for asymmetric dual-band requirement",
+    "Optimizer may still converge to local minima despite seeding",
+    "Thick end-layers may introduce absorption or scattering losses not modeled"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric stack on fused silica substrate under normal incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (20 finite layers). Initialize thicknesses with deterministic linear chirp: odd-indexed layers (HfO2) ramp from 45 nm to 90 nm across the stack, even-indexed layers (SiO2) ramp from 65 nm to 130 nm. Optimization bounds: 30-250 nm per layer. Use gradient-based thickness optimizer with increased perturbation magnitude (3x baseline) for first 3 generations. Score candidates by: (1) average transmittance in 1530-1565 nm band, (2) average reflectance in 400-700 nm band, with equal weighting. Wavelength sampling: 5 nm steps in both bands. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all physically valid candidates. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Implements feedback directive for deterministic linear chirp seed initialization and increased early-generation perturbation to escape periodic basin. Maintains 20-layer count from best-performing iteration_04 (score 0.918) while adding explicit initialization protocol absent in prior runs."
+}

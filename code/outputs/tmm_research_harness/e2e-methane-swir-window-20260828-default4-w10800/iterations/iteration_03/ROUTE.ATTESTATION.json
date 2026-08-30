@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_03/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "37724a6fd10e0307df845038673774358db11c99d0c0788eda6c58c3d1782452",
+  "recorded_at_utc": "2026-08-28T13:12:03.414865+00:00",
+  "elapsed_seconds": 1079.576009100012,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_03",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Removing periodicity and grading constraints allows the optimizer to find layer thickness combinations that periodic or chirped stacks cannot achieve, potentially discovering non-intuitive thickness sequences that better separate the UV reflection and SWIR transmission bands.",
+  "expected_advantages": [
+    "No structural assumptions limit the search space",
+    "L27 demonstrates global optimization finds coatings meeting multiple spectral requirements",
+    "May discover thickness patterns that periodic designs miss"
+  ],
+  "known_risks": [
+    "Higher-dimensional optimization (28 variables) may converge slowly",
+    "Risk of overfitting to specific wavelength points rather than bands",
+    "L26 notes HfO2 defect formation may limit practical performance regardless of optimization"
+  ],
+  "expected_observations": [
+    "If the non-periodic hypothesis holds, best_target_score should exceed both route_01 and route_02, and thicknesses_nm should show no periodic or monotonic pattern",
+    "If the non-periodic hypothesis fails, best_target_score will converge to values similar to route_01 and thicknesses_nm will self-organize into near-periodic patterns despite no constraint",
+    "valid_candidates may be lower (5-10 per round) due to higher-dimensional search space",
+    "tightest_margin should not decrease across rounds if the optimizer finds robust solutions"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 3 for three consecutive rounds, reduce optimization dimensionality by grouping adjacent layers and continue for one more round before stopping"
+  ]
+}

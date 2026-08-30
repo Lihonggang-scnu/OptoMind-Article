@@ -1,0 +1,54 @@
+{
+  "route_id": "route_03",
+  "title": "22-Layer Ge/ZnS Two-Cavity Fabry-Perot Dual-Band Filter with Validated Material Names",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A two-cavity Fabry-Perot structure with Ge (high-index) and ZnS (low-index) quarter-wave stacks separated by cavity spacer layers can simultaneously transmit both 4.15-4.35μm and 4.55-4.75μm bands while blocking 3.60-4.00μm and 4.85-5.20μm stopbands on CaF2 substrate.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter using alternating quarter-wave high-low index dielectric layers with computational thickness optimization. Two cavities enable dual-passband shaping from triangular to square profile per evidence on MIR filter design.",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "CaF2 substrate | [Ge/ZnS]_4 mirror | Ge cavity spacer | [Ge/ZnS]_3 coupling | Ge cavity spacer | [Ge/ZnS]_4 mirror | Air. Total 22 finite layers (11 Ge + 11 ZnS).",
+  "design_variables": [
+    "individual layer thicknesses for all 22 layers",
+    "cavity spacer thicknesses (2 variables)",
+    "mirror pair thicknesses (20 variables)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 4.15-4.35μm passband",
+    "maximize mean transmittance in 4.55-4.75μm passband",
+    "minimize mean transmittance in 3.60-4.00μm stopband",
+    "minimize mean transmittance in 4.85-5.20μm stopband"
+  ],
+  "manufacturing_considerations": [
+    "no metal layers per requirement",
+    "22 layers within 24-layer maximum",
+    "Ge and ZnS are conventional depositable IR dielectrics",
+    "total thickness should remain under 10μm for stress management"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent thin-film interference",
+    "Fabry-Perot cavity resonance condition: 2nd = mλ for constructive transmission",
+    "Quarter-wave stack reflectance increases with pair count"
+  ],
+  "expected_advantages": [
+    "Ge/ZnS has high index contrast (~4.0 vs ~2.3) for strong reflectors",
+    "Two cavities enable dual-band transmission shaping",
+    "22 layers provides sufficient degrees of freedom for optimization"
+  ],
+  "known_risks": [
+    "Material registry name mismatch caused prior failures - must verify 'Ge' and 'ZnS' are valid identifiers",
+    "Ge has absorption edge near 2μm but should be transparent in 3-5μm range",
+    "Fabrication tolerance sensitivity increases with layer count"
+  ],
+  "execution_request_english": "Design a 22-layer dielectric bandpass filter on CaF2 substrate for dual-band IR transmission. Stack topology: CaF2 | (Ge/ZnS)_4 | Ge_cavity | (Ge/ZnS)_3 | Ge_cavity | (Ge/ZnS)_4 | Air. Initialize all Ge layers at quarter-wave thickness for 4.45μm center wavelength (n_Ge≈4.0, thickness≈278nm). Initialize all ZnS layers at quarter-wave thickness (n_ZnS≈2.3, thickness≈484nm). Initialize both cavity spacers at half-wave thickness (≈556nm). Set thickness search bounds: Ge layers [150, 450]nm, ZnS layers [300, 650]nm, cavity spacers [400, 750]nm. Verify material registry accepts 'Ge' and 'ZnS' as valid identifiers before optimization. Optimize all 22 layer thicknesses to maximize transmittance in 4.15-4.35μm and 4.55-4.75μm bands while minimizing transmittance in 3.60-4.00μm and 4.85-5.20μm bands. Use coherent TMM at normal incidence. Log initialization thickness vector and material lookup results for diagnostic purposes. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Prior route_03 iterations failed due to material_data errors and compilation issues. This revision explicitly validates material registry names ('Ge' and 'ZnS' instead of potentially truncated 'si'), uses evidence-backed Ge/ZnS pair for MIR range, maintains 22-layer two-cavity Fabry-Perot topology with explicit layer count, and adds diagnostic logging for initialization to identify rejection causes."
+}

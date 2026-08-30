@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 dichroic stack with refined thickness optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individually optimized thicknesses can achieve simultaneous high transmittance in 1530-1565 nm and high reflectance in 400-700 nm, with the thickest layers (layers 3 and 6) being primary drivers for spectral alignment.",
+  "design_principle": "Dichroic filters work by creating constructive interference in reflection for the stopband and destructive interference for the passband. Higher layer counts provide more degrees of freedom for dual-band optimization. Thicker layers contribute more optical path length and thus have greater leverage on the spectral position of interference features.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses for all 24 layers",
+    "Perturbation initialization amplitude (reduced from 5 nm to 2 nm)",
+    "Targeted local refinement on layers 3 and 6"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Maintain physically valid candidates (no negative thickness, no absorption violations)",
+    "Improve best_target_score across iteration rounds"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer limit)",
+    "All thicknesses must be positive and manufacturable (typically >20 nm)",
+    "HfO2 and SiO2 are standard evaporated/sputtered coating materials"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks centered at a wavelength produce high reflectance at that wavelength; dichroic designs require non-quarter-wave thicknesses to create dual-band behavior",
+    "Recalled knowledge: HfO2 has higher refractive index (~2.0 at 1550 nm) than SiO2 (~1.45 at 1550 nm), providing good index contrast for interference",
+    "Recalled knowledge: More layers provide more optimization degrees of freedom but increase manufacturing complexity and stress",
+    "Recalled knowledge: Thicker layers have greater optical path length contribution and thus stronger influence on spectral feature positioning"
+  ],
+  "expected_advantages": [
+    "24 layers provide sufficient degrees of freedom for dual-band optimization",
+    "Alternating high/low index structure is a standard, manufacturable design pattern",
+    "Reduced perturbation amplitude (2 nm vs 5 nm) should produce more stable convergence near local optima",
+    "Targeted refinement on layers 3 and 6 addresses the identified primary drivers of spectral mismatch"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive index dispersion of HfO2 and SiO2 across 400-1565 nm range - the material catalog datasets will resolve this, but my recollection of specific n values is approximate",
+    "Uncertainty: Whether 24 layers is optimal vs 26 or 28 layers within the 30-layer limit - this route fixes 24 to maintain a single axis",
+    "Uncertainty: Whether the alternating HfO2-first sequence is optimal vs SiO2-first - this route fixes the sequence to isolate thickness as the only variable",
+    "Risk: Local optimization may converge to a local rather than global optimum; the reduced perturbation amplitude may limit escape from local minima",
+    "Risk: Layers 3 and 6 refinement assumption may be incorrect - other layer combinations might be more influential"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar multilayer dielectric stack under frequency-domain plane-wave illumination. Stack topology: Air incident medium, then 24 alternating layers starting with HfO2, then SiO2 (Lemarchand), repeating (HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand)), terminated by Fused Silica substrate. Design variables: all 24 individual layer thicknesses in nanometers. Optimization uses gradient-based thickness tuning with perturbation initialization amplitude of 2 nm (reduced from 5 nm). Apply targeted local refinement pass on layer 3 (index 2, 0-based) and layer 6 (index 5, 0-based) due to their larger optical path length contribution. Wavelength bands: maximize transmittance in 1530-1565 nm, maximize reflectance in 400-700 nm. Incidence angle: normal incidence (0 degrees) as default since not specified. Polarization: unpolarized or both TE and TM averaged. Manufacturing constraint: total layer count is exactly 24 (within 30-layer limit). Materials: hfo2 and SiO2 (Lemarchand) only, resolved from material catalog. Performance targets are soft ranking preferences, not pass/fail gates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with refined optimization parameters: reduced thickness perturbation initialization amplitude from 5 nm to 2 nm for narrower search window, and targeted local refinement on layers 3 and 6 (0-based indices 2 and 5) identified as primary drivers for spectral mismatch resolution based on their larger physical thicknesses and higher accumulated optical path length."
+}

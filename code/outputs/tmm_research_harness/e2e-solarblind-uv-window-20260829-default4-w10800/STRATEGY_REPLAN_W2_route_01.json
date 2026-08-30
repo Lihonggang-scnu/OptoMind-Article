@@ -1,0 +1,189 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_01 (MgF2/Al2O3 defect cavity filter) based on iteration_05 results. Three complementary routes implement the feedback directives: bilateral symmetry constraints, bounded thickness search around round-2 medians, and L-BFGS-B solver. Route variations test material sensitivity and layer count effects while preserving the core defect-cavity scientific principle.",
+    "routes": [
+      {
+        "route_id": "route_01_refine_symmetry_lbfgs",
+        "title": "Symmetry-constrained MgF2/Al2O3 defect cavity with L-BFGS-B bounded optimization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Imposing bilateral symmetry constraints on mirror layer pairs and restricting thickness search to ±5 nm around round-2 medians will reduce the optimization degrees of freedom sufficiently for L-BFGS-B to converge to a locally optimal phase-matched configuration, improving target score without increasing layer count.",
+        "design_principle": "Defect-cavity bandpass filter with symmetric Bragg mirrors. Symmetry reduces search space dimensionality while preserving the resonant transmission mechanism at 255–280 nm.",
+        "proposed_materials": [
+          "MgF2",
+          "Al2O3",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "17-layer stack: Air | [MgF2/Al2O3]_8 mirror | MgF2 defect cavity | [Al2O3/MgF2]_8 mirror | fused silica substrate. Explicit layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2).",
+        "design_variables": [
+          "layer thicknesses with bilateral symmetry constraints: L13=L16, L6=L15, L7=L14; thickness bounds ±5 nm around round-2 medians"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255–280 nm",
+          "minimize transmittance in 300–700 nm",
+          "minimize transmittance in 700–1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers ≤ 30 (17 layers)",
+          "no metal layers",
+          "conventional inorganic dielectric materials",
+          "symmetry simplifies deposition monitoring"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for multilayer interference",
+          "defect-cavity resonant transmission principle"
+        ],
+        "expected_advantages": [
+          "reduced optimization dimensionality improves convergence",
+          "symmetry ensures phase matching between mirrors",
+          "bounded search prevents unphysical thickness excursions"
+        ],
+        "known_risks": [
+          "symmetry constraint may prevent discovery of superior asymmetric solutions",
+          "±5 nm bounds may be too restrictive if round-2 medians are suboptimal"
+        ],
+        "execution_request_english": "Optimize a 17-layer MgF2/Al2O3 defect-cavity bandpass filter on fused silica substrate. Layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2). Impose bilateral symmetry: thickness(L13)=thickness(L16), thickness(L6)=thickness(L15), thickness(L7)=thickness(L14). Initialize thicknesses at round-2 medians: defect L10=85.5 nm, inner mirrors L1-L6=44.0 nm, outer mirrors L11-L16=47.0 nm. Apply ±5 nm bounds around these medians. Use L-BFGS-B optimizer with max function evaluations=500, tolerance=1e-5. Spectral targets: maximize transmittance 255–280 nm, minimize transmittance 300–700 nm and 700–1100 nm. Air incidence, unpolarized. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directives: bilateral symmetry constraints on layers 13-16, 6-15, 7-14; ±5 nm thickness bounds around round-2 medians; L-BFGS-B solver with 500 max eval and 1e-5 tolerance."
+      },
+      {
+        "route_id": "route_01_refine_hfo2_sio2",
+        "title": "HfO2/SiO2 defect cavity with symmetry constraints to test material sensitivity",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing MgF2/Al2O3 with HfO2/SiO2 while maintaining the same 17-layer defect-cavity topology and symmetry constraints will yield comparable or improved target scores due to higher refractive index contrast, provided UV absorption in HfO2 remains low at 255–280 nm.",
+        "design_principle": "Same defect-cavity bandpass architecture as route_01, but with HfO2 (high-index) and SiO2 (low-index) material pair. Higher index contrast should widen the stopband and improve visible/NIR rejection.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "17-layer stack: Air | [SiO2/HfO2]_8 mirror | SiO2 defect cavity | [HfO2/SiO2]_8 mirror | fused silica substrate. Explicit layer sequence: L1(SiO2), L2(HfO2), L3(SiO2), L4(HfO2), L5(SiO2), L6(HfO2), L7(SiO2), L8(HfO2), L9(SiO2), L10(HfO2-defect), L11(SiO2), L12(HfO2), L13(SiO2), L14(HfO2), L15(SiO2), L16(HfO2), L17(SiO2).",
+        "design_variables": [
+          "layer thicknesses with bilateral symmetry constraints: L13=L16, L6=L15, L7=L14; thickness bounds ±5 nm around scaled quarter-wave values at 267 nm center wavelength"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255–280 nm",
+          "minimize transmittance in 300–700 nm",
+          "minimize transmittance in 700–1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers ≤ 30 (17 layers)",
+          "no metal layers",
+          "HfO2 requires ion-assisted deposition for density and UV transparency",
+          "SiO2/HfO2 pair is space-qualified for UV applications"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for multilayer interference",
+          "defect-cavity resonant transmission principle",
+          "higher index contrast yields wider stopband"
+        ],
+        "expected_advantages": [
+          "HfO2/SiO2 index contrast (~2.0/1.5) exceeds MgF2/Al2O3 (~1.38/1.65), potentially improving stopband rejection",
+          "HfO2 is moisture-stable with ion-assisted deposition",
+          "same symmetry constraints enable direct comparison with MgF2/Al2O3 route"
+        ],
+        "known_risks": [
+          "HfO2 may exhibit higher absorption at 255–280 nm than MgF2, reducing passband transmittance",
+          "HfO2 deposition requires ion-assistance for optimal UV performance"
+        ],
+        "execution_request_english": "Optimize a 17-layer HfO2/SiO2 defect-cavity bandpass filter on fused silica substrate. Layer sequence: L1(SiO2), L2(HfO2), L3(SiO2), L4(HfO2), L5(SiO2), L6(HfO2), L7(SiO2), L8(HfO2), L9(SiO2), L10(HfO2-defect), L11(SiO2), L12(HfO2), L13(SiO2), L14(HfO2), L15(SiO2), L16(HfO2), L17(SiO2). Impose bilateral symmetry: thickness(L13)=thickness(L16), thickness(L6)=thickness(L15), thickness(L7)=thickness(L14). Initialize thicknesses at quarter-wave values scaled to 267 nm center wavelength with ±5 nm bounds. Use L-BFGS-B optimizer with max function evaluations=500, tolerance=1e-5. Spectral targets: maximize transmittance 255–280 nm, minimize transmittance 300–700 nm and 700–1100 nm. Air incidence, unpolarized. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests material sensitivity while preserving route_01 topology and symmetry constraints. HfO2/SiO2 pair offers higher index contrast per evidence on UV filter materials."
+      },
+      {
+        "route_id": "route_01_refine_21layer",
+        "title": "21-layer MgF2/Al2O3 defect cavity with extended mirror periods",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing mirror periods from 8 to 10 pairs per side (21 total layers) while maintaining symmetry constraints will improve visible/NIR stopband rejection depth without significantly degrading UV passband transmittance, as additional periods primarily affect stopband edges.",
+        "design_principle": "Extended defect-cavity architecture with more Bragg mirror periods. Additional layers increase stopband reflectivity at the cost of total thickness, but symmetry preserves resonant transmission mechanism.",
+        "proposed_materials": [
+          "MgF2",
+          "Al2O3",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "21-layer stack: Air | [MgF2/Al2O3]_10 mirror | MgF2 defect cavity | [Al2O3/MgF2]_10 mirror | fused silica substrate. Explicit layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3), L11(MgF2-defect), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2), L18(Al2O3), L19(MgF2), L20(Al2O3), L21(MgF2).",
+        "design_variables": [
+          "layer thicknesses with bilateral symmetry constraints: L14=L20, L7=L19, L8=L18, L9=L17, L10=L16; thickness bounds ±5 nm around scaled quarter-wave values"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255–280 nm",
+          "minimize transmittance in 300–700 nm",
+          "minimize transmittance in 700–1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers ≤ 30 (21 layers, within limit)",
+          "no metal layers",
+          "conventional inorganic dielectric materials",
+          "increased layer count may affect deposition uniformity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for multilayer interference",
+          "Bragg mirror stopband width increases with period count",
+          "defect-cavity resonant transmission principle"
+        ],
+        "expected_advantages": [
+          "deeper stopband rejection in visible/NIR bands",
+          "same UV passband mechanism preserved",
+          "symmetry constraints maintain phase matching"
+        ],
+        "known_risks": [
+          "increased total thickness may introduce stress or adhesion issues",
+          "additional layers increase deposition time and cost",
+          "may not significantly improve target score if 17-layer already saturates rejection"
+        ],
+        "execution_request_english": "Optimize a 21-layer MgF2/Al2O3 defect-cavity bandpass filter on fused silica substrate. Layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3), L11(MgF2-defect), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2), L18(Al2O3), L19(MgF2), L20(Al2O3), L21(MgF2). Impose bilateral symmetry: thickness(L14)=thickness(L20), thickness(L7)=thickness(L19), thickness(L8)=thickness(L18), thickness(L9)=thickness(L17), thickness(L10)=thickness(L16). Initialize thicknesses at quarter-wave values scaled to 267 nm center wavelength with ±5 nm bounds. Use L-BFGS-B optimizer with max function evaluations=500, tolerance=1e-5. Spectral targets: maximize transmittance 255–280 nm, minimize transmittance 300–700 nm and 700–1100 nm. Air incidence, unpolarized. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests layer count effect while preserving route_01 material pair and symmetry constraints. 21 layers remains within 30-layer manufacturing limit."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:199509322 supports periodic SiO2/SiNx photonic crystal UV filter architecture with defect cavity, motivating the 17-layer and 21-layer topologies.",
+      "Evidence s2-chunk:CorpusId:211025653 documents HfO2/SiO2 as UV-transparent material pair with ion-assisted deposition stability, motivating route_01_refine_hfo2_sio2.",
+      "Evidence s2-chunk:CorpusId:16516444 supports ALD/IAD deposition methods for UV coatings, informing manufacturing considerations across all routes.",
+      "Prior iteration results (best_target_score 0.355) indicate room for improvement, motivating symmetry constraints and bounded search to refine convergence."
+    ],
+    "unresolved_decisions": [
+      "Whether HfO2 absorption at 255–280 nm will significantly degrade passband transmittance compared to MgF2.",
+      "Whether 17-layer stack already saturates stopband rejection, making 21-layer route redundant.",
+      "Optimal symmetry constraint pairing strategy for maximum phase-matching benefit."
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_refine_symmetry_lbfgs received canonical user controls from the problem contract",
+    "route route_01_refine_hfo2_sio2 received canonical user controls from the problem contract",
+    "route route_01_refine_21layer received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14101,
+      "completion_tokens": 5874,
+      "total_tokens": 19975
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

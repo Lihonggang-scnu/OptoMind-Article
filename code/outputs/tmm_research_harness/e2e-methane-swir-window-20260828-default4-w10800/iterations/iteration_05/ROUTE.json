@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Quarter-Wave Initialized 24-Layer Stack with Gradient Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses near quarter-wave optical thickness (HfO2 ~100-110 nm, SiO2 ~125-135 nm at 450 nm center) rather than uniform 200 nm will reduce boundary collisions during optimization, increasing valid_candidates while maintaining or improving best_target_score above 0.53.",
+  "design_principle": "Quarter-wave stack theory predicts maximum reflectance for minimum layer count when optical thickness equals lambda/4. For dual-band operation (UV reflection, SWIR transmission), non-quarter-wave deviations are necessary but quarter-wave initialization provides a physically meaningful starting point closer to optimal solutions.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | (HfO2 | SiO2) repeated 12 times | Fused Silica substrate. Total finite coating layers: 24. Outermost layer is SiO2 for environmental durability.",
+  "design_variables": [
+    "individual layer thicknesses (24 variables)",
+    "thickness bounds 80-200 nm for HfO2, 100-180 nm for SiO2"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance 1000-1700 nm",
+    "maximize mean reflectance 300-450 nm",
+    "maintain valid_candidates >= 15"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 24 <= 30 limit",
+    "outermost SiO2 layer >= 100 nm for durability",
+    "thickness bounds reflect realistic deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack reflectance maximization principle",
+    "Dual-band filter requires non-quarter-wave optimization from quarter-wave seed"
+  ],
+  "expected_advantages": [
+    "Higher valid_candidates due to reduced boundary collisions",
+    "Faster convergence from physically meaningful initialization",
+    "Maintained layer count within 30-layer constraint"
+  ],
+  "known_risks": [
+    "Quarter-wave initialization may trap optimizer in local optimum",
+    "Dual-band conflict may still limit best_target_score below 0.7"
+  ],
+  "execution_request_english": "Optimize a 24-layer HfO2/SiO2 multilayer coating on fused silica substrate. Stack sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica (12 bilayers, 24 finite layers total). Initialize HfO2 layers at 105 nm and SiO2 layers at 130 nm (quarter-wave at 450 nm center). Apply gradient-based thickness optimization with bounds: HfO2 80-200 nm, SiO2 100-180 nm. Evaluate coherent TMM at normal incidence across 300-450 nm (reflectance target) and 1000-1700 nm (transmittance target). Maximize mean reflectance in 300-450 nm band and mean transmittance in 1000-1700 nm band simultaneously. Outermost layer must be SiO2. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Restructured thickness initialization from uniform 200 nm to quarter-wave values (HfO2 105 nm, SiO2 130 nm) based on feedback directive to reduce boundary collisions. Maintains 24-layer topology from route_01 but changes seed distribution to concentrate near hypothesized resonance window."
+}

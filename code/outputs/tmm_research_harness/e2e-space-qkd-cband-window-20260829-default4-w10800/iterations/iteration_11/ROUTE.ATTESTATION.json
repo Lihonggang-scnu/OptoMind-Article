@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_11/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "24b35159090789d817f1593648e6416ab30c54944a090c59e909d26aa37bb8ed",
+  "recorded_at_utc": "2026-08-29T01:25:36.168699+00:00",
+  "elapsed_seconds": 3015.572406399995,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_11",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Initializing all layer pairs at strict quarter-wave optical thickness centered at 550 nm (visible stopband center) with expanded thickness bounds and increased optimization evaluations will escape the local minimum observed in iteration_06 and recover or exceed the iteration_01 target score.",
+  "expected_advantages": [
+    "Strict 550 nm initialization places optimizer in visible stopband basin",
+    "Expanded bounds allow thickness exploration beyond iteration_06 local minimum",
+    "Multi-start strategy reduces risk of stagnation"
+  ],
+  "known_risks": [
+    "Quarter-wave at 550 nm may degrade telecom transmittance if not properly optimized",
+    "20 layers may be insufficient for simultaneous dual-band performance",
+    "Optimizer may still converge to similar local minimum despite re-initialization"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase as reference wavelength approaches 550 nm (visible band center), with valid_candidates remaining stable across rounds",
+    "If hypothesis fails: best_target_score should plateau below 0.7 regardless of reference wavelength, indicating periodic structure cannot satisfy both bands simultaneously",
+    "tightest_margin should remain positive if both bands are achievable with this topology"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops to zero for three consecutive rounds, relax the quarter-wave constraint and stop"
+  ]
+}

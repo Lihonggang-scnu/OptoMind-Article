@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_05/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "c2e81bf2141d33de299080c5d3fcfdeaaa8d87031d051b1d402ae3f4d22ea37f",
+  "recorded_at_utc": "2026-08-29T04:12:19.347735+00:00",
+  "elapsed_seconds": 1607.4562722999835,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_05",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Constraining thickness initialization to neighborhoods around Candidate 0's verified geometry (mirror layers 35-55 nm, defect cavity 80-100 nm) will enable the optimizer to refine phase-matching within a proven topology rather than rediscovering basic periodicity, leading to improved target scores while maintaining physical validity.",
+  "expected_advantages": [
+    "Reduced search dimensionality through bounded initialization",
+    "Faster convergence to local optimum near proven geometry",
+    "Maintains physical validity from prior iteration"
+  ],
+  "known_risks": [
+    "May converge to local optimum inferior to global solution",
+    "Limited exploration of alternative thickness regimes",
+    "MgF2/Al2O3 index contrast may be insufficient for wide stopband"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should rise as mirror pair thicknesses converge to quarter-wave values at the center passband wavelength, and tightest_margin should remain stable across optimization rounds.",
+    "If the hypothesis fails, best_target_score will plateau below 0.5 and valid_candidates will decrease as thickness variations push the cavity resonance outside the 255-280 nm band.",
+    "thicknesses_nm should show quarter-wave scaling for mirror layers and approximately half-wave scaling for the defect cavity if the resonance condition is satisfied."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If valid_candidates falls below 5 for two consecutive rounds, relax the layer thickness bounds by 20% and continue for one more round before stopping."
+  ]
+}

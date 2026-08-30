@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_09/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "a64c13edf74529b5959f8c240bf967661ea96a7045e48a851feeb9981add25a0",
+  "recorded_at_utc": "2026-08-29T06:19:21.582986+00:00",
+  "elapsed_seconds": 3539.926791900012,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_09",
+  "route_id": "route_01",
+  "scientific_hypothesis": "The iteration 05 performance degradation (0.594 vs 0.955) resulted from thickness bounds [50,150]nm being physically incompatible with quarter-wave optical thickness at 3-5 μm wavelengths. Restoring bounds to [400,1600]nm range observed in iteration 01 successful candidates, with initialization centered on empirical mean thickness ~950nm from top performers, will recover high target scores while maintaining the proven 22-layer alternating ZnS/MgF2 topology.",
+  "expected_advantages": [
+    "Recover iteration 01 performance level (target score ~0.95) by restoring physically-appropriate thickness bounds",
+    "Empirical initialization reduces search space and prevents over-detuning",
+    "Reduced optimizer step size preserves multi-band margin feasibility"
+  ],
+  "known_risks": [
+    "Local optimization may converge to suboptimal thickness configuration",
+    "Spectral ripple may increase with 22-layer thickness",
+    "Deposition stress may cause thickness deviation from design"
+  ],
+  "expected_observations": [
+    "best_target_score should increase across rounds as cavity thicknesses converge to resonance conditions",
+    "tightest_margin should remain positive if both transmission bands are achievable simultaneously",
+    "valid_candidates count should remain high if 22-layer topology is physically realizable",
+    "If hypothesis fails, best_target_score will plateau below 0.7 with tightest_margin declining"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops below 5 for three consecutive rounds, relax the 24-layer constraint interpretation and continue with current topology"
+  ]
+}

@@ -1,0 +1,2008 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "This control axis tests whether expanding the thickness initialization perturbation around a known good candidate improves convergence to a deeper optimum in the 22-layer ZnS/Al2O3 design space. The prior knowledge is that quarter-wave-inspired stacks with gradient refinement can trap in shallow local maxima when initialization bounds are too tight. This route draws from recalled thin-film design practice: broader initialization sampling followed by local refinement explores basin topology more thoroughly.",
+    "routes": [
+      {
+        "route_id": "control_route_01",
+        "title": "Expanded Perturbation Refinement on 22-Layer ZnS/Al2O3 IR Dual-Band Filter",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing thickness initialization perturbation from ±10 nm to ±50 nm around the previous best candidate will yield a higher best_target_score by escaping shallow local maxima in the 22-layer optimization landscape.",
+        "design_principle": "Gradient-based thickness optimization on multilayer stacks can converge to local rather than global optima when initialization is too close to a prior solution. Broader perturbation samples the basin more thoroughly, allowing the optimizer to find steeper descent paths that tight initialization misses.",
+        "proposed_materials": [
+          "zns",
+          "Al2O3 (Kischkat)",
+          "CaF2 (Daimon-20)"
+        ],
+        "proposed_topology": "Air | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | Daimon-20 substrate (22 coating layers)",
+        "design_variables": [
+          "All 22 layer thicknesses initialized with ±50 nm perturbation around the iteration_12 best candidate, then optimized via bounded quasi-Newton gradient descent"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count fixed at 22 (within 24-layer limit)",
+          "All materials are conventional depositable IR dielectrics",
+          "Individual layer thicknesses should remain within 50-1500 nm for deposition feasibility",
+          "No metal layers used"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled thin-film design practice: gradient-based optimizers on multilayer stacks benefit from broader initialization to escape local maxima",
+          "Recalled IR material behavior: ZnS provides high refractive index contrast against Al2O3 in the 2.5-5 μm range",
+          "Recalled design pattern: alternating high/low index pairs create stopbands; deviations from quarter-wave enable multiple passbands",
+          "Recalled optimization heuristic: ±50 nm perturbation is large enough to sample basin topology but small enough to remain in feasible manufacturing region"
+        ],
+        "expected_advantages": [
+          "Better exploration of thickness space around the known good solution",
+          "Potential to find higher best_target_score than iteration_12's 0.9163",
+          "Maintains material pair that already compiled successfully",
+          "Tests whether prior result was limited by initialization tightness rather than material choice"
+        ],
+        "known_risks": [
+          "Uncertain whether ±50 nm perturbation is optimal magnitude -- could be too large (escaping useful basin) or too small (still trapped). Literature search on IR filter optimization basin sizes would clarify.",
+          "Uncertain whether ZnS/Al2O3 is the best material pair for this specific dual-band requirement -- other pairs like ZnS/MgF2 or Si/SiO2 might offer better index contrast in IR, but MgF2 had material_data issues in iteration_04.",
+          "Daimon-20 substrate refractive index dispersion in 2.5-5 μm range is recalled but not verified against registry data.",
+          "The 22-layer count was chosen heuristically; a different layer count might achieve better performance but would require a separate route."
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer thin film stack on CaF2 (Daimon-20) substrate with air incidence. Stack sequence: ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat) (22 coating layers total). Initialize all 22 layer thicknesses with random perturbation of ±50 nm around the iteration_12 best candidate thicknesses [967.0, 625.0, 727.5, 670.5, 446.0, 1179.0, 372.5, 588.5, 873.0, 492.0, 472.0, 1135.0, 328.0, 448.0, 854.0, 441.5, 832.0, 1240.5, 932.5, 391.5, 818.5, 871.5] nm, then optimize using bounded quasi-Newton gradient descent with thickness bounds 50-1500 nm. Evaluate coherent transfer matrix method in frequency domain. Score four independent mean-transmittance targets: maximize in 3250-3350 nm, maximize in 4200-4300 nm, minimize in 2500-3100 nm, minimize in 4450-5000 nm. No metal layers. Materials resolved from registry: zns, Al2O3 (Kischkat), CaF2 (Daimon-20) substrate.",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Replaced ambiguous CaF2 substrate name with Daimon-20 dataset identifier per registry resolution requirement; expanded thickness initialization perturbation from ±10 nm to ±50 nm around iteration_12 best candidate to test basin topology and prevent trapping in shallow local maxima."
+      }
+    ],
+    "knowledge_source": "model_prior_knowledge_only",
+    "knowledge_source_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+    "research_influence": [],
+    "unresolved_decisions": [
+      "Whether ±50 nm is the optimal perturbation magnitude for this specific 22-layer IR filter design space",
+      "Whether ZnS/Al2O3 is the best material pair for dual-band 3.3/4.3 μm transmission with 2.5-3.1/4.45-5.0 μm suppression",
+      "The exact refractive index dispersion of Daimon-20 substrate across 2.5-5.0 μm range as stored in the registry"
+    ],
+    "stop_if_all_routes_fail": "If all continuation rounds on this axis fail to produce physically valid candidates (valid_candidates = 0 for three consecutive rounds), stop and flag that the 22-layer ZnS/Al2O3 topology may be fundamentally unsuitable for this dual-band requirement under the given manufacturing constraints."
+  },
+  "pre_declarations": {
+    "control_route_01": {
+      "expected_observations": [
+        "If the hypothesis holds, best_target_score should increase relative to iteration_12's 0.9163 as the broader perturbation finds a deeper optimum",
+        "If the hypothesis does not hold, best_target_score should remain similar or decrease, indicating the prior solution was already near a local optimum for this material pair",
+        "valid_candidates count should remain comparable to iteration_12 (around 9) if the perturbation stays within feasible bounds",
+        "tightest_margin should not systematically decrease across rounds if the broader search maintains physical validity"
+      ],
+      "stop_conditions": [
+        "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+        "If valid_candidates drops below 3 for two consecutive rounds, reduce perturbation magnitude to ±25 nm and continue",
+        "If tightest_margin falls below 0.1 for two consecutive rounds, tighten thickness bounds to 100-1200 nm and continue"
+      ]
+    }
+  },
+  "attempts": 2,
+  "route_count": 1,
+  "warnings": [],
+  "validation_errors": [],
+  "planning_usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 7138,
+      "completion_tokens": 2618,
+      "total_tokens": 9756
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 4326,
+      "completion_tokens": 2106,
+      "total_tokens": 6432
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 9202,
+      "completion_tokens": 2553,
+      "total_tokens": 11755
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 4830,
+      "completion_tokens": 5265,
+      "total_tokens": 10095
+    }
+  ],
+  "query_result": {
+    "status": "unavailable",
+    "queries": [],
+    "rationale": "",
+    "attempts": 0,
+    "validation_errors": [],
+    "usage": []
+  },
+  "literature": {
+    "status": "not_consulted",
+    "papers": [],
+    "queries": [],
+    "requested_limit": 0,
+    "returned": 0,
+    "duplicates_dropped": 0,
+    "dropped_for_context": 0,
+    "character_count": 0,
+    "errors": [
+      "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction."
+    ]
+  },
+  "model_name": "qwen3.5-plus",
+  "question_digest": "ac5eb8ea9eee767f",
+  "material_verification": {
+    "checked": true,
+    "catalog": {
+      "schema_version": "1.0",
+      "guaranteed_names": [
+        "ag",
+        "al",
+        "al2o3",
+        "aln",
+        "hfo2",
+        "mgf2",
+        "si",
+        "si3n4",
+        "sic",
+        "sio2",
+        "ti",
+        "tio2",
+        "zno",
+        "zns"
+      ],
+      "coverage": "the guaranteed-name list proves name resolution only; the separate route candidate ranking reads actual n/k grids and records native coverage or explicit interpolation/endpoint-extension availability. Execution still keeps the registry's allow_extrapolation switch fail-closed",
+      "source": "tmm_engine.MaterialRegistry local provider, each name resolved before listing",
+      "candidate_ranking": {
+        "schema_version": "material-candidate-ranking.v1",
+        "max_candidates": 10,
+        "equal_weight_metrics": [
+          "target_band_coverage",
+          "n_k_completeness",
+          "sampling_density"
+        ]
+      },
+      "internal_selector": {
+        "schema_version": "route-material-selector.v1",
+        "enabled": true,
+        "model": "qwen3.5-plus",
+        "max_tokens": 1800
+      },
+      "catalog_status": {
+        "local_csv": {
+          "provider": "local_csv",
+          "materials_dir": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials",
+          "dataset_count": 14
+        },
+        "rii_sqlite": {
+          "provider": "rii_sqlite",
+          "database_path": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\rii_cache.db",
+          "available": true,
+          "page_count": 2712,
+          "refractive_index_point_count": 252442,
+          "extinction_coefficient_point_count": 209839,
+          "database_size_bytes": 13070336,
+          "database_mtime_epoch": 1782453108.0,
+          "database_sha256": "e4c1ec34cc4f765a8400ff87bb7dee8705b6da2cdb11a229cc57ad9bdd274989",
+          "upstream": "https://refractiveindex.info and https://github.com/polyanskiy/refractiveindex.info-database",
+          "license": "CC0-1.0"
+        }
+      }
+    },
+    "routes": {
+      "control_route_01": {
+        "selection": {
+          "schema_version": "route-material-selector.v1",
+          "ranking_schema_version": "material-candidate-ranking.v1",
+          "status": "selected_by_llm",
+          "selection_method": "ranked_candidates_then_internal_llm",
+          "max_candidates": 10,
+          "target_wavelength_ranges_um": [
+            [
+              2.5,
+              3.1
+            ],
+            [
+              3.25,
+              3.35
+            ],
+            [
+              4.2,
+              4.3
+            ],
+            [
+              4.45,
+              5.0
+            ]
+          ],
+          "user_question": "我正在为小卫星上的双气体遥感载荷设计共享前端滤光膜。传感器需要同时透过甲烷 3.25–3.35 μm 和二氧化碳 4.20–4.30 μm 两个窄波段的辐射，同时在 2.50–3.10 μm 和 4.45–5.00 μm 抑制太阳及地球背景。请在空气入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。",
+          "requests": [
+            {
+              "request_id": "material_01",
+              "proposed_material": "zns",
+              "target_wavelength_ranges_um": [
+                [
+                  2.5,
+                  3.1
+                ],
+                [
+                  3.25,
+                  3.35
+                ],
+                [
+                  4.2,
+                  4.3
+                ],
+                [
+                  4.45,
+                  5.0
+                ]
+              ],
+              "candidates": [
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "zns",
+                  "resolved_material": "zns",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "zns",
+                  "shelf": null,
+                  "book": null,
+                  "page": "zns.csv",
+                  "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 139,
+                  "k_points_in_band": 139,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 2,
+                  "material": "ZnS",
+                  "resolved_material": "zns",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 531,
+                  "shelf": "main",
+                  "book": "ZnS",
+                  "page": "Querry",
+                  "filepath": "main\\ZnS\\Querry.yml",
+                  "range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "grid_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "n_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "k_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 312,
+                  "n_points_in_band": 59,
+                  "k_points_in_band": 59,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.016799999999999926,
+                  "sampling_density": 59.52380952380979,
+                  "sampling_score": 0.5952380952380852,
+                  "score": 0.8650793650793617,
+                  "physical_score": 0.8650793650793617,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    312
+                  ]
+                }
+              ],
+              "compatible_candidate_count": 2,
+              "status": "ranked",
+              "llm_selection": {
+                "selected_rank": 1,
+                "provider": "local_csv",
+                "dataset_id": "zns",
+                "reason": "Highest rank (1) satisfies exact formula constraint for ZnS with full target band coverage and highest sampling density."
+              },
+              "selected_candidate": {
+                "ranking_schema_version": "material-candidate-ranking.v1",
+                "rank": 1,
+                "material": "zns",
+                "resolved_material": "zns",
+                "semantic_match": "exact_formula",
+                "formula_exact": true,
+                "formula_signature": [
+                  [
+                    "S",
+                    1
+                  ],
+                  [
+                    "Zn",
+                    1
+                  ]
+                ],
+                "requested_formula_signature": [
+                  [
+                    "S",
+                    1
+                  ],
+                  [
+                    "Zn",
+                    1
+                  ]
+                ],
+                "provider": "local_csv",
+                "dataset_id": "zns",
+                "shelf": null,
+                "book": null,
+                "page": "zns.csv",
+                "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                "range_um": [
+                  0.2,
+                  25.0
+                ],
+                "grid_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "n_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "k_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "full_coverage": true,
+                "native_nk_full_coverage": true,
+                "has_n": true,
+                "has_k": true,
+                "points": 2481,
+                "n_points_in_band": 139,
+                "k_points_in_band": 139,
+                "band_coverage_fraction": 1.0,
+                "target_band_coverage_score": 1.0,
+                "n_coverage_fraction": 1.0,
+                "k_coverage_fraction": 1.0,
+                "n_k_completeness_score": 1.0,
+                "effective_step_um": 0.009999999999999787,
+                "sampling_density": 100.00000000000213,
+                "sampling_score": 1.0,
+                "score": 1.0,
+                "physical_score": 1.0,
+                "grid_source": "source_grid",
+                "grid_load_error": null,
+                "interpolation_available": true,
+                "interpolation_mode": "native",
+                "native_candidate_pool_used": true,
+                "partial_candidate_fallback": false,
+                "rank_key": [
+                  1,
+                  0,
+                  1,
+                  2481
+                ]
+              },
+              "selected_material": "zns"
+            },
+            {
+              "request_id": "material_02",
+              "proposed_material": "al2o3",
+              "target_wavelength_ranges_um": [
+                [
+                  2.5,
+                  3.1
+                ],
+                [
+                  3.25,
+                  3.35
+                ],
+                [
+                  4.2,
+                  4.3
+                ],
+                [
+                  4.45,
+                  5.0
+                ]
+              ],
+              "candidates": [
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "Al2O3",
+                  "resolved_material": "al2o3",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 360,
+                  "shelf": "main",
+                  "book": "Al2O3",
+                  "page": "Kischkat",
+                  "filepath": "main\\Al2O3\\Kischkat.yml",
+                  "range_um": [
+                    1.53941,
+                    14.28571
+                  ],
+                  "grid_range_um": [
+                    1.53941,
+                    14.28571
+                  ],
+                  "n_range_um": [
+                    1.53941,
+                    14.28571
+                  ],
+                  "k_range_um": [
+                    1.53941,
+                    14.28571
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 1450,
+                  "n_points_in_band": 293,
+                  "k_points_in_band": 293,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.0034199999999997566,
+                  "sampling_density": 292.39766081873427,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    1450
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 2,
+                  "material": "Al2O3",
+                  "resolved_material": "al2o3",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 361,
+                  "shelf": "main",
+                  "book": "Al2O3",
+                  "page": "Querry",
+                  "filepath": "main\\Al2O3\\Querry.yml",
+                  "range_um": [
+                    0.21,
+                    12.5
+                  ],
+                  "grid_range_um": [
+                    0.21,
+                    12.5
+                  ],
+                  "n_range_um": [
+                    0.21,
+                    12.5
+                  ],
+                  "k_range_um": [
+                    0.21,
+                    12.5
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 550,
+                  "n_points_in_band": 117,
+                  "k_points_in_band": 117,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.00849999999999973,
+                  "sampling_density": 117.64705882353314,
+                  "sampling_score": 0.4023529411764547,
+                  "score": 0.8007843137254849,
+                  "physical_score": 0.8007843137254849,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    550
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 3,
+                  "material": "Al2O3",
+                  "resolved_material": "al2o3",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 355,
+                  "shelf": "main",
+                  "book": "Al2O3",
+                  "page": "Querry-o",
+                  "filepath": "main\\Al2O3\\Querry-o.yml",
+                  "range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "grid_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "n_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "k_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 612,
+                  "n_points_in_band": 118,
+                  "k_points_in_band": 118,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.008499999999999952,
+                  "sampling_density": 117.64705882353007,
+                  "sampling_score": 0.4023529411764442,
+                  "score": 0.8007843137254814,
+                  "physical_score": 0.8007843137254814,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    612
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 4,
+                  "material": "Al2O3",
+                  "resolved_material": "al2o3",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 356,
+                  "shelf": "main",
+                  "book": "Al2O3",
+                  "page": "Querry-e",
+                  "filepath": "main\\Al2O3\\Querry-e.yml",
+                  "range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "grid_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "n_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "k_range_um": [
+                    0.21,
+                    55.5556
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 612,
+                  "n_points_in_band": 118,
+                  "k_points_in_band": 118,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.008499999999999952,
+                  "sampling_density": 117.64705882353007,
+                  "sampling_score": 0.4023529411764442,
+                  "score": 0.8007843137254814,
+                  "physical_score": 0.8007843137254814,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    612
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 5,
+                  "material": "al2o3",
+                  "resolved_material": "al2o3",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Al",
+                      2
+                    ],
+                    [
+                      "O",
+                      3
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "al2o3",
+                  "shelf": null,
+                  "book": null,
+                  "page": "al2o3.csv",
+                  "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\al2o3.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 139,
+                  "k_points_in_band": 139,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 0.34199999999998293,
+                  "score": 0.780666666666661,
+                  "physical_score": 0.780666666666661,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                }
+              ],
+              "compatible_candidate_count": 5,
+              "status": "ranked",
+              "llm_selection": {
+                "selected_rank": 1,
+                "provider": "rii_sqlite",
+                "dataset_id": 360,
+                "reason": "Highest rank (1) satisfies exact formula constraint for Al2O3 with full target band coverage and highest physical score."
+              },
+              "selected_candidate": {
+                "ranking_schema_version": "material-candidate-ranking.v1",
+                "rank": 1,
+                "material": "Al2O3",
+                "resolved_material": "al2o3",
+                "semantic_match": "exact_formula",
+                "formula_exact": true,
+                "formula_signature": [
+                  [
+                    "Al",
+                    2
+                  ],
+                  [
+                    "O",
+                    3
+                  ]
+                ],
+                "requested_formula_signature": [
+                  [
+                    "Al",
+                    2
+                  ],
+                  [
+                    "O",
+                    3
+                  ]
+                ],
+                "provider": "rii_sqlite",
+                "dataset_id": 360,
+                "shelf": "main",
+                "book": "Al2O3",
+                "page": "Kischkat",
+                "filepath": "main\\Al2O3\\Kischkat.yml",
+                "range_um": [
+                  1.53941,
+                  14.28571
+                ],
+                "grid_range_um": [
+                  1.53941,
+                  14.28571
+                ],
+                "n_range_um": [
+                  1.53941,
+                  14.28571
+                ],
+                "k_range_um": [
+                  1.53941,
+                  14.28571
+                ],
+                "full_coverage": true,
+                "native_nk_full_coverage": true,
+                "has_n": true,
+                "has_k": true,
+                "points": 1450,
+                "n_points_in_band": 293,
+                "k_points_in_band": 293,
+                "band_coverage_fraction": 1.0,
+                "target_band_coverage_score": 1.0,
+                "n_coverage_fraction": 1.0,
+                "k_coverage_fraction": 1.0,
+                "n_k_completeness_score": 1.0,
+                "effective_step_um": 0.0034199999999997566,
+                "sampling_density": 292.39766081873427,
+                "sampling_score": 1.0,
+                "score": 1.0,
+                "physical_score": 1.0,
+                "grid_source": "source_grid",
+                "grid_load_error": null,
+                "interpolation_available": true,
+                "interpolation_mode": "native",
+                "native_candidate_pool_used": true,
+                "partial_candidate_fallback": false,
+                "rank_key": [
+                  1,
+                  0,
+                  1,
+                  1450
+                ]
+              },
+              "selected_material": "Al2O3 (Kischkat)"
+            },
+            {
+              "request_id": "material_03",
+              "proposed_material": "Daimon-20",
+              "target_wavelength_ranges_um": [
+                [
+                  2.5,
+                  3.1
+                ],
+                [
+                  3.25,
+                  3.35
+                ],
+                [
+                  4.2,
+                  4.3
+                ],
+                [
+                  4.45,
+                  5.0
+                ]
+              ],
+              "candidates": [
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "CaF2",
+                  "resolved_material": "daimon20",
+                  "semantic_match": "exact_name",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Ca",
+                      1
+                    ],
+                    [
+                      "F",
+                      2
+                    ]
+                  ],
+                  "requested_formula_signature": [],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 187,
+                  "shelf": "main",
+                  "book": "CaF2",
+                  "page": "Daimon-20",
+                  "filepath": "main\\CaF2\\Daimon-20.yml",
+                  "range_um": [
+                    0.138,
+                    2.326
+                  ],
+                  "grid_range_um": [
+                    0.138,
+                    2.326
+                  ],
+                  "n_range_um": [
+                    0.138,
+                    2.326
+                  ],
+                  "k_range_um": null,
+                  "full_coverage": false,
+                  "native_nk_full_coverage": false,
+                  "has_n": true,
+                  "has_k": false,
+                  "points": 100,
+                  "n_points_in_band": 0,
+                  "k_points_in_band": 0,
+                  "band_coverage_fraction": 0.0,
+                  "target_band_coverage_score": 0.0,
+                  "n_coverage_fraction": 0.0,
+                  "k_coverage_fraction": 0.0,
+                  "n_k_completeness_score": 0.0,
+                  "effective_step_um": null,
+                  "sampling_density": 0.0,
+                  "sampling_score": 0.0,
+                  "score": 0.0,
+                  "physical_score": 0.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": false,
+                  "interpolation_mode": "unavailable",
+                  "native_candidate_pool_used": false,
+                  "partial_candidate_fallback": true,
+                  "rank_key": [
+                    0,
+                    0,
+                    0,
+                    100
+                  ]
+                }
+              ],
+              "compatible_candidate_count": 1,
+              "status": "ranked",
+              "llm_selection": {
+                "selected_rank": 1,
+                "provider": "rii_sqlite",
+                "dataset_id": 187,
+                "reason": "Only available candidate matching CaF2 identity constraint; selected despite zero target band coverage score as no alternatives exist."
+              },
+              "selected_candidate": {
+                "ranking_schema_version": "material-candidate-ranking.v1",
+                "rank": 1,
+                "material": "CaF2",
+                "resolved_material": "daimon20",
+                "semantic_match": "exact_name",
+                "formula_exact": true,
+                "formula_signature": [
+                  [
+                    "Ca",
+                    1
+                  ],
+                  [
+                    "F",
+                    2
+                  ]
+                ],
+                "requested_formula_signature": [],
+                "provider": "rii_sqlite",
+                "dataset_id": 187,
+                "shelf": "main",
+                "book": "CaF2",
+                "page": "Daimon-20",
+                "filepath": "main\\CaF2\\Daimon-20.yml",
+                "range_um": [
+                  0.138,
+                  2.326
+                ],
+                "grid_range_um": [
+                  0.138,
+                  2.326
+                ],
+                "n_range_um": [
+                  0.138,
+                  2.326
+                ],
+                "k_range_um": null,
+                "full_coverage": false,
+                "native_nk_full_coverage": false,
+                "has_n": true,
+                "has_k": false,
+                "points": 100,
+                "n_points_in_band": 0,
+                "k_points_in_band": 0,
+                "band_coverage_fraction": 0.0,
+                "target_band_coverage_score": 0.0,
+                "n_coverage_fraction": 0.0,
+                "k_coverage_fraction": 0.0,
+                "n_k_completeness_score": 0.0,
+                "effective_step_um": null,
+                "sampling_density": 0.0,
+                "sampling_score": 0.0,
+                "score": 0.0,
+                "physical_score": 0.0,
+                "grid_source": "source_grid",
+                "grid_load_error": null,
+                "interpolation_available": false,
+                "interpolation_mode": "unavailable",
+                "native_candidate_pool_used": false,
+                "partial_candidate_fallback": true,
+                "rank_key": [
+                  0,
+                  0,
+                  0,
+                  100
+                ]
+              },
+              "selected_material": "CaF2 (Daimon-20)"
+            }
+          ],
+          "call_count": 1,
+          "selector_payload": {
+            "schema_version": "route-material-selector.v1",
+            "user_question": "我正在为小卫星上的双气体遥感载荷设计共享前端滤光膜。传感器需要同时透过甲烷 3.25–3.35 μm 和二氧化碳 4.20–4.30 μm 两个窄波段的辐射，同时在 2.50–3.10 μm 和 4.45–5.00 μm 抑制太阳及地球背景。请在空气入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。",
+            "target_wavelength_ranges_um": [
+              [
+                2.5,
+                3.1
+              ],
+              [
+                3.25,
+                3.35
+              ],
+              [
+                4.2,
+                4.3
+              ],
+              [
+                4.45,
+                5.0
+              ]
+            ],
+            "selection_rule": "Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.",
+            "requests": [
+              {
+                "request_id": "material_01",
+                "proposed_material": "zns",
+                "target_wavelength_ranges_um": [
+                  [
+                    2.5,
+                    3.1
+                  ],
+                  [
+                    3.25,
+                    3.35
+                  ],
+                  [
+                    4.2,
+                    4.3
+                  ],
+                  [
+                    4.45,
+                    5.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "zns",
+                    "resolved_material": "zns",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "zns",
+                    "shelf": null,
+                    "book": null,
+                    "page": "zns.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 139,
+                    "k_points_in_band": 139,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "ZnS",
+                    "resolved_material": "zns",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 531,
+                    "shelf": "main",
+                    "book": "ZnS",
+                    "page": "Querry",
+                    "filepath": "main\\ZnS\\Querry.yml",
+                    "range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "grid_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "n_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "k_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 312,
+                    "n_points_in_band": 59,
+                    "k_points_in_band": 59,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.016799999999999926,
+                    "sampling_density": 59.52380952380979,
+                    "sampling_score": 0.5952380952380852,
+                    "score": 0.8650793650793617,
+                    "physical_score": 0.8650793650793617,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      312
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 2,
+                "status": "ranked"
+              },
+              {
+                "request_id": "material_02",
+                "proposed_material": "al2o3",
+                "target_wavelength_ranges_um": [
+                  [
+                    2.5,
+                    3.1
+                  ],
+                  [
+                    3.25,
+                    3.35
+                  ],
+                  [
+                    4.2,
+                    4.3
+                  ],
+                  [
+                    4.45,
+                    5.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "Al2O3",
+                    "resolved_material": "al2o3",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 360,
+                    "shelf": "main",
+                    "book": "Al2O3",
+                    "page": "Kischkat",
+                    "filepath": "main\\Al2O3\\Kischkat.yml",
+                    "range_um": [
+                      1.53941,
+                      14.28571
+                    ],
+                    "grid_range_um": [
+                      1.53941,
+                      14.28571
+                    ],
+                    "n_range_um": [
+                      1.53941,
+                      14.28571
+                    ],
+                    "k_range_um": [
+                      1.53941,
+                      14.28571
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 1450,
+                    "n_points_in_band": 293,
+                    "k_points_in_band": 293,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.0034199999999997566,
+                    "sampling_density": 292.39766081873427,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      1450
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "Al2O3",
+                    "resolved_material": "al2o3",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 361,
+                    "shelf": "main",
+                    "book": "Al2O3",
+                    "page": "Querry",
+                    "filepath": "main\\Al2O3\\Querry.yml",
+                    "range_um": [
+                      0.21,
+                      12.5
+                    ],
+                    "grid_range_um": [
+                      0.21,
+                      12.5
+                    ],
+                    "n_range_um": [
+                      0.21,
+                      12.5
+                    ],
+                    "k_range_um": [
+                      0.21,
+                      12.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 550,
+                    "n_points_in_band": 117,
+                    "k_points_in_band": 117,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.00849999999999973,
+                    "sampling_density": 117.64705882353314,
+                    "sampling_score": 0.4023529411764547,
+                    "score": 0.8007843137254849,
+                    "physical_score": 0.8007843137254849,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      550
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 3,
+                    "material": "Al2O3",
+                    "resolved_material": "al2o3",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 355,
+                    "shelf": "main",
+                    "book": "Al2O3",
+                    "page": "Querry-o",
+                    "filepath": "main\\Al2O3\\Querry-o.yml",
+                    "range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "grid_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "n_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "k_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 612,
+                    "n_points_in_band": 118,
+                    "k_points_in_band": 118,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.008499999999999952,
+                    "sampling_density": 117.64705882353007,
+                    "sampling_score": 0.4023529411764442,
+                    "score": 0.8007843137254814,
+                    "physical_score": 0.8007843137254814,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      612
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 4,
+                    "material": "Al2O3",
+                    "resolved_material": "al2o3",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 356,
+                    "shelf": "main",
+                    "book": "Al2O3",
+                    "page": "Querry-e",
+                    "filepath": "main\\Al2O3\\Querry-e.yml",
+                    "range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "grid_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "n_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "k_range_um": [
+                      0.21,
+                      55.5556
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 612,
+                    "n_points_in_band": 118,
+                    "k_points_in_band": 118,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.008499999999999952,
+                    "sampling_density": 117.64705882353007,
+                    "sampling_score": 0.4023529411764442,
+                    "score": 0.8007843137254814,
+                    "physical_score": 0.8007843137254814,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      612
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 5,
+                    "material": "al2o3",
+                    "resolved_material": "al2o3",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Al",
+                        2
+                      ],
+                      [
+                        "O",
+                        3
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "al2o3",
+                    "shelf": null,
+                    "book": null,
+                    "page": "al2o3.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\al2o3.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 139,
+                    "k_points_in_band": 139,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 0.34199999999998293,
+                    "score": 0.780666666666661,
+                    "physical_score": 0.780666666666661,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 5,
+                "status": "ranked"
+              },
+              {
+                "request_id": "material_03",
+                "proposed_material": "Daimon-20",
+                "target_wavelength_ranges_um": [
+                  [
+                    2.5,
+                    3.1
+                  ],
+                  [
+                    3.25,
+                    3.35
+                  ],
+                  [
+                    4.2,
+                    4.3
+                  ],
+                  [
+                    4.45,
+                    5.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "CaF2",
+                    "resolved_material": "daimon20",
+                    "semantic_match": "exact_name",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Ca",
+                        1
+                      ],
+                      [
+                        "F",
+                        2
+                      ]
+                    ],
+                    "requested_formula_signature": [],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 187,
+                    "shelf": "main",
+                    "book": "CaF2",
+                    "page": "Daimon-20",
+                    "filepath": "main\\CaF2\\Daimon-20.yml",
+                    "range_um": [
+                      0.138,
+                      2.326
+                    ],
+                    "grid_range_um": [
+                      0.138,
+                      2.326
+                    ],
+                    "n_range_um": [
+                      0.138,
+                      2.326
+                    ],
+                    "k_range_um": null,
+                    "full_coverage": false,
+                    "native_nk_full_coverage": false,
+                    "has_n": true,
+                    "has_k": false,
+                    "points": 100,
+                    "n_points_in_band": 0,
+                    "k_points_in_band": 0,
+                    "band_coverage_fraction": 0.0,
+                    "target_band_coverage_score": 0.0,
+                    "n_coverage_fraction": 0.0,
+                    "k_coverage_fraction": 0.0,
+                    "n_k_completeness_score": 0.0,
+                    "effective_step_um": null,
+                    "sampling_density": 0.0,
+                    "sampling_score": 0.0,
+                    "score": 0.0,
+                    "physical_score": 0.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": false,
+                    "interpolation_mode": "unavailable",
+                    "native_candidate_pool_used": false,
+                    "partial_candidate_fallback": true,
+                    "rank_key": [
+                      0,
+                      0,
+                      0,
+                      100
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 1,
+                "status": "ranked"
+              }
+            ]
+          },
+          "selector_prompt": {
+            "system": "You are the internal material-dataset selector inside a scientific TMM\nharness. This is not route planning and you must not redesign the route.\nReturn exactly one JSON object and no markdown:\n{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":562,\"reason\":\"...\"}]}\n\nThe user question is authoritative. Each request contains candidates already\nretrieved from the local MaterialRegistry and sorted by three equal physical\nmetrics: target-band coverage, n/k completeness, and sampling density. Rank 1\nis the most physically reliable candidate; lower rank means less reliable.\nChoose exactly one candidate from the supplied list for every request. Never\ninvent, rename, or edit a provider or dataset_id. The selected_rank must point\nto the selected array element, and provider/dataset_id must copy that element.\n\nMaterial identity, stoichiometry, explicit material state/preparation, and an\nexplicit requested source are hard constraints. A candidate with\nformula_exact=false or semantic_match=same_element_family is not an allowed\nsubstitute for a formula request. SiO is not SiO2, even if the SiO2 candidate\nhas better physical coverage. When several candidates satisfy the hard\nconstraints, select the highest-ranked one (usually rank 1). If no candidate\nsatisfies them, return selected_rank:null, provider:null, dataset_id:null and\nreason:\"needs_confirmation\" for that request.",
+            "user": "{\"requests\": [{\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"zns\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\zns.csv\", \"formula_exact\": true, \"formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 139, \"k_range_um\": [0.2, 25.0], \"material\": \"zns\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 139, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"zns.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"resolved_material\": \"zns\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"ZnS\", \"dataset_id\": 531, \"effective_step_um\": 0.016799999999999926, \"filepath\": \"main\\\\ZnS\\\\Querry.yml\", \"formula_exact\": true, \"formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.22, 166.6667], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 59, \"k_range_um\": [0.22, 166.6667], \"material\": \"ZnS\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 59, \"n_range_um\": [0.22, 166.6667], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Querry\", \"partial_candidate_fallback\": false, \"physical_score\": 0.8650793650793617, \"points\": 312, \"provider\": \"rii_sqlite\", \"range_um\": [0.22, 166.6667], \"rank\": 2, \"rank_key\": [1, 0, 1, 312], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"resolved_material\": \"zns\", \"sampling_density\": 59.52380952380979, \"sampling_score\": 0.5952380952380852, \"score\": 0.8650793650793617, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 2, \"proposed_material\": \"zns\", \"request_id\": \"material_01\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[2.5, 3.1], [3.25, 3.35], [4.2, 4.3], [4.45, 5.0]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": \"Al2O3\", \"dataset_id\": 360, \"effective_step_um\": 0.0034199999999997566, \"filepath\": \"main\\\\Al2O3\\\\Kischkat.yml\", \"formula_exact\": true, \"formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [1.53941, 14.28571], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 293, \"k_range_um\": [1.53941, 14.28571], \"material\": \"Al2O3\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 293, \"n_range_um\": [1.53941, 14.28571], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Kischkat\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 1450, \"provider\": \"rii_sqlite\", \"range_um\": [1.53941, 14.28571], \"rank\": 1, \"rank_key\": [1, 0, 1, 1450], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"resolved_material\": \"al2o3\", \"sampling_density\": 292.39766081873427, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"Al2O3\", \"dataset_id\": 361, \"effective_step_um\": 0.00849999999999973, \"filepath\": \"main\\\\Al2O3\\\\Querry.yml\", \"formula_exact\": true, \"formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.21, 12.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 117, \"k_range_um\": [0.21, 12.5], \"material\": \"Al2O3\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 117, \"n_range_um\": [0.21, 12.5], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Querry\", \"partial_candidate_fallback\": false, \"physical_score\": 0.8007843137254849, \"points\": 550, \"provider\": \"rii_sqlite\", \"range_um\": [0.21, 12.5], \"rank\": 2, \"rank_key\": [1, 0, 1, 550], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"resolved_material\": \"al2o3\", \"sampling_density\": 117.64705882353314, \"sampling_score\": 0.4023529411764547, \"score\": 0.8007843137254849, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"Al2O3\", \"dataset_id\": 355, \"effective_step_um\": 0.008499999999999952, \"filepath\": \"main\\\\Al2O3\\\\Querry-o.yml\", \"formula_exact\": true, \"formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.21, 55.5556], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 118, \"k_range_um\": [0.21, 55.5556], \"material\": \"Al2O3\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 118, \"n_range_um\": [0.21, 55.5556], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Querry-o\", \"partial_candidate_fallback\": false, \"physical_score\": 0.8007843137254814, \"points\": 612, \"provider\": \"rii_sqlite\", \"range_um\": [0.21, 55.5556], \"rank\": 3, \"rank_key\": [1, 0, 1, 612], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"resolved_material\": \"al2o3\", \"sampling_density\": 117.64705882353007, \"sampling_score\": 0.4023529411764442, \"score\": 0.8007843137254814, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"Al2O3\", \"dataset_id\": 356, \"effective_step_um\": 0.008499999999999952, \"filepath\": \"main\\\\Al2O3\\\\Querry-e.yml\", \"formula_exact\": true, \"formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.21, 55.5556], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 118, \"k_range_um\": [0.21, 55.5556], \"material\": \"Al2O3\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 118, \"n_range_um\": [0.21, 55.5556], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Querry-e\", \"partial_candidate_fallback\": false, \"physical_score\": 0.8007843137254814, \"points\": 612, \"provider\": \"rii_sqlite\", \"range_um\": [0.21, 55.5556], \"rank\": 4, \"rank_key\": [1, 0, 1, 612], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"resolved_material\": \"al2o3\", \"sampling_density\": 117.64705882353007, \"sampling_score\": 0.4023529411764442, \"score\": 0.8007843137254814, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"al2o3\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\al2o3.csv\", \"formula_exact\": true, \"formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 139, \"k_range_um\": [0.2, 25.0], \"material\": \"al2o3\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 139, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"al2o3.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 0.780666666666661, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 5, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Al\", 2], [\"O\", 3]], \"resolved_material\": \"al2o3\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 0.34199999999998293, \"score\": 0.780666666666661, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 5, \"proposed_material\": \"al2o3\", \"request_id\": \"material_02\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[2.5, 3.1], [3.25, 3.35], [4.2, 4.3], [4.45, 5.0]]}, {\"candidates\": [{\"band_coverage_fraction\": 0.0, \"book\": \"CaF2\", \"dataset_id\": 187, \"effective_step_um\": null, \"filepath\": \"main\\\\CaF2\\\\Daimon-20.yml\", \"formula_exact\": true, \"formula_signature\": [[\"Ca\", 1], [\"F\", 2]], \"full_coverage\": false, \"grid_load_error\": null, \"grid_range_um\": [0.138, 2.326], \"grid_source\": \"source_grid\", \"has_k\": false, \"has_n\": true, \"interpolation_available\": false, \"interpolation_mode\": \"unavailable\", \"k_coverage_fraction\": 0.0, \"k_points_in_band\": 0, \"k_range_um\": null, \"material\": \"CaF2\", \"n_coverage_fraction\": 0.0, \"n_k_completeness_score\": 0.0, \"n_points_in_band\": 0, \"n_range_um\": [0.138, 2.326], \"native_candidate_pool_used\": false, \"native_nk_full_coverage\": false, \"page\": \"Daimon-20\", \"partial_candidate_fallback\": true, \"physical_score\": 0.0, \"points\": 100, \"provider\": \"rii_sqlite\", \"range_um\": [0.138, 2.326], \"rank\": 1, \"rank_key\": [0, 0, 0, 100], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [], \"resolved_material\": \"daimon20\", \"sampling_density\": 0.0, \"sampling_score\": 0.0, \"score\": 0.0, \"semantic_match\": \"exact_name\", \"shelf\": \"main\", \"target_band_coverage_score\": 0.0}], \"compatible_candidate_count\": 1, \"proposed_material\": \"Daimon-20\", \"request_id\": \"material_03\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[2.5, 3.1], [3.25, 3.35], [4.2, 4.3], [4.45, 5.0]]}], \"schema_version\": \"route-material-selector.v1\", \"selection_rule\": \"Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.\", \"target_wavelength_ranges_um\": [[2.5, 3.1], [3.25, 3.35], [4.2, 4.3], [4.45, 5.0]], \"user_question\": \"我正在为小卫星上的双气体遥感载荷设计共享前端滤光膜。传感器需要同时透过甲烷 3.25–3.35 μm 和二氧化碳 4.20–4.30 μm 两个窄波段的辐射，同时在 2.50–3.10 μm 和 4.45–5.00 μm 抑制太阳及地球背景。请在空气入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。\"}",
+            "sha256": "b2a72b61b2e342d2e7f5eb60343ef37886b1fe83aec4939dd5ef2c3a3ef571eb"
+          },
+          "selector_model": "qwen3.5-plus",
+          "selector_response": {
+            "raw_content": "{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"zns\",\"reason\":\"Highest rank (1) satisfies exact formula constraint for ZnS with full target band coverage and highest sampling density.\"},{\"request_id\":\"material_02\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":360,\"reason\":\"Highest rank (1) satisfies exact formula constraint for Al2O3 with full target band coverage and highest physical score.\"},{\"request_id\":\"material_03\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":187,\"reason\":\"Only available candidate matching CaF2 identity constraint; selected despite zero target band coverage score as no alternatives exist.\"}]}",
+            "sha256": "67e5f4448f21628b7a9d280b92e28f3c491d4c2ad0b50f1e7d5c0df7e8ad46fd",
+            "usage": {
+              "model_name": "qwen3.5-plus",
+              "mock_llm": false,
+              "prompt_tokens": 4830,
+              "completion_tokens": 5265,
+              "total_tokens": 10095
+            }
+          }
+        },
+        "resolved": [
+          {
+            "proposed": "zns",
+            "ok": true,
+            "resolved": "zns",
+            "code": null,
+            "detail": null,
+            "choices": [],
+            "near": [],
+            "where": "proposed_materials",
+            "dataset_names": [],
+            "provider": "local_csv",
+            "dataset_id": "zns",
+            "source": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+            "coverage_um": [
+              0.2,
+              25.0
+            ],
+            "dataset": "local_csv:zns"
+          },
+          {
+            "proposed": "Al2O3 (Kischkat)",
+            "ok": true,
+            "resolved": "al2o3",
+            "code": null,
+            "detail": null,
+            "choices": [],
+            "near": [],
+            "where": "proposed_materials",
+            "dataset_names": [],
+            "provider": "rii_sqlite",
+            "dataset_id": "360",
+            "source": "main\\Al2O3\\Kischkat.yml",
+            "coverage_um": [
+              1.53941,
+              14.28571
+            ],
+            "dataset": "rii_sqlite:360"
+          },
+          {
+            "proposed": "CaF2 (Daimon-20)",
+            "ok": true,
+            "resolved": "caf2",
+            "code": null,
+            "detail": null,
+            "choices": [],
+            "near": [],
+            "where": "proposed_materials",
+            "dataset_names": [],
+            "provider": "rii_sqlite",
+            "dataset_id": "187",
+            "source": "main\\CaF2\\Daimon-20.yml",
+            "coverage_um": [
+              0.138,
+              2.326
+            ],
+            "dataset": "rii_sqlite:187"
+          }
+        ]
+      }
+    },
+    "repaired": [
+      {
+        "attempt": 1,
+        "route": "control_route_01",
+        "materials": [
+          {
+            "proposed": "CaF2",
+            "ok": false,
+            "resolved": null,
+            "code": "ambiguous",
+            "detail": "Material reference 'CaF2' is ambiguous among: rii_sqlite:186, rii_sqlite:187, rii_sqlite:188, rii_sqlite:189",
+            "choices": [
+              "rii_sqlite:186",
+              "rii_sqlite:187",
+              "rii_sqlite:188",
+              "rii_sqlite:189"
+            ],
+            "near": [],
+            "where": "execution_request_english",
+            "dataset_names": [
+              "Daimon-20",
+              "Daimon-25"
+            ],
+            "provider": null,
+            "dataset_id": null,
+            "source": null,
+            "coverage_um": null,
+            "dataset": null
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_17/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "99be3da0108e8edde04f906709a368a1b28b007093bee6ce68caf4cabdea3dd8",
+  "recorded_at_utc": "2026-08-29T01:45:44.651844+00:00",
+  "elapsed_seconds": 4224.055251399986,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_17",
+  "route_id": "route_04",
+  "scientific_hypothesis": "Adding a gradient smoothness penalty (lambda ~0.1) to the objective function targeting adjacent layer thickness differences will suppress the erratic thickness jumps observed in iteration_13 candidates while preserving the coherent phase-matching structure, leading to improved robustness without sacrificing target score.",
+  "expected_advantages": [
+    "Reduced thickness variance improves manufacturing tolerance",
+    "Smooth chirp maintains phase coherence across reflection band",
+    "Better convergence stability compared to unregularized gradient optimization"
+  ],
+  "known_risks": [
+    "Over-regularization may trap optimizer in suboptimal local minimum",
+    "Smoothness constraint may limit achievable reflection bandwidth"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should show improved average reflectance across 400-700 nm compared to route_01, with tightest_margin indicating broader band coverage",
+    "If hypothesis fails: best_target_score should match or fall below route_01, indicating chirp does not benefit this band combination",
+    "thicknesses_nm should show monotonic increase or decrease across the stack if chirp is utilized"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If chirp factor converges to 1.0 (no chirp), periodic design is optimal; stop and keep uniform thickness design"
+  ]
+}

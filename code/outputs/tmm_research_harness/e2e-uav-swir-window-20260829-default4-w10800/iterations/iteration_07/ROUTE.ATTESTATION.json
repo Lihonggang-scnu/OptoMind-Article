@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_07/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "f483ae286131534d66a2f1d502aea3c9625796f32fae43ee41b13695fde53272",
+  "recorded_at_utc": "2026-08-28T17:13:26.302775+00:00",
+  "elapsed_seconds": 1800.8850747999968,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_07",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Increasing layer count from 16 to 24 while applying widened initialization envelope (odd layers 20-40 nm, even layers 80-110 nm) with 5% periodic scaling perturbation will improve dual-band spectral separation by providing additional degrees of freedom for optimization without exceeding the 30-layer manufacturing constraint.",
+  "expected_advantages": [
+    "Higher best_target_score than 16-layer baseline (0.8649)",
+    "Improved spectral separation between UV and SWIR bands",
+    "More thickness degrees of freedom for optimization"
+  ],
+  "known_risks": [
+    "Increased computational cost with more layers",
+    "Potential for local minima in larger search space",
+    "May not improve if 16 layers already near-optimal for this material pair"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should increase with period scaling optimization and tightest_margin should remain stable across rounds",
+    "Reflectance in 200-400 nm band should exceed 90% with 14 pairs",
+    "Transmittance in 800-1500 nm band should exceed 85% if secondary bands do not overlap",
+    "If hypothesis fails, best_target_score will plateau early and tightest_margin will decrease as optimization attempts to suppress SWIR reflection bands"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If tightest_margin falls below 0.1 for three consecutive rounds while adjusting period scaling, relax the scaling range constraint and continue",
+    "If valid_candidates drops to zero for two rounds, reduce the number of pairs by 2 and restart optimization"
+  ]
+}

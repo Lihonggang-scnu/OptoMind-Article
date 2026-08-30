@@ -1,0 +1,188 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_03 based on prior iteration evidence. Three routes proposed: (1) tightened initialization bounds with variance penalty per feedback directives, (2) expanded 27-layer topology to explore cavity depth tradeoff, (3) alternative HfO2/SiO2 material pair for higher index contrast. All routes maintain parent_route_id = route_03 per refinement chain requirement.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "Tightened initialization with variance penalty on 25-layer SiO2/Al2O3",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constraining thickness initialization to ±8 nm around nominal quarter-wave optical thicknesses at 267.5 nm, combined with a soft penalty on variance of adjacent high-index layers, will reduce optimizer overshoot near resonant basin boundaries and improve target score convergence compared to the ±15-20% bounds used in prior iterations.",
+        "design_principle": "Apply feedback-directed refinement: tighter initialization bounds dampen exploration noise, variance penalty suppresses spurious phase modulation between adjacent high-index layers, and reduced learning rate (50%) prevents oscillation near optima.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "25 finite coating layers on fused silica substrate, air incidence. Alternating SiO2/Al2O3 stack with asymmetric cavity structure: [SiO2|Al2O3]_12 + central SiO2 cavity layer.",
+        "design_variables": [
+          "layer thicknesses (bounded ±8 nm from quarter-wave nominal at 267.5 nm)",
+          "optimizer learning rate (reduced 50% from prior)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 25 (within 30-layer limit)",
+          "no metal layers",
+          "conventional depositable inorganic dielectrics",
+          "thickness tolerance ±8 nm achievable with ALD or IAD"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent multilayer interference",
+          "Quarter-wave stack theory for Bragg mirror design",
+          "Cavity resonance theory for bandpass filtering"
+        ],
+        "expected_advantages": [
+          "Faster convergence due to tighter initialization",
+          "Reduced risk of local minima trapping",
+          "More reproducible thickness profiles across candidates"
+        ],
+        "known_risks": [
+          "Overly tight bounds may prevent escape from suboptimal basins",
+          "Variance penalty may suppress beneficial asymmetry"
+        ],
+        "execution_request_english": "Optimize a 25-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating SiO2 and Al2O3 starting with SiO2, total 25 finite coating layers. Initialize thicknesses at quarter-wave optical thickness for 267.5 nm center wavelength (SiO2 ~45 nm, Al2O3 ~67 nm based on typical UV indices). Apply optimization bounds of ±8 nm from nominal for all layers. Include soft penalty term proportional to variance of adjacent Al2O3 layer thicknesses. Use gradient-based thickness optimizer with learning rate reduced to 50% of default value. Evaluate coherent TMM transmission across three bands: 255-280 nm (maximize), 300-700 nm (minimize), 700-1100 nm (minimize). No metal layers permitted. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Direct response to feedback directives: tighten initialization bounds to ±8 nm, add variance penalty on adjacent high-index layers, reduce learning rate by 50% to dampen overshoot."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "Expanded 27-layer asymmetric cavity with deeper Bragg mirrors",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing layer count from 25 to 27 while maintaining asymmetric cavity structure will provide deeper stopbands in visible and NIR regions without compromising UV passband transmission, as additional Bragg pairs increase reflectivity bandwidth.",
+        "design_principle": "Add one Bragg pair to each mirror section while preserving central cavity structure. Extra layers provide additional degrees of freedom for stopband shaping without fundamentally altering the resonant cavity mechanism.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "27 finite coating layers on fused silica substrate, air incidence. Alternating SiO2/Al2O3 stack: 7 pairs front mirror + central cavity + 7 pairs rear mirror.",
+        "design_variables": [
+          "layer thicknesses (bounded ±10 nm from quarter-wave nominal at 267.5 nm)",
+          "cavity layer thickness (bounded ±15 nm from half-wave nominal)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 27 (within 30-layer limit)",
+          "no metal layers",
+          "conventional depositable inorganic dielectrics",
+          "slightly increased deposition time vs 25-layer design"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b"
+        ],
+        "theory_basis": [
+          "1-D photonic crystal filter theory with periodic main-function units",
+          "Bragg mirror reflectivity scaling with pair count",
+          "Cavity resonance bandwidth vs mirror reflectivity tradeoff"
+        ],
+        "expected_advantages": [
+          "Deeper stopbands in visible and NIR due to additional Bragg pairs",
+          "More design freedom for spectral shaping",
+          "Potential improvement in out-of-band rejection ratio"
+        ],
+        "known_risks": [
+          "Increased layer count may introduce more thickness accumulation error",
+          "Additional layers may create secondary transmission peaks in stopband",
+          "May not improve target score if 25-layer already near optimal for this material pair"
+        ],
+        "execution_request_english": "Optimize a 27-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating SiO2 and Al2O3 starting with SiO2, total 27 finite coating layers arranged as 7 Bragg pairs front mirror, central cavity layer (SiO2 half-wave optical thickness at 267.5 nm), 7 Bragg pairs rear mirror. Initialize Bragg pair thicknesses at quarter-wave optical thickness for 267.5 nm (SiO2 ~45 nm, Al2O3 ~67 nm). Apply optimization bounds of ±10 nm from nominal for Bragg layers, ±15 nm for cavity layer. Use gradient-based thickness optimizer. Evaluate coherent TMM transmission across three bands: 255-280 nm (maximize), 300-700 nm (minimize), 700-1100 nm (minimize). No metal layers permitted. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Explore layer count tradeoff: iteration_11 showed 29-layer did not improve over 25-layer; test intermediate 27-layer to determine if modest expansion helps without excessive complexity."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "HfO2/SiO2 material pair with higher index contrast",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing Al2O3 with HfO2 as the high-index material will increase refractive index contrast, enabling fewer layers to achieve equivalent stopband depth or deeper rejection with same layer count, potentially improving the multi-band objective score.",
+        "design_principle": "HfO2 has higher refractive index (~2.0-2.1 in UV) compared to Al2O3 (~1.6-1.7), providing greater index contrast with SiO2 (~1.5). Higher contrast reduces required layer count for target reflectivity, leaving more degrees of freedom for passband optimization.",
+        "proposed_materials": [
+          "SiO2",
+          "HfO2"
+        ],
+        "proposed_topology": "25 finite coating layers on fused silica substrate, air incidence. Alternating SiO2/HfO2 stack with asymmetric cavity structure matching route_03 topology.",
+        "design_variables": [
+          "layer thicknesses (bounded ±10 nm from quarter-wave nominal at 267.5 nm)",
+          "material pair (HfO2 instead of Al2O3)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 25 (within 30-layer limit)",
+          "no metal layers",
+          "HfO2 requires ion-assisted deposition for density and moisture stability",
+          "HfO2 may exhibit thickness inhomogeneity if not ion-assisted"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341"
+        ],
+        "theory_basis": [
+          "Index contrast scaling of Bragg mirror reflectivity",
+          "HfO2/SiO2 material system for UV filters with moisture stability",
+          "Transfer Matrix Method with material-specific optical constants"
+        ],
+        "expected_advantages": [
+          "Higher index contrast enables deeper stopbands with same layer count",
+          "HfO2 has proven UV transparency and moisture stability with IAD",
+          "May achieve better visible/NIR suppression without increasing layer count"
+        ],
+        "known_risks": [
+          "HfO2 may have higher absorption in deep UV than Al2O3",
+          "HfO2 thickness inhomogeneity without ion-assistance may reduce reproducibility",
+          "Material optical constants may differ from nominal values in actual deposition"
+        ],
+        "execution_request_english": "Optimize a 25-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating SiO2 and HfO2 starting with SiO2, total 25 finite coating layers arranged with asymmetric cavity structure. Initialize thicknesses at quarter-wave optical thickness for 267.5 nm center wavelength (SiO2 ~45 nm, HfO2 ~33 nm based on typical UV indices n~1.5 and n~2.05). Apply optimization bounds of ±10 nm from nominal for all layers. Use gradient-based thickness optimizer. Evaluate coherent TMM transmission across three bands: 255-280 nm (maximize), 300-700 nm (minimize), 700-1100 nm (minimize). No metal layers permitted. Assume HfO2 deposited with ion-assisted deposition for density. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Material diversity exploration: prior iterations only tested SiO2/Al2O3; HfO2/SiO2 offers higher index contrast per evidence, may improve stopband depth without layer count increase."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b motivated the periodic stack with AR matching approach used in route_03_refine_01 and route_03_refine_02",
+      "Evidence s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98 provided HfO2/SiO2 material system justification for route_03_refine_03, noting IAD process for moisture stability",
+      "Prior iteration results (iteration_07 best_target_score 0.379 vs iteration_11 0.293) informed the decision to test 27-layer intermediate rather than jumping to higher counts",
+      "Feedback directives directly shaped route_03_refine_01 initialization bounds and variance penalty design"
+    ],
+    "unresolved_decisions": [
+      "Whether tighter initialization bounds (±8 nm) will prevent escape from local minima or improve convergence",
+      "Whether HfO2 absorption in 255-280 nm band will offset index contrast benefits",
+      "Optimal layer count between 25 and 30 for this specific three-band objective"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 17412,
+      "completion_tokens": 4677,
+      "total_tokens": 22089
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

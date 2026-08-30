@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_05/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "a4c3e9308dc021739a6e37c40a1ae1de414eeacfb7f40c4f8bff0f4d1e9f9da8",
+  "recorded_at_utc": "2026-08-28T17:03:42.519583+00:00",
+  "elapsed_seconds": 1217.1021319999709,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_05",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Constraining thickness updates to ±15 nm from the previous best candidate (opt_aperiodic_hfosio2_24l__gradien__ae5ad96294fa) will resolve coarse optimization jumps while preserving the dual-band spectral balance achieved in round 1.",
+  "expected_advantages": [
+    "Preserves dual-band balance from round 1",
+    "Reduces risk of large thickness jumps disrupting interference conditions",
+    "Quarter-wave bias at 1150 nm improves SWIR transmission phase alignment"
+  ],
+  "known_risks": [
+    "Bounded search may miss global optimum if previous candidate is in local minimum",
+    "Quarter-wave penalty may constrain UV reflection optimization"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should rise across rounds as thickness optimization decouples the two bands, and tightest_margin should not fall",
+    "Aperiodic design should show lower reflectance in 800-1500 nm compared to Route 1's periodic stack",
+    "UV reflectance 200-400 nm should match or exceed Route 1 with fewer layers (24 vs 28)",
+    "If hypothesis fails, best_target_score will not exceed Route 1's score and valid_candidates will decrease as thickness combinations become physically invalid"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, expand the thickness bounds to 20-250 nm and continue",
+    "If tightest_margin remains below 0.05 for four consecutive rounds, fix the 6 thinnest layers and optimize only the remaining 18"
+  ]
+}

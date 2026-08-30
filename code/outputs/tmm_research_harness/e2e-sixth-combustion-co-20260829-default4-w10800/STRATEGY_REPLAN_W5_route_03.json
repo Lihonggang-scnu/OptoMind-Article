@@ -1,0 +1,202 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_03 after multiple material_data and compilation failures. Three complementary Fabry-Perot cavity designs proposed with verified IR dielectric material pairs, explicit layer counts, and diagnostic initialization checks. Route 1: 22-layer Ge/ZnS two-cavity design following evidence-based MIR filter topology. Route 2: 20-layer Si3N4/MgF2 alternative material pair with lower absorption in 3-5μm range. Route 3: 18-layer simplified single-cavity with thicker spacer for dual-band merging. All routes include explicit thickness bounds, quarter-wave seeding, and material registry validation steps to prevent prior truncation errors.",
+    "routes": [
+      {
+        "route_id": "route_03_refinement_01",
+        "title": "22-Layer Ge/ZnS Two-Cavity Fabry-Perot Dual-Band Filter with Validated Material Names",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot structure with Ge (high-index) and ZnS (low-index) quarter-wave stacks separated by cavity spacer layers can simultaneously transmit both 4.15-4.35μm and 4.55-4.75μm bands while blocking 3.60-4.00μm and 4.85-5.20μm stopbands on CaF2 substrate.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter using alternating quarter-wave high-low index dielectric layers with computational thickness optimization. Two cavities enable dual-passband shaping from triangular to square profile per evidence on MIR filter design.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | [Ge/ZnS]_4 mirror | Ge cavity spacer | [Ge/ZnS]_3 coupling | Ge cavity spacer | [Ge/ZnS]_4 mirror | Air. Total 22 finite layers (11 Ge + 11 ZnS).",
+        "design_variables": [
+          "individual layer thicknesses for all 22 layers",
+          "cavity spacer thicknesses (2 variables)",
+          "mirror pair thicknesses (20 variables)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35μm passband",
+          "maximize mean transmittance in 4.55-4.75μm passband",
+          "minimize mean transmittance in 3.60-4.00μm stopband",
+          "minimize mean transmittance in 4.85-5.20μm stopband"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers per requirement",
+          "22 layers within 24-layer maximum",
+          "Ge and ZnS are conventional depositable IR dielectrics",
+          "total thickness should remain under 10μm for stress management"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for coherent thin-film interference",
+          "Fabry-Perot cavity resonance condition: 2nd = mλ for constructive transmission",
+          "Quarter-wave stack reflectance increases with pair count"
+        ],
+        "expected_advantages": [
+          "Ge/ZnS has high index contrast (~4.0 vs ~2.3) for strong reflectors",
+          "Two cavities enable dual-band transmission shaping",
+          "22 layers provides sufficient degrees of freedom for optimization"
+        ],
+        "known_risks": [
+          "Material registry name mismatch caused prior failures - must verify 'Ge' and 'ZnS' are valid identifiers",
+          "Ge has absorption edge near 2μm but should be transparent in 3-5μm range",
+          "Fabrication tolerance sensitivity increases with layer count"
+        ],
+        "execution_request_english": "Design a 22-layer dielectric bandpass filter on CaF2 substrate for dual-band IR transmission. Stack topology: CaF2 | (Ge/ZnS)_4 | Ge_cavity | (Ge/ZnS)_3 | Ge_cavity | (Ge/ZnS)_4 | Air. Initialize all Ge layers at quarter-wave thickness for 4.45μm center wavelength (n_Ge≈4.0, thickness≈278nm). Initialize all ZnS layers at quarter-wave thickness (n_ZnS≈2.3, thickness≈484nm). Initialize both cavity spacers at half-wave thickness (≈556nm). Set thickness search bounds: Ge layers [150, 450]nm, ZnS layers [300, 650]nm, cavity spacers [400, 750]nm. Verify material registry accepts 'Ge' and 'ZnS' as valid identifiers before optimization. Optimize all 22 layer thicknesses to maximize transmittance in 4.15-4.35μm and 4.55-4.75μm bands while minimizing transmittance in 3.60-4.00μm and 4.85-5.20μm bands. Use coherent TMM at normal incidence. Log initialization thickness vector and material lookup results for diagnostic purposes. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Prior route_03 iterations failed due to material_data errors and compilation issues. This revision explicitly validates material registry names ('Ge' and 'ZnS' instead of potentially truncated 'si'), uses evidence-backed Ge/ZnS pair for MIR range, maintains 22-layer two-cavity Fabry-Perot topology with explicit layer count, and adds diagnostic logging for initialization to identify rejection causes."
+      },
+      {
+        "route_id": "route_03_refinement_02",
+        "title": "20-Layer Si3N4/MgF2 Two-Cavity Filter with Lower Absorption Risk",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot structure with Si3N4 (high-index) and MgF2 (low-index) can achieve dual-band transmission in 4.15-4.35μm and 4.55-4.75μm with lower absorption risk than Ge-based designs in the 3-5μm range.",
+        "design_principle": "Alternative dielectric material pair with verified IR transparency. Si3N4 and MgF2 have lower absorption coefficients in mid-IR compared to Ge, reducing risk of material_data failures while maintaining sufficient index contrast (~2.0 vs ~1.35) for reflector stacks.",
+        "proposed_materials": [
+          "Si3N4",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | [Si3N4/MgF2]_4 mirror | Si3N4 cavity spacer | [Si3N4/MgF2]_3 coupling | Si3N4 cavity spacer | [Si3N4/MgF2]_4 mirror | Air. Total 20 finite layers (10 Si3N4 + 10 MgF2).",
+        "design_variables": [
+          "individual layer thicknesses for all 20 layers",
+          "cavity spacer thicknesses (2 variables)",
+          "mirror pair thicknesses (18 variables)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35μm passband",
+          "maximize mean transmittance in 4.55-4.75μm passband",
+          "minimize mean transmittance in 3.60-4.00μm stopband",
+          "minimize mean transmittance in 4.85-5.20μm stopband"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers per requirement",
+          "20 layers within 24-layer maximum",
+          "Si3N4 and MgF2 are conventional depositable dielectrics",
+          "lower index contrast requires more layers but reduces absorption risk"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:15:2366:2c56de8aab10e3af"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for coherent thin-film interference",
+          "Fabry-Perot cavity resonance with lower-index-contrast materials",
+          "Quarter-wave stack design principle"
+        ],
+        "expected_advantages": [
+          "Si3N4 and MgF2 have well-characterized optical constants in material registries",
+          "Lower absorption in 3-5μm range reduces material_data failure risk",
+          "20 layers provides optimization flexibility while staying under 24-layer limit"
+        ],
+        "known_risks": [
+          "Lower index contrast (~2.0/1.35 vs ~4.0/2.3) requires more layers for equivalent reflectance",
+          "MgF2 may have absorption features beyond 4.5μm that need verification",
+          "Dual-band separation may be harder to achieve with lower contrast"
+        ],
+        "execution_request_english": "Design a 20-layer dielectric bandpass filter on CaF2 substrate for dual-band IR transmission. Stack topology: CaF2 | (Si3N4/MgF2)_4 | Si3N4_cavity | (Si3N4/MgF2)_3 | Si3N4_cavity | (Si3N4/MgF2)_4 | Air. Initialize all Si3N4 layers at quarter-wave thickness for 4.45μm center wavelength (n_Si3N4≈2.0, thickness≈556nm). Initialize all MgF2 layers at quarter-wave thickness (n_MgF2≈1.35, thickness≈824nm). Initialize both cavity spacers at half-wave thickness (≈1112nm). Set thickness search bounds: Si3N4 layers [350, 750]nm, MgF2 layers [550, 1000]nm, cavity spacers [800, 1400]nm. Verify material registry accepts 'Si3N4' and 'MgF2' as valid identifiers before optimization. Optimize all 20 layer thicknesses to maximize transmittance in 4.15-4.35μm and 4.55-4.75μm bands while minimizing transmittance in 3.60-4.00μm and 4.85-5.20μm bands. Use coherent TMM at normal incidence. Log initialization thickness vector and material lookup results for diagnostic purposes. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Alternative to route_03_refinement_01 in case Ge/ZnS material registry lookup fails. Si3N4/MgF2 pair is commonly available in thin-film material databases with well-characterized IR optical constants. Reduces absorption risk while maintaining two-cavity Fabry-Perot topology. Layer count reduced to 20 to compensate for lower index contrast while staying within 24-layer limit."
+      },
+      {
+        "route_id": "route_03_refinement_03",
+        "title": "18-Layer ThSi2/YF3 Simplified Single-Cavity with Broader Passband",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A simplified single-cavity Fabry-Perot design with ThSi2 (high-index) and YF3 (low-index) can achieve merged dual-band transmission by using a broader passband that covers both 4.15-4.35μm and 4.55-4.75μm ranges with a single resonance peak.",
+        "design_principle": "Single-cavity design reduces optimization complexity and layer count while using a broader passband to cover both target bands. ThSi2/YF3 material pair offers high index contrast with verified IR transparency. Broader FWHM merges the two passbands into one continuous transmission window.",
+        "proposed_materials": [
+          "ThSi2",
+          "YF3",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | [ThSi2/YF3]_4 mirror | ThSi2 cavity spacer | [ThSi2/YF3]_4 mirror | Air. Total 18 finite layers (9 ThSi2 + 9 YF3).",
+        "design_variables": [
+          "individual layer thicknesses for all 18 layers",
+          "cavity spacer thickness (1 variable)",
+          "mirror pair thicknesses (16 variables)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance across merged 4.15-4.75μm band",
+          "minimize mean transmittance in 3.60-4.00μm stopband",
+          "minimize mean transmittance in 4.85-5.20μm stopband",
+          "maintain transmittance uniformity across merged passband"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers per requirement",
+          "18 layers provides margin under 24-layer maximum",
+          "ThSi2 and YF3 are depositable IR dielectrics",
+          "simpler topology reduces fabrication complexity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba"
+        ],
+        "theory_basis": [
+          "Single-cavity Fabry-Perot transmission profile",
+          "Broader passband achieved through reduced mirror reflectance (fewer pairs)",
+          "Quarter-wave stack design with cavity resonance"
+        ],
+        "expected_advantages": [
+          "Fewer layers (18) reduces optimization complexity and material_data failure risk",
+          "Single cavity simplifies thickness optimization",
+          "Broader passband may better accommodate both target bands without precise dual-peak tuning",
+          "ThSi2/YF3 pair has high index contrast for strong reflectors with fewer pairs"
+        ],
+        "known_risks": [
+          "Merged passband may not provide sufficient spectral selectivity between CO and CO2 bands",
+          "Single cavity produces triangular rather than square passband profile",
+          "ThSi2 material availability in registry may be limited compared to Ge or Si3N4"
+        ],
+        "execution_request_english": "Design an 18-layer dielectric bandpass filter on CaF2 substrate for broad IR transmission covering 4.15-4.75μm. Stack topology: CaF2 | (ThSi2/YF3)_4 | ThSi2_cavity | (ThSi2/YF3)_4 | Air. Initialize all ThSi2 layers at quarter-wave thickness for 4.45μm center wavelength (n_ThSi2≈3.0, thickness≈371nm). Initialize all YF3 layers at quarter-wave thickness (n_YF3≈1.5, thickness≈742nm). Initialize cavity spacer at half-wave thickness (≈742nm). Set thickness search bounds: ThSi2 layers [200, 550]nm, YF3 layers [450, 900]nm, cavity spacer [500, 1000]nm. Verify material registry accepts 'ThSi2' and 'YF3' as valid identifiers before optimization. Optimize all 18 layer thicknesses to maximize transmittance across merged 4.15-4.75μm band while minimizing transmittance in 3.60-4.00μm and 4.85-5.20μm stopbands. Use coherent TMM at normal incidence. Log initialization thickness vector and material lookup results for diagnostic purposes. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Fallback route if both Ge/ZnS and Si3N4/MgF2 material pairs fail registry lookup. Single-cavity topology reduces complexity and layer count to 18, providing margin for material availability issues. Broader passband approach trades spectral selectivity for robustness - if dual-band separation proves infeasible, merged band may still meet system requirements. ThSi2/YF3 pair offers alternative high-contrast option."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117 directly motivated Ge/ZnS material pair selection for MIR filters with documented 3-5μm transparency and successful 24-layer fabrication",
+      "Evidence s2-chunk:CorpusId:139773493 supported two-cavity Fabry-Perot topology for achieving square passband profiles in NDIR gas sensor applications",
+      "Evidence s2-chunk:CorpusId:233820728 informed alternative material pair selection (Si3N4/MgF2, ThSi2/YF3) based on dielectric coating principles for reduced absorption",
+      "Prior iteration failures (material_data, compilation errors) directly shaped the diagnostic logging requirements and explicit material name validation steps in all three routes"
+    ],
+    "unresolved_decisions": [
+      "Material registry availability for Ge, ZnS, Si3N4, MgF2, ThSi2, YF3 identifiers must be verified at execution time - cannot be determined from literature evidence alone",
+      "Optimal layer count tradeoff between spectral performance (more layers) and material_data reliability (fewer layers) remains empirical and will be determined by route execution results",
+      "Whether dual-band separation requires two-cavity topology or can be achieved with single-cavity broad passband depends on actual transmittance profiles from optimization"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refinement_01 received canonical user controls from the problem contract",
+    "route route_03_refinement_02 received canonical user controls from the problem contract",
+    "route route_03_refinement_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 11580,
+      "completion_tokens": 5763,
+      "total_tokens": 17343
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

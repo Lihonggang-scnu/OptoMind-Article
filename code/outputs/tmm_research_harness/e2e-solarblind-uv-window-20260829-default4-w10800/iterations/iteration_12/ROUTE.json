@@ -1,0 +1,53 @@
+{
+  "route_id": "control_route_01",
+  "title": "29-layer HfO2/MgF2 UV bandpass with index-dependent thickness bounds and curvature regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 29-layer HfO2/MgF2 alternating stack with a central cavity defect, optimized under index-dependent thickness perturbation bounds (±1.0 nm edge, ±3.0 nm center) and curvature regularization (weight 0.15), will achieve higher best_target_score than uniform perturbation optimization while maintaining physically valid candidates.",
+  "design_principle": "Quarter-wave dielectric mirrors with a half-wave or defect layer at the center create a transmission bandpass within a high-reflectance stopband. HfO2 provides high refractive index contrast with MgF2 in the UV-visible range. Constraining thickness adjustments prevents the optimizer from introducing high-frequency oscillations that degrade spectral coherence. Edge layers primarily set broadband reflectance, while central layers tune the passband position and width.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "29 layers total: layer 1-14 alternating HfO2/MgF2 starting with HfO2, layer 15 is HfO2 cavity defect, layer 16-29 alternating MgF2/HfO2 ending with HfO2. Substrate is sio2 (fused silica), incidence medium is air.",
+  "design_variables": [
+    "individual layer thicknesses in nm with position-dependent bounds: layers 0-3 and 25-28 bounded to ±1.0 nm from QWOT baseline, layers 10-18 bounded to ±3.0 nm from QWOT baseline, intermediate layers bounded to ±2.5 nm from QWOT baseline; curvature regularization weight 0.15 applied to second-difference of thickness vector"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm band",
+    "minimize transmittance in 300-700 nm band",
+    "minimize transmittance in 700-1100 nm band",
+    "maintain physical validity of all candidates",
+    "improve best_target_score across iterations"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (within 30-layer limit)",
+    "no metal layers used",
+    "HfO2 and MgF2 are conventional e-beam or thermal evaporation materials",
+    "thickness bounds reflect realistic deposition control precision"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflectance outside the design wavelength; a central defect layer creates a transmission peak within the stopband.",
+    "Recalled knowledge: HfO2 has refractive index approximately 2.0-2.2 in UV-visible range; MgF2 has refractive index approximately 1.38-1.42.",
+    "Recalled knowledge: Optimization with tight thickness bounds prevents non-manufacturable designs and maintains spectral coherence.",
+    "Recalled knowledge: Curvature regularization on thickness vectors reduces high-frequency oscillations that cause scattering losses and fabrication difficulty.",
+    "Recalled knowledge: Edge layers in a bandpass filter primarily control out-of-band rejection; central layers tune passband position and width."
+  ],
+  "expected_advantages": [
+    "Position-dependent bounds allow more flexibility where it matters most (central cavity region) while stabilizing edge layers that control broadband rejection.",
+    "Curvature regularization should reduce oscillatory thickness patterns that appeared in prior iterations.",
+    "Maintaining the same material pair and layer count isolates the effect of optimization constraint changes from material or topology changes."
+  ],
+  "known_risks": [
+    "Uncertain whether ±1.0 nm edge bounds are too restrictive for achieving target scores; may need relaxation if best_target_score stagnates.",
+    "Uncertain whether curvature weight 0.15 is optimal; this value is recalled from general regularization practice, not specific thin-film optimization literature.",
+    "Refractive index dispersion of HfO2 and MgF2 below 300 nm is uncertain from memory; actual n/k values will come from the material registry datasets.",
+    "The exact quarter-wave optical thickness baseline for 255-280 nm center wavelength is approximate from recalled knowledge; the optimizer will refine from there.",
+    "What would settle these: lookup of HfO2 and MgF2 dispersion data in the 250-1100 nm range, review of thin-film optimization regularization literature for recommended curvature weights."
+  ],
+  "execution_request_english": "Optimize a 29-layer planar multilayer thin film stack on fused silica substrate with air incidence. Layer sequence: layers 1-14 alternate HfO2 and MgF2 (Rodriguez-de_Marcos) starting with HfO2 (odd layers HfO2, even layers MgF2 (Rodriguez-de_Marcos)), layer 15 is HfO2 cavity defect, layers 16-29 alternate MgF2 (Rodriguez-de_Marcos) and HfO2 ending with HfO2 (odd layers MgF2 (Rodriguez-de_Marcos), even layers HfO2 in this section). Substrate material is SiO2 (Gao). Optimize individual layer thicknesses with position-dependent bounds relative to quarter-wave optical thickness baseline at 267.5 nm center wavelength: layers 0-3 and 25-28 (0-indexed) bounded to ±1.0 nm, layers 10-18 bounded to ±3.0 nm, all other layers bounded to ±2.5 nm. Apply curvature regularization with weight 0.15 to the second-difference of the thickness vector. Spectral objectives: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm, minimize transmittance in 700-1100 nm. Total layer count fixed at 29. No metal layers. Use gradient-based thickness optimization.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control_route_01 implementing feedback directives: clamped per-layer thickness adjustments to ±2.5 nm envelope with index-dependent decay schedule (edge layers ±1.0 nm, central stack ±3.0 nm), and integrated curvature regularization term weighted at 0.15 to prevent high-frequency oscillatory deviations."
+}

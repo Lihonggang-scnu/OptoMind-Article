@@ -1,0 +1,53 @@
+{
+  "route_id": "route_03",
+  "title": "Si/Al2O3 Dual-Cavity Defect Filter with Quarter-Wave Initialization",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A 22-layer dual-cavity defect structure using Si (high-index) and Al2O3 (low-index) will produce two distinct transmission peaks at 3.30 μm and 4.25 μm with adequate out-of-band blocking, and quarter-wave initialized thicknesses will converge faster than uniform random initialization under the same optimization budget.",
+  "design_principle": "Two defect cavities separated by a central Bragg mirror section, with quarter-wave stack mirrors on both sides. Each cavity thickness tuned to resonate at one passband center wavelength.",
+  "proposed_materials": [
+    "Si",
+    "Al2O3",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | [Si/Al2O3]_5 | Si_cavity1 | [Si/Al2O3]_3 | Si_cavity2 | [Si/Al2O3]_5 | CaF2 substrate. Total: 22 finite layers (10 mirror pairs + 2 cavities + 2 additional mirror layers).",
+  "design_variables": [
+    "All 22 layer thicknesses (nm)",
+    "Cavity layer thicknesses initialized at quarter-wave optical thickness for respective passband centers"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3.25-3.35 μm band",
+    "Maximize mean transmittance in 4.20-4.30 μm band",
+    "Minimize mean transmittance in 2.50-3.10 μm band",
+    "Minimize mean transmittance in 4.45-5.00 μm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 22 (within 24-layer limit)",
+    "No metal layers",
+    "Si and Al2O3 are conventional IR depositable dielectrics",
+    "Thickness bounds 400-1100 nm prevent deposition time excess"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+    "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack principle for Bragg mirrors",
+    "Defect cavity resonance for passband formation",
+    "TMM-based dual-objective optimization"
+  ],
+  "expected_advantages": [
+    "Si/Al2O3 pair has better mid-IR optical constant data availability than Ge/YbF3",
+    "Quarter-wave initialization reduces optimization iterations to convergence",
+    "Tighter bounds prevent solver numerical overflow"
+  ],
+  "known_risks": [
+    "Si absorption may increase beyond 4.5 μm affecting long-wavelength blocking",
+    "Al2O3 index contrast with Si lower than Ge/YbF3 may require more layers for equivalent blocking",
+    "Material registry may still lack complete n,k data for this pair in full 2.5-5.0 μm range"
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer stack on CaF2 substrate with air incidence. Layer sequence: Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si (cavity1), Si, Al2O3, Si, Al2O3, Si, Al2O3, Si (cavity2), Si, Al2O3, Si, Al2O3. Initialize cavity1 thickness at 825 nm (quarter-wave at 3.30 μm in Si), cavity2 at 1062 nm (quarter-wave at 4.25 μm in Si), all other layers at 550 nm. Thickness bounds: 400-1100 nm for all layers. Optimize for maximum mean transmittance in 3250-3350 nm and 4200-4300 nm bands, minimum mean transmittance in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized. Use L2 regularization coefficient 0.01 for first 50 iterations. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm, run_status. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Changed material pair from Ge/YbF3 to Si/Al2O3 due to prior material_data failures; fixed exact 22-layer count to match compilation validation; added quarter-wave initialization based on passband centers; tightened thickness bounds from 300-1500 nm to 400-1100 nm; added L2 regularization per feedback directive."
+}

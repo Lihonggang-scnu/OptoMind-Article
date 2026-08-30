@@ -1,0 +1,235 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_01 (22-layer ZnS/MgF2 dual-band filter) based on feedback directives. Four routes explore: (1) bounded quasi-periodic thickness initialization with two-phase optimizer per directive, (2) alternative Ge/Nb2O5 material pair evidenced for methane sensing, (3) reduced 18-layer count to test complexity-performance tradeoff, (4) maximum 24-layer count with new initialization scheme. All routes maintain parent_route_id='route_01' per refinement_chain requirement.",
+    "routes": [
+      {
+        "route_id": "route_01_ref_01",
+        "title": "22-Layer ZnS/MgF2 with Bounded Quasi-Periodic Initialization and Two-Phase Optimizer",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constraining thickness initialization to a bounded quasi-periodic schedule centered at ~1050 nm with [750, 1250] nm bounds, combined with a two-phase optimizer (pair-wise joint optimization followed by decoupled fine-tuning), will preserve local optical phase continuity and reduce destructive interference spikes compared to unconstrained initialization.",
+        "design_principle": "Quarter-wave stack with alternating high/low index materials, initialized near modal thickness from prior successful iteration, optimized in two phases to maintain phase ramp continuity.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "exactly 6 alternating ZnS/MgF2 pairs (12 finite layers)",
+        "design_variables": [
+          "All 22 layer thicknesses in nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um passbands",
+          "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um stopbands",
+          "Achieve best_target_score > 0.70"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 22 <= 24 limit",
+          "No metal layers",
+          "Thickness bounds [750, 1250] nm ensure depositable ranges",
+          "Two-phase optimization reduces sensitivity to deposition errors"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for coherent thin-film interference",
+          "Quarter-wave stack principle for bandpass filtering"
+        ],
+        "expected_advantages": [
+          "Reduced destructive interference spikes compared to round 2",
+          "Better phase continuity across layer interfaces",
+          "Higher best_target_score than iteration_05's 0.594"
+        ],
+        "known_risks": [
+          "May not reach iteration_01's 0.955 score due to tighter bounds",
+          "Two-phase optimizer may converge to local minima"
+        ],
+        "execution_request_english": "Optimize a 22-layer alternating ZnS/MgF2 thin-film stack on CaF2 substrate under air incidence. Initialize all layer thicknesses to a quasi-periodic schedule centered at 1050 nm with bounds [750, 1250] nm. Implement two-phase optimization: Phase 1 jointly optimizes adjacent layer pairs (d_i, d_{i+1}) for i=1,3,5,...,21 to preserve local optical phase continuity; Phase 2 decouples all 22 layers for fine-grained thickness tuning. Target: maximize mean transmittance in passbands [3250-3350 nm, 4200-4300 nm] and minimize mean transmittance in stopbands [2500-3100 nm, 4450-5000 nm]. Use coherent TMM solver with normal unpolarized illumination. Output thicknesses_nm array, best_target_score, valid_candidates count, and tightest_margin. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating ZnS/MgF2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directive: replaces unconstrained thickness initialization with bounded quasi-periodic schedule centered on ~1050 nm, adds two-phase optimizer to mitigate destructive interference spikes observed in iteration_05."
+      },
+      {
+        "route_id": "route_01_ref_02",
+        "title": "22-Layer Ge/Nb2O5 Dual-Band Filter Evidenced for Methane Sensing",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Ge/Nb2O5 material pair, evidenced in literature for methane sensor bandpass filters at 3300 nm center wavelength, will achieve comparable or superior dual-band performance to ZnS/MgF2 while maintaining manufacturability within 24-layer constraint.",
+        "design_principle": "Alternating high-index Ge and low-index Nb2O5 quarter-wave stack, leveraging evidenced material pair for IR gas sensing applications.",
+        "proposed_materials": [
+          "Ge",
+          "Nb2O5",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | Ge | Nb2O5 | CaF2 substrate. Total finite layers: 22 (11 Ge + 11 Nb2O5).",
+        "design_variables": [
+          "All 22 layer thicknesses in nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um passbands",
+          "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um stopbands",
+          "Achieve best_target_score > 0.65"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 22 <= 24 limit",
+          "No metal layers",
+          "Ge and Nb2O5 are conventional depositable IR dielectrics",
+          "Material pair evidenced for methane sensor at 3300 nm CWL"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:23617:24948:3169b780e7b9ea48"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for coherent thin-film interference",
+          "Bandpass filter design for gas sensing applications"
+        ],
+        "expected_advantages": [
+          "Material pair has demonstrated performance for methane sensing at 3300 nm",
+          "Higher index contrast than ZnS/MgF2 may enable steeper spectral edges",
+          "Provides material diversity comparison to ZnS/MgF2 baseline"
+        ],
+        "known_risks": [
+          "Ge absorption may reduce passband transmittance",
+          "Nb2O5 IR optical constants may have higher uncertainty than ZnS/MgF2"
+        ],
+        "execution_request_english": "Optimize a 22-layer alternating Ge/Nb2O5 thin-film stack on CaF2 substrate under air incidence. Initialize all layer thicknesses to 900 nm with bounds [500, 1300] nm. Use gradient-based thickness optimization for all 22 layers simultaneously. Target: maximize mean transmittance in passbands [3250-3350 nm, 4200-4300 nm] and minimize mean transmittance in stopbands [2500-3100 nm, 4450-5000 nm]. Use coherent TMM solver with normal unpolarized illumination. Output thicknesses_nm array, best_target_score, valid_candidates count, and tightest_margin. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Introduces alternative material pair Ge/Nb2O5 evidenced in literature for methane sensor bandpass filters, providing material diversity while maintaining 22-layer topology from parent route."
+      },
+      {
+        "route_id": "route_01_ref_03",
+        "title": "18-Layer ZnS/MgF2 Reduced Complexity Test",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 22 to 18 while maintaining ZnS/MgF2 alternating topology will achieve best_target_score > 0.65, demonstrating that dual-band performance is achievable with reduced manufacturing complexity and lower total thickness.",
+        "design_principle": "Quarter-wave alternating stack with reduced layer count to test complexity-performance tradeoff within the 24-layer constraint.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate. Total finite layers: 18 (9 ZnS + 9 MgF2).",
+        "design_variables": [
+          "All 18 layer thicknesses in nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um passbands",
+          "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um stopbands",
+          "Achieve best_target_score > 0.65"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 18 < 24 limit provides margin",
+          "No metal layers",
+          "Reduced layer count lowers deposition time and stress accumulation",
+          "Thickness bounds [750, 1250] nm per feedback directive"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for coherent thin-film interference",
+          "Layer count vs. spectral slope tradeoff principle"
+        ],
+        "expected_advantages": [
+          "Lower manufacturing complexity than 22-layer designs",
+          "Reduced total coating thickness improves stress tolerance",
+          "Tests whether 22 layers are necessary or 18 suffices"
+        ],
+        "known_risks": [
+          "Reduced layer count may limit stopband blocking performance",
+          "May not achieve iteration_01's 0.955 score due to fewer degrees of freedom"
+        ],
+        "execution_request_english": "Optimize an 18-layer alternating ZnS/MgF2 thin-film stack on CaF2 substrate under air incidence. Initialize all layer thicknesses to 1050 nm with bounds [750, 1250] nm. Use gradient-based thickness optimization for all 18 layers. Target: maximize mean transmittance in passbands [3250-3350 nm, 4200-4300 nm] and minimize mean transmittance in stopbands [2500-3100 nm, 4450-5000 nm]. Use coherent TMM solver with normal unpolarized illumination. Output thicknesses_nm array, best_target_score, valid_candidates count, and tightest_margin. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests reduced layer count (18 vs 22) to evaluate complexity-performance tradeoff while maintaining ZnS/MgF2 material pair and bounded initialization from feedback directive."
+      },
+      {
+        "route_id": "route_01_ref_04",
+        "title": "24-Layer ZnS/MgF2 Maximum Constraint Test with Bounded Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Utilizing the full 24-layer constraint with ZnS/MgF2 alternating topology and bounded quasi-periodic initialization [750, 1250] nm will achieve best_target_score > 0.80, demonstrating that maximum layer count provides superior dual-band performance over 22-layer designs.",
+        "design_principle": "Quarter-wave alternating stack at maximum allowed layer count (24) to test whether additional layers improve dual-band separation and stopband blocking.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate. Total finite layers: 24 (12 ZnS + 12 MgF2).",
+        "design_variables": [
+          "All 24 layer thicknesses in nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um passbands",
+          "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um stopbands",
+          "Achieve best_target_score > 0.80"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 24 at maximum constraint limit",
+          "No metal layers",
+          "Thickness bounds [750, 1250] nm per feedback directive",
+          "Maximum layers may increase deposition time and stress"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for coherent thin-film interference",
+          "More layers produce steeper spectral slopes and higher out-of-band blocking per evidence"
+        ],
+        "expected_advantages": [
+          "Maximum degrees of freedom for optimization",
+          "Potentially steeper passband edges and deeper stopbands",
+          "Tests whether 24 layers significantly outperform 22 layers"
+        ],
+        "known_risks": [
+          "Increased layer count may amplify deposition sensitivity",
+          "May exhibit more spectral ripple per evidence on thickness vs. ripple tradeoff",
+          "Total coating thickness may approach manufacturability limits"
+        ],
+        "execution_request_english": "Optimize a 24-layer alternating ZnS/MgF2 thin-film stack on CaF2 substrate under air incidence. Initialize all layer thicknesses to 1050 nm with bounds [750, 1250] nm. Use gradient-based thickness optimization for all 24 layers. Target: maximize mean transmittance in passbands [3250-3350 nm, 4200-4300 nm] and minimize mean transmittance in stopbands [2500-3100 nm, 4450-5000 nm]. Use coherent TMM solver with normal unpolarized illumination. Output thicknesses_nm array, best_target_score, valid_candidates count, and tightest_margin. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 4,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests maximum allowed layer count (24 vs 22) with bounded initialization to evaluate whether additional layers provide meaningful performance improvement for dual-band separation."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33 motivated Ge/Nb2O5 material pair for route_01_ref_02 as evidenced for methane sensor bandpass at 3300 nm CWL",
+      "Evidence s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299 informed layer count vs. performance tradeoff principle for routes testing 18 and 24 layers",
+      "Evidence s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1 supported thickness constraint considerations for manufacturability in all routes",
+      "Feedback directive from prior iteration directly shaped route_01_ref_01's two-phase optimizer and bounded quasi-periodic initialization"
+    ],
+    "unresolved_decisions": [
+      "Optimal layer count (18 vs 22 vs 24) for balancing performance and manufacturability remains to be determined by experimental comparison",
+      "Best material pair (ZnS/MgF2 vs Ge/Nb2O5) for this specific dual-band requirement needs empirical validation",
+      "Whether two-phase optimizer provides measurable advantage over single-phase gradient descent requires comparison of route_01_ref_01 vs other routes"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_ref_01 symbolic topology was instantiated as a fixed 12-layer starting hypothesis",
+    "route route_01_ref_01 received canonical user controls from the problem contract",
+    "route route_01_ref_02 received canonical user controls from the problem contract",
+    "route route_01_ref_03 received canonical user controls from the problem contract",
+    "route route_01_ref_04 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 18305,
+      "completion_tokens": 6041,
+      "total_tokens": 24346
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

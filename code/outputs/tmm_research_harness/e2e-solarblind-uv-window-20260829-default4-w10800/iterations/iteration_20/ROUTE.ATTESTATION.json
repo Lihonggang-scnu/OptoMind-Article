@@ -1,0 +1,37 @@
+{
+  "artifact": "iterations/iteration_20/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "e70576ff01b64c9c0bbcf697fe5685384b600952bf137b8eb7830f4369ca8b78",
+  "recorded_at_utc": "2026-08-29T05:05:29.262980+00:00",
+  "elapsed_seconds": 4797.370726299996,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_20",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack initialized at quarter-wave optical thicknesses for 267 nm center wavelength, with thickness optimization bounded to ±2.0 nm per layer, will produce higher target scores than the previous highly-scaled parameter inheritance approach, because the QWOT initialization places the design in a physically meaningful region of the solution space where UV transmission and visible/NIR rejection are simultaneously achievable through first-order interference.",
+  "expected_advantages": [
+    "QWOT initialization places the design in a physically meaningful starting point",
+    "±2.0 nm bounds prevent divergence into unrealistic thickness regimes seen in iteration 18",
+    "29 layers provides sufficient degrees of freedom for bandpass shaping without exceeding manufacturing constraints",
+    "HfO2/MgF2 pair is a well-known UV-compatible material combination from recalled thin-film practice"
+  ],
+  "known_risks": [
+    "Uncertain: Exact refractive index values of HfO2 and MgF2 at 255-280 nm - the material catalog datasets will provide measured values but I am recalling approximate values of n_HfO2≈2.0-2.1 and n_MgF2≈1.38-1.40",
+    "Uncertain: Whether 29 layers is optimal versus a different layer count with cavity-defect topology - this route tests fixed 29-layer alternating topology only",
+    "Uncertain: Absorption coefficients (k values) in the UV for these materials - high k would reduce transmission regardless of interference design",
+    "Uncertain: Stress matching between HfO2 and MgF2 for space qualification - not modeled in TMM but relevant for actual deployment",
+    "Uncertain: Whether ±2.0 nm bounds are too restrictive to escape local minima - the feedback directive specifies this temporarily for 5 rounds",
+    "Risk: If best_target_score remains below 0.30 for three consecutive rounds, the perturbation bounds may need enlargement per the feedback directive"
+  ],
+  "expected_observations": [
+    "best_target_score should rise from iteration 15-18 values if QWOT initialization with tight bounds is more effective than inherited highly-scaled parameters",
+    "valid_candidates count should remain high (≥7) because ±2.0 nm bounds keep thicknesses in physically reasonable ranges",
+    "tightest_margin should not fall across rounds if the QWOT basin is stable",
+    "thicknesses_nm should cluster near 32.6 nm for hfo2 and 48.0 nm for mgf2 with ±2.0 nm variation",
+    "if best_target_score remains below 0.30 for three consecutive rounds, this indicates the perturbation bounds may be too restrictive"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if best_target_score remains below 0.30 for three consecutive rounds, relax the ±2.0 nm perturbation bound to ±5.0 nm and continue",
+    "if valid_candidates count falls below 5 for two consecutive rounds, the bounds may be too restrictive and should be enlarged"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "artifact": "iterations/iteration_18/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "3c46bb3781cc2ed85606db119b4c40add441387b0f1b32e033de770fd0e2754e",
+  "recorded_at_utc": "2026-08-29T01:47:26.751760+00:00",
+  "elapsed_seconds": 4326.1554373999825,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_18",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individually optimized thicknesses can simultaneously achieve high transmittance in the 1530-1565 nm telecom band and high reflectance in the 400-700 nm visible band, without requiring more than 30 layers or additional materials.",
+  "expected_advantages": [
+    "24 layers provides sufficient degrees of freedom for dual-band shaping",
+    "HfO2/SiO2 is a robust, space-qualified material pair with low absorption in both bands",
+    "Fixed topology with thickness-only optimization isolates the effect of geometric tuning",
+    "Phase-jump repair mechanism should help escape local interference minima that trapped previous iterations",
+    "5 nm perturbation amplitude provides more exploration range than 2 nm while maintaining convergence"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive index dispersion of HfO2 and SiO2 at 1530-1565 nm - recalled values are approximate and would need to be confirmed from the material catalog datasets",
+    "Uncertainty: Whether 24 layers is optimal or if fewer layers could achieve similar performance with better robustness",
+    "Uncertainty: Angle sensitivity not explicitly specified in the original request - this design assumes near-normal incidence but satellite windows may see off-axis light",
+    "Uncertainty: The phase-jump repair with ±50 nm offsets may disrupt convergence if applied too aggressively; 10% population rate is a heuristic guess",
+    "Uncertainty: Starting thickness values from prior iterations may be in a poor local minimum; the phase-jump should help but success is not guaranteed",
+    "Known risk: Previous iteration 14 showed degraded performance (0.78 vs 0.93 in iteration 10); this revision attempts to recover the higher performance through modified optimization parameters"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should rise from iteration 14's 0.78 toward iteration 10's 0.93 range as the phase-jump repair helps escape local minima",
+    "valid_candidates should remain high (≥5) indicating the thickness constraints are not overly restrictive",
+    "tightest_margin should not fall across rounds if the optimization is converging to robust solutions",
+    "thicknesses_nm should show variation across layers rather than converging to uniform values, indicating the optimizer is using the degrees of freedom",
+    "If the hypothesis fails, best_target_score will plateau below 0.85 despite the phase-jump repair, suggesting 24 layers with this topology is insufficient for the dual-band requirement"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 3 for two consecutive rounds, reduce the phase-jump offset magnitude from ±50 nm to ±25 nm and continue",
+    "If tightest_margin falls below 0.3 for three consecutive rounds, relax the minimum thickness constraint from 20 nm to 15 nm and continue",
+    "If after 5 rounds the best_target_score remains below 0.80, stop and flag that the 24-layer alternating topology may be insufficient for this wavelength split"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_12/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "f74db8c15548e0278a35f01578e56049c6756afe2f23947a0fd69de833868bbf",
+  "recorded_at_utc": "2026-08-29T04:31:01.697082+00:00",
+  "elapsed_seconds": 2729.8052744999877,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_12",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 29-layer HfO2/MgF2 alternating stack with a central cavity defect, optimized under index-dependent thickness perturbation bounds (±1.0 nm edge, ±3.0 nm center) and curvature regularization (weight 0.15), will achieve higher best_target_score than uniform perturbation optimization while maintaining physically valid candidates.",
+  "expected_advantages": [
+    "Position-dependent bounds allow more flexibility where it matters most (central cavity region) while stabilizing edge layers that control broadband rejection.",
+    "Curvature regularization should reduce oscillatory thickness patterns that appeared in prior iterations.",
+    "Maintaining the same material pair and layer count isolates the effect of optimization constraint changes from material or topology changes."
+  ],
+  "known_risks": [
+    "Uncertain whether ±1.0 nm edge bounds are too restrictive for achieving target scores; may need relaxation if best_target_score stagnates.",
+    "Uncertain whether curvature weight 0.15 is optimal; this value is recalled from general regularization practice, not specific thin-film optimization literature.",
+    "Refractive index dispersion of HfO2 and MgF2 below 300 nm is uncertain from memory; actual n/k values will come from the material registry datasets.",
+    "The exact quarter-wave optical thickness baseline for 255-280 nm center wavelength is approximate from recalled knowledge; the optimizer will refine from there.",
+    "What would settle these: lookup of HfO2 and MgF2 dispersion data in the 250-1100 nm range, review of thin-film optimization regularization literature for recommended curvature weights."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase relative to prior iterations with uniform perturbation bounds.",
+    "If the hypothesis holds, tightest_margin should not decrease across rounds despite tighter edge constraints.",
+    "If the hypothesis holds, thicknesses_nm should show smoother variation across adjacent layers compared to prior iterations without curvature regularization.",
+    "If the hypothesis does not hold, best_target_score may stagnate or decrease, indicating the bounds are too restrictive.",
+    "If the hypothesis does not hold, valid_candidates count may decrease if the constraint space becomes too narrow."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If valid_candidates falls below 3 for two consecutive rounds, relax edge layer bounds from ±1.0 nm to ±2.0 nm and continue.",
+    "If tightest_margin becomes negative for more than 50% of candidates in a round, reduce curvature regularization weight from 0.15 to 0.08 and continue.",
+    "If none of the above triggers after 5 rounds, stop and keep the current best."
+  ]
+}

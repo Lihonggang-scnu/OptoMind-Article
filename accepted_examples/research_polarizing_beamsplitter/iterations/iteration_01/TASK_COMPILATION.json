@@ -1,0 +1,286 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 1,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_perform_a_numerical_optimization_of_a_6_layer_al_0b08a31322",
+    "user_request_original": "Perform a numerical optimization of a 6-layer all-dielectric polarizing beam splitter on a fused silica substrate. Incident medium: Air. Substrate: Fused Silica. Incidence angle: 45 degrees. Wavelength range: 500-650 nm. Materials: TiO2 and SiO2 for the coating layers. Stack sequence: Air | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | Fused Silica. Design variables: Thicknesses of all 6 coating layers, bounded between 25 nm and 220 nm. Objective: Maximize a composite score that rewards Mean TE Reflectance (target >= 90%) and Mean TM Transmittance (target >= 85%), while penalizing total physical thickness. After finding the optimal thicknesses, perform a robustness analysis by simulating the response with independent normally distributed layer-thickness errors (sigma = 1.5% of nominal thickness) and a common incidence-angle offset uniformly distributed between -1 and +1 degree. Report the optimal thicknesses, the mean TE reflectance, mean TM transmittance, total thickness, and the statistical distribution of performance under uncertainty. Canonical user controls: incidence angles 45 degrees. polarization s, p. wavelength intervals 500-650 nm. soft objectives: high TE reflectance (mean >= 90%); high TM transmittance (mean >= 85%); fewer layers; lower total thickness. robustness conditions: layer thicknesses bounded between 25 nm and 220 nm; total layer counts restricted to 6, 10, or 14.",
+    "normalized_request_english": "Optimize the thicknesses of a 6-layer all-dielectric stack (Air | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | Fused Silica) at 45 degrees incidence over 500-650 nm. Maximize mean TE (s-pol) reflectance and mean TM (p-pol) transmittance while minimizing total physical thickness. Perform robustness analysis with 1.5% relative normal thickness error and +/-1 degree angle uniform offset.",
+    "experiments": [
+      {
+        "experiment_id": "opt_pbs_6layer",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "PBS_6Layer_TiO2_SiO2",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "tio2",
+                  "thickness_nm": 80.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L1"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 110.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L2"
+                },
+                {
+                  "material": "tio2",
+                  "thickness_nm": 80.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L3"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 110.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L4"
+                },
+                {
+                  "material": "tio2",
+                  "thickness_nm": 80.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L5"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 110.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 25.0,
+                  "max_thickness_nm": 220.0,
+                  "label": "L6"
+                }
+              ],
+              "exit": {
+                "material": "sio2",
+                "constant_k": 0.0
+              }
+            },
+            "spectrum": {
+              "start_nm": 500.0,
+              "stop_nm": 650.0,
+              "points": 301
+            },
+            "illumination": {
+              "angles_deg": [
+                45.0
+              ],
+              "polarizations": [
+                "s",
+                "p"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T",
+              "A"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "R",
+              "target": 0.9,
+              "wavelength_min_nm": 500.0,
+              "wavelength_max_nm": 650.0,
+              "weight": 1.0,
+              "angle_deg": 45.0,
+              "polarization": "s",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "canonical_r_500_650_at_least_mean_45_s_1_1"
+            },
+            {
+              "observable": "T",
+              "target": 0.85,
+              "wavelength_min_nm": 500.0,
+              "wavelength_max_nm": 650.0,
+              "weight": 1.0,
+              "angle_deg": 45.0,
+              "polarization": "p",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "canonical_t_500_650_at_least_mean_45_p_2_1"
+            }
+          ],
+          "optimizer": {
+            "method": "adam_lbfgs",
+            "max_steps": 100,
+            "learning_rate": 0.05,
+            "starts": 5,
+            "seed": 42,
+            "early_stop_patience": 20,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 195.0,
+            "quantization_nm": 0.5
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "canonical_r_500_650_at_least_mean_45_s_1_1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.9,
+            "region": {
+              "wavelength_nm": [
+                500.0,
+                650.0
+              ],
+              "angle_deg": 45.0,
+              "polarization": "s"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "canonical_t_500_650_at_least_mean_45_p_2_1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.85,
+            "region": {
+              "wavelength_nm": [
+                500.0,
+                650.0
+              ],
+              "angle_deg": 45.0,
+              "polarization": "p"
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "pbs",
+          "dielectric",
+          "45deg"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 0.0,
+      "thickness_error_model": "relative_normal",
+      "thickness_relative_fraction": 0.015,
+      "thickness_samples": 32,
+      "angle_perturbation_deg": 1.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [
+        "opt_pbs_6layer.canonical_r_500_650_at_least_mean_45_s_1_1: rebuilt canonical executable target from explicit user clause",
+        "opt_pbs_6layer.canonical_t_500_650_at_least_mean_45_p_2_1: rebuilt canonical executable target from explicit user clause"
+      ],
+      "illumination_corrections": [
+        "pre-validation normalization synchronized explicit user illumination and target channels"
+      ],
+      "substrate_corrections": [
+        "opt_pbs_6layer: explicit fused-silica substrate uses local sio2 dispersion instead of a constant index"
+      ],
+      "objective_synchronization": [
+        "opt_pbs_6layer: synchronized 2 simple objectives from executable targets"
+      ],
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "The request specifies a fixed 6-layer stack with explicit materials (TiO2, SiO2) and bounds. TE/TM mapping is applied to s/p polarizations. The composite objective is decomposed into separate mean objectives for TE reflectance and TM transmittance. Robustness parameters are mapped to the uncertainty block. Total thickness minimization is included as an optimization target.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "module": "TMMTaskCompiler",
+      "agent_name": "TMMTaskCompiler",
+      "model_tier": "b_plus_model",
+      "model_name": "qwen3.7-flash",
+      "task_type": "research_chat",
+      "mock_llm": false,
+      "estimated_input_tokens": 2966,
+      "estimated_output_tokens": 1577,
+      "success": true,
+      "failure": false,
+      "error_type": "",
+      "fallback_used": false,
+      "api_key_source": "DASHSCOPE_API_KEY#1",
+      "api_key_masked": "sk-****Kjk2",
+      "api_key_candidate_count": 3,
+      "api_key_rotation_count": 0,
+      "key_failures": [],
+      "model_fallback_used": false,
+      "fallback_chain": [],
+      "attempted_models": [
+        "qwen3.7-flash"
+      ],
+      "selected_model_index": 0,
+      "partial_stream": false,
+      "stream_interrupted_error": "",
+      "request_attempt_count": 1,
+      "retry_count": 0
+    }
+  ],
+  "raw_response_sha256": [
+    "73aeb7e9a80dae39db6175bdbfc475fb5356ff2d3e73b2a1b808b41da0153c72"
+  ]
+}

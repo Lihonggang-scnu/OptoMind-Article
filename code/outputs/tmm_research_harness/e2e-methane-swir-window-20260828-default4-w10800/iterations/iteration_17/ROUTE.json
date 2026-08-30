@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "28-Layer Stack with Thin-Layer Stochastic Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Layers below 70 nm thickness are numerically sensitive and contribute to convergence ceilings; applying ±15% uniform random perturbation exclusively to these thin layers while relaxing tightest_margin by 0.02 will expand the valid candidate pool and enable escape from local optima observed in iterations 07, 11, and 14.",
+  "design_principle": "Targeted stochastic perturbation of thin layers disrupts numerical convergence without destabilizing the overall stack structure. Temporary margin relaxation increases valid candidate count for exploration before re-tightening.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "28-layer alternating stack: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 on fused silica substrate, air incidence",
+  "design_variables": [
+    "layer thicknesses with ±15% perturbation applied to layers <70 nm from iteration_14 best candidate"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "maintain valid_candidates >= 15"
+  ],
+  "manufacturing_considerations": [
+    "total layer count = 28 (within 30-layer limit)",
+    "thin layers <70 nm may require precise deposition control",
+    "outermost SiO2 layer for environmental durability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Thin-layer sensitivity in TMM numerical computation"
+  ],
+  "expected_advantages": [
+    "Breaks numerical convergence ceiling observed in prior iterations",
+    "Expands valid candidate pool via margin relaxation",
+    "Preserves proven 28-layer topology while introducing controlled variation"
+  ],
+  "known_risks": [
+    "Perturbation may reduce best_target_score temporarily",
+    "Thin layers remain fabrication-sensitive",
+    "Margin relaxation may admit physically marginal designs"
+  ],
+  "execution_request_english": "Optimize a 28-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2. Initialize thicknesses from iteration_14 best candidate (candidate HfO2_SiO2_28layer_opt__gradient_thickness__01). Apply ±15% uniform random perturbation exclusively to layers with thickness <70 nm. Use gradient_thickness optimizer. Evaluate at normal incidence, unpolarized. Maximize mean transmittance in 1000-1700 nm band and mean reflectance in 300-450 nm band. Temporarily relax tightest_margin constraint by 0.02 to target valid_candidates >= 15. Total layer count fixed at 28. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Changed from iteration_14 by applying feedback directive: targeted ±15% perturbation to thin layers (<70 nm) and temporary 0.02 margin relaxation. Prior iteration used Gaussian initialization without thin-layer-specific perturbation. This addresses numerical convergence issues observed in iterations 03, 11, and 14."
+}

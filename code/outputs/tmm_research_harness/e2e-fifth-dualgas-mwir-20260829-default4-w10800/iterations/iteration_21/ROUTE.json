@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "Si/Al2O3 23-Layer Dual-Cavity Filter with Corrected Thickness Bounds",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Adding one outer quarter-wave layer to the converged 22-layer Si/Al2O3 dual-cavity design while expanding thickness bounds by 15% will maintain or improve target score above 0.85 while eliminating the initialization-out-of-bounds compilation error.",
+  "design_principle": "Embed the iteration_15 best candidate thicknesses (22 layers) as inner core, add one outer Si layer initialized to quarter-wave at 3.3 um central wavelength (~550 nm), expand bounds from 400-1100 nm to 400-1265 nm to accommodate gradient steps without hard-boundary clipping.",
+  "proposed_materials": [
+    "Si",
+    "Al2O3",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | [Si/Al2O3]_11 with dual defect cavities | Si outer layer | CaF2 substrate; total 23 finite layers",
+  "design_variables": [
+    "All 23 layer thicknesses (nm)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um bands",
+    "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um bands",
+    "Maintain best_target_score >= 0.85"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 23 (within 24-layer limit)",
+    "No metal layers",
+    "Conventional IR dielectrics only",
+    "Thickness bounds 400-1265 nm accommodate deposition tolerance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+    "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack principle for alternating high/low index dielectrics",
+    "Defect cavity engineering for dual-band transmission",
+    "Thickness bound expansion to prevent optimization boundary clipping"
+  ],
+  "expected_advantages": [
+    "Fixes iteration_18 compilation error",
+    "Maintains proven Si/Al2O3 material pair",
+    "Outer layer may improve antireflection at air interface",
+    "15% bound expansion allows gradient optimizer more freedom"
+  ],
+  "known_risks": [
+    "Additional layer may introduce spectral ripple",
+    "Outer layer optimization may perturb inner cavity resonance",
+    "Material absorption in Si at longer wavelengths"
+  ],
+  "execution_request_english": "Design a 23-layer planar multilayer filter on CaF2 substrate at normal incidence. Layer sequence: Air | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | Al2O3 | Si | CaF2. Initialize inner 22 layers with thicknesses from iteration_15 best candidate [502, 538, 621, 599, 496, 583, 612, 497, 535, 545, 906, 627, 613, 510, 545, 606, 629, 1017, 461, 450, 576, 865] nm, initialize outer layer (layer 1) to 550 nm quarter-wave at 3.3 um. Thickness optimization bounds: 400-1265 nm for all layers. Optimize for high transmittance in 3.25-3.35 um and 4.20-4.30 um bands, low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. Use gradient-based thickness optimizer. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Fix iteration_18 compilation error (initial thickness outside bounds) by expanding bounds 15% and adding outer layer per feedback directive. Embed iteration_15 converged 22-layer thicknesses as inner core."
+}

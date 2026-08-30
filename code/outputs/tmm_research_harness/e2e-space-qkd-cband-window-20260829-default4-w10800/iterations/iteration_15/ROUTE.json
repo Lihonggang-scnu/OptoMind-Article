@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "Wided Thickness Sampling with Relaxed Margin Constraint",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The previous zero-candidate outcome resulted from overly narrow initialization bounds around 550 nm quarter-wave thicknesses. Expanding thickness sampling to λ/4 ± 30 nm and temporarily relaxing tightest_margin by +0.07 will expand the initial basin of attraction, enabling at least one viable candidate to pass validation and allowing the optimizer to map actual trade-off gradients.",
+  "design_principle": "Decouple rigid quarter-wave initialization from primary search by sampling layer thicknesses from wider uniform distribution during optimization, enabling gradient-based optimizer to discover non-quarter-wave solutions that better balance dual-band objectives.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20 alternating layers: Air | (HfO2 | SiO2)_10 | Fused Silica substrate",
+  "design_variables": [
+    "Individual layer thicknesses (20 variables)",
+    "Thickness sampling bounds: λ/4 at 550 nm ± 30 nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain tightest_margin >= 0.0 after +0.07 slack adjustment"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Thickness bounds ensure fabricable values",
+    "Relative uniform thickness tolerance analysis enabled"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Thin-film interference theory: quarter-wave stacks produce stopbands centered at design wavelength",
+    "Transfer-matrix method for coherent multilayer computation",
+    "Gradient-based optimization requires feasible initial basin"
+  ],
+  "expected_advantages": [
+    "Wider sampling bounds increase probability of finding valid candidates",
+    "Relaxed margin prevents premature candidate rejection",
+    "Preserves 20-layer topology from successful iteration_01"
+  ],
+  "known_risks": [
+    "Wider bounds may increase optimization iterations needed for convergence",
+    "Relaxed margin may admit candidates with lower robustness"
+  ],
+  "execution_request_english": "Optimize a 20-layer alternating HfO2/SiO2 stack on fused silica substrate with air incidence. Initialize layer thicknesses at quarter-wave optical thickness centered at 550 nm, with sampling bounds of ±30 nm from initialization values. Apply tightest_margin slack adjustment of +0.07. Optimize all 20 layer thicknesses to maximize mean transmittance in 1530-1565 nm band and mean reflectance in 400-700 nm band at normal unpolarized incidence. Total layer count fixed at 20. Use gradient_thickness optimizer with expanded search budget. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Previous iteration_11 produced 0 valid candidates due to overly narrow initialization bounds. This route widens thickness sampling to λ/4 ± 30 nm and adds +0.07 margin slack per feedback directive to guarantee viable candidates."
+}

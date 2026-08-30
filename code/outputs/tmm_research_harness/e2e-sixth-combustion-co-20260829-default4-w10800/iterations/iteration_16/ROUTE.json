@@ -1,0 +1,53 @@
+{
+  "route_id": "control_route_01",
+  "title": "Hybrid Perturbation on 22-Layer ZnS/MgF2 Dual-Band IR Filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Applying wider perturbation bounds to the front half of the stack (layers 1-12) while restricting the back half (layers 13-22) to narrow local adjustments will improve the dual-band transmittance score without degrading stopband rejection, compared to uniform perturbation across all layers.",
+  "design_principle": "In multilayer interference filters, the front layers primarily control impedance matching and overall transmission, while the back layers fine-tune spectral positioning. Asymmetric perturbation allows global exploration where it matters most while preventing phase disruption in the terminating layers.",
+  "proposed_materials": [
+    "zns",
+    "mgf2"
+  ],
+  "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | Daimon-20 substrate (22 layers total, alternating high/low index)",
+  "design_variables": [
+    "Individual layer thicknesses for all 22 layers",
+    "Perturbation bounds: layers 1-12 at ±8% global exploration, layers 13-22 at ±5% with ±3 nm maximum displacement cap from iteration 08 seed"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 4.15-4.35 μm band",
+    "Maximize mean transmittance in 4.55-4.75 μm band",
+    "Minimize mean transmittance in 3.60-4.00 μm band",
+    "Minimize mean transmittance in 4.85-5.20 μm band"
+  ],
+  "manufacturing_considerations": [
+    "All layers must be depositable by conventional PVD or CVD methods",
+    "No metal layers permitted",
+    "Total layer count fixed at 22 (within 24-layer limit)",
+    "Thicknesses should remain in practical deposition range (50-1000 nm)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflectance at design wavelength; deviating from quarter-wave can create transmission windows",
+    "Recalled knowledge: ZnS has high refractive index (~2.2-2.4) in mid-IR and is transparent through 5 μm",
+    "Recalled knowledge: MgF2 has low refractive index (~1.3-1.4) and reasonable transmission in 4-5 μm range though absorption increases beyond 4 μm",
+    "Recalled knowledge: Daimon-20 dataset provides CaF2 substrate optical constants in 3-5 μm range",
+    "Recalled knowledge: Front layers in a stack affect impedance matching more than back layers, which primarily tune phase"
+  ],
+  "expected_advantages": [
+    "Hybrid perturbation should find better local optima than uniform bounds",
+    "Restricting back layers prevents destructive interference pattern shifts",
+    "Front layer exploration can improve overall transmission efficiency",
+    "Builds on iteration 08 best result (target score 0.698) as seed"
+  ],
+  "known_risks": [
+    "MgF2 absorption coefficient at 4-5 μm is uncertain from memory; actual k values may reduce transmission more than expected",
+    "Daimon-20 dataset selection was required because generic CaF2 name matched 4 datasets equally; this specific dataset may not match all prior iteration assumptions",
+    "The ±3 nm cap on layers 13-22 may be too restrictive if iteration 08 seed is not near optimum",
+    "ZnS stress and adhesion properties not verified; may affect manufacturability",
+    "What would settle this: Look up measured n/k data for MgF2 and ZnS at 4-5 μm from handbook or vendor data sheets"
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer infrared filter on Daimon-20 substrate under air incidence at 0 degrees. Stack sequence: ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2 (22 layers total). Initialize thicknesses from iteration 08 best candidate: [897.2128783342998, 927.7243962133199, 517.2144549592246, 923.3881401125151, 928.7521051853196, 669.4261405190617, 67.78584356432049, 112.29941644509945, 458.75081585145244, 957.6078300094041, 994.3519148417982, 966.2470589185659, 377.1979812854105, 255.38804087140915, 582.91923145124, 246.55290266788114, 825.8573574544129, 990.9340803979848, 968.8554793206682, 937.3731639376689, 193.41503851247, 556.5186678474654] nm. Apply hybrid perturbation: layers 1-12 allow ±8% thickness variation, layers 13-22 allow ±5% variation capped at ±3 nm maximum displacement from seed. Wavelength range 3500-5300 nm. Optimize for high transmittance in 4150-4350 nm and 4550-4750 nm bands, low transmittance in 3600-4000 nm and 4850-5200 nm bands. Use coherent thin-film matrix method. No metal layers. Maximum 22 layers fixed.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Repaired material name ambiguity: replaced generic CaF2 with specific dataset name Daimon-20 as required by registry. All other route parameters preserved from prior iteration."
+}

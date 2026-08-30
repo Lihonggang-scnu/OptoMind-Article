@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 dichroic stack with refined thickness optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating high-index/low-index dielectric stack with individually optimized thicknesses can simultaneously achieve high reflectance in the 300-450 nm band and high transmittance in the 1000-1700 nm band on fused silica substrate at normal incidence.",
+  "design_principle": "Recalled knowledge: Alternating high-index (HfO2) and low-index (SiO2) layers create constructive interference for reflection at wavelengths where optical thickness equals quarter-wave multiples. By deviating from strict quarter-wave thicknesses and optimizing each layer individually, the stopband can be broadened toward shorter wavelengths while maintaining transmission at longer wavelengths. The 24-layer count provides sufficient degrees of freedom for dual-band shaping without exceeding the 30-layer manufacturing constraint.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 coating layers total, alternating HfO2/SiO2 starting with HfO2 at air interface)",
+  "design_variables": [
+    "individual layer thicknesses for all 24 layers, each bounded [20, 200] nm, initialized within ±10% variance around the iteration-08 best thickness vector"
+  ],
+  "soft_objectives": [
+    "maximize mean reflectance in 300-450 nm band",
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maintain smooth spectral transition between bands",
+    "favor solutions with higher robustness score"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 24 (within 30-layer limit)",
+    "all thicknesses within [20, 200] nm range for deposition feasibility",
+    "alternating material sequence simplifies process control",
+    "fused silica substrate is standard optical material"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflectance bands centered at wavelengths where n*d = λ/4 for each layer",
+    "Recalled knowledge: Increasing layer count broadens the high-reflectance stopband and increases peak reflectance",
+    "Recalled knowledge: Deviating from strict quarter-wave thicknesses allows stopband position and width tuning",
+    "Recalled knowledge: HfO2 (n≈2.0-2.1 in visible/NIR) and SiO2 (n≈1.45-1.5) provide sufficient index contrast for effective dielectric mirrors",
+    "Recalled knowledge: Normal incidence simplifies design by eliminating polarization splitting effects"
+  ],
+  "expected_advantages": [
+    "24 layers provide sufficient design freedom for dual-band optimization",
+    "Alternating sequence is manufacturable with standard deposition tools",
+    "Individual thickness optimization allows finer spectral control than periodic stacks",
+    "Fused silica substrate transmits well in both target bands"
+  ],
+  "known_risks": [
+    "Uncertain whether 24 layers is optimal vs. fewer layers with better thickness distribution; would need comparison runs to settle",
+    "Uncertain exact refractive index dispersion of hfo2 and sio2 in the 300-1700 nm range from memory; actual values come from material catalog datasets",
+    "Uncertain whether alternating sequence starting with HfO2 is superior to starting with SiO2 for this specific band combination; this is a hypothesis",
+    "The ±10% initialization variance around prior best may constrain search if the prior solution is in a local optimum; would need to verify improvement over full random seeding",
+    "Recalled quarter-wave rule is approximate; actual optimal thicknesses may deviate significantly from λ/4n predictions"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric coating on fused silica substrate with air incidence at normal angle (0 degrees). The coating stack alternates HfO2 and SiO2 (Lemarchand) layers, starting with HfO2 at the air interface and ending with SiO2 (Lemarchand) at the substrate interface, for 24 total coating layers. Optimize all 24 individual layer thicknesses within bounds [20, 200] nm. Initialize thicknesses within ±10% variance around the best thickness vector from iteration-08 (candidate opt_24layer_dual_band_high_R_low_R__172eaad160ed). Apply 25% reduction to mutation step-size compared to prior rounds. Execute deterministic local refinement (Nelder-Mead) on top-5 candidates before resuming stochastic mutation. Use coherent transfer-matrix method. Evaluate performance across two wavelength bands: 300-450 nm (target: maximize reflectance) and 1000-1700 nm (target: maximize transmittance). Score candidates using dual-band equal-weight objective. Material optical constants (n, k) are read from the material catalog datasets for hfo2 and SiO2 (Lemarchand); they are not design variables. Total layer count is fixed at 24. Polarization is unpolarized at normal incidence.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Applied feedback directives: 25% reduction to mutation step-size, ±10% initialization variance around iteration-08 best thickness vector, and deterministic local refinement (Nelder-Mead) on top-5 candidates before resuming stochastic mutation"
+}

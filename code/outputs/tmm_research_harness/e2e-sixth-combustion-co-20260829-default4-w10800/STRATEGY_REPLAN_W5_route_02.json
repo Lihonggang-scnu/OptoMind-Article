@@ -1,0 +1,189 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_02 (three-cavity Fabry-Perot Ge/ZnS filter) based on iteration 18 results and feedback directive. Primary route implements anchored reinitialization of layers 1-2 to iteration 18 optimal values (467.69 nm, 389.19 nm) with ±15 nm search bounds and quadratic penalty beyond ±25 nm. Two complementary routes test 19-layer and 23-layer variants to explore layer count sensitivity while preserving the verified three-cavity principle. All routes maintain parent_route_id = route_02 per refinement chain requirement.",
+    "routes": [
+      {
+        "route_id": "route_02_anchored_l1l2",
+        "title": "Anchored Reinitialization of Three-Cavity Filter with Layer 1-2 Constraints",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constraining the first two layers to remain near their iteration 18 optimal values (467.69 nm, 389.19 nm) with ±15 nm bounds will preserve the input coupling resonance condition that contributed to previous performance while allowing fine-grained optimization of the remaining 19 layers. The quadratic penalty beyond ±25 nm will dampen large-step excursions that may destabilize the cavity resonance.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter with anchored boundary layers to maintain input coupling condition while optimizing internal cavity structure",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "21-layer alternating Ge/ZnS stack on CaF2 substrate, starting with Ge layer 1",
+        "design_variables": [
+          "layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm",
+          "layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm",
+          "layers 3-21 thickness bounded to [50, 500] nm",
+          "quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "maintain robustness to thickness variations"
+        ],
+        "manufacturing_considerations": [
+          "all layers within 50-500 nm range for conventional deposition",
+          "21 layers within 24-layer maximum",
+          "Ge and ZnS are conventional IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for planar multilayer interference",
+          "Fabry-Perot cavity resonance condition: (φ1 + φ2 − 2δ)/2 = kπ"
+        ],
+        "expected_advantages": [
+          "Preserves resonance condition from iteration 18",
+          "Reduces optimizer search space for boundary layers",
+          "May improve convergence stability compared to free optimization"
+        ],
+        "known_risks": [
+          "Anchoring may prevent discovery of better boundary layer configurations",
+          "Quadratic penalty may create local minima",
+          "21 layers may still be insufficient for dual-band requirement"
+        ],
+        "execution_request_english": "Optimize a 21-layer alternating Ge/ZnS dielectric stack on CaF2 substrate at normal incidence. Layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm. Layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm. Layers 3-21 thickness bounded to [50, 500] nm. Apply quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets. Maximize mean transmittance in passbands [4150, 4350] nm and [4550, 4750] nm. Minimize mean transmittance in stopbands [3600, 4000] nm and [4850, 5200] nm. Use gradient-based thickness optimizer. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Implements feedback directive for anchored reinitialization of layers 1-2 to iteration 18 optimal values with tight bounds and quadratic penalty to dampen large-step optimizer excursions"
+      },
+      {
+        "route_id": "route_02_19layer_variant",
+        "title": "Reduced 19-Layer Three-Cavity Filter for Manufacturability",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing from 21 to 19 layers while maintaining the three-cavity Fabry-Perot principle will achieve comparable dual-band transmittance with improved manufacturability and reduced total thickness, at the cost of slightly reduced stopband rejection depth.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter with reduced layer count to test sensitivity of performance to layer count while preserving cavity resonance structure",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "19-layer alternating Ge/ZnS stack on CaF2 substrate, starting with Ge layer 1",
+        "design_variables": [
+          "all 19 layer thicknesses bounded to [50, 500] nm",
+          "no anchored layers - free optimization"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "minimize total stack thickness"
+        ],
+        "manufacturing_considerations": [
+          "19 layers provides margin below 24-layer maximum",
+          "all layers within 50-500 nm range for conventional deposition",
+          "Ge and ZnS are conventional IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for planar multilayer interference",
+          "Fabry-Perot cavity resonance condition"
+        ],
+        "expected_advantages": [
+          "Reduced layer count improves manufacturability",
+          "Lower total thickness reduces stress and deposition time",
+          "Tests whether 21 layers is excessive for this requirement"
+        ],
+        "known_risks": [
+          "May not achieve sufficient stopband rejection with fewer layers",
+          "Dual-band requirement may need 21+ layers",
+          "Free optimization may converge to different local minimum than anchored approach"
+        ],
+        "execution_request_english": "Optimize a 19-layer alternating Ge/ZnS dielectric stack on CaF2 substrate at normal incidence. All 19 layer thicknesses bounded to [50, 500] nm with no anchored constraints. Maximize mean transmittance in passbands [4150, 4350] nm and [4550, 4750] nm. Minimize mean transmittance in stopbands [3600, 4000] nm and [4850, 5200] nm. Use gradient-based thickness optimizer with QWOT-seeded initialization at 4.45 μm reference wavelength. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_02",
+        "revision_reason": "Complementary route testing layer count sensitivity - reduces from 21 to 19 layers to explore whether fewer layers can achieve comparable dual-band performance with improved manufacturability"
+      },
+      {
+        "route_id": "route_02_23layer_variant",
+        "title": "Expanded 23-Layer Three-Cavity Filter for Enhanced Stopband Rejection",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Expanding from 21 to 23 layers while maintaining the three-cavity Fabry-Perot principle will improve stopband rejection depth in the 3.60-4.00 μm and 4.85-5.20 μm ranges while maintaining or improving passband transmittance, at the cost of increased total thickness and fabrication complexity.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter with expanded layer count to provide additional degrees of freedom for stopband shaping while preserving cavity resonance structure",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "23-layer alternating Ge/ZnS stack on CaF2 substrate, starting with Ge layer 1",
+        "design_variables": [
+          "all 23 layer thicknesses bounded to [50, 500] nm",
+          "no anchored layers - free optimization"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "maximize stopband rejection depth"
+        ],
+        "manufacturing_considerations": [
+          "23 layers within 24-layer maximum constraint",
+          "all layers within 50-500 nm range for conventional deposition",
+          "Ge and ZnS are conventional IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for planar multilayer interference",
+          "Fabry-Perot cavity resonance condition",
+          "Additional layers provide more degrees of freedom for spectral shaping"
+        ],
+        "expected_advantages": [
+          "Improved stopband rejection depth with additional layers",
+          "More degrees of freedom for dual-band shaping",
+          "Approaches 24-layer maximum to test upper bound of performance"
+        ],
+        "known_risks": [
+          "Increased total thickness may cause stress issues",
+          "More layers increase fabrication complexity and tolerance sensitivity",
+          "May not provide significant improvement over 21-layer design"
+        ],
+        "execution_request_english": "Optimize a 23-layer alternating Ge/ZnS dielectric stack on CaF2 substrate at normal incidence. All 23 layer thicknesses bounded to [50, 500] nm with no anchored constraints. Maximize mean transmittance in passbands [4150, 4350] nm and [4550, 4750] nm. Minimize mean transmittance in stopbands [3600, 4000] nm and [4850, 5200] nm. Use gradient-based thickness optimizer with QWOT-seeded initialization at 4.45 μm reference wavelength. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_02",
+        "revision_reason": "Complementary route testing layer count sensitivity - expands from 21 to 23 layers to explore whether additional layers improve stopband rejection for the dual-band requirement while staying within 24-layer maximum"
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117 supports Ge/ZnS material pair for mid-IR Fabry-Perot filters with 24-layer designs achieving ~100% transmittance",
+      "Evidence s2-chunk:CorpusId:139773493 supports multi-cavity approach for bandpass filters in gas sensing applications",
+      "Evidence s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02 demonstrates 24-layer filter achieving FWHM of 339 nm with transmittance approaching 100%"
+    ],
+    "unresolved_decisions": [
+      "Whether 21 layers is optimal count for dual-band requirement or whether 19 or 23 layers provide better tradeoff",
+      "Whether anchored boundary layers prevent discovery of better configurations compared to free optimization",
+      "Whether the dual-band requirement fundamentally needs more than 21 layers for adequate stopband rejection"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_02_anchored_l1l2 received canonical user controls from the problem contract",
+    "route route_02_19layer_variant received canonical user controls from the problem contract",
+    "route route_02_23layer_variant received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 17136,
+      "completion_tokens": 6291,
+      "total_tokens": 23427
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

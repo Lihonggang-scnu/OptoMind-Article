@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_17/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "b44cf1151129adffb5f54d120453be9d6da0d9be95ec13d3e46ec6f81fce0413",
+  "recorded_at_utc": "2026-08-29T06:47:44.663890+00:00",
+  "elapsed_seconds": 5243.0075396000175,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_17",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Constraining layer thicknesses to 700-1100 nm range while penalizing optical-path differences between adjacent layers will suppress the 1200+ nm excursions observed in prior iterations, yielding smoother phase progression across the stack while maintaining dual-band transmittance performance for CH4 and CO2 sensing bands.",
+  "expected_advantages": [
+    "Suppresses 1200+ nm thickness excursions seen in iterations 01, 09, 13",
+    "Enforces smoother phase progression across stack",
+    "Maintains 22-layer count that achieved 0.955 target score in iteration 01",
+    "Bounds are physically motivated by prior observation, not arbitrary"
+  ],
+  "known_risks": [
+    "Tighter bounds may limit optimizer's ability to find global optimum",
+    "Smoothness penalty may conflict with dual-band resonance requirements",
+    "ZnS absorption may increase at longer wavelengths"
+  ],
+  "expected_observations": [
+    "best_target_score should increase across rounds as cavity thicknesses converge to resonance conditions",
+    "tightest_margin should remain positive if both transmission bands are achievable simultaneously",
+    "valid_candidates count should remain high if 22-layer topology is physically realizable",
+    "If hypothesis fails, best_target_score will plateau below 0.7 with tightest_margin declining"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops below 5 for three consecutive rounds, relax the 24-layer constraint interpretation and continue with current topology"
+  ]
+}

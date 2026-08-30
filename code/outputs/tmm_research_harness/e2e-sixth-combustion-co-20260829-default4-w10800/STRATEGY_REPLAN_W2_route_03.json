@@ -1,0 +1,202 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_03 after material_data failures in two prior iterations. The core issue appears to be material identifier resolution in the downstream registry. Three complementary routes proposed: (1) 20-layer Ge/ZnS 2-cavity Fabry-Perot with analytically-derived quarter-wave initialization at 4.45 μm, (2) 24-layer Ge/ZnS 3-cavity design for enhanced stopband blocking, (3) 20-layer Si/ZnS alternative material pair in case Ge has registry availability issues. All routes use explicit finite layer counts, bounded thickness variables [80-600 nm], and pre-validation of material optical constants before optimization. Evidence supports Ge/ZnS for 3-5 μm mid-IR with high index contrast and low absorption.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "20-Layer Ge/ZnS Two-Cavity Fabry-Perot with Quarter-Wave Seeding",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot bandpass filter using Ge (high-index) and ZnS (low-index) dielectric materials, initialized with quarter-wave thicknesses at 4.45 μm center wavelength, will achieve dual-band transmission at 4.15-4.35 μm and 4.55-4.75 μm with stopband suppression at 3.60-4.00 μm and 4.85-5.20 μm when thicknesses are computationally optimized within [80, 600] nm bounds.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter design: alternating quarter-wave layers of high and low index transparent materials form Bragg reflectors around cavity spacer layers. Computational optimization adjusts layer thicknesses from quarter-wave seeds to shape passband profile and enhance out-of-band blocking.",
+        "proposed_materials": [
+          "Germanium (Ge)",
+          "Zinc Sulfide (ZnS)"
+        ],
+        "proposed_topology": "Air | [Ge/ZnS]_4 | Ge (cavity1) | [ZnS/Ge]_2 | ZnS (cavity2) | [Ge/ZnS]_4 | CaF2 substrate. Total 20 finite layers: 8 mirror pairs + 2 cavity layers + coupling stack.",
+        "design_variables": [
+          "Individual layer thicknesses (20 variables)",
+          "Initial values set to t = λ₀/(4n) at λ₀ = 4450 nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 4.15-4.35 μm band",
+          "Maximize mean transmittance in 4.55-4.75 μm band",
+          "Minimize mean transmittance in 3.60-4.00 μm band",
+          "Minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "Maximum 20 layers (within 24-layer limit)",
+          "No metal layers",
+          "Thickness bounds [80, 600] nm for deposition feasibility",
+          "Conventional IR dielectric materials"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory: t_layer = λ₀/(4n_material) for Bragg reflector center wavelength",
+          "Fabry-Perot cavity resonance condition: (φ₁ + φ₂ - 2δ)/2 = kπ for maximum transmittance",
+          "Multi-cavity coupling produces square-shaped passband profiles"
+        ],
+        "expected_advantages": [
+          "Ge/ZnS has high index contrast (~4.0 vs ~2.3) in mid-IR for strong reflectivity",
+          "20 layers balances performance with fabrication complexity",
+          "Quarter-wave seeding provides physically meaningful initialization",
+          "Two cavities enable dual-band or broadened single-band response"
+        ],
+        "known_risks": [
+          "Material registry may not have Ge or ZnS optical constants in 4-5 μm range",
+          "Quarter-wave initialization may not align with dual-band requirement",
+          "Thickness tolerance sensitivity increases with layer count",
+          "Absorption in Ge may reduce peak transmittance if not properly accounted"
+        ],
+        "execution_request_english": "Design a 20-layer dielectric multilayer bandpass filter on CaF2 substrate under air incidence at normal angle. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge (cavity1) | ZnS | Ge | ZnS | Ge | ZnS (cavity2) | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2. Initialize all layer thicknesses using quarter-wave formula t = 4450 nm / (4 × n_material) where n_Ge ≈ 4.0 and n_ZnS ≈ 2.3 at 4.45 μm, giving initial Ge thickness ~278 nm and ZnS thickness ~484 nm. Set optimization bounds for all thicknesses to [80 nm, 600 nm]. Optimize the 20 thickness variables to maximize mean transmittance in passbands [4150-4350 nm] and [4550-4750 nm] while minimizing mean transmittance in stopbands [3600-4000 nm] and [4850-5200 nm]. Use coherent transfer-matrix method with frequency-domain plane-wave illumination. Validate material refractive indices exist in registry for 3.6-5.2 μm wavelength range before optimization. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Prior route_03 iterations failed on material_data. This revision: (1) uses explicit quarter-wave thickness initialization from analytical formula instead of random bounds, (2) specifies exact 20-layer topology with cavity positions, (3) adds mandatory pre-validation of material optical constants in registry, (4) tightens thickness bounds to [80, 600] nm based on deposition feasibility evidence."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "24-Layer Ge/ZnS Three-Cavity Fabry-Perot for Enhanced Stopband Blocking",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A three-cavity Fabry-Perot bandpass filter using Ge/ZnS with 24 total layers will achieve stronger stopband suppression (lower transmittance in 3.60-4.00 μm and 4.85-5.20 μm) compared to two-cavity designs, while maintaining high passband transmittance, due to increased mirror pair count and additional cavity coupling.",
+        "design_principle": "Three-cavity Fabry-Perot design with increased layer count provides more degrees of freedom for shaping passband profile and deepening stopband rejection. Evidence shows 24-layer filters achieved OD3 blocking with ~100% peak transmittance in mid-IR.",
+        "proposed_materials": [
+          "Germanium (Ge)",
+          "Zinc Sulfide (ZnS)"
+        ],
+        "proposed_topology": "Air | [Ge/ZnS]_5 | Ge (cavity1) | [ZnS/Ge]_2 | ZnS (cavity2) | [Ge/ZnS]_2 | Ge (cavity3) | [ZnS/Ge]_5 | CaF2 substrate. Total 24 finite layers.",
+        "design_variables": [
+          "Individual layer thicknesses (24 variables)",
+          "Initial values set to t = λ₀/(4n) at λ₀ = 4450 nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 4.15-4.35 μm band",
+          "Maximize mean transmittance in 4.55-4.75 μm band",
+          "Minimize mean transmittance in 3.60-4.00 μm band",
+          "Minimize mean transmittance in 4.85-5.20 μm band",
+          "Maximize stopband-to-passband contrast ratio"
+        ],
+        "manufacturing_considerations": [
+          "Maximum 24 layers (at constraint limit)",
+          "No metal layers",
+          "Thickness bounds [80, 600] nm",
+          "Total film thickness ~8-10 μm based on evidence"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:29846:30379:3d1ad9aa54137f0d"
+        ],
+        "theory_basis": [
+          "Multi-cavity Fabry-Perot theory: additional cavities flatten passband top and steepen band edges",
+          "Layer count vs bandwidth tradeoff: more layers enable narrower bandwidth but increase fabrication sensitivity",
+          "OD3 blocking (transmittance < 10⁻³) achievable with 24-layer mid-IR filters"
+        ],
+        "expected_advantages": [
+          "24 layers at maximum allowed count provides most design freedom",
+          "Three cavities enable better dual-band shaping than two cavities",
+          "Evidence shows 24-layer Ge/ZnS achieved OD3 blocking in 3-5 μm range",
+          "Higher layer count improves stopband suppression depth"
+        ],
+        "known_risks": [
+          "24 layers increases fabrication tolerance sensitivity",
+          "Total thickness ~8-10 μm may cause stress/adhesion issues",
+          "More variables increase optimization complexity and convergence time",
+          "Same material registry risk as route_03_refine_01"
+        ],
+        "execution_request_english": "Design a 24-layer dielectric multilayer bandpass filter on CaF2 substrate under air incidence at normal angle. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge (cavity1) | ZnS | Ge | ZnS | Ge | ZnS (cavity2) | Ge | ZnS | Ge | ZnS | Ge (cavity3) | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2. Initialize all layer thicknesses using quarter-wave formula t = 4450 nm / (4 × n_material) where n_Ge ≈ 4.0 and n_ZnS ≈ 2.3 at 4.45 μm. Set optimization bounds for all thicknesses to [80 nm, 600 nm]. Optimize the 24 thickness variables to maximize mean transmittance in passbands [4150-4350 nm] and [4550-4750 nm] while minimizing mean transmittance in stopbands [3600-4000 nm] and [4850-5200 nm]. Use coherent transfer-matrix method. Validate material refractive indices exist in registry for 3.6-5.2 μm wavelength range before optimization. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Complementary to route_03_refine_01 with increased layer count (24 vs 20) and three cavities (vs two) to test whether additional design freedom improves dual-band performance and stopband blocking. Same material pair and initialization strategy to isolate layer-count effect."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "20-Layer Si/ZnS Two-Cavity Fabry-Perot Alternative Material Pair",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "If Ge/ZnS fails due to material registry unavailability, Silicon (Si) with Zinc Sulfide (ZnS) provides an alternative high-contrast dielectric pair for mid-IR bandpass filters. Si has refractive index ~3.4 at 4-5 μm (lower than Ge's ~4.0 but still sufficient contrast with ZnS ~2.3), and Si is more commonly available in thin-film optical constant databases.",
+        "design_principle": "Same multi-cavity Fabry-Perot design principle as Ge/ZnS routes, but substituting Si for Ge as high-index material. Lower index contrast (3.4 vs 2.3 instead of 4.0 vs 2.3) requires slightly more layers or thicker mirrors for equivalent reflectivity, but Si has lower absorption in some mid-IR ranges.",
+        "proposed_materials": [
+          "Silicon (Si)",
+          "Zinc Sulfide (ZnS)"
+        ],
+        "proposed_topology": "Air | [Si/ZnS]_5 | Si (cavity1) | [ZnS/Si]_2 | ZnS (cavity2) | [Si/ZnS]_5 | CaF2 substrate. Total 20 finite layers (increased mirror pairs to compensate for lower index contrast).",
+        "design_variables": [
+          "Individual layer thicknesses (20 variables)",
+          "Initial values set to t = λ₀/(4n) at λ₀ = 4450 nm with n_Si ≈ 3.4"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 4.15-4.35 μm band",
+          "Maximize mean transmittance in 4.55-4.75 μm band",
+          "Minimize mean transmittance in 3.60-4.00 μm band",
+          "Minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "Maximum 20 layers",
+          "No metal layers",
+          "Thickness bounds [80, 600] nm",
+          "Si and ZnS are conventional depositable IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:19378:20331:022722bdb4d1219f"
+        ],
+        "theory_basis": [
+          "High-low index material pair selection principle: significant refractive index difference improves reflectivity per layer pair",
+          "Si/ZnS is a documented alternative to Ge/ZnS for mid-IR filters",
+          "Lower index contrast requires more layer pairs for equivalent stopband depth"
+        ],
+        "expected_advantages": [
+          "Si optical constants more commonly available in thin-film databases than Ge",
+          "Si has lower absorption coefficient than Ge in some mid-IR ranges",
+          "Same design topology as route_03_refine_01 enables direct material-pair comparison",
+          "Fallback option if Ge/ZnS routes fail on material_data"
+        ],
+        "known_risks": [
+          "Lower index contrast (3.4 vs 2.3) reduces reflectivity per layer pair",
+          "May require more than 20 layers to match Ge/ZnS stopband performance",
+          "Si absorption characteristics must be verified for 3.6-5.2 μm range",
+          "Still subject to material registry availability"
+        ],
+        "execution_request_english": "Design a 20-layer dielectric multilayer bandpass filter on CaF2 substrate under air incidence at normal angle. Use Silicon (Si) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: Air | Si | ZnS | Si | ZnS | Si | ZnS | Si | ZnS | Si | ZnS | Si (cavity1) | ZnS | Si | ZnS | Si | ZnS (cavity2) | Si | ZnS | Si | ZnS | Si | ZnS | Si | ZnS | CaF2. Initialize all layer thicknesses using quarter-wave formula t = 4450 nm / (4 × n_material) where n_Si ≈ 3.4 and n_ZnS ≈ 2.3 at 4.45 μm, giving initial Si thickness ~327 nm and ZnS thickness ~484 nm. Set optimization bounds for all thicknesses to [80 nm, 600 nm]. Optimize the 20 thickness variables to maximize mean transmittance in passbands [4150-4350 nm] and [4550-4750 nm] while minimizing mean transmittance in stopbands [3600-4000 nm] and [4850-5200 nm]. Use coherent transfer-matrix method. Validate material refractive indices exist in registry for 3.6-5.2 μm wavelength range before optimization. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Alternative material pair route to address material_data failures in prior route_03 iterations. If Ge is unavailable in registry, Si provides fallback with similar design topology. Enables material-pair comparison if both Ge/ZnS and Si/ZnS succeed."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117 supports Ge/ZnS material pair for 3-5 μm mid-IR with high index contrast and low absorption, directly motivating routes 03_refine_01 and 03_refine_02",
+      "Evidence s2-chunk:CorpusId:237542117:11855:13580 shows 24-layer Ge/ZnS achieved OD3 blocking with ~100% transmittance, motivating the 24-layer route_03_refine_02",
+      "Evidence s2-chunk:CorpusId:139773493:9893:11737 demonstrates multi-cavity Fabry-Perot design with computational optimization, informing the quarter-wave seeding + optimization strategy in all three routes",
+      "Prior iteration failures on material_data motivated route_03_refine_03 as Si/ZnS fallback and explicit pre-validation steps in all execution requests"
+    ],
+    "unresolved_decisions": [
+      "Material registry availability for Ge, Si, and ZnS in 3.6-5.2 μm wavelength range remains uncertain until execution",
+      "Optimal layer count (20 vs 24) depends on whether additional design freedom improves dual-band performance enough to justify fabrication complexity",
+      "Dual-band requirement (two separate passbands) may require different topology than standard single-band Fabry-Perot; may need to explore coupled-cavity or chirped designs if current routes underperform"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 10725,
+      "completion_tokens": 6440,
+      "total_tokens": 17165
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

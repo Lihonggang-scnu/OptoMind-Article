@@ -1,0 +1,66 @@
+{
+  "route_id": "route_02",
+  "title": "Constrained linear chirp MgF2/HfO2 stack with tight variance bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A constrained linear chirp trajectory (thickness decaying from ~140 nm to ~50 nm across 20 layers) with strict per-layer variance bounds (±5 nm) will suppress large-amplitude stochastic jumps and guide the optimizer toward a physically meaningful manifold, improving target score convergence compared to the unconstrained chirp in route_02.",
+  "design_principle": "Initialize thickness variables on a smooth linear chirp path and apply tight bounds to restrict search to a narrow manifold around this trajectory, reducing optimizer exploration of non-physical thickness combinations while preserving optimization freedom within the manifold.",
+  "proposed_materials": [
+    "MgF2",
+    "HfO2"
+  ],
+  "proposed_topology": "Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica substrate (20 finite layers total, alternating MgF2/HfO2 starting with MgF2)",
+  "design_variables": [
+    "layer_1_thickness_nm",
+    "layer_2_thickness_nm",
+    "layer_3_thickness_nm",
+    "layer_4_thickness_nm",
+    "layer_5_thickness_nm",
+    "layer_6_thickness_nm",
+    "layer_7_thickness_nm",
+    "layer_8_thickness_nm",
+    "layer_9_thickness_nm",
+    "layer_10_thickness_nm",
+    "layer_11_thickness_nm",
+    "layer_12_thickness_nm",
+    "layer_13_thickness_nm",
+    "layer_14_thickness_nm",
+    "layer_15_thickness_nm",
+    "layer_16_thickness_nm",
+    "layer_17_thickness_nm",
+    "layer_18_thickness_nm",
+    "layer_19_thickness_nm",
+    "layer_20_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 255-280 nm band",
+    "minimize mean transmittance in 300-700 nm band",
+    "minimize mean transmittance in 700-1100 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer limit)",
+    "no metal layers",
+    "conventional inorganic dielectric materials",
+    "tight thickness tolerance (±5 nm) requires precise deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Chirped mirror dispersion control principle"
+  ],
+  "expected_advantages": [
+    "Tighter bounds reduce search space and improve convergence",
+    "Linear chirp initialization provides physically meaningful starting point",
+    "May achieve higher target score than route_02's unconstrained approach"
+  ],
+  "known_risks": [
+    "Tight bounds may prevent optimizer from finding global optimum if chirp trajectory is suboptimal",
+    "20 layers may be insufficient for simultaneous 300-700 nm and 700-1100 nm rejection"
+  ],
+  "execution_request_english": "Optimize a 20-layer alternating MgF2/HfO2 stack on fused silica substrate under air incidence. Layer sequence: MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2 (20 finite layers). Initialize thicknesses on a linear chirp from 140 nm (layer 1) to 50 nm (layer 20). Apply per-layer thickness bounds of ±5 nm around the chirp trajectory. Optimize all 20 thicknesses to maximize mean transmittance in 255-280 nm while minimizing mean transmittance in 300-700 nm and 700-1100 nm bands. Use gradient-based thickness optimizer. Evaluate coherent TMM response across 255-1100 nm spectrum. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct response to feedback directives: implement constrained linear chirp trajectory with tight per-layer variance bounds (±5 nm) to suppress large-amplitude stochastic jumps observed in route_02 and force optimizer into physically meaningful search manifold."
+}

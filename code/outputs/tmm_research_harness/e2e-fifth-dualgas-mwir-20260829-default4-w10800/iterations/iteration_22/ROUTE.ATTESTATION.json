@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_22/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "260ea40c28b3b4fcdbb9e41354ab4ad2b420232ef03fb38889989c3d9267536a",
+  "recorded_at_utc": "2026-08-29T07:03:40.234593+00:00",
+  "elapsed_seconds": 6198.578521799995,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_22",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "An alternating high/low index dielectric stack with 22 layers can produce two distinct transmission windows at 3.25-3.35 μm and 4.20-4.30 μm through constructive interference, while adjacent bands experience destructive interference and suppression.",
+  "expected_advantages": [
+    "High index contrast (~0.5-0.7) provides strong interference effects per layer pair",
+    "22 layers gives ~11 pairs, sufficient for deep stopbands",
+    "Independent thickness optimization allows tuning for dual-band requirement",
+    "All materials are conventional IR coating materials"
+  ],
+  "known_risks": [
+    "Uncertain: Exact n/k dispersion of ZnS and Al2O3 across 2.5-5.0 μm - need registry data to confirm",
+    "Uncertain: Whether Al2O3 has absorption features in 4-5 μm range that would limit performance",
+    "Uncertain: Daimon-20 CaF2 substrate refractive index at these wavelengths affects matching",
+    "Uncertain: Whether 22 layers is optimal or if fewer layers could achieve similar performance",
+    "Uncertain: Deposition stress and adhesion for thick multi-layer stacks not verified",
+    "What would settle: Measured dispersion data from registry, stress measurements from deposition trials"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should rise with optimization rounds and tightest_margin should not fall across rounds",
+    "If hypothesis fails: best_target_score should plateau early or valid_candidates should decrease as thickness bounds widen",
+    "thicknesses_nm should converge toward distinct values per layer position rather than uniform thickness",
+    "run_status should remain completed with physically_valid_candidate_count >= 1 per round"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops to 0 for two consecutive rounds, relax thickness bounds by additional 50 nm and continue",
+    "If tightest_margin falls below 0.1 for three consecutive rounds, recenter optimizer on best historical candidate and continue"
+  ]
+}

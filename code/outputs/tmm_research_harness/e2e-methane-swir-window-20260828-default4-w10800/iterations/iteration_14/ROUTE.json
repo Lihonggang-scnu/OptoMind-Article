@@ -1,0 +1,47 @@
+{
+  "route_id": "route_03",
+  "title": "28-Layer Gaussian-Initialized Stack with Enhanced Mutation Step",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses from a constrained Gaussian distribution centered on the high-contrast ratios observed in iteration 11's best candidate (HfO2 ~180nm, SiO2 ~60nm) will increase the valid candidate pool above 12 by concentrating search in the narrow feasible basin, while 20% increased mutation step size will enable boundary probing without losing convergence.",
+  "design_principle": "Leverage empirical thickness distribution from prior optimization to inform initialization, reducing random search waste while maintaining exploration capability through enhanced mutation.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica (28 finite layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "28 independent layer thicknesses with Gaussian initialization bounds"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 28 within 30-layer limit",
+    "HfO2 thickness range 150-210 nm feasible for deposition",
+    "SiO2 thickness range 45-75 nm feasible for deposition"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory suggests alternating high/low index layers maximize reflectance in target band",
+    "Empirical observation from iteration 11 best candidate shows HfO2:SiO2 thickness ratio ~3:1"
+  ],
+  "expected_advantages": [
+    "Higher valid candidate count due to informed initialization",
+    "Faster convergence to feasible basin",
+    "Maintained exploration via enhanced mutation"
+  ],
+  "known_risks": [
+    "Gaussian concentration may miss alternative feasible regions",
+    "Enhanced mutation may cause numerical instability if step too large"
+  ],
+  "execution_request_english": "Optimize a 28-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (28 finite layers). Initialize HfO2 layer thicknesses from Gaussian distribution centered at 180 nm with standard deviation 30 nm, bounded 150-210 nm. Initialize SiO2 layer thicknesses from Gaussian distribution centered at 60 nm with standard deviation 15 nm, bounded 45-75 nm. Use gradient_thickness optimizer with mutation step size increased by 20% relative to default. Evaluate at normal incidence, unpolarized light. Maximize mean transmittance over 1000-1700 nm band and maximize mean reflectance over 300-450 nm band. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Per feedback directive: replace uniform thickness initialization with constrained Gaussian distribution centered on optimized high-contrast ratios from iteration 11 best design, and increase optimizer mutation step size by 20% to probe feasible basin boundaries and recover valid candidate pool above 12."
+}

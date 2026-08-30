@@ -1,0 +1,54 @@
+{
+  "route_id": "control_route_01",
+  "title": "Refined 22-layer ZnS/Al2O3 dual-bandpass filter with localized thickness optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 22-layer alternating ZnS/Al2O3 stack with thicknesses tuned around the empirically successful region from round 1 will improve the tightest_margin while maintaining or improving the best_target_score, demonstrating that local refinement outperforms broad exploration for this topology.",
+  "design_principle": "Recalled knowledge of dielectric multilayer filters suggests that once a promising thickness configuration is found, local coordinate descent with reduced step size can refine the solution toward better robustness without escaping the basin of attraction. The high index contrast between ZnS (n~2.4 in mid-IR) and Al2O3 (n~1.6 in mid-IR) provides sufficient optical contrast for stopband formation.",
+  "proposed_materials": [
+    "zns",
+    "Al2O3 (Kischkat)",
+    "CaF2 (Daimon-20)"
+  ],
+  "proposed_topology": "Air | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | ZnS | Al2O3 | Daimon-20 substrate (22 coating layers total)",
+  "design_variables": [
+    "Individual layer thicknesses for all 22 layers, bounded to ±30 nm around the median thickness values from the best-performing candidate in round 1"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3.25-3.35 μm band",
+    "Maximize mean transmittance in 4.20-4.30 μm band",
+    "Minimize mean transmittance in 2.50-3.10 μm band",
+    "Minimize mean transmittance in 4.45-5.00 μm band",
+    "Improve tightest_margin above 0.393"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 22 (within 24-layer limit)",
+    "No metal layers used",
+    "ZnS and Al2O3 are conventional IR-depositable dielectrics",
+    "Thickness bounds restricted to narrow range for manufacturability consistency"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: High/low index alternating stacks create photonic stopbands centered at quarter-wave optical thickness",
+    "Recalled knowledge: Dual passbands can be opened by introducing controlled thickness deviations from quarter-wave condition at strategic layer positions",
+    "Recalled knowledge: Local refinement with reduced step size typically improves robustness metrics once a promising region is identified",
+    "Recalled knowledge: ZnS has higher refractive index than Al2O3 in the mid-IR, providing index contrast for interference effects",
+    "Recalled knowledge: CaF2 (Daimon-20 dataset) is transparent in the 2.5-5.0 μm range and serves as suitable IR substrate"
+  ],
+  "expected_advantages": [
+    "Narrower bounds reduce search space and focus computation on promising region",
+    "Smaller optimizer step size allows finer tuning of thickness values",
+    "Maintaining the same material pair isolates thickness optimization as the only variable",
+    "Building on round 1's best candidate leverages already-discovered successful configuration"
+  ],
+  "known_risks": [
+    "Uncertainty about exact n/k values for ZnS and Al2O3 at 3-5 μm wavelengths; recalled values are approximate",
+    "Uncertainty whether ±30 nm bounds are too restrictive -- may prevent escape from local optimum if the round 1 best is not near global optimum",
+    "Recalled knowledge suggests quarter-wave thickness near 1250 nm for 3-5 μm band, but actual optimal thicknesses may differ significantly",
+    "No literature verification of ZnS/Al2O3 compatibility or stress issues in 22-layer stacks",
+    "Daimon-20 dataset selection was made to resolve registry ambiguity; other CaF2 datasets (Daimon-25) may have slightly different optical properties"
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer thin-film stack on CaF2 (Daimon-20) substrate with air incidence. Stack sequence: ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat), ZnS, Al2O3 (Kischkat) (22 coating layers). Optimize all 22 layer thicknesses with bounds set to ±30 nm around these center values: [962, 612, 734, 659, 459, 1168, 384, 593, 862, 479, 484, 1139, 337, 437, 852, 446, 824, 1233, 945, 389, 816, 870] nm. Use gradient_thickness optimizer with reduced learning rate for local refinement. Evaluate transmittance at four wavelength bands: 2500-3100 nm (suppress), 3250-3350 nm (pass), 4200-4300 nm (pass), 4450-5000 nm (suppress). No metal layers. Coherent TMM calculation under frequency-domain plane-wave illumination.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Round 2 refinement: Narrow thickness bounds to ±30 nm around round 1 best candidate medians, reduce optimizer step size for local coordinate descent to improve tightest_margin from 0.393. Repaired substrate name from CaF2 to Daimon-20 to resolve registry ambiguity."
+}

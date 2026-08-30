@@ -1,0 +1,251 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_02 (Ge/ZnS dual-band IR filter) based on prior iteration evidence. Iteration_06 achieved best_target_score 0.8679 with [100-500] nm bounds; iteration_10 achieved 0.7743 with constricted [80-400] nm bounds, suggesting over-constraint limited exploration. Following feedback directives: expand thickness bounds to [20-450] nm, use random midpoint initialization near 220 nm with ±40% variance, disable adaptive step-scaling initially. Four complementary routes explore: (1) wide-bound unconstrained exploration, (2) asymmetric layer sequence, (3) reduced 18-layer count for manufacturability, (4) gradient-only optimization with decaying perturbation.",
+    "routes": [
+      {
+        "route_id": "route_02_refine_01",
+        "title": "Ge/ZnS Dual-Band Filter with Wide-Bound Random Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Expanding thickness bounds to [20-450] nm with random midpoint initialization (220 nm ±40%) will enable the optimizer to discover phase-matched configurations that quarter-wave constrained initialization missed, improving best_target_score beyond 0.8679.",
+        "design_principle": "Transfer matrix method optimization with unconstrained thickness exploration allows discovery of non-quarter-wave solutions that may better satisfy dual-band transmission requirements while maintaining blocking.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (22 finite layers, 11 Ge + 11 ZnS alternating)",
+        "design_variables": [
+          "Layer thicknesses (22 variables, bounds [20-450] nm)",
+          "Optimization trajectory (gradient and differential evolution)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "22 layers within 24-layer constraint",
+          "All thicknesses within [20-450] nm range achievable by PVD",
+          "No metal layers per requirement",
+          "Total optical thickness approximately 6-8 micrometers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for coherent multilayer propagation",
+          "Interference filter theory: alternating high/low index layers create bandpass characteristics",
+          "Quarter-wave initialization as starting point but not constraint"
+        ],
+        "expected_advantages": [
+          "Wider search space may discover superior local optima",
+          "Random initialization avoids bias toward quarter-wave solutions",
+          "Disabled adaptive step-scaling prevents premature convergence"
+        ],
+        "known_risks": [
+          "Wider bounds may increase optimization iterations needed",
+          "Random initialization may require more rounds to converge",
+          "Some thickness combinations may produce high absorption"
+        ],
+        "execution_request_english": "Optimize a 22-layer alternating Ge/ZnS dielectric stack on CaF2 substrate for dual-band infrared transmission. Layer sequence: Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS (22 finite layers). Initialize all layer thicknesses with random uniform distribution centered at 220 nm with ±40% variance (range approximately 132-308 nm initial). Set optimization bounds to [20, 450] nm for all 22 thickness variables. Disable adaptive step-scaling for first 50% of optimization budget. Use coherent transfer matrix solver at normal incidence. Wavelength range 2500-5000 nm. Four mean-transmittance objectives: maximize in 3250-3350 nm (methane band), maximize in 4200-4300 nm (CO2 band), minimize in 2500-3100 nm (blocking), minimize in 4450-5000 nm (blocking). Run both gradient_thickness and differential_evolution_thickness optimizers. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Expanded thickness bounds from [80-400] nm to [20-450] nm per feedback directive; replaced quarter-wave constrained initialization with random midpoint distribution (220 nm ±40%); disabled adaptive step-scaling initially to prevent premature convergence to phase-mismatched states observed in iteration_10."
+      },
+      {
+        "route_id": "route_02_refine_02",
+        "title": "Ge/ZnS Asymmetric Dual-Band Filter with Non-Alternating Sequence",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Breaking strict alternation symmetry (e.g., consecutive high-index or low-index layers) enables independent tuning of the two passbands (3.3 μm and 4.25 μm), potentially improving dual-band performance over symmetric alternating stacks.",
+        "design_principle": "Asymmetric layer sequences allow different effective cavity lengths for different wavelength bands, enabling independent optimization of methane and CO2 transmission peaks without compromising blocking regions.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | Ge | ZnS | Ge | ZnS | ZnS | Ge | ZnS | Ge | Ge | ZnS | Ge | ZnS | ZnS | Ge | ZnS | Ge | Ge | ZnS | Ge | ZnS | CaF2 (22 finite layers, 12 Ge + 10 ZnS non-alternating)",
+        "design_variables": [
+          "Layer thicknesses (22 variables, bounds [20-450] nm)",
+          "Sequence asymmetry pattern (fixed for this route)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "22 layers within 24-layer constraint",
+          "Consecutive same-material layers may require single deposition step with adjusted thickness",
+          "All thicknesses within [20-450] nm range achievable by PVD"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "Multi-cavity filter theory: asymmetric sequences create multiple resonant conditions",
+          "Transfer matrix method handles arbitrary layer sequences",
+          "Bandpass filter design allows non-quarter-wave layer thicknesses"
+        ],
+        "expected_advantages": [
+          "Independent tuning of two passbands",
+          "Potential for steeper band edges through asymmetric interference",
+          "May reduce spectral ripple compared to symmetric stacks"
+        ],
+        "known_risks": [
+          "Asymmetric sequences may be more sensitive to thickness errors",
+          "Optimization landscape may have more local minima",
+          "Manufacturing complexity slightly increased"
+        ],
+        "execution_request_english": "Optimize a 22-layer non-alternating Ge/ZnS dielectric stack on CaF2 substrate for dual-band infrared transmission. Layer sequence: Ge|Ge|ZnS|Ge|ZnS|ZnS|Ge|ZnS|Ge|Ge|ZnS|Ge|ZnS|ZnS|Ge|ZnS|Ge|Ge|ZnS|Ge|ZnS (22 finite layers, 12 Ge + 10 ZnS). Initialize all layer thicknesses with random uniform distribution centered at 220 nm with ±40% variance. Set optimization bounds to [20, 450] nm for all 22 thickness variables. Disable adaptive step-scaling for first 50% of optimization budget. Use coherent transfer matrix solver at normal incidence. Wavelength range 2500-5000 nm. Four mean-transmittance objectives: maximize in 3250-3350 nm (methane band), maximize in 4200-4300 nm (CO2 band), minimize in 2500-3100 nm (blocking), minimize in 4450-5000 nm (blocking). Run both gradient_thickness and differential_evolution_thickness optimizers. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_02",
+        "revision_reason": "Introduces asymmetric layer sequence (non-alternating Ge/ZnS pattern) to test hypothesis that breaking symmetry enables independent passband tuning, distinct from route_02_refine_01 which maintains alternating sequence."
+      },
+      {
+        "route_id": "route_02_refine_03",
+        "title": "Ge/ZnS Reduced 18-Layer Dual-Band Filter for Manufacturability",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 22 to 18 layers will maintain acceptable dual-band performance (best_target_score > 0.75) while improving manufacturability through reduced deposition time and lower cumulative thickness error.",
+        "design_principle": "Fewer layers reduce vacuum chamber residence time and cumulative thickness control errors, as evidenced by manufacturability constraints in infrared coating production (evidence shows 20-40 micrometer thickness limits for commercial viability).",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (18 finite layers, 9 Ge + 9 ZnS alternating)",
+        "design_variables": [
+          "Layer thicknesses (18 variables, bounds [20-450] nm)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band",
+          "Minimize total layer count (18 vs 22)"
+        ],
+        "manufacturing_considerations": [
+          "18 layers provides margin within 24-layer constraint",
+          "Reduced deposition time compared to 22-layer designs",
+          "Lower cumulative thickness error budget",
+          "Total optical thickness approximately 5-6 micrometers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+        ],
+        "theory_basis": [
+          "Manufacturability-limited layer count principle: fewer layers reduce vacuum chamber residence time",
+          "Transfer matrix method handles arbitrary layer counts",
+          "Bandpass performance scales with layer count but diminishing returns exist"
+        ],
+        "expected_advantages": [
+          "Improved manufacturability through reduced layer count",
+          "Lower cumulative thickness error",
+          "Faster deposition cycle time",
+          "May achieve comparable performance to 22-layer if optimization is efficient"
+        ],
+        "known_risks": [
+          "Reduced layer count may limit achievable blocking performance",
+          "best_target_score may decrease compared to 22-layer baseline",
+          "May require tighter thickness tolerances per layer"
+        ],
+        "execution_request_english": "Optimize an 18-layer alternating Ge/ZnS dielectric stack on CaF2 substrate for dual-band infrared transmission. Layer sequence: Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS (18 finite layers, 9 Ge + 9 ZnS). Initialize all layer thicknesses with random uniform distribution centered at 220 nm with ±40% variance. Set optimization bounds to [20, 450] nm for all 18 thickness variables. Disable adaptive step-scaling for first 50% of optimization budget. Use coherent transfer matrix solver at normal incidence. Wavelength range 2500-5000 nm. Four mean-transmittance objectives: maximize in 3250-3350 nm (methane band), maximize in 4200-4300 nm (CO2 band), minimize in 2500-3100 nm (blocking), minimize in 4450-5000 nm (blocking). Run both gradient_thickness and differential_evolution_thickness optimizers. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_02",
+        "revision_reason": "Reduces layer count from 22 to 18 layers to test manufacturability-performance tradeoff, distinct from route_02_refine_01 which maintains 22 layers. Addresses evidence on thickness-constrained design for commercial viability."
+      },
+      {
+        "route_id": "route_02_refine_04",
+        "title": "Ge/ZnS Dual-Band Filter with Gradient-Only Optimization and Decaying Perturbation",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Using gradient-only optimization with decaying perturbation schedule (large initial steps, gradually reducing) will converge faster to high-quality solutions than hybrid gradient+differential evolution, reducing computational cost while maintaining best_target_score > 0.85.",
+        "design_principle": "Gradient-based optimization with controlled step decay allows efficient exploration early (large perturbations) followed by fine-tuning (small perturbations), avoiding the computational overhead of differential evolution while maintaining convergence quality.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 (22 finite layers, 11 Ge + 11 ZnS alternating)",
+        "design_variables": [
+          "Layer thicknesses (22 variables, bounds [20-450] nm)",
+          "Perturbation decay schedule (fixed: 50% reduction at midpoint)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band",
+          "Minimize optimization iterations to convergence"
+        ],
+        "manufacturing_considerations": [
+          "22 layers within 24-layer constraint",
+          "All thicknesses within [20-450] nm range achievable by PVD",
+          "Gradient-only approach may produce smoother thickness distributions"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33"
+        ],
+        "theory_basis": [
+          "TMM-based dual-objective optimization principle",
+          "Decaying perturbation prevents premature convergence while enabling fine-tuning",
+          "Gradient methods efficient for smooth optimization landscapes"
+        ],
+        "expected_advantages": [
+          "Faster convergence than differential evolution",
+          "Lower computational cost per round",
+          "Smoother thickness distributions may improve manufacturability",
+          "Decaying perturbation avoids local minima early in optimization"
+        ],
+        "known_risks": [
+          "Gradient-only may miss global optima found by differential evolution",
+          "Perturbation schedule may not suit all optimization landscapes",
+          "May converge to different local optimum than hybrid approach"
+        ],
+        "execution_request_english": "Optimize a 22-layer alternating Ge/ZnS dielectric stack on CaF2 substrate for dual-band infrared transmission using gradient-only optimization with decaying perturbation. Layer sequence: Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS (22 finite layers, 11 Ge + 11 ZnS). Initialize all layer thicknesses with random uniform distribution centered at 220 nm with ±40% variance. Set optimization bounds to [20, 450] nm for all 22 thickness variables. Use gradient_thickness optimizer only (no differential evolution). Implement decaying perturbation: initial step size at 100% for first 50% of budget, reduce to 50% for remaining 50%. Disable adaptive step-scaling. Use coherent transfer matrix solver at normal incidence. Wavelength range 2500-5000 nm. Four mean-transmittance objectives: maximize in 3250-3350 nm (methane band), maximize in 4200-4300 nm (CO2 band), minimize in 2500-3100 nm (blocking), minimize in 4450-5000 nm (blocking). Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 4,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests gradient-only optimization with decaying perturbation schedule vs. hybrid gradient+differential evolution approach from prior iterations, aiming to reduce computational cost while maintaining performance."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33 validated Ge/ZnS material pair for methane sensor bandpass filters at 3300 nm, supporting continued use in all routes.",
+      "Evidence s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299 confirmed alternating high/low index dielectric stacks produce sharp spectral profiles, supporting alternating topology in routes 01, 03, 04.",
+      "Evidence s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1 motivated route_02_refine_03's 18-layer reduction by highlighting manufacturability constraints on coating thickness and layer count.",
+      "Evidence s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507 supported TMM-based dual-objective optimization approach and informed route_02_refine_04's gradient-only with decaying perturbation strategy.",
+      "Prior iteration_06 best_target_score 0.8679 established performance baseline; iteration_10 score 0.7743 with constricted bounds informed feedback directive to expand bounds to [20-450] nm."
+    ],
+    "unresolved_decisions": [
+      "Whether asymmetric layer sequences (route_02_refine_02) provide measurable dual-band performance improvement over symmetric alternating stacks.",
+      "Whether 18-layer count (route_02_refine_03) maintains sufficient blocking performance while improving manufacturability.",
+      "Whether gradient-only optimization (route_02_refine_04) achieves comparable convergence quality to hybrid gradient+differential evolution at lower computational cost."
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_02_refine_01 received canonical user controls from the problem contract",
+    "route route_02_refine_02 received canonical user controls from the problem contract",
+    "route route_02_refine_03 received canonical user controls from the problem contract",
+    "route route_02_refine_04 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 16707,
+      "completion_tokens": 6585,
+      "total_tokens": 23292
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

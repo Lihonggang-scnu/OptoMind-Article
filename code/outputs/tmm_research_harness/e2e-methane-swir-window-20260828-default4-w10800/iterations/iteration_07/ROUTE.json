@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "28-Layer Bilayer-Unit Initialized Stack with Thickness-Jump Penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Partitioning 28 layers into 14 contiguous HfO2/SiO2 bilayer units and initializing each unit around nominal quarter-wave optical thicknesses (±15% tolerance) with a soft penalty on inter-layer thickness jumps >40% will increase the fraction of physically valid candidates and improve best_target_score compared to purely randomized initialization, while preserving global non-periodicity across the stack.",
+  "design_principle": "Locally-biased initialization around quarter-wave estimates reduces search space volume while maintaining flexibility for non-quarter-wave optimization. Thickness-jump penalty prevents unrealistic layer thickness variations that cause numerical convergence failures.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | (HfO2 | SiO2) × 14 bilayer units | Fused Silica substrate. Total finite coating layers: 28. First layer (adjacent to air) is HfO2, last layer (adjacent to substrate) is SiO2.",
+  "design_variables": [
+    "28 individual layer thicknesses (nm), initialized per bilayer unit around quarter-wave at geometric mean wavelength of each band"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1000-1700 nm band",
+    "Maximize mean reflectance in 300-450 nm band",
+    "Minimize thickness variation between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 28 ≤ 30 limit",
+    "Quarter-wave initialization improves deposition repeatability",
+    "Thickness-jump penalty reflects realistic deposition rate continuity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:283155301:s2chunk:283155301:16911:18321:96d511d2105e0454",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory: reflectivity maximizes for minimum layer count when optical thickness equals λ/4",
+    "Global optimization with bounded thickness: layer thickness bounded around reference wavelength estimates"
+  ],
+  "expected_advantages": [
+    "Higher valid_candidates count due to physically reasonable initialization",
+    "Improved best_target_score from better search space coverage",
+    "Reduced numerical_convergence failures compared to route_03"
+  ],
+  "known_risks": [
+    "May converge to local optimum near quarter-wave design rather than globally optimal non-quarter-wave solution",
+    "Thickness-jump penalty may overly constrain optimizer if penalty weight is too high"
+  ],
+  "execution_request_english": "Optimize a 28-layer dielectric coating on fused silica substrate using HfO2 and SiO2 materials. Structure: Air incident | 14 contiguous bilayer units of (HfO2 | SiO2) | Fused Silica. Initialize each bilayer unit with HfO2 thickness = quarter-wave at 1350 nm (geometric mean of 1000-1700 nm band) and SiO2 thickness = quarter-wave at 375 nm (geometric mean of 300-450 nm band), with ±15% random tolerance per layer. Apply soft penalty during optimization to discourage thickness ratio between adjacent layers exceeding 1.4 or falling below 0.714. Optimize all 28 layer thicknesses independently. Evaluate at normal incidence, unpolarized light. Spectral bands: 300-450 nm (maximize reflectance), 1000-1700 nm (maximize transmittance). Use gradient-based thickness optimizer with 500 iterations maximum. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Directly implements feedback directive: shift from purely randomized initialization to locally-biased bilayer-unit scheme with quarter-wave estimates and thickness-jump penalty to address numerical_convergence failures observed in route_03."
+}

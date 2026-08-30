@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_10/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "058df0ac2048f39b8a5fcd81a16510cea4e2348479969b794313d6e65f222a1d",
+  "recorded_at_utc": "2026-08-29T06:20:28.762293+00:00",
+  "elapsed_seconds": 3607.106775399996,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_10",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Constricting thickness initialization bounds to [80, 400] nm and reducing optimizer step size by 50% will prevent thickness overshoot observed in prior iteration, forcing the solver to optimize around resonant quarter-wave thicknesses and improve convergence toward the theoretical dual-band transmission limit.",
+  "expected_advantages": [
+    "Tighter bounds prevent optimizer from exploring non-physical thickness regions",
+    "Reduced step size improves convergence near quarter-wave resonances",
+    "Maintains proven Ge/ZnS material system from prior successful iteration"
+  ],
+  "known_risks": [
+    "Overly restrictive bounds may prevent discovery of optimal non-quarter-wave solutions",
+    "Reduced step size may increase optimization iterations needed"
+  ],
+  "expected_observations": [
+    "best_target_score should exceed or match route_01's 0.955 if initialization improves convergence",
+    "tightest_margin should not decrease relative to route_01 candidates",
+    "valid_candidates count should remain similar to route_01's 9 if constraints are equally feasible",
+    "If hypothesis is false: best_target_score will stagnate below 0.955 despite constrained initialization"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to route_01 historical best (0.955) is < 1e-3 for 2 consecutive rounds, judge initialization benefit as negligible -> stop and retain route_01 topology",
+    "If valid_candidates = 0, judge initialization constraints as infeasible -> relax thickness bounds to [30, 200] nm and re-run"
+  ]
+}

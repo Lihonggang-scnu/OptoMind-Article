@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_06/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "3cb57db780ea5136855f2e9707c42ce7bad1627a20715178108e19f7b9128af0",
+  "recorded_at_utc": "2026-08-29T04:13:09.492557+00:00",
+  "elapsed_seconds": 1657.600797399995,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_06",
+  "route_id": "route_02",
+  "scientific_hypothesis": "A constrained linear chirp trajectory (thickness decaying from ~140 nm to ~50 nm across 20 layers) with strict per-layer variance bounds (±5 nm) will suppress large-amplitude stochastic jumps and guide the optimizer toward a physically meaningful manifold, improving target score convergence compared to the unconstrained chirp in route_02.",
+  "expected_advantages": [
+    "Tighter bounds reduce search space and improve convergence",
+    "Linear chirp initialization provides physically meaningful starting point",
+    "May achieve higher target score than route_02's unconstrained approach"
+  ],
+  "known_risks": [
+    "Tight bounds may prevent optimizer from finding global optimum if chirp trajectory is suboptimal",
+    "20 layers may be insufficient for simultaneous 300-700 nm and 700-1100 nm rejection"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improvement in stopband rejection (300-1100 nm) compared to route_01 while maintaining comparable passband transmission, and tightest_margin should not degrade across rounds.",
+    "If the hypothesis fails, best_target_score will remain below route_01 due to HfO2 absorption in the 255-280 nm passband, visible in reduced valid_candidates count.",
+    "thicknesses_nm should show monotonic or graded progression if the chirp optimization converges, rather than uniform quarter-wave values."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If mean transmittance in 255-280 nm falls below 0.6 for three consecutive rounds, flag HfO2 absorption risk and stop, keeping the current best for comparison."
+  ]
+}

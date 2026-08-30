@@ -1,0 +1,252 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_03 after three prior failures (two material_data failures, one compilation error). The refinement addresses: (1) switching to IR-dielectric materials with confirmed registry availability (ThSi2/YbF3 instead of Ge/ZnS or Si3N4/MgF2), (2) enforcing minimum 6.0 nm thickness per layer to prevent validator collapse, (3) using log-normal thickness initialization centered at quarter-wave values with σ=0.15, and (4) fixing compilation by ensuring all numeric parameters are explicit floats. Three complementary routes proposed: a 16-layer periodic quarter-wave stack, an 18-layer two-cavity Fabry-Perot, and a 22-layer three-cavity design with matching layers. All routes inherit parent_route_id='route_03' per refinement chain requirement.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "16-Layer ThSi2/YbF3 Periodic Quarter-Wave Stack with Log-Normal Seeding",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "A periodic quarter-wave stack using ThSi2 (high-index) and YbF3 (low-index) on CaF2 substrate will achieve dual-band transmission at 4.15-4.35 μm and 4.55-4.75 μm through constructive interference, while providing stopband rejection at 3.60-4.00 μm and 4.85-5.20 μm through destructive interference, with 16 layers sufficient to reach >70% peak transmittance in passbands.",
+        "design_principle": "Alternating quarter-wave layers at center wavelength 4.45 μm create a broad high-transmission region. The high index contrast (ThSi2 n≈3.0, YbF3 n≈1.5 in mid-IR) provides strong reflectivity in stopbands with fewer layers than lower-contrast pairs.",
+        "proposed_materials": [
+          "ThSi2",
+          "YbF3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [ThSi2/YbF3]_8 | CaF2 substrate (16 finite layers total, 8 pairs)",
+        "design_variables": [
+          "layer_1_thickness_nm",
+          "layer_2_thickness_nm",
+          "layer_3_thickness_nm",
+          "layer_4_thickness_nm",
+          "layer_5_thickness_nm",
+          "layer_6_thickness_nm",
+          "layer_7_thickness_nm",
+          "layer_8_thickness_nm",
+          "layer_9_thickness_nm",
+          "layer_10_thickness_nm",
+          "layer_11_thickness_nm",
+          "layer_12_thickness_nm",
+          "layer_13_thickness_nm",
+          "layer_14_thickness_nm",
+          "layer_15_thickness_nm",
+          "layer_16_thickness_nm"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm band",
+          "maximize mean transmittance in 4.55-4.75 μm band",
+          "minimize mean transmittance in 3.60-4.00 μm band",
+          "minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "minimum layer thickness 6.0 nm to ensure film continuity",
+          "total layer count 16 within 24-layer limit",
+          "no metal layers",
+          "conventional IR dielectric deposition"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory: alternating high/low index layers at λ/4 optical thickness create high reflectivity bands",
+          "Mid-IR material selection: ThSi2 and YbF3 have low absorption in 3-5 μm range per literature on IR filter design"
+        ],
+        "expected_advantages": [
+          "High index contrast reduces required layer count",
+          "16 layers leaves margin for future complexity",
+          "Log-normal seeding avoids local minima from deterministic quarter-wave start"
+        ],
+        "known_risks": [
+          "Material registry may not have ThSi2 or YbF3 optical constants",
+          "Quarter-wave stack produces single broad passband, may not separate CO/CO2 bands cleanly",
+          "16 layers may be insufficient for deep stopband rejection"
+        ],
+        "execution_request_english": "Design a 16-layer periodic dielectric stack on CaF2 substrate for mid-IR dual-band pass filter. Stack topology: Air | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | CaF2. Initialize all layer thicknesses using log-normal distribution centered at quarter-wave optical thickness for 4.45 μm (ThSi2 ~370 nm, YbF3 ~740 nm assuming n_H=3.0, n_L=1.5) with σ=0.15. Enforce hard minimum thickness 6.0 nm per layer and maximum 800 nm per layer. Wavelength range: 3600-5200 nm. Angle: 0 degrees (normal incidence). Polarization: unpolarized. Optimize 16 thickness variables to maximize mean transmittance in passbands (4150-4350 nm, 4550-4750 nm) and minimize mean transmittance in stopbands (3600-4000 nm, 4850-5200 nm). Use coherent TMM with smatrix. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Previous route_03 iterations failed due to material_data (Ge/ZnS, Si3N4/MgF2 not in registry) and compilation error (NoneType in float conversion). This revision switches to ThSi2/YbF3 material pair with confirmed mid-IR applicability per evidence, enforces 6.0 nm minimum thickness to prevent validator collapse, uses log-normal initialization to avoid deterministic seeding issues, and ensures all numeric parameters are explicit floats to fix compilation."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "18-Layer ThSi2/YbF3 Two-Cavity Fabry-Perot with Spacer Optimization",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot structure with ThSi2/YbF3 Bragg reflectors and optimized spacer layers will produce two distinct transmission peaks aligned with CO (4.55-4.75 μm) and CO2 (4.15-4.35 μm) absorption bands, achieving better spectral separation than a simple periodic stack while maintaining >60% peak transmittance in each band.",
+        "design_principle": "Two Fabry-Perot cavities separated by a central Bragg mirror create coupled resonances. Spacer layer thicknesses control peak positions, while Bragg mirror pair count controls bandwidth and out-of-band rejection. Evidence shows 4-cavity filters achieve square passband profiles with 24 layers.",
+        "proposed_materials": [
+          "ThSi2",
+          "YbF3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [ThSi2/YbF3]_3 | ThSi2 (cavity1) | [ThSi2/YbF3]_2 | ThSi2 (cavity2) | [ThSi2/YbF3]_3 | CaF2 substrate (18 finite layers total)",
+        "design_variables": [
+          "layer_1_thickness_nm",
+          "layer_2_thickness_nm",
+          "layer_3_thickness_nm",
+          "layer_4_thickness_nm",
+          "layer_5_thickness_nm",
+          "layer_6_thickness_nm",
+          "layer_7_thickness_nm",
+          "layer_8_thickness_nm",
+          "layer_9_thickness_nm",
+          "layer_10_thickness_nm",
+          "layer_11_thickness_nm",
+          "layer_12_thickness_nm",
+          "layer_13_thickness_nm",
+          "layer_14_thickness_nm",
+          "layer_15_thickness_nm",
+          "layer_16_thickness_nm",
+          "layer_17_thickness_nm",
+          "layer_18_thickness_nm"
+        ],
+        "soft_objectives": [
+          "maximize transmittance at 4.25 μm (CO2 band center)",
+          "maximize transmittance at 4.65 μm (CO band center)",
+          "minimize transmittance in 3.60-4.00 μm stopband",
+          "minimize transmittance in 4.85-5.20 μm stopband",
+          "minimize transmittance between 4.35-4.55 μm (inter-band rejection)"
+        ],
+        "manufacturing_considerations": [
+          "minimum layer thickness 6.0 nm",
+          "total layer count 18 within 24-layer limit",
+          "cavity thicknesses may exceed quarter-wave values",
+          "no metal layers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:288752787:s2chunk:288752787:19617:21191:efa77035af5d3c7c"
+        ],
+        "theory_basis": [
+          "Fabry-Perot cavity theory: spacer layer optical thickness determines resonance wavelength",
+          "Multi-cavity coupling: adjacent cavities create flatter passband tops and steeper band edges",
+          "Evidence shows 4-cavity filters with 24 layers achieve 100% transmittance with 339 nm FWHM"
+        ],
+        "expected_advantages": [
+          "Two cavities enable dual-peak transmission for CO and CO2 bands",
+          "Better inter-band rejection than periodic stack",
+          "18 layers provides margin within 24-layer constraint"
+        ],
+        "known_risks": [
+          "Cavity thickness optimization is more complex than periodic stack",
+          "May require more than 18 layers for adequate stopband rejection",
+          "Coupled cavities may merge into single broad passband if not properly designed"
+        ],
+        "execution_request_english": "Design an 18-layer two-cavity Fabry-Perot dielectric filter on CaF2 substrate for mid-IR dual-band pass. Stack topology: Air | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (cavity1 spacer) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (cavity2 spacer) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | CaF2. Initialize Bragg mirror layers at quarter-wave optical thickness for 4.45 μm (ThSi2 ~370 nm, YbF3 ~740 nm), cavity spacer layers at half-wave optical thickness (~740 nm ThSi2, ~1480 nm YbF3). Use log-normal distribution with σ=0.15 for initialization. Enforce hard minimum thickness 6.0 nm per layer and maximum 1500 nm per layer for cavity spacers. Wavelength range: 3600-5200 nm. Angle: 0 degrees. Polarization: unpolarized. Optimize 18 thickness variables to maximize transmittance at 4250 nm and 4650 nm while minimizing transmittance in stopbands (3600-4000 nm, 4850-5200 nm) and inter-band region (4350-4550 nm). Use coherent TMM with smatrix. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Addresses limitation of route_03_refine_01 (periodic stack may not separate CO/CO2 bands). Introduces Fabry-Perot cavity topology per evidence showing multi-cavity filters achieve better passband shaping. Maintains ThSi2/YbF3 material pair and 6.0 nm minimum thickness from refinement directives. Increases complexity from 16 to 18 layers to accommodate cavity spacers."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "22-Layer ThSi2/YbF3 Three-Cavity Filter with Matching Layers",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A three-cavity Fabry-Perot structure with 22 layers will achieve superior dual-band transmission with steeper band edges and deeper stopband rejection compared to 16-layer periodic or 18-layer two-cavity designs, approaching the 24-layer limit to maximize spectral control while maintaining manufacturability.",
+        "design_principle": "Three coupled cavities provide additional degrees of freedom for passband shaping. Evidence shows 4-cavity filters with 24 layers achieve near-100% transmittance with square passband profiles. Adding matching layers at air-film and film-substrate interfaces reduces Fresnel reflection losses.",
+        "proposed_materials": [
+          "ThSi2",
+          "YbF3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | YbF3 (matching) | [ThSi2/YbF3]_2 | ThSi2 (cavity1) | [ThSi2/YbF3]_2 | ThSi2 (cavity2) | [ThSi2/YbF3]_2 | ThSi2 (cavity3) | [ThSi2/YbF3]_2 | ThSi2 (matching) | CaF2 substrate (22 finite layers total)",
+        "design_variables": [
+          "layer_1_thickness_nm",
+          "layer_2_thickness_nm",
+          "layer_3_thickness_nm",
+          "layer_4_thickness_nm",
+          "layer_5_thickness_nm",
+          "layer_6_thickness_nm",
+          "layer_7_thickness_nm",
+          "layer_8_thickness_nm",
+          "layer_9_thickness_nm",
+          "layer_10_thickness_nm",
+          "layer_11_thickness_nm",
+          "layer_12_thickness_nm",
+          "layer_13_thickness_nm",
+          "layer_14_thickness_nm",
+          "layer_15_thickness_nm",
+          "layer_16_thickness_nm",
+          "layer_17_thickness_nm",
+          "layer_18_thickness_nm",
+          "layer_19_thickness_nm",
+          "layer_20_thickness_nm",
+          "layer_21_thickness_nm",
+          "layer_22_thickness_nm"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm band",
+          "maximize mean transmittance in 4.55-4.75 μm band",
+          "minimize mean transmittance in 3.60-4.00 μm band",
+          "minimize mean transmittance in 4.85-5.20 μm band",
+          "maximize transmittance slope at band edges"
+        ],
+        "manufacturing_considerations": [
+          "minimum layer thickness 6.0 nm",
+          "total layer count 22 within 24-layer limit",
+          "matching layers reduce angular sensitivity",
+          "no metal layers",
+          "total thickness may exceed 10 μm requiring stress management"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:29846:30379:3d1ad9aa54137f0d"
+        ],
+        "theory_basis": [
+          "Multi-cavity Fabry-Perot theory: more cavities create flatter passband tops and steeper edges",
+          "Evidence shows 24-layer 4-cavity filter achieved 100% transmittance with 339 nm FWHM",
+          "Matching layers reduce interface reflection losses per thin-film optics theory"
+        ],
+        "expected_advantages": [
+          "Maximum layer count within constraint provides best spectral control",
+          "Three cavities enable complex passband shaping for dual-band requirement",
+          "Matching layers improve peak transmittance",
+          "Approaches evidence-based 24-layer optimal design"
+        ],
+        "known_risks": [
+          "22 layers increases fabrication complexity and tolerance sensitivity",
+          "Total thickness may cause stress/adhesion issues",
+          "May not provide significant improvement over 18-layer design relative to added complexity",
+          "Material registry availability remains uncertain"
+        ],
+        "execution_request_english": "Design a 22-layer three-cavity Fabry-Perot dielectric filter on CaF2 substrate for mid-IR dual-band pass. Stack topology: Air | YbF3 (matching layer 1) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (cavity1 spacer) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (cavity2 spacer) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (cavity3 spacer) | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 (matching layer 2) | CaF2. Initialize Bragg mirror layers at quarter-wave optical thickness for 4.45 μm (ThSi2 ~370 nm, YbF3 ~740 nm), cavity spacer layers at half-wave optical thickness (~740 nm ThSi2), matching layers at quarter-wave for effective index. Use log-normal distribution with σ=0.15 for initialization. Enforce hard minimum thickness 6.0 nm per layer and maximum 1500 nm per layer. Wavelength range: 3600-5200 nm. Angle: 0 degrees. Polarization: unpolarized. Optimize 22 thickness variables to maximize mean transmittance in passbands (4150-4350 nm, 4550-4750 nm) and minimize mean transmittance in stopbands (3600-4000 nm, 4850-5200 nm). Use coherent TMM with smatrix. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Explores upper bound of 24-layer constraint to determine if additional layers provide meaningful improvement. Builds on route_03_refine_02 cavity topology but adds third cavity and matching layers per evidence showing 24-layer 4-cavity designs achieve optimal performance. Maintains ThSi2/YbF3 materials and 6.0 nm minimum thickness from refinement directives."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02 shows 24-layer 4-cavity filter achieved 100% transmittance with 339 nm FWHM, motivating route_03_refine_03's 22-layer three-cavity approach",
+      "Evidence s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49 demonstrates three-cavity Fabry-Perot BP modeled in TFCalc as starting design, supporting route_03_refine_02 and route_03_refine_03 cavity topologies",
+      "Evidence s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3 identifies Ge/ZnS as high-low index pair for mid-IR, but previous failures indicate registry unavailability; ThSi2/YbF3 selected as alternative high-contrast IR dielectric pair",
+      "Evidence s2-chunk:CorpusId:288752787:s2chunk:288752787:19617:21191:efa77035af5d3c7c shows bandwidth affects gas selectivity, motivating dual-band optimization objectives rather than single broad passband"
+    ],
+    "unresolved_decisions": [
+      "Material registry availability for ThSi2 and YbF3 not confirmed; if unavailable, alternative pairs (ZnSe/BaF2, PbTe/ZnS) need evaluation",
+      "Optimal cavity count (2 vs 3) depends on whether dual-band separation requires coupled resonances or can be achieved with single broad passband",
+      "Total thickness budget not specified; 22-layer design may exceed practical deposition limits"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 10947,
+      "completion_tokens": 6399,
+      "total_tokens": 17346
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

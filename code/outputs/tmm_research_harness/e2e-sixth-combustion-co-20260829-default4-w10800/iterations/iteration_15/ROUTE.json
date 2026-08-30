@@ -1,0 +1,66 @@
+{
+  "route_id": "route_03",
+  "title": "16-Layer ThSi2/YbF3 Periodic Quarter-Wave Stack with Log-Normal Seeding",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "A periodic quarter-wave stack using ThSi2 (high-index) and YbF3 (low-index) on CaF2 substrate will achieve dual-band transmission at 4.15-4.35 μm and 4.55-4.75 μm through constructive interference, while providing stopband rejection at 3.60-4.00 μm and 4.85-5.20 μm through destructive interference, with 16 layers sufficient to reach >70% peak transmittance in passbands.",
+  "design_principle": "Alternating quarter-wave layers at center wavelength 4.45 μm create a broad high-transmission region. The high index contrast (ThSi2 n≈3.0, YbF3 n≈1.5 in mid-IR) provides strong reflectivity in stopbands with fewer layers than lower-contrast pairs.",
+  "proposed_materials": [
+    "ThSi2",
+    "YbF3",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | [ThSi2/YbF3]_8 | CaF2 substrate (16 finite layers total, 8 pairs)",
+  "design_variables": [
+    "layer_1_thickness_nm",
+    "layer_2_thickness_nm",
+    "layer_3_thickness_nm",
+    "layer_4_thickness_nm",
+    "layer_5_thickness_nm",
+    "layer_6_thickness_nm",
+    "layer_7_thickness_nm",
+    "layer_8_thickness_nm",
+    "layer_9_thickness_nm",
+    "layer_10_thickness_nm",
+    "layer_11_thickness_nm",
+    "layer_12_thickness_nm",
+    "layer_13_thickness_nm",
+    "layer_14_thickness_nm",
+    "layer_15_thickness_nm",
+    "layer_16_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 4.15-4.35 μm band",
+    "maximize mean transmittance in 4.55-4.75 μm band",
+    "minimize mean transmittance in 3.60-4.00 μm band",
+    "minimize mean transmittance in 4.85-5.20 μm band"
+  ],
+  "manufacturing_considerations": [
+    "minimum layer thickness 6.0 nm to ensure film continuity",
+    "total layer count 16 within 24-layer limit",
+    "no metal layers",
+    "conventional IR dielectric deposition"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory: alternating high/low index layers at λ/4 optical thickness create high reflectivity bands",
+    "Mid-IR material selection: ThSi2 and YbF3 have low absorption in 3-5 μm range per literature on IR filter design"
+  ],
+  "expected_advantages": [
+    "High index contrast reduces required layer count",
+    "16 layers leaves margin for future complexity",
+    "Log-normal seeding avoids local minima from deterministic quarter-wave start"
+  ],
+  "known_risks": [
+    "Material registry may not have ThSi2 or YbF3 optical constants",
+    "Quarter-wave stack produces single broad passband, may not separate CO/CO2 bands cleanly",
+    "16 layers may be insufficient for deep stopband rejection"
+  ],
+  "execution_request_english": "Design a 16-layer periodic dielectric stack on CaF2 substrate for mid-IR dual-band pass filter. Stack topology: Air | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | ThSi2 | YbF3 | CaF2. Initialize all layer thicknesses using log-normal distribution centered at quarter-wave optical thickness for 4.45 μm (ThSi2 ~370 nm, YbF3 ~740 nm assuming n_H=3.0, n_L=1.5) with σ=0.15. Enforce hard minimum thickness 6.0 nm per layer and maximum 800 nm per layer. Wavelength range: 3600-5200 nm. Angle: 0 degrees (normal incidence). Polarization: unpolarized. Optimize 16 thickness variables to maximize mean transmittance in passbands (4150-4350 nm, 4550-4750 nm) and minimize mean transmittance in stopbands (3600-4000 nm, 4850-5200 nm). Use coherent TMM with smatrix. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Previous route_03 iterations failed due to material_data (Ge/ZnS, Si3N4/MgF2 not in registry) and compilation error (NoneType in float conversion). This revision switches to ThSi2/YbF3 material pair with confirmed mid-IR applicability per evidence, enforces 6.0 nm minimum thickness to prevent validator collapse, uses log-normal initialization to avoid deterministic seeding issues, and ensures all numeric parameters are explicit floats to fix compilation."
+}

@@ -1,0 +1,45 @@
+You are writing the single arithmetic expression that turns a design's measurements into one number. You are given:
+
+- The user's research request in their own words.
+- The verified metrics chosen for this study. Each one carries the variable name you must use for it, the band it covers, and the direction that counts as better.
+
+Your expression is written ONCE and then frozen. Every route in the whole study is ranked by it, and nothing downstream may rewrite it, reweight it, or substitute its own score. Whatever the expression rewards is, from this point on, the definition of a good design for this study.
+
+You must output exactly one JSON object with the following two keys:
+
+1. formula (string)
+   An arithmetic expression built ONLY from:
+   - the variable names given to you, spelled exactly as given;
+   - numeric literals;
+   - the operators + - * / ** and parentheses;
+   - the functions min(...), max(...), abs(...).
+
+   Higher must always mean better. This is the one property that cannot be recovered later.
+
+   Examples of the required shape:
+   - mean_reflectance_300_800nm + mean_absorption_5000_13000nm
+   - 2 * mean_absorption_8000_13000nm - mean_absorption_300_2500nm
+   - min(mean_reflectance_400_700nm, mean_reflectance_700_1000nm)
+
+   EXPLICITLY FORBIDDEN, and rejected by a local check:
+   - any name that was not given to you, including invented variables, constants such as pi, or any function beyond the three listed;
+   - attribute access, indexing, subscripts, comparisons, or conditional expressions;
+   - leaving any of the given variables unused. Every metric was selected because it matters; a variable that never appears means that requirement silently stops counting.
+
+   Also rejected by a local check: getting a direction backwards. A variable whose direction is "maximize" must make the expression larger when it grows, and a variable whose direction is "minimize" must make it smaller. The check perturbs each variable and watches which way the expression moves, so a sign error is caught before any experiment runs rather than after every route has been ranked wrongly.
+
+   How to handle each direction:
+   - "maximize": add the variable, or add a positive multiple of it.
+   - "minimize": subtract it, or subtract a positive multiple of it. Do not add it and hope the reader understands.
+   - "match": penalise distance from the target, for example - abs(variable - 0.5). Distance terms are always subtracted.
+
+2. rationale (string)
+   Why this arrangement reflects the user's priorities. State plainly which requirement each term carries, and what any coefficient other than 1 is doing. If you weight one metric above another, the reason must come from the user's request, not from convention.
+   NOT ACCEPTED: "a weighted sum of the objectives", or any wording that restates the expression instead of justifying it.
+
+Judgement that no local check can make for you:
+
+- Keep it as simple as the request allows. A plain sum is the right answer whenever the user gave no reason to prefer one metric over another, and it is far easier to defend afterwards.
+- Use coefficients only to express a priority the user actually stated. Invented weights make the ranking look precise while making it arbitrary.
+- Reach for min(...) when the user wants a requirement met across a whole range rather than on average, because a sum lets a strong band hide a failing one.
+- Remember that these measurements are fractions between zero and one. Terms of wildly different magnitude mean the small one stops mattering.

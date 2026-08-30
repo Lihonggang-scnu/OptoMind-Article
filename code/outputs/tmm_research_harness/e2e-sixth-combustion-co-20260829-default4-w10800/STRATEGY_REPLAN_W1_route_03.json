@@ -1,0 +1,195 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_03 after material_data failure. The previous Si3N4/MgF2 pair likely lacks verified mid-IR refractive index data in the solver registry. Switching to Ge/ZnS material pair which is explicitly documented in evidence for 3-5 μm mid-IR filters. Reducing layer count from maximum to 16-20 layers to rule out stack-length issues. Three complementary routes: (1) Ge/ZnS periodic quarter-wave stack with 8 pairs, (2) Ge/ZnS multi-cavity Fabry-Perot with 3 cavities, (3) Ge/ZnS chirped stack for broader stopband coverage. All routes maintain CaF2 substrate, normal incidence, no metal layers, and dual-band pass objectives.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "Ge/ZnS Periodic Quarter-Wave Stack with 8 Pairs",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "A Ge/ZnS alternating quarter-wave stack with 8 pairs (16 finite layers) on CaF2 substrate will produce measurable transmittance peaks in the 4.15-4.35 μm and 4.55-4.75 μm bands while demonstrating stopband behavior in 3.60-4.00 μm and 4.85-5.20 μm, with valid candidates surviving material data verification.",
+        "design_principle": "Quarter-wave stack design using high-index Ge and low-index ZnS provides strong index contrast for efficient Bragg reflection in stopbands. Computational optimization adjusts individual layer thicknesses from quarter-wave baseline to split the primary passband into two transmission windows.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | (Ge/ZnS)_8 | Air, totaling 16 finite dielectric layers",
+        "design_variables": [
+          "individual layer thicknesses for all 16 layers",
+          "optimization starting from quarter-wave thickness at 4.45 μm center wavelength"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "maintain total layer count at exactly 16"
+        ],
+        "manufacturing_considerations": [
+          "Ge and ZnS are conventional depositable IR dielectrics",
+          "16 layers within 24-layer maximum constraint",
+          "no metal layers as required"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory for Bragg reflectors",
+          "Transfer-matrix method for multilayer interference"
+        ],
+        "expected_advantages": [
+          "Ge/ZnS pair has documented mid-IR optical constants in evidence",
+          "Reduced layer count (16 vs 24) eliminates potential buffer overflow",
+          "High index contrast enables strong stopband blocking with fewer layers"
+        ],
+        "known_risks": [
+          "Single periodic stack may not achieve dual-band separation without cavity defects",
+          "Ge absorption may increase at longer wavelengths beyond 5 μm",
+          "Quarter-wave baseline may require significant optimization to split passband"
+        ],
+        "execution_request_english": "Design and optimize a periodic dielectric multilayer filter on CaF2 substrate for normal incidence. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: CaF2 | (Ge/ZnS)_8 | Air, totaling exactly 16 finite dielectric layers. Initialize all layers at quarter-wave optical thickness centered at 4.45 μm. Optimize all 16 layer thicknesses to maximize transmittance in two passbands (4.15-4.35 μm and 4.55-4.75 μm) while minimizing transmittance in two stopbands (3.60-4.00 μm and 4.85-5.20 μm). No metal layers. Evaluate at wavelengths 3600-5200 nm. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all valid candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Changed from Si3N4/MgF2 to Ge/ZnS material pair due to material_data failure in route_03. Ge/ZnS is explicitly documented in evidence for mid-IR filters. Reduced layer count from maximum to 16 layers to rule out stack-length buffer issues."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "Ge/ZnS Three-Cavity Fabry-Perot Bandpass Filter",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A three-cavity Fabry-Perot structure using Ge/ZnS Bragg reflectors with defect spacer layers will produce two distinct transmission peaks in the target passbands with sharper band edges than a simple periodic stack, while maintaining valid material data verification.",
+        "design_principle": "Multi-cavity Fabry-Perot filters use Bragg mirror stacks separated by spacer cavities. Three cavities allow shaping of passband profile and potential dual-peak formation. Evidence shows 4-cavity filters achieved near-100% transmittance with 24 layers in mid-IR.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | Bragg_H1 | Cavity_1 | Bragg_H2 | Cavity_2 | Bragg_H3 | Cavity_3 | Bragg_H4 | Air, totaling 20 finite dielectric layers (4 Bragg stacks of 3 pairs each plus 3 cavity spacers plus 2 matching layers)",
+        "design_variables": [
+          "Bragg mirror pair counts per stack",
+          "cavity spacer thicknesses",
+          "individual layer thicknesses within Bragg stacks"
+        ],
+        "soft_objectives": [
+          "maximize peak transmittance in 4.15-4.35 μm and 4.55-4.75 μm",
+          "minimize transmittance in stopbands",
+          "achieve square-shaped passband profile"
+        ],
+        "manufacturing_considerations": [
+          "20 layers within 24-layer maximum",
+          "Ge and ZnS are conventional IR dielectrics",
+          "cavity thickness control critical for passband positioning"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02"
+        ],
+        "theory_basis": [
+          "Fabry-Perot cavity resonance theory",
+          "Coupled cavity filter design for multi-peak transmission"
+        ],
+        "expected_advantages": [
+          "Multi-cavity design documented in evidence for mid-IR gas sensor filters",
+          "Sharper passband edges improve stopband rejection",
+          "Cavity thickness provides additional design freedom for dual-peak separation"
+        ],
+        "known_risks": [
+          "More complex topology may be sensitive to thickness tolerances",
+          "Cavity coupling may produce unwanted intermediate transmission peaks",
+          "20 layers approaches manufacturing complexity limit"
+        ],
+        "execution_request_english": "Design and optimize a three-cavity Fabry-Perot bandpass filter on CaF2 substrate for normal incidence. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: CaF2 | (Ge/ZnS)_3 | Cavity_1 | (Ge/ZnS)_3 | Cavity_2 | (Ge/ZnS)_3 | Cavity_3 | (Ge/ZnS)_3 | Air, totaling exactly 20 finite dielectric layers (12 Bragg mirror layers plus 3 cavity spacers plus 5 additional matching/transition layers). Initialize Bragg mirrors at quarter-wave thickness at 4.45 μm. Initialize cavities at half-wave optical thickness. Optimize all 20 layer thicknesses to maximize transmittance in two passbands (4.15-4.35 μm and 4.55-4.75 μm) while minimizing transmittance in two stopbands (3.60-4.00 μm and 4.85-5.20 μm). No metal layers. Evaluate at wavelengths 3600-5200 nm. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all valid candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Alternative topology to route_03_refine_01. Uses multi-cavity Fabry-Perot design documented in evidence for mid-IR gas sensors. Different layer count (20 vs 16) tests whether stack length affects material data validation."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "Ge/ZnS Chirped Stack for Broad Stopband Coverage",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "A chirped Ge/ZnS stack with gradually varying layer thicknesses will provide broader stopband coverage across both 3.60-4.00 μm and 4.85-5.20 μm ranges while maintaining transmission windows at the target passbands, with valid material data verification.",
+        "design_principle": "Chirped stacks use progressively varying optical thickness to broaden the reflection band. This approach may better cover the two separate stopband regions while allowing transmission peaks to emerge at specific wavelengths through careful thickness grading.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | (Ge/ZnS)_9 with chirped thickness profile | Air, totaling 18 finite dielectric layers",
+        "design_variables": [
+          "individual layer thicknesses with chirped initialization profile",
+          "chirp rate and direction",
+          "optimization bounds per layer"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm",
+          "minimize transmittance across combined stopband regions 3.60-4.00 μm and 4.85-5.20 μm",
+          "achieve smooth spectral response without sharp ripples"
+        ],
+        "manufacturing_considerations": [
+          "18 layers within 24-layer maximum",
+          "chirped design may require tighter thickness control",
+          "Ge and ZnS are conventional depositable materials"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3"
+        ],
+        "theory_basis": [
+          "Chirped Bragg reflector theory for broadband reflection",
+          "Gradient index optical filtering"
+        ],
+        "expected_advantages": [
+          "Broader stopband coverage than periodic stack",
+          "May better suppress both stopband regions simultaneously",
+          "18 layers provides intermediate complexity between routes 01 and 02"
+        ],
+        "known_risks": [
+          "Chirped design may reduce peak transmittance in passbands",
+          "Optimization landscape may be more complex with graded thicknesses",
+          "Evidence does not explicitly document chirped designs for dual-band mid-IR filters"
+        ],
+        "execution_request_english": "Design and optimize a chirped dielectric multilayer filter on CaF2 substrate for normal incidence. Use Germanium (Ge) as high-index material and Zinc Sulfide (ZnS) as low-index material. Stack topology: CaF2 | (Ge/ZnS)_9 with chirped thickness profile | Air, totaling exactly 18 finite dielectric layers. Initialize layer thicknesses with linear chirp from 0.8× quarter-wave to 1.2× quarter-wave optical thickness centered at 4.45 μm. Optimize all 18 layer thicknesses to maximize transmittance in two passbands (4.15-4.35 μm and 4.55-4.75 μm) while minimizing transmittance in two stopbands (3.60-4.00 μm and 4.85-5.20 μm). No metal layers. Evaluate at wavelengths 3600-5200 nm. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all valid candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Third complementary topology testing chirped stack approach. Different layer count (18) and thickness initialization strategy from routes 01 and 02. Tests whether chirped design better covers dual stopband regions."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117 explicitly documents Ge/ZnS material pair for mid-IR filters in 3-5 μm range, motivating material change from failed Si3N4/MgF2",
+      "Evidence s2-chunk:CorpusId:139773493 documents multi-cavity Fabry-Perot design for NDIR gas sensors, supporting route_03_refine_02 topology",
+      "Evidence s2-chunk:CorpusId:237542117 shows 24-layer filter achieved near-100% transmittance, validating layer count constraints up to 24",
+      "Prior iteration route_03 failure in material_data category directly motivated switching to Ge/ZnS pair with documented mid-IR optical constants"
+    ],
+    "unresolved_decisions": [
+      "Whether Ge/ZnS material identifiers will resolve correctly in the solver's material registry",
+      "Which topology (periodic, multi-cavity, or chirped) best achieves dual-band separation with single stack",
+      "Optimal layer count trade-off between performance and manufacturing complexity within 24-layer limit"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 2,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 10536,
+      "completion_tokens": 4609,
+      "total_tokens": 15145
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14481,
+      "completion_tokens": 4248,
+      "total_tokens": 18729
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

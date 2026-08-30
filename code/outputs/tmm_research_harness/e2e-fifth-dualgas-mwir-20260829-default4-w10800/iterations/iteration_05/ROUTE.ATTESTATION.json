@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_05/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "4ed8f58959fb9c6e0c5c1ef02d44fb7c56b71e56f42b805416085b2de4e67521",
+  "recorded_at_utc": "2026-08-29T06:03:14.032800+00:00",
+  "elapsed_seconds": 2572.377113400027,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_05",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Clamping spacer and cavity layer thicknesses to [50, 150] nm during initialization will seed the optimizer onto the primary resonance manifold, reducing convergence time and improving final target score compared to unbounded initialization, while preserving the 22-layer dual-cavity topology that achieved 0.955 target score in iteration_01.",
+  "expected_advantages": [
+    "Faster convergence due to informed initialization",
+    "Higher final target score from better starting point",
+    "Preserves proven 22-layer topology from route_01"
+  ],
+  "known_risks": [
+    "Initialization window may be too restrictive for some cavity orders",
+    "May converge to local optimum within constrained manifold"
+  ],
+  "expected_observations": [
+    "best_target_score should increase across rounds as cavity thicknesses converge to resonance conditions",
+    "tightest_margin should remain positive if both transmission bands are achievable simultaneously",
+    "valid_candidates count should remain high if 22-layer topology is physically realizable",
+    "If hypothesis fails, best_target_score will plateau below 0.7 with tightest_margin declining"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops below 5 for three consecutive rounds, relax the 24-layer constraint interpretation and continue with current topology"
+  ]
+}

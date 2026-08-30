@@ -1,0 +1,1099 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "This control axis tests whether a hybrid perturbation strategy on a fixed 22-layer ZnS/MgF2 alternating stack can improve dual-band infrared filter performance. The prior knowledge is that quarter-wave stacks with asymmetric layer tuning can separate passbands while maintaining stopband rejection. This route uses only model prior knowledge with no literature retrieval.",
+    "routes": [
+      {
+        "route_id": "control_route_01",
+        "title": "Hybrid Perturbation on 22-Layer ZnS/MgF2 Dual-Band IR Filter",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Applying wider perturbation bounds to the front half of the stack (layers 1-12) while restricting the back half (layers 13-22) to narrow local adjustments will improve the dual-band transmittance score without degrading stopband rejection, compared to uniform perturbation across all layers.",
+        "design_principle": "In multilayer interference filters, the front layers primarily control impedance matching and overall transmission, while the back layers fine-tune spectral positioning. Asymmetric perturbation allows global exploration where it matters most while preventing phase disruption in the terminating layers.",
+        "proposed_materials": [
+          "zns",
+          "mgf2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | Daimon-20 substrate (22 layers total, alternating high/low index)",
+        "design_variables": [
+          "Individual layer thicknesses for all 22 layers",
+          "Perturbation bounds: layers 1-12 at ±8% global exploration, layers 13-22 at ±5% with ±3 nm maximum displacement cap from iteration 08 seed"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 4.15-4.35 μm band",
+          "Maximize mean transmittance in 4.55-4.75 μm band",
+          "Minimize mean transmittance in 3.60-4.00 μm band",
+          "Minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "All layers must be depositable by conventional PVD or CVD methods",
+          "No metal layers permitted",
+          "Total layer count fixed at 22 (within 24-layer limit)",
+          "Thicknesses should remain in practical deposition range (50-1000 nm)"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled knowledge: Quarter-wave stacks produce high reflectance at design wavelength; deviating from quarter-wave can create transmission windows",
+          "Recalled knowledge: ZnS has high refractive index (~2.2-2.4) in mid-IR and is transparent through 5 μm",
+          "Recalled knowledge: MgF2 has low refractive index (~1.3-1.4) and reasonable transmission in 4-5 μm range though absorption increases beyond 4 μm",
+          "Recalled knowledge: Daimon-20 dataset provides CaF2 substrate optical constants in 3-5 μm range",
+          "Recalled knowledge: Front layers in a stack affect impedance matching more than back layers, which primarily tune phase"
+        ],
+        "expected_advantages": [
+          "Hybrid perturbation should find better local optima than uniform bounds",
+          "Restricting back layers prevents destructive interference pattern shifts",
+          "Front layer exploration can improve overall transmission efficiency",
+          "Builds on iteration 08 best result (target score 0.698) as seed"
+        ],
+        "known_risks": [
+          "MgF2 absorption coefficient at 4-5 μm is uncertain from memory; actual k values may reduce transmission more than expected",
+          "Daimon-20 dataset selection was required because generic CaF2 name matched 4 datasets equally; this specific dataset may not match all prior iteration assumptions",
+          "The ±3 nm cap on layers 13-22 may be too restrictive if iteration 08 seed is not near optimum",
+          "ZnS stress and adhesion properties not verified; may affect manufacturability",
+          "What would settle this: Look up measured n/k data for MgF2 and ZnS at 4-5 μm from handbook or vendor data sheets"
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer infrared filter on Daimon-20 substrate under air incidence at 0 degrees. Stack sequence: ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2, ZnS, MgF2 (22 layers total). Initialize thicknesses from iteration 08 best candidate: [897.2128783342998, 927.7243962133199, 517.2144549592246, 923.3881401125151, 928.7521051853196, 669.4261405190617, 67.78584356432049, 112.29941644509945, 458.75081585145244, 957.6078300094041, 994.3519148417982, 966.2470589185659, 377.1979812854105, 255.38804087140915, 582.91923145124, 246.55290266788114, 825.8573574544129, 990.9340803979848, 968.8554793206682, 937.3731639376689, 193.41503851247, 556.5186678474654] nm. Apply hybrid perturbation: layers 1-12 allow ±8% thickness variation, layers 13-22 allow ±5% variation capped at ±3 nm maximum displacement from seed. Wavelength range 3500-5300 nm. Optimize for high transmittance in 4150-4350 nm and 4550-4750 nm bands, low transmittance in 3600-4000 nm and 4850-5200 nm bands. Use coherent thin-film matrix method. No metal layers. Maximum 22 layers fixed.",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Repaired material name ambiguity: replaced generic CaF2 with specific dataset name Daimon-20 as required by registry. All other route parameters preserved from prior iteration."
+      }
+    ],
+    "knowledge_source": "model_prior_knowledge_only",
+    "knowledge_source_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+    "research_influence": [],
+    "unresolved_decisions": [
+      "Exact MgF2 extinction coefficient at 4.5-5.0 μm not known from memory; registry data will determine actual absorption",
+      "Daimon-20 substrate refractive index dispersion in 3.5-5.5 μm range not precisely recalled from memory",
+      "Whether 22 layers is optimal versus 20 or 24 cannot be determined without comparative runs"
+    ],
+    "stop_if_all_routes_fail": "If all routes fail compilation or produce zero physically valid candidates after three rounds, report failure and recommend material pair substitution or layer count adjustment"
+  },
+  "pre_declarations": {
+    "control_route_01": {
+      "expected_observations": [
+        "If hypothesis holds: best_target_score should increase from iteration 08 value of 0.698 across rounds while tightest_margin does not fall",
+        "If hypothesis fails: best_target_score should plateau or decrease while valid_candidates count drops due to over-restriction on layers 13-22",
+        "thicknesses_nm for layers 1-12 should show wider variation across candidates than layers 13-22",
+        "run_status should remain completed with physically_valid_candidate_count >= 5 per round"
+      ],
+      "stop_conditions": [
+        "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+        "If valid_candidates falls below 3 for two consecutive rounds, relax layers 13-22 cap from ±3 nm to ±5 nm and continue",
+        "If run_status shows compilation failure for two consecutive rounds, stop and report the error"
+      ]
+    }
+  },
+  "attempts": 2,
+  "route_count": 1,
+  "warnings": [],
+  "validation_errors": [],
+  "planning_usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 9216,
+      "completion_tokens": 3019,
+      "total_tokens": 12235
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 2341,
+      "completion_tokens": 5179,
+      "total_tokens": 7520
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 11506,
+      "completion_tokens": 2829,
+      "total_tokens": 14335
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 2341,
+      "completion_tokens": 4294,
+      "total_tokens": 6635
+    }
+  ],
+  "query_result": {
+    "status": "unavailable",
+    "queries": [],
+    "rationale": "",
+    "attempts": 0,
+    "validation_errors": [],
+    "usage": []
+  },
+  "literature": {
+    "status": "not_consulted",
+    "papers": [],
+    "queries": [],
+    "requested_limit": 0,
+    "returned": 0,
+    "duplicates_dropped": 0,
+    "dropped_for_context": 0,
+    "character_count": 0,
+    "errors": [
+      "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction."
+    ]
+  },
+  "model_name": "qwen3.5-plus",
+  "question_digest": "de8a013850895ea3",
+  "material_verification": {
+    "checked": true,
+    "catalog": {
+      "schema_version": "1.0",
+      "guaranteed_names": [
+        "ag",
+        "al",
+        "al2o3",
+        "aln",
+        "hfo2",
+        "mgf2",
+        "si",
+        "si3n4",
+        "sic",
+        "sio2",
+        "ti",
+        "tio2",
+        "zno",
+        "zns"
+      ],
+      "coverage": "the guaranteed-name list proves name resolution only; the separate route candidate ranking reads actual n/k grids and records native coverage or explicit interpolation/endpoint-extension availability. Execution still keeps the registry's allow_extrapolation switch fail-closed",
+      "source": "tmm_engine.MaterialRegistry local provider, each name resolved before listing",
+      "candidate_ranking": {
+        "schema_version": "material-candidate-ranking.v1",
+        "max_candidates": 10,
+        "equal_weight_metrics": [
+          "target_band_coverage",
+          "n_k_completeness",
+          "sampling_density"
+        ]
+      },
+      "internal_selector": {
+        "schema_version": "route-material-selector.v1",
+        "enabled": true,
+        "model": "qwen3.5-plus",
+        "max_tokens": 1800
+      },
+      "catalog_status": {
+        "local_csv": {
+          "provider": "local_csv",
+          "materials_dir": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials",
+          "dataset_count": 14
+        },
+        "rii_sqlite": {
+          "provider": "rii_sqlite",
+          "database_path": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\rii_cache.db",
+          "available": true,
+          "page_count": 2712,
+          "refractive_index_point_count": 252442,
+          "extinction_coefficient_point_count": 209839,
+          "database_size_bytes": 13070336,
+          "database_mtime_epoch": 1782453108.0,
+          "database_sha256": "e4c1ec34cc4f765a8400ff87bb7dee8705b6da2cdb11a229cc57ad9bdd274989",
+          "upstream": "https://refractiveindex.info and https://github.com/polyanskiy/refractiveindex.info-database",
+          "license": "CC0-1.0"
+        }
+      }
+    },
+    "routes": {
+      "control_route_01": {
+        "selection": {
+          "schema_version": "route-material-selector.v1",
+          "ranking_schema_version": "material-candidate-ranking.v1",
+          "status": "selected_by_llm",
+          "selection_method": "ranked_candidates_then_internal_llm",
+          "max_candidates": 10,
+          "target_wavelength_ranges_um": [
+            [
+              3.6,
+              4.0
+            ],
+            [
+              4.15,
+              4.3500000000000005
+            ],
+            [
+              4.55,
+              4.75
+            ],
+            [
+              4.8500000000000005,
+              5.2
+            ]
+          ],
+          "user_question": "我正在为燃气轮机和工业烟气在线监测系统设计一个共享前端红外滤光膜。探测器需要同时通过一氧化碳 4.55–4.75 μm 和二氧化碳 4.15–4.35 μm 两个窄波段的辐射，并在 3.60–4.00 μm 以及 4.85–5.20 μm 范围内抑制背景和其他热辐射。请在空气正入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。",
+          "requests": [
+            {
+              "request_id": "material_01",
+              "proposed_material": "zns",
+              "target_wavelength_ranges_um": [
+                [
+                  3.6,
+                  4.0
+                ],
+                [
+                  4.15,
+                  4.3500000000000005
+                ],
+                [
+                  4.55,
+                  4.75
+                ],
+                [
+                  4.8500000000000005,
+                  5.2
+                ]
+              ],
+              "candidates": [
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "zns",
+                  "resolved_material": "zns",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "zns",
+                  "shelf": null,
+                  "book": null,
+                  "page": "zns.csv",
+                  "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 118,
+                  "k_points_in_band": 118,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                },
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 2,
+                  "material": "ZnS",
+                  "resolved_material": "zns",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "S",
+                      1
+                    ],
+                    [
+                      "Zn",
+                      1
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 531,
+                  "shelf": "main",
+                  "book": "ZnS",
+                  "page": "Querry",
+                  "filepath": "main\\ZnS\\Querry.yml",
+                  "range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "grid_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "n_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "k_range_um": [
+                    0.22,
+                    166.6667
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 312,
+                  "n_points_in_band": 31,
+                  "k_points_in_band": 31,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.03500000000000014,
+                  "sampling_density": 28.571428571428456,
+                  "sampling_score": 0.2857142857142785,
+                  "score": 0.7619047619047595,
+                  "physical_score": 0.7619047619047595,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    312
+                  ]
+                }
+              ],
+              "compatible_candidate_count": 2,
+              "status": "ranked",
+              "llm_selection": {
+                "selected_rank": 1,
+                "provider": "local_csv",
+                "dataset_id": "zns",
+                "reason": "Exact formula match (ZnS), highest physical score (1.0) and sampling density, full n/k coverage in target band."
+              },
+              "selected_candidate": {
+                "ranking_schema_version": "material-candidate-ranking.v1",
+                "rank": 1,
+                "material": "zns",
+                "resolved_material": "zns",
+                "semantic_match": "exact_formula",
+                "formula_exact": true,
+                "formula_signature": [
+                  [
+                    "S",
+                    1
+                  ],
+                  [
+                    "Zn",
+                    1
+                  ]
+                ],
+                "requested_formula_signature": [
+                  [
+                    "S",
+                    1
+                  ],
+                  [
+                    "Zn",
+                    1
+                  ]
+                ],
+                "provider": "local_csv",
+                "dataset_id": "zns",
+                "shelf": null,
+                "book": null,
+                "page": "zns.csv",
+                "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                "range_um": [
+                  0.2,
+                  25.0
+                ],
+                "grid_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "n_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "k_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "full_coverage": true,
+                "native_nk_full_coverage": true,
+                "has_n": true,
+                "has_k": true,
+                "points": 2481,
+                "n_points_in_band": 118,
+                "k_points_in_band": 118,
+                "band_coverage_fraction": 1.0,
+                "target_band_coverage_score": 1.0,
+                "n_coverage_fraction": 1.0,
+                "k_coverage_fraction": 1.0,
+                "n_k_completeness_score": 1.0,
+                "effective_step_um": 0.009999999999999787,
+                "sampling_density": 100.00000000000213,
+                "sampling_score": 1.0,
+                "score": 1.0,
+                "physical_score": 1.0,
+                "grid_source": "source_grid",
+                "grid_load_error": null,
+                "interpolation_available": true,
+                "interpolation_mode": "native",
+                "native_candidate_pool_used": true,
+                "partial_candidate_fallback": false,
+                "rank_key": [
+                  1,
+                  0,
+                  1,
+                  2481
+                ]
+              },
+              "selected_material": "zns"
+            },
+            {
+              "request_id": "material_02",
+              "proposed_material": "mgf2",
+              "target_wavelength_ranges_um": [
+                [
+                  3.6,
+                  4.0
+                ],
+                [
+                  4.15,
+                  4.3500000000000005
+                ],
+                [
+                  4.55,
+                  4.75
+                ],
+                [
+                  4.8500000000000005,
+                  5.2
+                ]
+              ],
+              "candidates": [
+                {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "mgf2",
+                  "resolved_material": "mgf2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "F",
+                      2
+                    ],
+                    [
+                      "Mg",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "F",
+                      2
+                    ],
+                    [
+                      "Mg",
+                      1
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "mgf2",
+                  "shelf": null,
+                  "book": null,
+                  "page": "mgf2.csv",
+                  "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 118,
+                  "k_points_in_band": 118,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                }
+              ],
+              "compatible_candidate_count": 1,
+              "status": "ranked",
+              "llm_selection": {
+                "selected_rank": 1,
+                "provider": "local_csv",
+                "dataset_id": "mgf2",
+                "reason": "Exact formula match (MgF2), only candidate available with full coverage and highest physical score."
+              },
+              "selected_candidate": {
+                "ranking_schema_version": "material-candidate-ranking.v1",
+                "rank": 1,
+                "material": "mgf2",
+                "resolved_material": "mgf2",
+                "semantic_match": "exact_formula",
+                "formula_exact": true,
+                "formula_signature": [
+                  [
+                    "F",
+                    2
+                  ],
+                  [
+                    "Mg",
+                    1
+                  ]
+                ],
+                "requested_formula_signature": [
+                  [
+                    "F",
+                    2
+                  ],
+                  [
+                    "Mg",
+                    1
+                  ]
+                ],
+                "provider": "local_csv",
+                "dataset_id": "mgf2",
+                "shelf": null,
+                "book": null,
+                "page": "mgf2.csv",
+                "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+                "range_um": [
+                  0.2,
+                  25.0
+                ],
+                "grid_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "n_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "k_range_um": [
+                  0.2,
+                  25.0
+                ],
+                "full_coverage": true,
+                "native_nk_full_coverage": true,
+                "has_n": true,
+                "has_k": true,
+                "points": 2481,
+                "n_points_in_band": 118,
+                "k_points_in_band": 118,
+                "band_coverage_fraction": 1.0,
+                "target_band_coverage_score": 1.0,
+                "n_coverage_fraction": 1.0,
+                "k_coverage_fraction": 1.0,
+                "n_k_completeness_score": 1.0,
+                "effective_step_um": 0.009999999999999787,
+                "sampling_density": 100.00000000000213,
+                "sampling_score": 1.0,
+                "score": 1.0,
+                "physical_score": 1.0,
+                "grid_source": "source_grid",
+                "grid_load_error": null,
+                "interpolation_available": true,
+                "interpolation_mode": "native",
+                "native_candidate_pool_used": true,
+                "partial_candidate_fallback": false,
+                "rank_key": [
+                  1,
+                  0,
+                  1,
+                  2481
+                ]
+              },
+              "selected_material": "mgf2"
+            }
+          ],
+          "call_count": 1,
+          "selector_payload": {
+            "schema_version": "route-material-selector.v1",
+            "user_question": "我正在为燃气轮机和工业烟气在线监测系统设计一个共享前端红外滤光膜。探测器需要同时通过一氧化碳 4.55–4.75 μm 和二氧化碳 4.15–4.35 μm 两个窄波段的辐射，并在 3.60–4.00 μm 以及 4.85–5.20 μm 范围内抑制背景和其他热辐射。请在空气正入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。",
+            "target_wavelength_ranges_um": [
+              [
+                3.6,
+                4.0
+              ],
+              [
+                4.15,
+                4.3500000000000005
+              ],
+              [
+                4.55,
+                4.75
+              ],
+              [
+                4.8500000000000005,
+                5.2
+              ]
+            ],
+            "selection_rule": "Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.",
+            "requests": [
+              {
+                "request_id": "material_01",
+                "proposed_material": "zns",
+                "target_wavelength_ranges_um": [
+                  [
+                    3.6,
+                    4.0
+                  ],
+                  [
+                    4.15,
+                    4.3500000000000005
+                  ],
+                  [
+                    4.55,
+                    4.75
+                  ],
+                  [
+                    4.8500000000000005,
+                    5.2
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "zns",
+                    "resolved_material": "zns",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "zns",
+                    "shelf": null,
+                    "book": null,
+                    "page": "zns.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 118,
+                    "k_points_in_band": 118,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "ZnS",
+                    "resolved_material": "zns",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "S",
+                        1
+                      ],
+                      [
+                        "Zn",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 531,
+                    "shelf": "main",
+                    "book": "ZnS",
+                    "page": "Querry",
+                    "filepath": "main\\ZnS\\Querry.yml",
+                    "range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "grid_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "n_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "k_range_um": [
+                      0.22,
+                      166.6667
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 312,
+                    "n_points_in_band": 31,
+                    "k_points_in_band": 31,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.03500000000000014,
+                    "sampling_density": 28.571428571428456,
+                    "sampling_score": 0.2857142857142785,
+                    "score": 0.7619047619047595,
+                    "physical_score": 0.7619047619047595,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      312
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 2,
+                "status": "ranked"
+              },
+              {
+                "request_id": "material_02",
+                "proposed_material": "mgf2",
+                "target_wavelength_ranges_um": [
+                  [
+                    3.6,
+                    4.0
+                  ],
+                  [
+                    4.15,
+                    4.3500000000000005
+                  ],
+                  [
+                    4.55,
+                    4.75
+                  ],
+                  [
+                    4.8500000000000005,
+                    5.2
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "mgf2",
+                    "resolved_material": "mgf2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "mgf2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "mgf2.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 118,
+                    "k_points_in_band": 118,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 1,
+                "status": "ranked"
+              }
+            ]
+          },
+          "selector_prompt": {
+            "system": "You are the internal material-dataset selector inside a scientific TMM\nharness. This is not route planning and you must not redesign the route.\nReturn exactly one JSON object and no markdown:\n{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":562,\"reason\":\"...\"}]}\n\nThe user question is authoritative. Each request contains candidates already\nretrieved from the local MaterialRegistry and sorted by three equal physical\nmetrics: target-band coverage, n/k completeness, and sampling density. Rank 1\nis the most physically reliable candidate; lower rank means less reliable.\nChoose exactly one candidate from the supplied list for every request. Never\ninvent, rename, or edit a provider or dataset_id. The selected_rank must point\nto the selected array element, and provider/dataset_id must copy that element.\n\nMaterial identity, stoichiometry, explicit material state/preparation, and an\nexplicit requested source are hard constraints. A candidate with\nformula_exact=false or semantic_match=same_element_family is not an allowed\nsubstitute for a formula request. SiO is not SiO2, even if the SiO2 candidate\nhas better physical coverage. When several candidates satisfy the hard\nconstraints, select the highest-ranked one (usually rank 1). If no candidate\nsatisfies them, return selected_rank:null, provider:null, dataset_id:null and\nreason:\"needs_confirmation\" for that request.",
+            "user": "{\"requests\": [{\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"zns\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\zns.csv\", \"formula_exact\": true, \"formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 118, \"k_range_um\": [0.2, 25.0], \"material\": \"zns\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 118, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"zns.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"resolved_material\": \"zns\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"ZnS\", \"dataset_id\": 531, \"effective_step_um\": 0.03500000000000014, \"filepath\": \"main\\\\ZnS\\\\Querry.yml\", \"formula_exact\": true, \"formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.22, 166.6667], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 31, \"k_range_um\": [0.22, 166.6667], \"material\": \"ZnS\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 31, \"n_range_um\": [0.22, 166.6667], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Querry\", \"partial_candidate_fallback\": false, \"physical_score\": 0.7619047619047595, \"points\": 312, \"provider\": \"rii_sqlite\", \"range_um\": [0.22, 166.6667], \"rank\": 2, \"rank_key\": [1, 0, 1, 312], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"S\", 1], [\"Zn\", 1]], \"resolved_material\": \"zns\", \"sampling_density\": 28.571428571428456, \"sampling_score\": 0.2857142857142785, \"score\": 0.7619047619047595, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 2, \"proposed_material\": \"zns\", \"request_id\": \"material_01\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[3.6, 4.0], [4.15, 4.3500000000000005], [4.55, 4.75], [4.8500000000000005, 5.2]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"mgf2\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\mgf2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 118, \"k_range_um\": [0.2, 25.0], \"material\": \"mgf2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 118, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"mgf2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"resolved_material\": \"mgf2\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 1, \"proposed_material\": \"mgf2\", \"request_id\": \"material_02\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[3.6, 4.0], [4.15, 4.3500000000000005], [4.55, 4.75], [4.8500000000000005, 5.2]]}], \"schema_version\": \"route-material-selector.v1\", \"selection_rule\": \"Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.\", \"target_wavelength_ranges_um\": [[3.6, 4.0], [4.15, 4.3500000000000005], [4.55, 4.75], [4.8500000000000005, 5.2]], \"user_question\": \"我正在为燃气轮机和工业烟气在线监测系统设计一个共享前端红外滤光膜。探测器需要同时通过一氧化碳 4.55–4.75 μm 和二氧化碳 4.15–4.35 μm 两个窄波段的辐射，并在 3.60–4.00 μm 以及 4.85–5.20 μm 范围内抑制背景和其他热辐射。请在空气正入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。\"}",
+            "sha256": "8b952170a9bd3b5b638dfc48ab4eff314c4f10c720fe1d50f395124428eb1c64"
+          },
+          "selector_model": "qwen3.5-plus",
+          "selector_response": {
+            "raw_content": "{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"zns\",\"reason\":\"Exact formula match (ZnS), highest physical score (1.0) and sampling density, full n/k coverage in target band.\"},{\"request_id\":\"material_02\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"mgf2\",\"reason\":\"Exact formula match (MgF2), only candidate available with full coverage and highest physical score.\"}]}",
+            "sha256": "c5d49b29838ec5259e115ad83b280af19f5d4ad5650ce36485d5b472d6bfdefa",
+            "usage": {
+              "model_name": "qwen3.5-plus",
+              "mock_llm": false,
+              "prompt_tokens": 2341,
+              "completion_tokens": 4294,
+              "total_tokens": 6635
+            }
+          }
+        },
+        "resolved": [
+          {
+            "proposed": "zns",
+            "ok": true,
+            "resolved": "zns",
+            "code": null,
+            "detail": null,
+            "choices": [],
+            "near": [],
+            "where": "proposed_materials",
+            "dataset_names": [],
+            "provider": "local_csv",
+            "dataset_id": "zns",
+            "source": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\zns.csv",
+            "coverage_um": [
+              0.2,
+              25.0
+            ],
+            "dataset": "local_csv:zns"
+          },
+          {
+            "proposed": "mgf2",
+            "ok": true,
+            "resolved": "mgf2",
+            "code": null,
+            "detail": null,
+            "choices": [],
+            "near": [],
+            "where": "proposed_materials",
+            "dataset_names": [],
+            "provider": "local_csv",
+            "dataset_id": "mgf2",
+            "source": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+            "coverage_um": [
+              0.2,
+              25.0
+            ],
+            "dataset": "local_csv:mgf2"
+          }
+        ]
+      }
+    },
+    "repaired": [
+      {
+        "attempt": 1,
+        "route": "control_route_01",
+        "materials": [
+          {
+            "proposed": "CaF2",
+            "ok": false,
+            "resolved": null,
+            "code": "ambiguous",
+            "detail": "Material reference 'CaF2' is ambiguous among: rii_sqlite:186, rii_sqlite:187, rii_sqlite:188, rii_sqlite:189",
+            "choices": [
+              "rii_sqlite:186",
+              "rii_sqlite:187",
+              "rii_sqlite:188",
+              "rii_sqlite:189"
+            ],
+            "near": [],
+            "where": "execution_request_english",
+            "dataset_names": [
+              "Daimon-20",
+              "Daimon-25"
+            ],
+            "provider": null,
+            "dataset_id": null,
+            "source": null,
+            "coverage_um": null,
+            "dataset": null
+          }
+        ]
+      }
+    ]
+  }
+}

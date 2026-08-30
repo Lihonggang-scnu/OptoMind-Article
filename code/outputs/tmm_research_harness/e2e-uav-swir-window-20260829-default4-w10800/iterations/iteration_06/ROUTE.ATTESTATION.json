@@ -1,0 +1,37 @@
+{
+  "artifact": "iterations/iteration_06/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "ad1723c22c60e1043846731e6d9028e95a9b9e8936b7b00296294e7bd0237c0c",
+  "recorded_at_utc": "2026-08-28T17:04:54.919347+00:00",
+  "elapsed_seconds": 1289.5022462999914,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_06",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 20-layer quarter-wave stack centered at 300 nm will produce high reflectance in the 200-400 nm UV band while maintaining high transmittance in the 800-1500 nm SWIR band, because the Bragg condition is satisfied at UV wavelengths but not at SWIR wavelengths.",
+  "expected_advantages": [
+    "Quarter-wave seeding should converge faster than unbounded optimization",
+    "20 layers provides sufficient reflectance in UV while leaving margin under 30-layer limit",
+    "Alternating high/low index structure is a well-known reflector topology",
+    "Thickness bounds prevent optimizer from exploring physically unrealistic or manufacturing-difficult thicknesses"
+  ],
+  "known_risks": [
+    "I am recalling approximate refractive indices for HfO2 and SiO2 in UV; actual values from the material catalog may differ and affect quarter-wave thickness calculations",
+    "The quarter-wave condition at 300 nm may not optimally cover the full 200-400 nm band; band edges may have lower reflectance",
+    "I am uncertain whether 20 layers is optimal versus 18 or 22; this route fixes 20 and does not explore layer count as a variable",
+    "Dispersion of HfO2 and SiO2 across 200-1500 nm may shift the effective quarter-wave condition; I am not modeling dispersion explicitly in this hypothesis",
+    "The previous iteration achieved target_score ~0.56; I do not know if this thickness re-seeding will improve that without running the solver",
+    "What would settle these uncertainties: measured n/k dispersion data from the material catalog for hfo2 and sio2 across 200-1500 nm, and a layer-count sweep to find optimal pair number"
+  ],
+  "expected_observations": [
+    "best_target_score should rise compared to iteration 03's 0.5606 if quarter-wave seeding improves convergence",
+    "valid_candidates count should remain similar or increase if thickness bounds are physically realizable",
+    "tightest_margin should not fall across rounds if the optimizer is finding robust solutions",
+    "thicknesses_nm should cluster around 39-40 nm for HfO2 and 50-52 nm for SiO2 if quarter-wave condition is being approached",
+    "run_status should remain 'completed' without optimization failures"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 5 for two consecutive rounds, reduce mutation intensity and continue for one more round before stopping",
+    "if thicknesses_nm converge to within 1 nm variation across all candidates for three consecutive rounds, stop and keep the current best"
+  ]
+}

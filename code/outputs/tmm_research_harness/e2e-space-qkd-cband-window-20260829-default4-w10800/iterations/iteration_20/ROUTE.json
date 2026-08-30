@@ -1,0 +1,53 @@
+{
+  "route_id": "route_02",
+  "title": "Targeted Asymmetric-Layer Perturbation with Slower Annealing",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The four most asymmetric layers (11, 15, 19, 20) in the 24-layer dichroic stack dominate the shallow gradient region behavior; applying ±12% targeted perturbation bounds to these layers while maintaining broader bounds elsewhere, combined with slower annealing decay (0.98), will enable the optimizer to escape local minima and improve dual-band spectral separation.",
+  "design_principle": "Localized thickness freedom at transition-critical layers preserves the established high-performing stack structure while allowing fine-tuning where spectral band edges are most sensitive. Slower annealing maintains optimization momentum through shallow gradient regions identified in iteration_16.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate",
+    "Air incidence"
+  ],
+  "proposed_topology": "24-layer alternating stack: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Total finite layers: 24.",
+  "design_variables": [
+    "Layer thicknesses for all 24 layers",
+    "Layers 11, 15, 19, 20: bounds centered at iteration_16 best candidate values with ±12% range",
+    "All other layers: bounds 50-280 nm",
+    "Optimizer annealing decay factor: 0.98"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain robustness score above iteration_16 baseline"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer constraint)",
+    "Thickness bounds ensure manufacturable values 50-280 nm",
+    "Alternating HfO2/SiO2 sequence compatible with standard deposition processes"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent thin-film interference",
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Gradient-based optimization with annealing for non-convex thickness spaces",
+    "Theory that transition-region layers control band-edge spectral features"
+  ],
+  "expected_advantages": [
+    "Focused perturbation reduces search space dimensionality while targeting critical layers",
+    "Slower annealing prevents premature convergence in shallow gradient regions",
+    "Builds directly on iteration_16 best candidate (target_score 0.909)"
+  ],
+  "known_risks": [
+    "±12% bounds may be too restrictive if optimal solution lies outside this range",
+    "Slower annealing increases computation time per optimization run",
+    "Local optimization may still converge to nearby local minimum"
+  ],
+  "execution_request_english": "Design a 24-layer alternating HfO2/SiO2 dichroic stack on fused silica substrate with air incidence at normal angle. Initialize layer thicknesses from iteration_16 best candidate: [73.74, 173.68, 63.72, 117.85, 89.90, 91.13, 236.11, 73.97, 133.26, 90.19, 61.73, 87.94, 212.45, 89.67, 61.74, 83.26, 62.17, 89.15, 163.46, 214.22, 56.62, 87.41, 180.24, 56.30] nm. Apply thickness bounds: layers 11, 15, 19, 20 (0-indexed) have bounds centered at their initialization values with ±12% range; all other layers have bounds 50-280 nm. Use gradient-based thickness optimizer with annealing decay factor 0.98. Evaluate coherent TMM at normal incidence, unpolarized. Score objectives: maximize mean transmittance in 1530-1565 nm band, maximize mean reflectance in 400-700 nm band. Return best_target_score, valid_candidates, tightest_margin, thicknesses_nm, and run_status. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Refinement of route_02 per feedback directives: implementing targeted ±12% perturbation on layers 11, 15, 19, 20 and switching annealing decay from 0.95 to 0.98 to address shallow gradient convergence observed in iteration_16."
+}

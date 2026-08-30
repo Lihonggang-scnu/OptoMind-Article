@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Disrupted Initialization with Simulated Annealing to Break 120 nm Clustering",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 120 nm thickness clustering in prior iterations represents a local minimum artifact from bound-constrained gradient descent. Randomly reinitializing layers previously pinned at 120 nm within a 30-150 nm window, followed by simulated annealing optimization, will escape this local minimum and achieve higher dual-band performance.",
+  "design_principle": "Disrupt symmetric thickness clustering by random reinitialization of bound-saturated layers, then use simulated annealing's temperature-dependent acceptance probability to explore broader thickness space before converging.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "24 alternating layers starting with HfO2 on substrate, ending with SiO2 at air interface. Exact sequence: Substrate | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Air",
+  "design_variables": [
+    "All 24 layer thicknesses (30-150 nm bounds)",
+    "Simulated annealing temperature schedule"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 800-1500 nm band",
+    "Maximize mean reflectance in 200-400 nm band",
+    "Maintain robustness under ±15 nm thickness tolerance"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 24 (within 30-layer limit)",
+    "Thickness bounds 30-150 nm compatible with standard deposition control",
+    "HfO2/SiO2 material pair well-established for space optics"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+  ],
+  "theory_basis": [
+    "Needle optimization technique for non-quarter-wave designs (evidence: CorpusId:225461372)",
+    "Evolutionary optimization with selection/mutation/crossover operations (evidence: CorpusId:243942968)",
+    "HfO2/SiO2 heterostructure refractive index contrast enables interference filtering (evidence: CorpusId:254823355)"
+  ],
+  "expected_advantages": [
+    "Breaks local minimum trapping from prior gradient-only optimization",
+    "Simulated annealing explores broader solution space",
+    "Maintains proven 24-layer topology while improving thickness distribution"
+  ],
+  "known_risks": [
+    "Simulated annealing may require more iterations to converge",
+    "Random initialization may temporarily reduce target score before improvement",
+    "No guarantee of finding global optimum"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 stack on fused silica substrate with air incidence. Layer sequence: HfO2/SiO2 repeated 12 times (24 total finite layers). Initialize all layer thicknesses uniformly random within 30-150 nm range. Use simulated annealing optimizer with initial temperature 0.1, cooling rate 0.95, minimum temperature 0.001. Optimize thicknesses to maximize mean transmittance in 800-1500 nm band and mean reflectance in 200-400 nm band at normal incidence, unpolarized light. Apply ±15 nm absolute normal thickness tolerance for robustness evaluation. Total layer count fixed at 24. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Directly addresses feedback directive to disrupt the '120 nm backbone' artifact by reinitializing all layers within broader 30-150 nm window and switching from gradient descent to simulated annealing to escape local minima."
+}

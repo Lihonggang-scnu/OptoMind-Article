@@ -1,0 +1,182 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_03 (SiO2/Al2O3 multi-cavity UV bandpass) based on iteration feedback. Three complementary routes test: (1) locked intermediate cavity with constrained Bragg mirrors per directive, (2) expanded Bragg period count with same cavity lock, (3) alternative HfO2/SiO2 material pair with identical topology. All routes maintain 25-29 layer counts within manufacturing constraint, preserve fused silica substrate, and optimize thicknesses while locking stabilized cavity segments identified in iteration_14.",
+    "routes": [
+      {
+        "route_id": "route_03_ref_01",
+        "title": "Locked cavity with full Bragg mirror optimization (25-layer SiO2/Al2O3)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Locking the intermediate cavity layers (13-17) to stabilized values from iteration_14 while allowing full optimization of outer Bragg mirrors will improve target score by reducing destructive interference triggers in the passband while maintaining rejection band degrees of freedom.",
+        "design_principle": "Periodic Bragg mirrors sandwich a fixed defect cavity. Outer layers control stopband edges; inner cavity controls passband resonance. Constraining cavity thickness prevents optimizer from destabilizing the transmission peak.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "Air | [SiO2/Al2O3]_12 | SiO2(70nm)/Al2O3(51nm)/SiO2(61nm)/Al2O3(47nm)/SiO2(61nm) | [Al2O3/SiO2]_6 | Fused Silica. Total 25 finite coating layers.",
+        "design_variables": [
+          "thicknesses of layers 0-12",
+          "thicknesses of layers 18-24"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280nm",
+          "minimize mean transmittance 300-700nm",
+          "minimize mean transmittance 700-1100nm"
+        ],
+        "manufacturing_considerations": [
+          "layers 13-17 fixed to iteration_14 best candidate values",
+          "outer layers bounded ±20% from quarter-wave at 267.5nm",
+          "total layers 25 within 30-layer limit"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent thin-film interference",
+          "Bragg mirror stopband theory with defect cavity resonance"
+        ],
+        "expected_advantages": [
+          "stable passband position",
+          "improved optimizer convergence",
+          "reduced risk of cavity detuning"
+        ],
+        "known_risks": [
+          "fixed cavity may limit achievable passband width",
+          "outer mirrors may not compensate for cavity imperfections"
+        ],
+        "execution_request_english": "Optimize a 25-layer SiO2/Al2O3 dielectric stack on fused silica substrate with air incidence. Layers 0-12 alternate SiO2/Al2O3 starting with SiO2. Layers 13-17 are fixed at thicknesses [70.0, 51.0, 61.0, 47.0, 61.0] nm with materials [SiO2, Al2O3, SiO2, Al2O3, SiO2]. Layers 18-24 alternate Al2O3/SiO2 ending with SiO2. Optimize thicknesses of layers 0-12 and 18-24 with bounds ±20% from quarter-wave optical thickness at 267.5nm center wavelength. Score candidates by mean transmittance in 255-280nm (maximize), 300-700nm (minimize), and 700-1100nm (minimize). Use coherent TMM solver across 255-1100nm spectrum. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Implements feedback directive to lock stabilized cavity layers 13-17 from iteration_14 while permitting full optimization of Bragg mirrors to improve target score without destabilizing passband resonance."
+      },
+      {
+        "route_id": "route_03_ref_02",
+        "title": "Expanded Bragg periods with locked cavity (29-layer SiO2/Al2O3)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing Bragg mirror period count from 12+6 to 14+8 periods while maintaining the locked cavity will improve visible/NIR rejection without degrading UV passband, as additional mirror periods increase stopband depth.",
+        "design_principle": "More Bragg periods increase reflectivity in stopbands. The fixed cavity preserves passband characteristics while outer mirrors provide deeper rejection.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "Air | [SiO2/Al2O3]_14 | SiO2(70nm)/Al2O3(51nm)/SiO2(61nm)/Al2O3(47nm)/SiO2(61nm) | [Al2O3/SiO2]_8 | Fused Silica. Total 29 finite coating layers.",
+        "design_variables": [
+          "thicknesses of layers 0-13",
+          "thicknesses of layers 19-28"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280nm",
+          "minimize mean transmittance 300-700nm",
+          "minimize mean transmittance 700-1100nm"
+        ],
+        "manufacturing_considerations": [
+          "layers 14-18 fixed to iteration_14 cavity values",
+          "29 layers within 30-layer manufacturing limit",
+          "outer layers bounded ±20% from quarter-wave at 267.5nm"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98"
+        ],
+        "theory_basis": [
+          "Bragg mirror stopband depth scales with period count",
+          "Transfer Matrix Method for multilayer interference"
+        ],
+        "expected_advantages": [
+          "deeper visible/NIR rejection",
+          "wider stopband coverage",
+          "maintained passband stability from locked cavity"
+        ],
+        "known_risks": [
+          "increased total thickness may introduce stress",
+          "more layers increase optimization complexity",
+          "may not improve if rejection already saturated"
+        ],
+        "execution_request_english": "Optimize a 29-layer SiO2/Al2O3 dielectric stack on fused silica substrate with air incidence. Layers 0-13 alternate SiO2/Al2O3 starting with SiO2. Layers 14-18 are fixed at thicknesses [70.0, 51.0, 61.0, 47.0, 61.0] nm with materials [SiO2, Al2O3, SiO2, Al2O3, SiO2]. Layers 19-28 alternate Al2O3/SiO2 ending with SiO2. Optimize thicknesses of layers 0-13 and 19-28 with bounds ±20% from quarter-wave optical thickness at 267.5nm center wavelength. Score candidates by mean transmittance in 255-280nm (maximize), 300-700nm (minimize), and 700-1100nm (minimize). Use coherent TMM solver across 255-1100nm spectrum. Total finite layers = 29. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests whether increased Bragg period count (29 vs 25 layers) improves rejection bands while maintaining the locked cavity principle from iteration_14 feedback."
+      },
+      {
+        "route_id": "route_03_ref_03",
+        "title": "HfO2/SiO2 material pair with locked cavity (25-layer)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing Al2O3 with HfO2 as the high-index material will improve UV transparency and refractive index contrast, leading to better passband transmission and stopband rejection with the same locked cavity topology.",
+        "design_principle": "HfO2 has higher refractive index (~2.19) than Al2O3 (~1.75) in UV range, providing stronger index contrast for Bragg mirrors while maintaining UV transparency per evidence on HfO2/SiO2 UV filters.",
+        "proposed_materials": [
+          "SiO2",
+          "HfO2"
+        ],
+        "proposed_topology": "Air | [SiO2/HfO2]_12 | SiO2(70nm)/HfO2(51nm)/SiO2(61nm)/HfO2(47nm)/SiO2(61nm) | [HfO2/SiO2]_6 | Fused Silica. Total 25 finite coating layers.",
+        "design_variables": [
+          "thicknesses of layers 0-12",
+          "thicknesses of layers 18-24"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280nm",
+          "minimize mean transmittance 300-700nm",
+          "minimize mean transmittance 700-1100nm"
+        ],
+        "manufacturing_considerations": [
+          "layers 13-17 fixed to scaled cavity values",
+          "HfO2 requires ion-assisted deposition for density per evidence",
+          "25 layers within manufacturing limit"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404"
+        ],
+        "theory_basis": [
+          "Higher index contrast improves Bragg mirror reflectivity",
+          "HfO2 transparency in UV range per literature"
+        ],
+        "expected_advantages": [
+          "stronger stopband rejection from higher index contrast",
+          "potentially better UV transmission",
+          "material system validated for UV filters in evidence"
+        ],
+        "known_risks": [
+          "HfO2 may exhibit inhomogeneity per evidence",
+          "different optical constants require thickness rescaling",
+          "absorption edge may encroach on 255nm passband"
+        ],
+        "execution_request_english": "Optimize a 25-layer SiO2/HfO2 dielectric stack on fused silica substrate with air incidence. Layers 0-12 alternate SiO2/HfO2 starting with SiO2. Layers 13-17 are fixed at thicknesses [70.0, 51.0, 61.0, 47.0, 61.0] nm with materials [SiO2, HfO2, SiO2, HfO2, SiO2]. Layers 18-24 alternate HfO2/SiO2 ending with SiO2. Optimize thicknesses of layers 0-12 and 18-24 with bounds ±20% from quarter-wave optical thickness at 267.5nm center wavelength using HfO2 refractive index. Score candidates by mean transmittance in 255-280nm (maximize), 300-700nm (minimize), and 700-1100nm (minimize). Use coherent TMM solver across 255-1100nm spectrum. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests alternative material pair (HfO2/SiO2 vs SiO2/Al2O3) while maintaining the locked cavity topology from iteration_14 to isolate material system effects on performance."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:199509322 supports periodic SiO2/SiNx (adapted to SiO2/Al2O3) photonic crystal UV filter design with AR coatings",
+      "Evidence s2-chunk:CorpusId:211025653 validates HfO2/SiO2 as alternative UV-transparent high-index material pair",
+      "Evidence s2-chunk:CorpusId:199509322:3946:5623:26c9c1ed8967f37b supports TMM optimization with experimental optical constants",
+      "Prior iteration_14 feedback directive directly shapes route_03_ref_01 cavity locking strategy"
+    ],
+    "unresolved_decisions": [
+      "Whether HfO2 optical constants at 255nm are available in material registry without absorption",
+      "Whether 29-layer topology provides measurable improvement over 25-layer within manufacturing tolerance",
+      "Optimal cavity thickness values may require further iteration if locked values from iteration_14 are suboptimal"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_ref_01 received canonical user controls from the problem contract",
+    "route route_03_ref_02 received canonical user controls from the problem contract",
+    "route route_03_ref_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 19661,
+      "completion_tokens": 4431,
+      "total_tokens": 24092
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

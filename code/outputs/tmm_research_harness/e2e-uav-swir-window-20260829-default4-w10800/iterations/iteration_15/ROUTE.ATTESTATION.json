@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_15/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "65b8cef28bf5fe043c9c33dd8a7df16f08b428012516ff73ebb627692f19cffd",
+  "recorded_at_utc": "2026-08-28T17:39:30.306196+00:00",
+  "elapsed_seconds": 3364.8892196999514,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_15",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Phase-coupling effects in the 8 thickest layers dominate dual-band performance; constraining optimization to these layers with reduced learning rate will improve target_score without overshoot.",
+  "expected_advantages": [
+    "Reduced optimization dimensionality accelerates convergence",
+    "Targeting thick layers addresses dominant phase contributions",
+    "Damped learning prevents overshoot observed in iteration_13"
+  ],
+  "known_risks": [
+    "Fixing 16 layers may prevent discovery of better global configuration",
+    "8-layer subset may not contain all critical phase-coupling layers"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should rise across rounds as thickness optimization decouples the two bands, and tightest_margin should not fall",
+    "Aperiodic design should show lower reflectance in 800-1500 nm compared to Route 1's periodic stack",
+    "UV reflectance 200-400 nm should match or exceed Route 1 with fewer layers (24 vs 28)",
+    "If hypothesis fails, best_target_score will not exceed Route 1's score and valid_candidates will decrease as thickness combinations become physically invalid"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, expand the thickness bounds to 20-250 nm and continue",
+    "If tightest_margin remains below 0.05 for four consecutive rounds, fix the 6 thinnest layers and optimize only the remaining 18"
+  ]
+}

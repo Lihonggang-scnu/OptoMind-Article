@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_18/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d81dba9cc3c5d8ce9bc8ba02d35f5e79e0deb4877562dc529ca02a879174e3d3",
+  "recorded_at_utc": "2026-08-28T14:06:02.679679+00:00",
+  "elapsed_seconds": 4318.8413442000165,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_18",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individually tunable layer thicknesses can simultaneously achieve high reflectance in 300-450 nm and high transmittance in 1000-1700 nm at normal incidence on fused silica, with the gradient-thickness optimizer finding a non-quarter-wave solution that balances both bands.",
+  "expected_advantages": [
+    "24 layers provides sufficient degrees of freedom for dual-band optimization without exceeding manufacturing limits",
+    "Alternating high/low index pattern is a known working topology for dichroics",
+    "Gradient optimizer successfully produced target scores above 0.81 in prior iterations 04 and 12",
+    "Relaxed perturbation bounds (±18 nm vs ±12 nm) should increase feasible candidate yield"
+  ],
+  "known_risks": [
+    "Uncertain whether 24 layers is optimal vs 20 or 28 layers - this route does not explore layer count as a variable, so the true optimum pair count is unknown.",
+    "Uncertain exact refractive index values of hfo2 and sio2 datasets in the registry at 300 nm and 1700 nm endpoints - these are measured data, not design variables, but affect achievable performance.",
+    "Uncertain whether gradient optimizer will converge to global vs local optimum - multiple starting points would be needed to verify, but this route uses single initialization.",
+    "The ±18 nm perturbation bound is a hypothesis based on feedback directive; if it still produces zero valid candidates, the bound may need further relaxation or a different optimizer method.",
+    "No angle or polarization specified in original request - assumed normal incidence and unpolarized or average polarization; if actual use requires oblique angles, performance may degrade."
+  ],
+  "expected_observations": [
+    "best_target_score should be comparable to or exceed 0.817 from iterations 04 and 12 if the hypothesis holds",
+    "valid_candidates count should be greater than 0 (unlike iteration 15 which had 0) if perturbation bound relaxation works",
+    "tightest_margin should remain positive across rounds if physical constraints are satisfied",
+    "thicknesses_nm should show non-uniform values (not all equal) indicating the optimizer found non-quarter-wave solutions",
+    "If best_target_score remains below 0.75 after three rounds, the 24-layer alternating topology may be insufficient for this dual-band requirement"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates equals 0 for two consecutive rounds despite ±18 nm perturbation bounds, stop and flag for topology revision (layer count or material order change)",
+    "if tightest_margin falls below 0.0 for more than 50 percent of candidates in a round, reduce perturbation bounds to ±10 nm and continue"
+  ]
+}

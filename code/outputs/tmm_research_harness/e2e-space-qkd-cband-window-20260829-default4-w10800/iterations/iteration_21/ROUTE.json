@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "QWOT-centered dichroic stack with impedance coupling penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses from quarter-wave optical thickness centers with ±25% Gaussian variance, combined with a coupling penalty enforcing n_H*d_H ≈ n_L*d_L for adjacent high/low index pairs, will produce higher target scores and more stable convergence than uniform random thickness initialization across the same 24-layer HfO2/SiO2 alternating stack.",
+  "design_principle": "Quarter-wave stacks produce constructive interference for reflection at the design wavelength. For a dual-band dichroic (high reflectance 400-700 nm, high transmittance 1530-1565 nm), the optical thicknesses must balance between the two bands. Impedance matching between adjacent layers (n_H*d_H ≈ n_L*d_L) reduces internal reflections that could degrade the passband transmittance. This is recalled design practice for dielectric mirrors and dichroic filters.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 layers total, alternating HfO2/SiO2 starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses (24 variables), initialized from QWOT centers with ±25% Gaussian variance",
+    "Coupling penalty weight enforcing n_H*d_H ≈ n_L*d_L for adjacent HfO2/SiO2 pairs"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Minimize thickness variance from QWOT centers while meeting spectral targets",
+    "Maintain impedance matching between adjacent high/low index layers"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (under 30 layer limit)",
+    "Thicknesses should remain within physically depositable ranges (roughly 40-350 nm per layer based on recalled sputtering/evaporation capabilities)",
+    "Alternating high/low index sequence simplifies process control"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave optical thickness (n*d = λ/4) produces maximum reflectance at the design wavelength for a Bragg stack",
+    "Alternating high/low index layers create constructive interference for reflection",
+    "Impedance matching (n_H*d_H ≈ n_L*d_L) between adjacent layers reduces standing wave effects in the passband",
+    "Dual-band dichroic design requires balancing optical thicknesses between the reflection band center (~550 nm) and transmission band center (~1547 nm)",
+    "Gaussian initialization around QWOT centers with reduced variance accelerates convergence toward physically stable Bragg-like substructures compared to uniform random initialization"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to physically informed initialization",
+    "More stable optimization trajectory with reduced risk of local minima",
+    "Better impedance matching reduces passband ripple",
+    "Maintains the 24-layer topology that performed well in prior iterations while improving initialization strategy"
+  ],
+  "known_risks": [
+    "Recalled refractive indices for HfO2 and SiO2 at these wavelengths are approximate; actual values from the material catalog may differ and affect optimal QWOT centers",
+    "The ±25% variance bound is a design choice from recalled practice, not validated for this specific dual-band problem",
+    "Impedance matching penalty weight is heuristic; too strong may over-constrain the optimizer, too weak may not provide benefit",
+    "24 layers may not be optimal; 26 or 28 layers could perform better but this route tests initialization strategy, not layer count",
+    "Angle of incidence not specified in request; assumed normal incidence (0 degrees) based on typical receiver window geometry, but off-axis performance is unknown"
+  ],
+  "execution_request_english": "Design a 24-layer planar dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand) (alternating, starting with HfO2, ending with SiO2 (Lemarchand) before substrate). Optimize individual layer thicknesses using gradient-based optimization. Initialize thicknesses from quarter-wave optical thickness centers calculated at 550 nm (reflection band center) and 1547 nm (transmission band center) with Gaussian variance of ±25% around QWOT values. Apply coupling penalty during optimization enforcing n_H*d_H ≈ n_L*d_L for adjacent HfO2/SiO2 (Lemarchand) pairs. Wavelength bands: 400-700 nm (maximize reflectance), 1530-1565 nm (maximize transmittance). Normal incidence (0 degrees). Total layer count fixed at 24. Materials: hfo2 and SiO2 (Lemarchand) from material catalog.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Transition initialization from uniform random thickness to QWOT-centered Gaussian distribution with reduced variance (±25% of target quarter-wave optical thicknesses). Simultaneously enforce coupling penalty term during initialization that nudges adjacent high/low-index layers toward matched optical impedance (n_H*d_H ≈ n_L*d_L), accelerating convergence toward physically stable Bragg-like substructures as directed by feedback directives."
+}

@@ -1,0 +1,47 @@
+{
+  "route_id": "control_route_01",
+  "title": "Bounded thickness mutation around convergent UV-reflection bands with diversity injection",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Applying ±1.5 nm bounded mutations to the convergent layer thickness bands from iteration 06, combined with random perturbations to non-convergent layers, will increase best_target_score by at least 0.02 without reducing tightest_margin below the previous round's value.",
+  "design_principle": "Recalled thin-film interference physics: dual-band filters require thickness optimization that balances constructive interference for reflection in the UV band against minimal interference disturbance in the SWIR transmission band. Local thickness mutations near an optimized stack can explore the gradient landscape without destroying the established spectral balance.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Rodriguez-de_Marcos)"
+  ],
+  "proposed_topology": "20-layer alternating stack: air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | fused_silica substrate",
+  "design_variables": [
+    "Individual layer thicknesses for all 20 layers with bounded mutation ±1.5 nm around iteration 06 convergent values for layers 0,2,4,6,8,10,12,14,16,18; random perturbations for layers 1,3,5,7,9,11,13,15,17,19"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 800-1500 nm band",
+    "Maximize reflectance in 200-400 nm band",
+    "Maintain tightest_margin above previous round value"
+  ],
+  "manufacturing_considerations": [
+    "Total layers fixed at 20 (within 30-layer limit)",
+    "Materials restricted to hfo2 and sio2 as specified",
+    "Thickness variations kept within ±1.5 nm bounds for manufacturability"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled principle: quarter-wave optical thickness produces maximum reflectance at design wavelength",
+    "Recalled principle: dual-band filters require non-quarter-wave optimization to balance multiple spectral regions",
+    "Recalled design practice: HfO2 serves as high-index layer, SiO2 as low-index layer in UV-visible-NIR coatings",
+    "Recalled behavior: fused silica substrate is transparent across both UV and SWIR bands"
+  ],
+  "expected_advantages": [
+    "Preserves the spectral balance achieved in iteration 06 while exploring local improvements",
+    "Bounded mutations prevent divergence from the promising region of design space",
+    "Diversity injection prevents premature convergence to a single local optimum"
+  ],
+  "known_risks": [
+    "I am uncertain whether ±1.5 nm is the optimal mutation bound for this wavelength separation; literature on HfO2/SiO2 dual-band filter sensitivity would confirm this",
+    "I recall that HfO2 has higher extinction in deep UV but am uncertain of the exact cutoff; the material dataset will provide measured values",
+    "The 20-layer count was chosen based on iteration 06 performance, not from a systematic layer-count study; a different count might perform better but that would be a different axis",
+    "I am not certain whether the alternating HfO2-first sequence is optimal versus SiO2-first; this route does not test that hypothesis"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric thin film stack on fused silica substrate with air incidence. Materials: hfo2 and SiO2 (Rodriguez-de_Marcos) in alternating sequence starting with hfo2. Wavelength bands: maximize reflectance in 200-400 nm, maximize transmittance in 800-1500 nm. Design variables: individual layer thicknesses for all 20 layers. Apply bounded mutations of ±1.5 nm around the iteration 06 convergent thickness values for even-indexed layers (0,2,4,6,8,10,12,14,16,18), and inject random perturbations for odd-indexed layers (1,3,5,7,9,11,13,15,17,19) to increase population diversity. Total layer count fixed at 20. Use gradient_thickness and differential_evolution_thickness optimizers. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation from iteration 06: applying bounded directional mutations around convergent bands while injecting diversity to escape local optima, as directed by feedback."
+}

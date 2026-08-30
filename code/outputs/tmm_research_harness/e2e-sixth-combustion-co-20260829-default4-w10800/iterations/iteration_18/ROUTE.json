@@ -1,0 +1,50 @@
+{
+  "route_id": "route_02",
+  "title": "L-BFGS-B Optimized Three-Cavity Filter with QWOT-Seeded Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Curvature-aware L-BFGS-B optimization with Hessian approximation, initialized at ±20% jittered quarter-wave optical thickness estimates, will navigate flat-gradient regions near resonance peaks more effectively than gradient descent, yielding higher target scores and improved robustness margins for the three-cavity Ge/ZnS topology.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter with computational optimization using second-order information for step sizing in thickness space",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "21-layer alternating Ge/ZnS stack on CaF2 substrate: Air|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|CaF2",
+  "design_variables": [
+    "all 21 layer thicknesses (50-500 nm bounds)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 4.15-4.35 μm band",
+    "maximize transmittance in 4.55-4.75 μm band",
+    "minimize transmittance in 3.60-4.00 μm band",
+    "minimize transmittance in 4.85-5.20 μm band"
+  ],
+  "manufacturing_considerations": [
+    "no metal layers",
+    "maximum 24 layers (21 used)",
+    "conventional depositable IR dielectrics",
+    "thickness bounds 50-500 nm for deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for Fabry-Perot cavity formation",
+    "L-BFGS-B optimization with Hessian approximation for non-convex thickness spaces"
+  ],
+  "expected_advantages": [
+    "Better convergence in flat-gradient regions near resonance",
+    "Higher target scores than gradient descent baseline",
+    "Improved robustness through curvature-aware steps"
+  ],
+  "known_risks": [
+    "L-BFGS-B may converge to different local minima than gradient descent",
+    "Hessian approximation adds computational overhead"
+  ],
+  "execution_request_english": "Design a 21-layer alternating Ge/ZnS dielectric bandpass filter on CaF2 substrate for normal incidence. Layer sequence: Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge|ZnS|Ge (21 finite layers). Initialize all layer thicknesses using quarter-wave optical thickness estimates at 4.45 μm center wavelength with ±20% uniform random jitter, bounded to 50-500 nm per layer. Optimize using L-BFGS-B algorithm with Hessian approximation enabled. Evaluate transmittance at four wavelength bands: maximize in 4150-4350 nm and 4550-4750 nm, minimize in 3600-4000 nm and 4850-5200 nm. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Changed optimizer from gradient descent to L-BFGS-B with Hessian approximation and reinitialized thicknesses with ±20% QWOT jitter per feedback directive to explore adjacent harmonic basins with curvature-aware step sizing"
+}

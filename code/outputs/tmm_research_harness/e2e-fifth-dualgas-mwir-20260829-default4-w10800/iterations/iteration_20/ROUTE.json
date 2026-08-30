@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "22-Layer ZnS/MgF2 with Quarter-Wave Initialization at Methane Band Center",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses to quarter-wave optical thickness at the methane passband center (3.30 μm) rather than uniform random values will provide a physically meaningful starting point that accelerates convergence toward high transmittance in both passbands while maintaining stopband suppression.",
+  "design_principle": "Quarter-wave stack principle: alternating high/low index layers with optical thickness λ/4 at design wavelength creates constructive interference for reflection at that wavelength. For dual-band transmission, thicknesses must be optimized away from pure quarter-wave to create transmission windows at both target bands.",
+  "proposed_materials": [
+    "ZnS",
+    "MgF2",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate (22 finite layers total, alternating sequence starting with ZnS)",
+  "design_variables": [
+    "All 22 layer thicknesses in nm, initialized to quarter-wave values at 3300 nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3250-3350 nm band",
+    "Maximize mean transmittance in 4200-4300 nm band",
+    "Minimize mean transmittance in 2500-3100 nm band",
+    "Minimize mean transmittance in 4450-5000 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 22 within 24-layer limit",
+    "Thickness bounds [50, 950] nm prevent optimizer saturation",
+    "ZnS and MgF2 are conventional depositable IR dielectrics"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:23617:24948:3169b780e7b9ea48",
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for alternating index multilayers",
+    "Transfer matrix method for coherent thin-film interference"
+  ],
+  "expected_advantages": [
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Bounded thickness prevents optimizer from hitting upper boundary prematurely",
+    "22 layers provide sufficient degrees of freedom for dual-band optimization"
+  ],
+  "known_risks": [
+    "Quarter-wave at one band may not generalize well to second passband",
+    "May require more optimization iterations to escape local minimum"
+  ],
+  "execution_request_english": "Optimize a 22-layer planar multilayer filter on CaF2 substrate with alternating ZnS (high index) and MgF2 (low index) layers under normal unpolarized illumination. Initialize all 22 layer thicknesses to quarter-wave optical thickness at 3300 nm center wavelength (ZnS: n*thickness = 3300/4 nm, MgF2: n*thickness = 3300/4 nm using material refractive indices). Constrain all thicknesses to [50, 950] nm bounds. Use gradient-based thickness optimization to maximize mean transmittance in passbands (3250-3350 nm and 4200-4300 nm) while minimizing mean transmittance in stopbands (2500-3100 nm and 4450-5000 nm). Evaluate using coherent transfer matrix method across 2500-5000 nm wavelength range. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Replaced uniform random thickness initialization with deterministic quarter-wave estimates at methane band center (3300 nm) per feedback directive; capped maximum thickness at 950 nm to prevent optimizer saturation at 1100 nm boundary"
+}

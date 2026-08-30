@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Quarter-Wave Seeded Stack with ±15% Thickness Jitter and Expanded Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Starting from quarter-wave optical thickness seeds at band centers (375nm UV, 1350nm SWIR) with ±15% random jitter will escape local minima that constrained the chirped parameterization, while expanding thickness bounds to 500nm provides additional design freedom without violating fabrication limits.",
+  "design_principle": "Quarter-wave stack theory provides optimal reflectance per layer pair; jittering seeds allows optimizer to find non-quarter-wave improvements while maintaining physical intuition. Evidence shows quarter-wave stacks maximize reflectivity for minimum layer count when optical thickness equals λ/4.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "30 individual layer thicknesses (nm), each independently optimizable"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1000-1700 nm band",
+    "Maximize average reflectance in 300-450 nm band",
+    "Minimize spectral ripple in passband"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 30 (within 30-layer limit)",
+    "Individual layer thickness bounds: 20-500 nm (expanded from 450 nm per feedback)",
+    "Outermost SiO2 layer >= 200 nm for environmental durability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory: reflectivity maximizes when layer optical thickness equals λ/4",
+    "Outermost low-index layer improves environmental durability per multi-wavelength HR evidence"
+  ],
+  "expected_advantages": [
+    "Better convergence than monotonicity-constrained chirp due to unconstrained thickness space",
+    "Quarter-wave seeds provide physically meaningful starting point",
+    "Expanded bounds allow thicker layers for broader UV reflection band"
+  ],
+  "known_risks": [
+    "May converge to local minimum if jitter amplitude insufficient",
+    "30 independent variables may require more optimization iterations",
+    "No monotonicity constraint could produce non-fabricable thickness profiles"
+  ],
+  "execution_request_english": "Optimize a 30-layer HfO2/SiO2 multilayer coating on fused silica substrate at normal incidence with unpolarized illumination. Stack topology: Air | HfO2 | SiO2 | HfO2 | SiO2 | ... (alternating, 15 bilayer pairs, 30 total finite layers) | Fused Silica. Initialize layer thicknesses using quarter-wave optical thickness at 375 nm for HfO2 and SiO2 layers in the first 10 pairs (UV reflector region), and at 1350 nm for remaining 5 pairs (SWIR transmitter region). Apply ±15% uniform random jitter to all seed thicknesses. Set individual layer thickness optimization bounds: 20 nm minimum, 500 nm maximum. Constrain outermost SiO2 layer thickness >= 200 nm. Optimize all 30 layer thicknesses simultaneously to maximize average transmittance in 1000-1700 nm band and maximize average reflectance in 300-450 nm band. Use gradient-based optimizer with increased initial population sampling density (2x baseline). Evaluate spectrum from 300-1700 nm at 5 nm resolution. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Applied feedback directives: ±15% jitter to quarter-wave seeds, expanded upper thickness bound from 450 nm to 500 nm, increased population sampling density. Removed monotonicity constraint that reduced score from 0.7998 to 0.7148 in prior iteration."
+}

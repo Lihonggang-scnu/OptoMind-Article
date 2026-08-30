@@ -1,0 +1,50 @@
+{
+  "route_id": "route_04",
+  "title": "Monotonic Chirped DBR with Hard Inequality Constraints",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "Enforcing strict monotonic thickness progression during optimization will prevent layer inversion and improve spectral band separation compared to unconstrained chirped optimization.",
+  "design_principle": "Linear chirp envelope with hard inequality constraints penalizing any thickness inversion between adjacent same-material layers. Initialize HfO2 layers from 50nm to 120nm monotonically, SiO2 layers from 80nm to 150nm monotonically.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica Substrate",
+    "Air Incidence"
+  ],
+  "proposed_topology": "exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers)",
+  "design_variables": [
+    "Individual layer thicknesses (20 variables)",
+    "Monotonicity inequality constraints"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Maintain monotonic thickness progression within each material type"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30 layer limit)",
+    "Thickness range 50-150nm compatible with ion-beam sputtering",
+    "Monotonic chirp simplifies deposition rate programming"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Chirped Bragg reflector theory for broadband reflection",
+    "Quarter-wave stack principle at center wavelengths"
+  ],
+  "expected_advantages": [
+    "Prevents optimization from collapsing chirp structure",
+    "More predictable spectral response",
+    "Better convergence stability than unconstrained gradient search"
+  ],
+  "known_risks": [
+    "Hard constraints may reduce feasible search space",
+    "May trap optimizer in local minimum if initialization is poor",
+    "Monotonicity may not be optimal for dual-band separation"
+  ],
+  "execution_request_english": "Design and optimize a 20-layer chirped dielectric stack on fused silica substrate with air incidence. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Use HfO2 and SiO2 only. Initialize HfO2 layers (odd positions 1,3,5...19) with linear chirp from 50nm to 120nm. Initialize SiO2 layers (even positions 2,4,6...20) with linear chirp from 80nm to 150nm. Apply hard inequality constraints during gradient-based thickness optimization: thickness[i] <= thickness[i+2] for all same-material adjacent pairs. Optimize for maximum transmittance in 1530-1565nm band and maximum reflectance in 400-700nm band at normal incidence, unpolarized light. Total layer count fixed at 20. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 8 chirped alternating HfO2/SiO2 pairs (16 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Addresses feedback directive to enforce monotonic chirp with hard inequality constraints. Prior route_04 showed thickness inversion in optimized candidates (e.g., candidate 2 had non-monotonic sequence 65,137,74,82...). This route adds explicit monotonicity constraints to preserve chirp structure during optimization."
+}

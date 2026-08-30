@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Symmetry-constrained MgF2/Al2O3 defect cavity with L-BFGS-B bounded optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Imposing bilateral symmetry constraints on mirror layer pairs and restricting thickness search to ±5 nm around round-2 medians will reduce the optimization degrees of freedom sufficiently for L-BFGS-B to converge to a locally optimal phase-matched configuration, improving target score without increasing layer count.",
+  "design_principle": "Defect-cavity bandpass filter with symmetric Bragg mirrors. Symmetry reduces search space dimensionality while preserving the resonant transmission mechanism at 255–280 nm.",
+  "proposed_materials": [
+    "MgF2",
+    "Al2O3",
+    "fused silica substrate"
+  ],
+  "proposed_topology": "17-layer stack: Air | [MgF2/Al2O3]_8 mirror | MgF2 defect cavity | [Al2O3/MgF2]_8 mirror | fused silica substrate. Explicit layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2).",
+  "design_variables": [
+    "layer thicknesses with bilateral symmetry constraints: L13=L16, L6=L15, L7=L14; thickness bounds ±5 nm around round-2 medians"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255–280 nm",
+    "minimize transmittance in 300–700 nm",
+    "minimize transmittance in 700–1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30 (17 layers)",
+    "no metal layers",
+    "conventional inorganic dielectric materials",
+    "symmetry simplifies deposition monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+    "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for multilayer interference",
+    "defect-cavity resonant transmission principle"
+  ],
+  "expected_advantages": [
+    "reduced optimization dimensionality improves convergence",
+    "symmetry ensures phase matching between mirrors",
+    "bounded search prevents unphysical thickness excursions"
+  ],
+  "known_risks": [
+    "symmetry constraint may prevent discovery of superior asymmetric solutions",
+    "±5 nm bounds may be too restrictive if round-2 medians are suboptimal"
+  ],
+  "execution_request_english": "Optimize a 17-layer MgF2/Al2O3 defect-cavity bandpass filter on fused silica substrate. Layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2). Impose bilateral symmetry: thickness(L13)=thickness(L16), thickness(L6)=thickness(L15), thickness(L7)=thickness(L14). Initialize thicknesses at round-2 medians: defect L10=85.5 nm, inner mirrors L1-L6=44.0 nm, outer mirrors L11-L16=47.0 nm. Apply ±5 nm bounds around these medians. Use L-BFGS-B optimizer with max function evaluations=500, tolerance=1e-5. Spectral targets: maximize transmittance 255–280 nm, minimize transmittance 300–700 nm and 700–1100 nm. Air incidence, unpolarized. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directives: bilateral symmetry constraints on layers 13-16, 6-15, 7-14; ±5 nm thickness bounds around round-2 medians; L-BFGS-B solver with 500 max eval and 1e-5 tolerance."
+}

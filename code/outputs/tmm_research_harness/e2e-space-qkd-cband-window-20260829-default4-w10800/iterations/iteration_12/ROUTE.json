@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Back-End Isolated DE Optimization on 24-Layer Dichroic Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The performance margin gained in iteration_07 (0.601 to 0.691) is primarily attributable to back-end layer phase adjustments; freezing layers 0-11 and optimizing only layers 12-23 should recover most of the achievable target score while reducing search dimensionality.",
+  "design_principle": "Asymmetrical optimization isolates contribution of back-end layers to dual-band spectral separation; DE optimizer with population=50, F=0.8, CR=0.9 provides global search capability for the 12 free variables.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating stack: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate",
+  "design_variables": [
+    "thicknesses of layers 12-23 (12 variables)",
+    "layers 0-11 frozen at iteration_07 best candidate values"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain valid_candidates >= 5"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 24 (within 30-layer limit)",
+    "Thickness bounds: 50-280 nm per layer",
+    "Alternating HfO2/SiO2 sequence preserved for deposition simplicity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent plane-wave multilayer interference",
+    "Quarter-wave stack theory for broadband reflectors",
+    "Gradient-based and evolutionary optimization for thin-film design"
+  ],
+  "expected_advantages": [
+    "Reduced search dimensionality (12 vs 24 variables) accelerates convergence",
+    "Isolates back-end layer contribution to spectral performance",
+    "Tests whether front-end layers are already near-optimal"
+  ],
+  "known_risks": [
+    "Freezing front layers may prevent discovery of better global solutions",
+    "DE may stagnate if back-end layers have limited influence on target bands",
+    "Performance may drop significantly if front-back coupling is strong"
+  ],
+  "execution_request_english": "Execute TMM optimization for a 24-layer alternating HfO2/SiO2 dichroic stack on fused silica substrate under normal incidence. Initialize all 24 layer thicknesses to iteration_07 best candidate values: [77.71, 177.76, 65.96, 87.63, 94.31, 100.73, 236.50, 85.64, 126.52, 87.80, 60.22, 87.68, 209.35, 88.73, 63.43, 79.31, 63.65, 84.16, 163.16, 212.54, 63.22, 82.93, 177.90, 68.43] nm. Freeze layers 0-11 at these values. Apply Differential Evolution optimizer (population=50, F=0.8, CR=0.9, max_generations=200) exclusively to layers 12-23 with bounds 50-280 nm. Evaluate coherent TMM at normal incidence for unpolarized light. Compute target score as weighted mean of (transmittance in 1530-1565 nm band) and (reflectance in 400-700 nm band) with equal weights. Report best_target_score, valid_candidates, tightest_margin, run_status, and final thicknesses_nm for all 24 layers. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Follows feedback directive to test asymmetrical optimization: freeze front 12 layers, optimize back 12 layers with DE to isolate whether performance margin stems from back-end phase adjustments."
+}

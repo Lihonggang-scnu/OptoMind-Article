@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-declaration expected best_target_score to rise consistently across rounds. Instead, the score progressed from 0.730595264743925 to 0.740653428345178 in round 2, then dropped sharply to 0.5775642659286541 in round 3. The deviation vastly exceeds the reference epsilon of 0.0001, confirming a substantive physical shift rather than numerical noise. Concurrently, tightest_margin remained robust at 0.4015034230268104 (well above the 0.05 threshold), and valid_candidates held steady at 9, contradicting the expectation that valid combinations would rapidly become physically invalid.",
+  "deviation_mechanism": "The score collapse originates from layer thickness parameters drifting into high-order optical resonance regimes that undermine the intended UV-IR decoupling. Round 3's candidate 4 introduced extreme outlier thicknesses, notably 160.77609813521784 nm (layer 15) and 144.1500965767807 nm (layer 18). At these physical dimensions, the optical path length exceeds optimal quarter-wave scaling, shifting phase accumulation angles so that Fabry-Pérot fringes from thicker layers overlap constructively or destructively across the 200-400 nm and 800-1500 nm targets. This spectral bleeding directly reduces the composite objective function despite maintaining geometric feasibility.",
+  "continue_recommended": true,
+  "continue_rationale": "With 9 valid candidates and a tightest_margin of 0.4015034230268104, the physical parameter space remains fully exploitable. The route's peak performance of 0.740653428345178 demonstrates the aperiodic hypothesis is sound within a constrained thickness envelope. The recent excursion to 0.5775642659286541 reflects a directional optimization failure (boundary expansion or aggressive stepping) rather than inherent infeasibility. Targeted re-initialization can recover the proven performance window.",
+  "insight_for_next": "Reset the optimizer using candidate 2 from round 2 (score 0.740653428345178) as the fixed baseline seed. Restrict layer initialization bounds strictly to 45–120 nm to eliminate the >140 nm drift, and reduce the optimizer step-size/learning rate by 50% to enforce gentler convergence within the verified decoupling regime.",
+  "insight_grounding": "Round 2's candidate 2 achieved the route maximum of 0.740653428345178 while maintaining all 24 layers tightly clustered between 48.0 nm and 129.0 nm. In contrast, round 3's candidate 4 pushed layers 15 and 18 to 160.77609813521784 nm and 144.1500965767807 nm simultaneously, correlating exactly with the score decline to 0.5775642659286541. Constraining subsequent searches to the validated 45–120 nm range directly eliminates the measured thickness-induced interference crosstalk.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-28T17:20:40.434653+00:00",
+  "attestation_sha256": "651f09e5b94007c61aafa283057f63d6c2431f175236e1fd8750de4a7239654f",
+  "observed_metrics": {
+    "best_target_score": 0.5775642659286541,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4015034230268104
+  },
+  "reflection_available": true
+}

@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_10/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "f260618dda1437a627eea2a6ef239dac1b9af8c0c9692c47cbfcb4fd1cd59a27",
+  "recorded_at_utc": "2026-08-28T13:38:25.258690+00:00",
+  "elapsed_seconds": 2661.420334800001,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_10",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Starting from quarter-wave optical thickness seeds at band centers (375nm UV, 1350nm SWIR) with ±15% random jitter will escape local minima that constrained the chirped parameterization, while expanding thickness bounds to 500nm provides additional design freedom without violating fabrication limits.",
+  "expected_advantages": [
+    "Better convergence than monotonicity-constrained chirp due to unconstrained thickness space",
+    "Quarter-wave seeds provide physically meaningful starting point",
+    "Expanded bounds allow thicker layers for broader UV reflection band"
+  ],
+  "known_risks": [
+    "May converge to local minimum if jitter amplitude insufficient",
+    "30 independent variables may require more optimization iterations",
+    "No monotonicity constraint could produce non-fabricable thickness profiles"
+  ],
+  "expected_observations": [
+    "valid_candidates should increase from 9 (route_01) to >= 15 if initialization reduces boundary collisions",
+    "best_target_score should remain >= 0.53 or improve if quarter-wave seed is closer to optimum",
+    "tightest_margin should not decrease across rounds if constraint set remains feasible",
+    "If valid_candidates remains < 10, hypothesis that initialization causes boundary collisions is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to route_01 historical best (0.5346) is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds, not re-run same route",
+    "If best_target_score exceeds 0.75, judge dual-band objective achievable -> can proceed to robustness analysis"
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_02 (Ge/ZnS dual-band filter on CaF2) based on prior iteration results showing best_target_score=0.8679 with 9 valid candidates. Feedback directives specify tighter thickness bounds [80,400] nm and reduced optimizer step size to prevent thickness overshoot. Four complementary routes proposed: (1) direct implementation of feedback with refined bounds, (2) asymmetric cavity topology for improved dual-band separation, (3) alternative ZnSe/ZnS material pair for index contrast comparison, (4) reduced 20-layer count for manufacturability. All routes maintain parent_route_id='route_02' per refinement_chain instruction. Repaired evidence ID typo in route_02_reduced_layers and research_influence.",
+    "routes": [
+      {
+        "route_id": "route_02_refined_bounds",
+        "title": "Ge/ZnS Dual-Band Filter with Constricted Thickness Bounds [80-400 nm]",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constricting thickness initialization bounds to [80, 400] nm and reducing optimizer step size by 50% will prevent thickness overshoot observed in prior iteration, forcing the solver to optimize around resonant quarter-wave thicknesses and improve convergence toward the theoretical dual-band transmission limit.",
+        "design_principle": "Quarter-wave stack with dual-cavity resonance for two distinct passbands. Ge (high index ~4.0) and ZnS (low index ~2.2) provide sufficient index contrast for sharp spectral edges within 24-layer constraint.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS"
+        ],
+        "proposed_topology": "22 explicit layers: Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 substrate",
+        "design_variables": [
+          "All 22 layer thicknesses optimized within [80, 400] nm bounds",
+          "Optimizer step size reduced by 50% from prior iteration"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 22 within 24-layer limit",
+          "Thickness bounds [80, 400] nm compatible with conventional IR deposition",
+          "No metal layers per requirement",
+          "Ge and ZnS are conventional depositable IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:7715:10057:8e3f9b4f08753f00"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for multilayer interference",
+          "Quarter-wave optical thickness principle for bandpass filters"
+        ],
+        "expected_advantages": [
+          "Tighter bounds prevent optimizer from exploring non-physical thickness regions",
+          "Reduced step size improves convergence near quarter-wave resonances",
+          "Maintains proven Ge/ZnS material system from prior successful iteration"
+        ],
+        "known_risks": [
+          "Overly restrictive bounds may prevent discovery of optimal non-quarter-wave solutions",
+          "Reduced step size may increase optimization iterations needed"
+        ],
+        "execution_request_english": "Optimize a 22-layer Ge/ZnS multilayer filter on CaF2 substrate for dual-band transmission. Wavelength bands: transmit 3250-3350 nm and 4200-4300 nm; block 2500-3100 nm and 4450-5000 nm. All 22 layer thicknesses are optimization variables with bounds [80, 400] nm. Initialize thicknesses at quarter-wave values (Ge ~205 nm, ZnS ~375 nm at 3300 nm reference). Use gradient-based and differential evolution optimizers with step size reduced by 50% from standard defaults. Evaluate coherent TMM across 2500-5000 nm spectrum. Score candidates by mean transmittance in passbands and blocking bands. No metal layers. Air incidence, unpolarized light. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Direct implementation of feedback directives: constricted thickness bounds to [80, 400] nm and reduced optimizer step size by 50% to prevent thickness overshoot observed in iteration_06 where some layers exceeded 490 nm."
+      },
+      {
+        "route_id": "route_02_asymmetric_cavity",
+        "title": "Ge/ZnS Asymmetric Dual-Cavity Filter for Improved Band Separation",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "An asymmetric cavity design with different spacer thicknesses for the two passbands will improve spectral separation between methane (3.3 μm) and CO2 (4.25 μm) bands compared to symmetric quarter-wave initialization, reducing passband coupling and improving blocking in the 3.35-4.20 μm transition region.",
+        "design_principle": "Dual-cavity bandpass filter with asymmetric spacer layers tuned to each target wavelength. First cavity optimized for 3300 nm, second cavity for 4250 nm, with distributed Bragg reflectors between cavities.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS"
+        ],
+        "proposed_topology": "22 explicit layers: Air | [Ge/ZnS]_5 | Ge(spacer1) | [ZnS/Ge]_3 | ZnS(spacer2) | [Ge/ZnS]_5 | Ge | CaF2 substrate with explicit thickness for each layer",
+        "design_variables": [
+          "All 22 layer thicknesses optimized within [80, 400] nm bounds",
+          "Spacer layer thicknesses initialized asymmetrically: spacer1 ~205 nm for 3300 nm, spacer2 ~260 nm for 4250 nm"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band",
+          "Minimize transmittance in 3350-4200 nm transition region"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 22 within 24-layer limit",
+          "Asymmetric design may require more precise thickness control",
+          "Ge and ZnS deposition well-established for IR applications"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:136080761:s2chunk:136080761:15:2102:e2773f76792b7ad8",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+        ],
+        "theory_basis": [
+          "Multi-cavity filter theory for dual-band operation",
+          "Asymmetric spacer tuning for wavelength separation"
+        ],
+        "expected_advantages": [
+          "Better spectral isolation between two passbands",
+          "Reduced passband ripple from cavity coupling",
+          "Improved blocking in transition region between bands"
+        ],
+        "known_risks": [
+          "Asymmetric design may be more sensitive to thickness errors",
+          "May require more optimization iterations to converge"
+        ],
+        "execution_request_english": "Optimize a 22-layer Ge/ZnS asymmetric dual-cavity filter on CaF2 substrate. Wavelength bands: transmit 3250-3350 nm and 4200-4300 nm; block 2500-3100 nm and 4450-5000 nm. Topology: 5 Ge/ZnS pairs, Ge spacer, 3 ZnS/Ge pairs, ZnS spacer, 5 Ge/ZnS pairs, terminating Ge layer. All 22 layer thicknesses optimized within [80, 400] nm bounds. Initialize spacer1 (Ge) at 205 nm for 3300 nm resonance, spacer2 (ZnS) at 260 nm for 4250 nm resonance. Use gradient and differential evolution optimizers with 50% reduced step size. Evaluate coherent TMM across 2500-5000 nm. Score by four-band transmittance objectives. Air incidence, unpolarized. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_02",
+        "revision_reason": "Explores asymmetric cavity topology as alternative to symmetric quarter-wave stack from iteration_06, testing whether band separation can be improved while maintaining same material system and layer count."
+      },
+      {
+        "route_id": "route_02_znse_alternative",
+        "title": "ZnSe/ZnS Dual-Band Filter Alternative Material Pair",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing Ge with ZnSe (n~2.4-2.6 in IR) will provide lower absorption loss in the 3-5 μm range while maintaining sufficient index contrast with ZnS (n~2.2), potentially improving passband transmittance at the cost of reduced blocking steepness due to lower index contrast.",
+        "design_principle": "Same 22-layer dual-cavity topology as route_02 but with ZnSe substituting for Ge. Lower index contrast (ZnSe/ZnS ~1.2 vs Ge/ZnS ~1.8) traded for reduced material absorption in mid-IR.",
+        "proposed_materials": [
+          "ZnSe",
+          "ZnS"
+        ],
+        "proposed_topology": "22 explicit layers: Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | CaF2 substrate",
+        "design_variables": [
+          "All 22 layer thicknesses optimized within [80, 400] nm bounds",
+          "Quarter-wave initialization adjusted for ZnSe refractive index (~2.5 at 3300 nm)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "ZnSe and ZnS both conventional IR dielectrics with established deposition processes",
+          "Lower index contrast may require tighter thickness control for equivalent blocking",
+          "Total layer count 22 within 24-layer limit"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+        ],
+        "theory_basis": [
+          "Index contrast determines blocking steepness in quarter-wave stacks",
+          "Material absorption affects passband transmission efficiency"
+        ],
+        "expected_advantages": [
+          "Potentially lower absorption loss in passbands",
+          "ZnSe has lower extinction coefficient than Ge in 3-5 μm range",
+          "Same topology allows direct comparison with Ge/ZnS results"
+        ],
+        "known_risks": [
+          "Lower index contrast may reduce blocking performance in stopbands",
+          "May require more layers than 22 to achieve equivalent blocking to Ge/ZnS"
+        ],
+        "execution_request_english": "Optimize a 22-layer ZnSe/ZnS multilayer filter on CaF2 substrate for dual-band transmission. Wavelength bands: transmit 3250-3350 nm and 4200-4300 nm; block 2500-3100 nm and 4450-5000 nm. All 22 layer thicknesses optimized within [80, 400] nm bounds. Initialize thicknesses at quarter-wave values (ZnSe ~265 nm, ZnS ~375 nm at 3300 nm reference). Use gradient and differential evolution optimizers with 50% reduced step size. Evaluate coherent TMM across 2500-5000 nm. Score candidates by four-band transmittance objectives. No metal layers. Air incidence, unpolarized light. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests alternative material pair while maintaining identical topology and optimization parameters from iteration_06, isolating material system as the variable to determine if lower-absorption ZnSe improves passband transmission despite reduced index contrast."
+      },
+      {
+        "route_id": "route_02_reduced_layers",
+        "title": "Ge/ZnS 20-Layer Dual-Band Filter for Manufacturability",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 22 to 20 will improve manufacturability and reduce total coating thickness while maintaining acceptable dual-band performance, as the marginal benefit of the outermost 2 layers may not justify the added complexity and deposition time.",
+        "design_principle": "Same Ge/ZnS dual-cavity topology as iteration_06 but with 20 layers instead of 22, removing one Ge/ZnS pair from each end of the stack to reduce total thickness while preserving cavity structure.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS"
+        ],
+        "proposed_topology": "20 explicit layers: Air | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | CaF2 substrate",
+        "design_variables": [
+          "All 20 layer thicknesses optimized within [80, 400] nm bounds",
+          "Quarter-wave initialization same as 22-layer design but with 2 fewer layers"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350 nm band",
+          "Maximize mean transmittance in 4200-4300 nm band",
+          "Minimize mean transmittance in 2500-3100 nm band",
+          "Minimize mean transmittance in 4450-5000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "20 layers provides margin below 24-layer maximum",
+          "Reduced layer count decreases deposition time and stress accumulation",
+          "Lower total thickness improves coating uniformity and adhesion"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+        ],
+        "theory_basis": [
+          "Layer count affects blocking steepness and out-of-band rejection",
+          "Manufacturing constraints favor minimum layers for acceptable performance"
+        ],
+        "expected_advantages": [
+          "Improved manufacturability with fewer layers",
+          "Reduced total coating thickness and deposition time",
+          "Lower stress accumulation in coating stack"
+        ],
+        "known_risks": [
+          "Reduced layer count may decrease blocking performance in stopbands",
+          "May not achieve equivalent target_score to 22-layer design"
+        ],
+        "execution_request_english": "Optimize a 20-layer Ge/ZnS multilayer filter on CaF2 substrate for dual-band transmission. Wavelength bands: transmit 3250-3350 nm and 4200-4300 nm; block 2500-3100 nm and 4450-5000 nm. All 20 layer thicknesses optimized within [80, 400] nm bounds. Initialize thicknesses at quarter-wave values (Ge ~205 nm, ZnS ~375 nm at 3300 nm reference). Use gradient and differential evolution optimizers with 50% reduced step size. Evaluate coherent TMM across 2500-5000 nm. Score candidates by four-band transmittance objectives. No metal layers. Air incidence, unpolarized light. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 4,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests whether 20 layers can achieve acceptable performance compared to 22 layers from iteration_06, trading marginal performance for improved manufacturability per evidence on thickness-constrained design principles."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:139773493:25021:26346 supported Ge/ZnS material selection from prior successful methane sensor filter implementation",
+      "Evidence s2-chunk:CorpusId:227248144:13756:16101 informed multi-layer design principle that more layers produce steeper spectral slopes",
+      "Evidence s2-chunk:CorpusId:17683472:29776:32010:c36d261f52b76fe1 motivated thickness-constrained design consideration for manufacturability in route_02_reduced_layers",
+      "Evidence s2-chunk:CorpusId:136080761:15:2102 supported bandpass filter construction principle combining long-pass and short-pass sections"
+    ],
+    "unresolved_decisions": [
+      "Optimal balance between layer count and blocking performance for this specific dual-band requirement",
+      "Whether asymmetric cavity topology provides measurable benefit over symmetric design for 3.3/4.25 μm band separation",
+      "Material absorption impact on passband transmission (Ge vs ZnSe) requires experimental verification"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 2,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_02_refined_bounds received canonical user controls from the problem contract",
+    "route route_02_asymmetric_cavity received canonical user controls from the problem contract",
+    "route route_02_znse_alternative received canonical user controls from the problem contract",
+    "route route_02_reduced_layers received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14541,
+      "completion_tokens": 6031,
+      "total_tokens": 20572
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 19699,
+      "completion_tokens": 6608,
+      "total_tokens": 26307
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

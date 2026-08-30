@@ -1,0 +1,39 @@
+{
+  "artifact": "iterations/iteration_08/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "ed1c0731ca0c14244350163e0d13842ed18658e3e669988cb8c902655396ca3f",
+  "recorded_at_utc": "2026-08-29T06:07:31.342401+00:00",
+  "elapsed_seconds": 2829.686277700006,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_08",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 22-layer alternating high-low index stack with individually optimized thicknesses can achieve simultaneous transmission peaks at 3.25-3.35 μm and 4.20-4.30 μm while suppressing 2.50-3.10 μm and 4.45-5.00 μm bands on CaF2 substrate.",
+  "expected_advantages": [
+    "ZnS/Al2O3 pair provides sufficient index contrast for effective interference in mid-IR",
+    "22 layers allows enough degrees of freedom for dual-band optimization while staying under 24-layer limit",
+    "Individual thickness tuning enables control over both passband positions and stopband suppression",
+    "Alternating structure is manufacturable with standard deposition techniques"
+  ],
+  "known_risks": [
+    "Uncertain whether ZnS and Al2O3 material data extends fully to 5.0 μm in the registry - previous iteration failed with ZnS/MgF2 citing material_data issues; need to verify n/k values are finite across 2.5-5.0 μm",
+    "Uncertain optimal starting thickness values - quarter-wave at 3.3 μm would be approximately 350-400 nm for ZnS and 500-550 nm for Al2O3 based on recalled indices, but dual-band requires compromise between 3.3 μm and 4.25 μm",
+    "Periodic alternating structure may not be optimal for dual-bandpass; a more complex topology with defect layers or multiple cavities might be needed but would change the axis",
+    "22 layers may not provide enough design freedom for two well-separated passbands with good suppression - this is a hypothesis to test",
+    "What would settle material uncertainty: Check material catalog for actual wavelength coverage of zns and al2o3 datasets; verify n/k arrays contain finite floats across full 2500-5000 nm range",
+    "What would settle topology question: Compare against routes using different stack architectures (e.g., cavity-based designs)",
+    "Substrate material name ambiguity resolved by selecting Daimon-20 dataset; uncertainty remains whether this specific dataset has complete coverage across 2.5-5.0 μm"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase across optimization rounds as thicknesses converge toward dual-bandpass solution",
+    "If hypothesis holds: valid_candidates count should be greater than zero after thickness bounds are enforced and material data validated",
+    "If hypothesis holds: tightest_margin should remain stable or improve across rounds indicating physical constraints are satisfiable",
+    "If hypothesis fails: best_target_score remains near zero indicating the periodic topology cannot achieve dual-bandpass with this material pair",
+    "If hypothesis fails: valid_candidates remains zero indicating material data issues persist with ZnS/Al2O3 in this wavelength range",
+    "If hypothesis fails: tightest_margin decreases across rounds indicating physical constraints cannot be satisfied simultaneously"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates remains zero for three consecutive rounds despite thickness bound adjustments and material validation, stop and flag material pair as incompatible with this topology",
+    "If tightest_margin falls below zero for three consecutive rounds, stop and indicate the constraint set is infeasible for this stack architecture"
+  ]
+}

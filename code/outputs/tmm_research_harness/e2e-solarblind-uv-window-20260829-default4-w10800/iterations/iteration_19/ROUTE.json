@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Bounded perturbation MgF2/HfO2 stack with adjacent-layer smoothness constraint",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing optimization from iteration_16's best thickness vector [33.0, 74.0, 101.0, 34.0, 109.0, 53.0, 21.0, 12.0, 114.0, 26.0, 74.0, 43.0, 52.0, 59.0, 138.0, 16.0, 22.0, 71.0, 190.0, 67.0] with ±8% perturbation bounds and enforcing maximum 45 nm thickness difference between adjacent layers will reduce spectral oscillations and improve best_target_score above the iteration_16 value of 0.433, potentially recovering toward the iteration_06 peak of 0.647.",
+  "design_principle": "Smooth thickness gradients prevent high-frequency spectral ripple caused by abrupt optical thickness transitions. Bounded perturbation around a known good candidate focuses search on local refinements rather than global re-exploration.",
+  "proposed_materials": [
+    "MgF2",
+    "HfO2"
+  ],
+  "proposed_topology": "20-layer alternating stack: Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | Fused Silica substrate. Exact layer count: 20 finite layers (10 MgF2, 10 HfO2).",
+  "design_variables": [
+    "layer thicknesses (20 variables, bounded ±8% around iteration_16 best candidate)",
+    "adjacent-layer thickness difference constraint (max 45 nm)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 255-280 nm passband",
+    "minimize mean transmittance in 300-700 nm stopband",
+    "minimize mean transmittance in 700-1100 nm stopband"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30 (20 layers used)",
+    "no metal layers",
+    "conventional depositable inorganic dielectric materials",
+    "adjacent layer thickness difference ≤ 45 nm for deposition uniformity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for coherent multilayer response",
+    "Quarter-wave stack principle for stopband formation",
+    "Smooth thickness gradients reduce spectral ripple"
+  ],
+  "expected_advantages": [
+    "Focused search around known good candidate reduces optimization iterations",
+    "Smoothness constraint prevents non-manufacturable abrupt transitions",
+    "May recover iteration_06 performance while maintaining iteration_16 structural insights"
+  ],
+  "known_risks": [
+    "±8% bounds may be too restrictive to escape local optimum",
+    "Smoothness constraint may prevent optimal chirp profiles",
+    "MgF2/HfO2 material pair may have intrinsic limitations below 0.647 score ceiling"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar multilayer filter on fused silica substrate with air incidence. Stack sequence: alternating MgF2 and HfO2 layers starting with MgF2 (20 finite layers total: 10 MgF2, 10 HfO2). Initialize thicknesses at [33.0, 74.0, 101.0, 34.0, 109.0, 53.0, 21.0, 12.0, 114.0, 26.0, 74.0, 43.0, 52.0, 59.0, 138.0, 16.0, 22.0, 71.0, 190.0, 67.0] nm. Apply thickness bounds of ±8% around initialization values. Enforce constraint that absolute difference between adjacent layer thicknesses must not exceed 45 nm. Use coherent S-matrix solver across 255-1100 nm wavelength range at normal incidence. Score three mean-transmittance objectives: maximize in 255-280 nm, minimize in 300-700 nm, minimize in 700-1100 nm. Use gradient-based thickness optimizer with bound projection. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Iteration_16 showed score regression to 0.433 from iteration_06's 0.647. Feedback directives specify initializing from iteration_16 best thickness vector with ±8% perturbation and 45 nm adjacent-layer smoothness constraint to prevent spectral oscillations from abrupt transitions."
+}

@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "24-Layer Widened Initialization UV-SWIR Dual-Band Filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Increasing layer count from 16 to 24 while applying widened initialization envelope (odd layers 20-40 nm, even layers 80-110 nm) with 5% periodic scaling perturbation will improve dual-band spectral separation by providing additional degrees of freedom for optimization without exceeding the 30-layer manufacturing constraint.",
+  "design_principle": "Non-quarter-wave thickness optimization with expanded search space enables better trade-off between UV reflection band (200-400 nm) and SWIR transmission band (800-1500 nm). Widened initialization forces stronger departure from quarter-wave symmetry to accelerate convergence toward extended-bandwidth solutions.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "All 24 layer thicknesses (optimizable)",
+    "Initial thickness bounds: odd positions 20-40 nm, even positions 80-110 nm"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 800-1500 nm band",
+    "Maximize average reflectance in 200-400 nm band",
+    "Minimize spectral overlap between bands"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 24 (within 30-layer limit)",
+    "HfO2 and SiO2 only (material constraint satisfied)",
+    "Thickness bounds ensure fabricable layer thicknesses"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Non-quarter-wave optimization for multi-band performance",
+    "Widened initialization envelope per feedback directives"
+  ],
+  "expected_advantages": [
+    "Higher best_target_score than 16-layer baseline (0.8649)",
+    "Improved spectral separation between UV and SWIR bands",
+    "More thickness degrees of freedom for optimization"
+  ],
+  "known_risks": [
+    "Increased computational cost with more layers",
+    "Potential for local minima in larger search space",
+    "May not improve if 16 layers already near-optimal for this material pair"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate for dual-band performance. Layer sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Initialize odd-layer positions (1,3,5,...,23) with random thickness between 20-40 nm. Initialize even-layer positions (2,4,6,...,24) with random thickness between 80-110 nm. Apply 5% periodic scaling perturbation to initial stack. Optimize all 24 layer thicknesses using gradient-based optimizer with evolutionary initialization. Evaluate performance at normal incidence, unpolarized light. Compute target score based on: maximize transmittance in 800-1500 nm band, maximize reflectance in 200-400 nm band. Total layer count fixed at 24. Materials: HfO2 (high index), SiO2 (low index). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Increased layer count from 16 to 24 per feedback directive to widen initialization envelope and provide additional optimization degrees of freedom. Applied specified initialization bounds (odd 20-40 nm, even 80-110 nm) and 5% periodic scaling perturbation to force stronger departure from quarter-wave symmetry."
+}

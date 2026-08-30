@@ -1,0 +1,52 @@
+{
+  "route_id": "route_02",
+  "title": "Anchored Reinitialization of Three-Cavity Filter with Layer 1-2 Constraints",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining the first two layers to remain near their iteration 18 optimal values (467.69 nm, 389.19 nm) with ±15 nm bounds will preserve the input coupling resonance condition that contributed to previous performance while allowing fine-grained optimization of the remaining 19 layers. The quadratic penalty beyond ±25 nm will dampen large-step excursions that may destabilize the cavity resonance.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter with anchored boundary layers to maintain input coupling condition while optimizing internal cavity structure",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "21-layer alternating Ge/ZnS stack on CaF2 substrate, starting with Ge layer 1",
+  "design_variables": [
+    "layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm",
+    "layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm",
+    "layers 3-21 thickness bounded to [50, 500] nm",
+    "quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+    "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+    "maintain robustness to thickness variations"
+  ],
+  "manufacturing_considerations": [
+    "all layers within 50-500 nm range for conventional deposition",
+    "21 layers within 24-layer maximum",
+    "Ge and ZnS are conventional IR dielectrics"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for planar multilayer interference",
+    "Fabry-Perot cavity resonance condition: (φ1 + φ2 − 2δ)/2 = kπ"
+  ],
+  "expected_advantages": [
+    "Preserves resonance condition from iteration 18",
+    "Reduces optimizer search space for boundary layers",
+    "May improve convergence stability compared to free optimization"
+  ],
+  "known_risks": [
+    "Anchoring may prevent discovery of better boundary layer configurations",
+    "Quadratic penalty may create local minima",
+    "21 layers may still be insufficient for dual-band requirement"
+  ],
+  "execution_request_english": "Optimize a 21-layer alternating Ge/ZnS dielectric stack on CaF2 substrate at normal incidence. Layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm. Layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm. Layers 3-21 thickness bounded to [50, 500] nm. Apply quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets. Maximize mean transmittance in passbands [4150, 4350] nm and [4550, 4750] nm. Minimize mean transmittance in stopbands [3600, 4000] nm and [4850, 5200] nm. Use gradient-based thickness optimizer. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive for anchored reinitialization of layers 1-2 to iteration 18 optimal values with tight bounds and quadratic penalty to dampen large-step optimizer excursions"
+}

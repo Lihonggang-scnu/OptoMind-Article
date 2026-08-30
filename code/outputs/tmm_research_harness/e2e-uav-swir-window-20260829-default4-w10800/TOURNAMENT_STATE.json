@@ -1,0 +1,251 @@
+{
+  "schema_version": "tournament-state.v1",
+  "updated_at_utc": "2026-08-28T17:45:21.138874+00:00",
+  "wave": 6,
+  "budget_snapshot": {
+    "iterations_used": 16,
+    "maximum_iterations": 18,
+    "configured_maximum_iterations": 6,
+    "rounds_per_route": 6,
+    "shared_iteration_pool": false,
+    "wall_seconds_elapsed": 3715.722
+  },
+  "tracks": [
+    {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.5606153489041363,
+        0.8206168082782477,
+        0.6844978091615582,
+        0.8279088548566025,
+        0.7148963987294766,
+        0.8325946625022465
+      ],
+      "best_candidate_ids": [
+        "optimize_20l_hfo2_sio2_bandgap__gr__8fc2a5ec3669",
+        "optimize_20l_hfo2_sio2_bandgap__gr__503aca90ee97",
+        "optimize_20l_hfo2_sio2_bandgap__di__2ee52afa81d6",
+        "opt_20layer_hfosio2_fusedsilica_ur__fb6e34b0aea6",
+        "opt_20layer_hfosio2_fusedsilica_ur__b50d06f98d7d",
+        "opt_20layer_hfosio2_fusedsilica_ur_ir__baseline",
+        "opt_20layer_hfosio2_fusedsilica_ur__2c0127a5b127",
+        "opt_20l_hr_ht_wideband__gradient_thickness__02",
+        "opt_20l_hr_ht_wideband__gradient_thickness__01",
+        "opt_20l_hr_ht_wideband__differenti__ab727375d496",
+        "optimize_20layer_hfosio2_dualband___03c8ac2923eb",
+        "optimize_20layer_hfosio2_dualband__baseline",
+        "optimize_20layer_hfosio2_dualband___3316fecc30ee",
+        "hfosio2_dichroic_20l_opt__gradient_thickness__01",
+        "hfosio2_dichroic_20l_opt__baseline",
+        "hfosio2_dichroic_20l_opt__differen__f8f96b447618",
+        "opt_20layer_alt_hf_si_200_1500__gr__bb9745adf8da",
+        "opt_20layer_alt_hf_si_200_1500__di__93365f7fe962"
+      ],
+      "current_route": {
+        "route_id": "control_route_01",
+        "title": "20-layer HfO2/SiO2 dichroic refinement with narrowed perturbation bounds",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with individually tunable thicknesses can achieve simultaneous high UV reflection and high SWIR transmission, and further refinement with reduced perturbation bounds (±0.5 nm) will improve target score convergence without destabilizing the solution.",
+        "design_principle": "Recalled thin-film optics principle: alternating high-low refractive index layers form a Bragg reflector centered at the design wavelength. Quarter-wave optical thickness (n·d = λ₀/4) maximizes reflectance at the center wavelength. For dual-band operation, the reflection band is positioned at UV (center ~300 nm) while SWIR (800-1500 nm) falls outside the stopband for high transmission.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Rodriguez-de_Marcos)"
+        ],
+        "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (20 layers total, alternating starting with HfO2)",
+        "design_variables": [
+          "Individual layer thicknesses for all 20 layers, initialized from prior best candidate and tuned within ±0.5 nm perturbation bounds"
+        ],
+        "soft_objectives": [
+          "Maximize target score combining UV reflection (200-400 nm) and SWIR transmission (800-1500 nm)",
+          "Maintain physical validity (positive thicknesses, manufacturable ranges)",
+          "Improve best_target_score over prior iteration 0.8279 baseline"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count fixed at 20 (within 30-layer limit)",
+          "Thicknesses expected in 25-55 nm range based on UV quarter-wave design",
+          "HfO2 and SiO2 are standard evaporatable/sputterable dielectric materials"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled knowledge: Quarter-wave stack reflectance increases with number of layer pairs",
+          "Recalled knowledge: HfO2 refractive index ~2.0-2.1, SiO2 ~1.45-1.5 in visible/NIR",
+          "Recalled knowledge: Reflection band center wavelength λ₀ determines layer thickness d = λ₀/(4n)",
+          "Recalled knowledge: Wider reflection bandwidth requires more layer pairs or higher index contrast",
+          "Recalled knowledge: Transmission outside the stopband is naturally high for lossless dielectric stacks"
+        ],
+        "expected_advantages": [
+          "Narrower perturbation bounds (±0.5 nm vs prior ±0.8 nm) reduce oscillatory jumps in optimization",
+          "Initialization from proven 0.8279 score candidate focuses search on promising region",
+          "20 layers provide sufficient pairs for UV stopband while leaving margin under 30-layer limit",
+          "Alternating structure is manufacturable with standard thin-film deposition processes"
+        ],
+        "known_risks": [
+          "Uncertain whether HfO2 extinction coefficient remains negligible at 200 nm UV edge - would need measured n/k data verification",
+          "Recalled quarter-wave thickness estimates may not be exact for this specific material dataset - actual optimal thicknesses emerge from optimization",
+          "Uncertain if 20 layers is optimal vs 22, 24, or 26 for this specific band separation - layer count is fixed for this axis",
+          "Fused silica substrate dispersion in UV not precisely recalled - relies on registry dataset",
+          "No literature verification of HfO2/SiO2 UV durability under prolonged exposure - design assumes optical performance only"
+        ],
+        "execution_request_english": "Optimize a 20-layer planar dielectric stack on fused silica substrate with air incidence. Materials: alternating hfo2 and SiO2 (Rodriguez-de_Marcos) layers, starting with hfo2 adjacent to air. Total 20 layers (10 hfo2, 10 SiO2 (Rodriguez-de_Marcos)). Initialize thicknesses from prior best candidate: [29.5, 39.5, 29.5, 39.5, 30.6, 39.5, 30.5, 39.5, 29.5, 39.5, 49.5, 40.5, 50.5, 40.5, 49.5, 40.5, 50.5, 40.5, 49.5, 40.0] nm. Optimize individual layer thicknesses with perturbation bounds ±0.5 nm. Wavelength bands: maximize reflectance in 200-400 nm, maximize transmittance in 800-1500 nm. Normal incidence, unpolarized. Total layers fixed at 20, materials fixed as hfo2 and SiO2 (Rodriguez-de_Marcos) in alternating sequence.",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Continuation refinement: reduce perturbation bounds from ±0.8 nm to ±0.5 nm and initialize from iteration 12 best candidate (0.8279088548566025 target score) to suppress oscillatory jumps and focus computational budget on refining the neighborhood of the proven optimum."
+      }
+    },
+    {
+      "route_id": "route_01",
+      "source": "literature_planned",
+      "status": "stopped_llm_advice",
+      "termination_reason": "LLM explicitly assessed no further benefit after 4 executed rounds (stop_basis=marginal_gains_too_low)",
+      "rounds_used": 4,
+      "score_history": [
+        0.8649257273997111,
+        0.7605299445492656,
+        0.7642999497775887
+      ],
+      "best_candidate_ids": [
+        "opt_16layer_hsfs_200_1500nm__gradi__8d43943f7ff0",
+        "opt_16layer_hsfs_200_1500nm__baseline",
+        "opt_16layer_hsfs_200_1500nm__diffe__ce23f2e99fe5",
+        "dual_band_hfosio2_opt__gradient_thickness__02",
+        "dual_band_hfosio2_opt__differentia__23ece3c65218",
+        "opt_hfosio2_16dualband__gradient_thickness__01",
+        "opt_hfosio2_16dualband__gradient_thickness__06"
+      ],
+      "current_route": {
+        "route_id": "route_01",
+        "title": "16-Layer HfO2/SiO2 Dual-Band Filter with Expanded Bounds and Random Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A 16-layer alternating HfO2/SiO2 stack with thickness bounds relaxed by ±8% from quarter-wave values and uniform random initialization will escape the local minimum observed in iteration_04, achieving higher dual-band performance through non-quarter-wave optimization.",
+        "design_principle": "Quarter-wave Bragg reflector principle for UV band (200-400 nm) with non-quarter-wave thickness optimization to maintain SWIR transmission (800-1500 nm). Random initialization prevents convergence to the same local basin as prior deterministic runs.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (16 finite layers, 8 pairs)",
+        "design_variables": [
+          "Layer thicknesses (16 variables)",
+          "Thickness bounds: quarter-wave ±8% at 300 nm center UV wavelength"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 800-1500 nm band",
+          "Maximize mean reflectance in 200-400 nm band",
+          "Minimize spectral ripple in both bands"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 16 (within 30-layer limit)",
+          "HfO2 and SiO2 are deposition-compatible via ion-assisted deposition",
+          "Outermost SiO2 layer provides environmental durability"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory for high-reflectance bands",
+          "Transfer matrix method for multilayer interference",
+          "Non-quarter-wave optimization for broadband performance"
+        ],
+        "expected_advantages": [
+          "16 layers matched prior best-performing configuration",
+          "±8% bounds allow escape from quarter-wave local minimum",
+          "Random initialization increases design space exploration"
+        ],
+        "known_risks": [
+          "May converge to similar local minimum as iteration_04 if bounds too restrictive",
+          "16 layers may be insufficient for simultaneous UV reflection and SWIR transmission optimization"
+        ],
+        "execution_request_english": "Optimize a 16-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate for dual-band performance. Layer sequence: HfO2/SiO2 repeated 8 times starting with HfO2 at air interface. Initialize all layer thicknesses with uniform random sampling within bounds: HfO2 layers 38-45 nm, SiO2 layers 47-55 nm (quarter-wave at 300 nm ±8%). Optimize thicknesses using gradient-based optimizer with Adam-LBFGS hybrid. Spectral evaluation: 200-1500 nm with 1 nm resolution. Objectives: maximize mean transmittance 800-1500 nm, maximize mean reflectance 200-400 nm. Total layer count fixed at 16. Material registry resolves HfO2 and SiO2 refractive indices. If best_target_score improvement < 1e-3 for 4 consecutive iterations, trigger Monte Carlo resampling of thickness initialization. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Refinement of iteration_04 16-layer design: expanded thickness bounds by ±8%, switched from deterministic grid initialization to uniform random sampling per feedback directives, added Monte Carlo resampling checkpoint to escape local minima."
+      }
+    },
+    {
+      "route_id": "route_02",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.730595264743925,
+        0.740653428345178,
+        0.5775642659286541,
+        0.7524042973317228,
+        0.5717419035385549,
+        0.5966655941923661
+      ],
+      "best_candidate_ids": [
+        "opt_aperiodic_hfosio2_24l__gradien__ae5ad96294fa",
+        "opt_aperiodic_hfosio2_24l__baseline",
+        "opt_aperiodic_hfosio2_24l__differe__65d6afca7cb7",
+        "hfso2_opt_24l__gradient_thickness__01",
+        "hfso2_opt_24l__gradient_thickness__02",
+        "hfso2_opt_24l__differential_evolut__2174d486d1fd",
+        "opt_24layer_hfosio2_dualband__grad__f4fb27b89acb",
+        "opt_24layer_hfosio2_dualband__grad__15c883a53176",
+        "opt_24layer_hfosio2_dualband__diff__1374246481aa",
+        "opt_24lay_hfosio2_hp_mirror__gradi__762f9fc9ae03",
+        "opt_24lay_hfosio2_hp_mirror__diffe__5c90b65329d7",
+        "hfso2_si24_chirped_mirror__gradien__12dfe9b6b70a",
+        "hfso2_si24_chirped_mirror__differe__af9e15c057f0",
+        "hfso2_dbr_fixed_fix_opt8__gradient_thickness__01",
+        "hfso2_dbr_fixed_fix_opt8__differen__2ecadae655c9",
+        "hfso2_dbr_fixed_fix_opt8__baseline",
+        "hfso2_dbr_fixed_fix_opt8__differen__abe514a284ce"
+      ],
+      "current_route": {
+        "route_id": "route_02",
+        "title": "Eight-Layer Thick-Subset Perturbation with Damped Learning",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Phase-coupling effects in the 8 thickest layers dominate dual-band performance; constraining optimization to these layers with reduced learning rate will improve target_score without overshoot.",
+        "design_principle": "Selective parameter optimization reduces search space dimensionality while targeting layers with highest optical path contribution. Damped learning rate (0.05x) suppresses oscillation near local optima.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "24-layer alternating HfO2/SiO2 stack on fused silica substrate, air incidence. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2",
+        "design_variables": [
+          "Thicknesses of 8 layers with largest values from iteration_11 best candidate; remaining 16 layers fixed"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 800-1500 nm band",
+          "Maximize mean reflectance in 200-400 nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 24 (within 30-layer limit)",
+          "Materials restricted to HfO2 and SiO2",
+          "Fixed layers reduce deposition complexity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+        ],
+        "theory_basis": [
+          "Needle optimization principle: localized thickness adjustments can refine multi-wavelength performance",
+          "Gradient descent with reduced step size improves convergence near optima"
+        ],
+        "expected_advantages": [
+          "Reduced optimization dimensionality accelerates convergence",
+          "Targeting thick layers addresses dominant phase contributions",
+          "Damped learning prevents overshoot observed in iteration_13"
+        ],
+        "known_risks": [
+          "Fixing 16 layers may prevent discovery of better global configuration",
+          "8-layer subset may not contain all critical phase-coupling layers"
+        ],
+        "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 stack on fused silica substrate with air incidence. Initialize thicknesses from iteration_11 best candidate: [92.0, 45.0, 99.0, 120.0, 69.0, 120.0, 51.0, 120.0, 119.0, 46.0, 120.0, 45.0, 120.0, 47.0, 120.0, 60.0, 120.0, 84.0, 120.0, 65.0, 120.0, 75.0, 46.0, 70.0] nm. Identify the 8 layers with largest thickness values (indices: 3,5,7,10,12,14,16,18 all at 120.0 nm, then select next largest). Constrain optimization to perturb only these 8 layers; fix remaining 16 layers at initial values. Use gradient_thickness optimizer with learning rate scaled to 0.05x of default. Apply conservative acceptance: reject any step reducing best_target_score below 0.7524 (iteration_11 historical best) by more than 3%. Evaluate at normal incidence, unpolarized, coherent TMM. Spectral bands: 200-400 nm (maximize reflectance), 800-1500 nm (maximize transmittance). Thickness tolerance: ±15 nm absolute normal deviation for robustness. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Direct implementation of feedback directive: reinitialize from iteration_11 baseline, reduce learning rate to 0.05x, constrain to 8 thickest layers, enforce 3% acceptance threshold below historical best."
+      }
+    }
+  ]
+}

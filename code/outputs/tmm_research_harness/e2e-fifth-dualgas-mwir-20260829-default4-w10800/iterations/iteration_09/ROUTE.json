@@ -1,0 +1,52 @@
+{
+  "route_id": "route_01",
+  "title": "22-Layer ZnS/MgF2 Dual-Band Filter with Empirical Thickness Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The iteration 05 performance degradation (0.594 vs 0.955) resulted from thickness bounds [50,150]nm being physically incompatible with quarter-wave optical thickness at 3-5 μm wavelengths. Restoring bounds to [400,1600]nm range observed in iteration 01 successful candidates, with initialization centered on empirical mean thickness ~950nm from top performers, will recover high target scores while maintaining the proven 22-layer alternating ZnS/MgF2 topology.",
+  "design_principle": "Quarter-wave stack principle with alternating high/low index dielectrics; layer optical thickness approximately λ/4 at center of passbands. Empirical initialization from successful iteration 01 candidates preserves the thickness manifold that achieved 0.955 score.",
+  "proposed_materials": [
+    "ZnS",
+    "MgF2",
+    "CaF2"
+  ],
+  "proposed_topology": "Air | [ZnS | MgF2] × 11 | CaF2 substrate; exactly 22 finite layers in alternating sequence",
+  "design_variables": [
+    "All 22 layer thicknesses in nm, initialized from iteration 01 candidate mean thickness distribution with Gaussian perturbation σ=150nm",
+    "Optimizer step size reduced by 40% relative to iteration 05"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3.25-3.35 μm and 4.20-4.30 μm passbands",
+    "Minimize mean transmittance in 2.50-3.10 μm and 4.45-5.00 μm stopbands",
+    "Maintain robustness score above 0.5"
+  ],
+  "manufacturing_considerations": [
+    "22 layers within 24-layer constraint",
+    "ZnS and MgF2 are conventional depositable IR dielectrics",
+    "No metal layers",
+    "Thickness ranges [400,1600]nm compatible with PVD deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+    "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack design principle for alternating index multilayers",
+    "Transfer matrix method for coherent thin-film interference calculation",
+    "Empirical thickness distribution from iteration 01 successful candidates"
+  ],
+  "expected_advantages": [
+    "Recover iteration 01 performance level (target score ~0.95) by restoring physically-appropriate thickness bounds",
+    "Empirical initialization reduces search space and prevents over-detuning",
+    "Reduced optimizer step size preserves multi-band margin feasibility"
+  ],
+  "known_risks": [
+    "Local optimization may converge to suboptimal thickness configuration",
+    "Spectral ripple may increase with 22-layer thickness",
+    "Deposition stress may cause thickness deviation from design"
+  ],
+  "execution_request_english": "Optimize a 22-layer alternating ZnS/MgF2 multilayer filter on CaF2 substrate under normal incidence. Layer sequence: ZnS(1), MgF2(2), ZnS(3), MgF2(4), ZnS(5), MgF2(6), ZnS(7), MgF2(8), ZnS(9), MgF2(10), ZnS(11), MgF2(12), ZnS(13), MgF2(14), ZnS(15), MgF2(16), ZnS(17), MgF2(18), ZnS(19), MgF2(20), ZnS(21), MgF2(22). Initialize all 22 thicknesses from empirical mean of iteration 01 top candidates (approximately 950nm mean) with Gaussian perturbation standard deviation 150nm. Constrain thickness bounds to [400, 1600]nm per layer. Use gradient-based thickness optimizer with step size reduced by 40% relative to standard. Evaluate transmittance at four wavelength bands: passbands 3250-3350nm and 4200-4300nm (maximize), stopbands 2500-3100nm and 4450-5000nm (minimize). Score via equal-weight mean aggregation across bands. Air incidence, CaF2 substrate, no metal layers, coherent TMM solver. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Iteration 05 thickness bounds [50,150]nm were physically incompatible with quarter-wave requirements at 3-5 μm wavelengths, causing score drop from 0.955 to 0.594. This refinement restores bounds to [400,1600]nm matching iteration 01 successful candidates, initializes from empirical thickness manifold, and reduces optimizer step size per feedback directives."
+}

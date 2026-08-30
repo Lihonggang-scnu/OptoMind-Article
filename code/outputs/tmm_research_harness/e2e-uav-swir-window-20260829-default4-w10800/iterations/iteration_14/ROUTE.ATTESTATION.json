@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_14/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "51a7b2ddd1780ef44674fa49cad57658f05b7fbb59debec37934a5258d9d8eca",
+  "recorded_at_utc": "2026-08-28T17:32:27.423761+00:00",
+  "elapsed_seconds": 2942.0064845999586,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_14",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with optimized individual thicknesses can simultaneously achieve high UV reflection (200-400nm) and high SWIR transmission (800-1500nm) on fused silica substrate, with performance improving as thickness perturbations explore wider bounds around the current best candidate.",
+  "expected_advantages": [
+    "Fixed topology isolates thickness as the only optimization variable",
+    "20 layers provides sufficient degrees of freedom within manufacturing constraints",
+    "Alternating sequence is deposition-friendly and reduces process complexity",
+    "Wider perturbation bounds (±0.8nm vs ±0.5nm) may escape local optima causing round-to-round oscillation"
+  ],
+  "known_risks": [
+    "Uncertain whether 20 layers is optimal vs 24 or 28 layers - this route does not test layer count",
+    "Recalled refractive indices may differ from actual catalog values at UV wavelengths - HfO2 absorption in deep UV is uncertain from memory",
+    "Exact quarter-wave thickness calculation depends on dispersion data I have not verified",
+    "Wider perturbation bounds may produce non-manufacturable thickness variations if optimizer overshoots",
+    "What would settle this: look up HfO2 extinction coefficient at 200-300nm, verify SiO2 dispersion in SWIR band"
+  ],
+  "expected_observations": [
+    "best_target_score should rise or remain stable compared to iteration_12 best of 0.8279 if wider bounds help escape local optima",
+    "best_target_score should not fall by more than 0.01 if the current region is near-optimal",
+    "tightest_margin should not fall across rounds if physical validity is maintained",
+    "valid_candidates count should remain at 9 if perturbation bounds stay within feasible region",
+    "If best_target_score oscillates without improvement over 3 consecutive rounds, the ±0.8 nm bounds may be too wide for this topology"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 5 for two consecutive rounds, reduce perturbation bounds to ±0.5 nm and continue",
+    "if tightest_margin falls below 0.30 for two consecutive rounds, constrain thickness range more tightly and continue"
+  ]
+}

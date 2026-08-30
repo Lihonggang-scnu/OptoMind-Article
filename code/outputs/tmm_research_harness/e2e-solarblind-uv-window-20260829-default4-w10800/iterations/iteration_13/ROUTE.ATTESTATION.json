@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_13/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d814a3913b273677488ceba791956717860e855d0d16c6e407a1b26c27ceee9c",
+  "recorded_at_utc": "2026-08-29T04:38:49.984030+00:00",
+  "elapsed_seconds": 3198.092344100005,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_13",
+  "route_id": "route_02",
+  "scientific_hypothesis": "The iteration_10 failure arose from thickness values approaching zero or negative values during optimization, triggering TMM phase singularities. Enforcing explicit minimum thickness bounds (≥20 nm) and initializing from quarter-wave optical depths centered on the 267.5 nm passband midpoint will produce physically valid candidates while maintaining the chirped dispersion strategy that achieved 0.647 target score in iteration_06.",
+  "expected_advantages": [
+    "Enforced minimum bounds prevent TMM numerical failures",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Chirped dispersion maintains broadband rejection capability from iteration_06"
+  ],
+  "known_risks": [
+    "May still converge to local optima if search budget insufficient",
+    "MgF2 refractive index dispersion in deep UV may differ from nominal values"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should show improvement in stopband rejection (300-1100 nm) compared to route_01 while maintaining comparable passband transmission, and tightest_margin should not degrade across rounds.",
+    "If the hypothesis fails, best_target_score will remain below route_01 due to HfO2 absorption in the 255-280 nm passband, visible in reduced valid_candidates count.",
+    "thicknesses_nm should show monotonic or graded progression if the chirp optimization converges, rather than uniform quarter-wave values."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If mean transmittance in 255-280 nm falls below 0.6 for three consecutive rounds, flag HfO2 absorption risk and stop, keeping the current best for comparison."
+  ]
+}

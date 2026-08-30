@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "28-Layer Stack with Differential Evolution and Latin Hypercube Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Global optimization with differential evolution and Latin Hypercube sampling will escape local optima that trapped the gradient-based optimizer in prior iterations, achieving higher target scores by exploring multi-modal interference landscapes more thoroughly.",
+  "design_principle": "Replace gradient-based local search with population-based global search. Initialize thickness population using Latin Hypercube distribution spanning ±20% of iteration_07's observed thickness range (45-201 nm for HfO2, 45-73 nm for SiO2). Maintain alternating HfO2/SiO2 sequence on fused silica substrate.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "28 layer thicknesses (14 HfO2 + 14 SiO2), each independently optimizable within expanded bounds"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1000-1700 nm band",
+    "Maximize mean reflectance in 300-450 nm band",
+    "Maintain robustness score > 0.35 under ±15% thickness perturbation"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 28 (within 30-layer limit)",
+    "Thickness bounds expanded to 40-240 nm for HfO2, 35-90 nm for SiO2 based on iteration_07 observations",
+    "Outermost layer should be SiO2 for environmental durability per evidence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:283155301:s2chunk:283155301:16911:18321:96d511d2105e0454",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands",
+    "Global optimization explores configuration space more thoroughly than gradient descent for multi-modal problems"
+  ],
+  "expected_advantages": [
+    "Escapes local optima that limited prior gradient-based runs",
+    "Latin Hypercube ensures uniform coverage of thickness parameter space",
+    "Higher probability of finding globally optimal interference conditions"
+  ],
+  "known_risks": [
+    "Differential evolution requires more function evaluations, may need larger search budget",
+    "May converge slower in early generations before exploiting promising regions"
+  ],
+  "execution_request_english": "Optimize a 28-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2(1)|SiO2(2)|HfO2(3)|SiO2(4)|...|HfO2(27)|SiO2(28). Initialize 28 thickness variables using Latin Hypercube sampling with bounds: HfO2 layers 40-240 nm, SiO2 layers 35-90 nm. Use differential evolution optimizer with population size 50, mutation rate 0.8, crossover rate 0.9, maximum 500 generations. Evaluate at normal incidence, unpolarized light. Objective: maximize weighted sum of (mean transmittance in 1000-1700 nm band) and (mean reflectance in 300-450 nm band) with equal weights. Apply ±15% relative uniform thickness tolerance for robustness scoring. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for top 5 candidates. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Switched from gradient_thickness to differential_evolution optimizer per feedback directive. Expanded thickness bounds to ±20% of iteration_07 observed range (was 50-300 nm uniform, now 40-240 nm for HfO2, 35-90 nm for SiO2). Added Latin Hypercube initialization for better parameter space coverage."
+}

@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "20-layer HfO2/SiO2 dichroic refinement with narrowed perturbation bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with individually tunable thicknesses can achieve simultaneous high UV reflection and high SWIR transmission, and further refinement with reduced perturbation bounds (±0.5 nm) will improve target score convergence without destabilizing the solution.",
+  "design_principle": "Recalled thin-film optics principle: alternating high-low refractive index layers form a Bragg reflector centered at the design wavelength. Quarter-wave optical thickness (n·d = λ₀/4) maximizes reflectance at the center wavelength. For dual-band operation, the reflection band is positioned at UV (center ~300 nm) while SWIR (800-1500 nm) falls outside the stopband for high transmission.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Rodriguez-de_Marcos)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (20 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses for all 20 layers, initialized from prior best candidate and tuned within ±0.5 nm perturbation bounds"
+  ],
+  "soft_objectives": [
+    "Maximize target score combining UV reflection (200-400 nm) and SWIR transmission (800-1500 nm)",
+    "Maintain physical validity (positive thicknesses, manufacturable ranges)",
+    "Improve best_target_score over prior iteration 0.8279 baseline"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 20 (within 30-layer limit)",
+    "Thicknesses expected in 25-55 nm range based on UV quarter-wave design",
+    "HfO2 and SiO2 are standard evaporatable/sputterable dielectric materials"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stack reflectance increases with number of layer pairs",
+    "Recalled knowledge: HfO2 refractive index ~2.0-2.1, SiO2 ~1.45-1.5 in visible/NIR",
+    "Recalled knowledge: Reflection band center wavelength λ₀ determines layer thickness d = λ₀/(4n)",
+    "Recalled knowledge: Wider reflection bandwidth requires more layer pairs or higher index contrast",
+    "Recalled knowledge: Transmission outside the stopband is naturally high for lossless dielectric stacks"
+  ],
+  "expected_advantages": [
+    "Narrower perturbation bounds (±0.5 nm vs prior ±0.8 nm) reduce oscillatory jumps in optimization",
+    "Initialization from proven 0.8279 score candidate focuses search on promising region",
+    "20 layers provide sufficient pairs for UV stopband while leaving margin under 30-layer limit",
+    "Alternating structure is manufacturable with standard thin-film deposition processes"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient remains negligible at 200 nm UV edge - would need measured n/k data verification",
+    "Recalled quarter-wave thickness estimates may not be exact for this specific material dataset - actual optimal thicknesses emerge from optimization",
+    "Uncertain if 20 layers is optimal vs 22, 24, or 26 for this specific band separation - layer count is fixed for this axis",
+    "Fused silica substrate dispersion in UV not precisely recalled - relies on registry dataset",
+    "No literature verification of HfO2/SiO2 UV durability under prolonged exposure - design assumes optical performance only"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric stack on fused silica substrate with air incidence. Materials: alternating hfo2 and SiO2 (Rodriguez-de_Marcos) layers, starting with hfo2 adjacent to air. Total 20 layers (10 hfo2, 10 SiO2 (Rodriguez-de_Marcos)). Initialize thicknesses from prior best candidate: [29.5, 39.5, 29.5, 39.5, 30.6, 39.5, 30.5, 39.5, 29.5, 39.5, 49.5, 40.5, 50.5, 40.5, 49.5, 40.5, 50.5, 40.5, 49.5, 40.0] nm. Optimize individual layer thicknesses with perturbation bounds ±0.5 nm. Wavelength bands: maximize reflectance in 200-400 nm, maximize transmittance in 800-1500 nm. Normal incidence, unpolarized. Total layers fixed at 20, materials fixed as hfo2 and SiO2 (Rodriguez-de_Marcos) in alternating sequence.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation refinement: reduce perturbation bounds from ±0.8 nm to ±0.5 nm and initialize from iteration 12 best candidate (0.8279088548566025 target score) to suppress oscillatory jumps and focus computational budget on refining the neighborhood of the proven optimum."
+}

@@ -1,0 +1,33 @@
+{
+  "artifact": "iterations/iteration_02/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "127736ff6bfa461febd85c5e07b6ec940d117a79321c1c731fb3aa043f936365",
+  "recorded_at_utc": "2026-08-28T16:54:33.637187+00:00",
+  "elapsed_seconds": 668.21959719999,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_02",
+  "route_id": "route_02",
+  "scientific_hypothesis": "An aperiodic 24-layer HfO2/SiO2 stack with individually optimized thicknesses can achieve superior dual-band performance compared to periodic designs by decoupling the UV reflection and SWIR transmission requirements.",
+  "expected_advantages": [
+    "Greater design freedom than periodic stacks",
+    "Can suppress secondary reflection bands in SWIR",
+    "May achieve better spectral edge sharpness between UV and SWIR bands"
+  ],
+  "known_risks": [
+    "Higher optimization complexity with 24 independent variables",
+    "May converge to local optima",
+    "Aperiodic designs may be more sensitive to thickness errors",
+    "L01 notes UV filter challenges including solarization effects"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should rise across rounds as thickness optimization decouples the two bands, and tightest_margin should not fall",
+    "Aperiodic design should show lower reflectance in 800-1500 nm compared to Route 1's periodic stack",
+    "UV reflectance 200-400 nm should match or exceed Route 1 with fewer layers (24 vs 28)",
+    "If hypothesis fails, best_target_score will not exceed Route 1's score and valid_candidates will decrease as thickness combinations become physically invalid"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, expand the thickness bounds to 20-250 nm and continue",
+    "If tightest_margin remains below 0.05 for four consecutive rounds, fix the 6 thinnest layers and optimize only the remaining 18"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "UV Bragg Reflector with SWIR Transmission Window using HfO2/SiO2 Quarter-Wave Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 20-layer quarter-wave stack centered at 300 nm will produce high reflectance in the 200-400 nm UV band while maintaining high transmittance in the 800-1500 nm SWIR band, because the Bragg condition is satisfied at UV wavelengths but not at SWIR wavelengths.",
+  "design_principle": "Quarter-wave dielectric stacks produce constructive interference for reflection at the design wavelength when layer optical thicknesses equal λ/4. At wavelengths significantly longer than the design wavelength, the stack behaves more like a homogeneous medium with reduced reflectance. HfO2 provides high index contrast against SiO2, enabling strong UV reflection with fewer layers.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Rodriguez-de_Marcos)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (20 dielectric layers total, alternating HfO2 and SiO2 starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses for all 20 layers, with HfO2 layers bounded to 30-50 nm and SiO2 layers bounded to 40-60 nm to seed near quarter-wave condition at 300 nm"
+  ],
+  "soft_objectives": [
+    "Maximize average reflectance in 200-400 nm band",
+    "Maximize average transmittance in 800-1500 nm band",
+    "Minimize total layer count while meeting performance targets"
+  ],
+  "manufacturing_considerations": [
+    "Total layers fixed at 20 (within 30-layer limit)",
+    "Thickness bounds reflect typical sputtering/evaporation precision for UV optical coatings",
+    "HfO2 and SiO2 are standard coating materials with known deposition processes"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave stacks produce peak reflectance at the design wavelength where each layer has optical thickness λ/4",
+    "Reflectance bandwidth scales with index contrast: higher n_H/n_L ratio gives wider high-reflectance band",
+    "At wavelengths much longer than the quarter-wave design wavelength, the stack transmits more because phase conditions no longer support constructive reflection",
+    "HfO2 has refractive index approximately 2.0-2.1 in UV, SiO2 approximately 1.5, giving useful index contrast for UV mirrors",
+    "Fused silica substrate is transparent in both UV and SWIR bands, not limiting the design"
+  ],
+  "expected_advantages": [
+    "Quarter-wave seeding should converge faster than unbounded optimization",
+    "20 layers provides sufficient reflectance in UV while leaving margin under 30-layer limit",
+    "Alternating high/low index structure is a well-known reflector topology",
+    "Thickness bounds prevent optimizer from exploring physically unrealistic or manufacturing-difficult thicknesses"
+  ],
+  "known_risks": [
+    "I am recalling approximate refractive indices for HfO2 and SiO2 in UV; actual values from the material catalog may differ and affect quarter-wave thickness calculations",
+    "The quarter-wave condition at 300 nm may not optimally cover the full 200-400 nm band; band edges may have lower reflectance",
+    "I am uncertain whether 20 layers is optimal versus 18 or 22; this route fixes 20 and does not explore layer count as a variable",
+    "Dispersion of HfO2 and SiO2 across 200-1500 nm may shift the effective quarter-wave condition; I am not modeling dispersion explicitly in this hypothesis",
+    "The previous iteration achieved target_score ~0.56; I do not know if this thickness re-seeding will improve that without running the solver",
+    "What would settle these uncertainties: measured n/k dispersion data from the material catalog for hfo2 and sio2 across 200-1500 nm, and a layer-count sweep to find optimal pair number"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric stack on fused silica substrate with air incidence. Materials: alternating hfo2 and SiO2 (Rodriguez-de_Marcos) layers, starting with hfo2 as layer 1. Total 20 dielectric layers (10 HfO2, 10 SiO2 (Rodriguez-de_Marcos)). Wavelength bands: 200-400 nm (maximize reflectance), 800-1500 nm (maximize transmittance). Design variables: individual thickness for each of the 20 layers. Thickness bounds: HfO2 layers 30-50 nm, SiO2 (Rodriguez-de_Marcos) layers 40-60 nm. Incidence angle: 0 degrees (normal incidence). Polarization: unpolarized or both TE and TM averaged. Use gradient_thickness optimizer with increased mutation intensity for first two rounds to escape previous local optimum, then taper perturbation as scores improve.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with refined thickness initialization bounds per feedback directives: HfO2 30-50 nm, SiO2 40-60 nm, centered on quarter-wave condition at 300 nm to correct previous iteration's detuned thicknesses (90-120 nm range)."
+}

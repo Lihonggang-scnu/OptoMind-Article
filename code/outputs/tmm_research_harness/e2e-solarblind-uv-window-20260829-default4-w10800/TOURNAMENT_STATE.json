@@ -1,0 +1,338 @@
+{
+  "schema_version": "tournament-state.v1",
+  "updated_at_utc": "2026-08-29T05:11:13.161896+00:00",
+  "wave": 6,
+  "budget_snapshot": {
+    "iterations_used": 20,
+    "maximum_iterations": 24,
+    "configured_maximum_iterations": 6,
+    "rounds_per_route": 6,
+    "shared_iteration_pool": false,
+    "wall_seconds_elapsed": 5141.27
+  },
+  "tracks": [
+    {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.503187070599662,
+        0.2702490345771588,
+        0.10855992306829827,
+        0.17419706050423375,
+        0.5800066916318708,
+        0.02918881808852058
+      ],
+      "best_candidate_ids": [
+        "optimize_29layer_hr_filter__gradie__1b3223328947",
+        "optimize_29layer_hr_filter__differ__5d0d1781a35a",
+        "hfomgf2_29layer_uvpass_opt__gradie__397d9801b8ac",
+        "hfomgf2_29layer_uvpass_opt__gradie__084836069776",
+        "hfomgf2_29layer_uvpass_opt__differ__6546cc375c41",
+        "hfomgf2_etalon_opt__gradient_thickness__01",
+        "hfomgf2_etalon_opt__differential_e__e06c67911972",
+        "hfomgf2_etalon_opt__gradient_thickness__03",
+        "optimize_29layer_hfomgf2_uvvis_nir__8f849df1f367",
+        "optimize_29layer_hfomgf2_uvvis_nir_filter__baseline",
+        "optimize_29layer_hfomgf2_uvvis_nir__a6a3757ac825",
+        "optimize_29layer_uvvisnir_dichroic__4ccca8ee1b89",
+        "optimize_29layer_uvvisnir_dichroic__fae2cdc50168",
+        "multilayer_tm_optimization_29l__gr__872e50acc5fe",
+        "multilayer_tm_optimization_29l__gr__6fc58e6e100b",
+        "multilayer_tm_optimization_29l__gr__87c5c0209669",
+        "multilayer_tm_optimization_29l__di__4d53e9db8f4e"
+      ],
+      "current_route": {
+        "route_id": "control_route_01",
+        "title": "QWOT-Reinitialized 29-Layer HfO2/MgF2 UV Bandpass with ±2.0 nm Perturbation Bounds",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack initialized at quarter-wave optical thicknesses for 267 nm center wavelength, with thickness optimization bounded to ±2.0 nm per layer, will produce higher target scores than the previous highly-scaled parameter inheritance approach, because the QWOT initialization places the design in a physically meaningful region of the solution space where UV transmission and visible/NIR rejection are simultaneously achievable through first-order interference.",
+        "design_principle": "Quarter-wave stacks create high reflectance at the design wavelength through constructive interference of reflections from each interface. For a bandpass filter, the stack is designed so that the UV band (255-280 nm) experiences transmission while longer wavelengths experience reflection. HfO2 (high index, ~2.0-2.1 in UV) and MgF2 (low index, ~1.38-1.40 in UV) provide sufficient index contrast for effective interference. Starting from QWOT thicknesses and limiting perturbations to ±2.0 nm keeps the optimizer near a physically sensible solution rather than allowing it to drift into numerically converged but physically unrealistic thickness regimes.",
+        "proposed_materials": [
+          "hfo2",
+          "MgF2 (Rodriguez-de_Marcos)",
+          "SiO2 (Gao)"
+        ],
+        "proposed_topology": "air | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | sio2_substrate",
+        "design_variables": [
+          "individual layer thicknesses for all 29 film layers, initialized at quarter-wave optical thickness for 267 nm center wavelength, optimized with ±2.0 nm bounds per layer"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255-280 nm band",
+          "minimize transmittance in 300-700 nm band",
+          "minimize transmittance in 700-1100 nm band",
+          "maintain physical validity of all candidates"
+        ],
+        "manufacturing_considerations": [
+          "29 layers is within the 30-layer maximum constraint",
+          "HfO2 and MgF2 are both conventional e-beam or thermal evaporatable dielectrics",
+          "no metal layers as required",
+          "±2.0 nm thickness tolerance is achievable with modern deposition monitoring",
+          "fused silica substrate is standard for UV applications"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled: Quarter-wave optical thickness (QWOT) at center wavelength creates constructive interference for reflection at that wavelength and harmonics",
+          "Recalled: Alternating high/low index layers produce higher reflectance with more layer pairs, with reflectance bandwidth increasing with index contrast",
+          "Recalled: MgF2 has excellent transmission down to ~115 nm vacuum UV, making it suitable for 255-280 nm solar-blind applications",
+          "Recalled: HfO2 is a common high-index dielectric for UV-VIS coatings with low absorption in the solar-blind UV region",
+          "Recalled: Starting optimization from QWOT thicknesses rather than random initialization typically converges faster to physically meaningful solutions",
+          "Recalled: Tightly bounded thickness perturbations prevent the optimizer from escaping the local basin around the QWOT solution"
+        ],
+        "expected_advantages": [
+          "QWOT initialization places the design in a physically meaningful starting point",
+          "±2.0 nm bounds prevent divergence into unrealistic thickness regimes seen in iteration 18",
+          "29 layers provides sufficient degrees of freedom for bandpass shaping without exceeding manufacturing constraints",
+          "HfO2/MgF2 pair is a well-known UV-compatible material combination from recalled thin-film practice"
+        ],
+        "known_risks": [
+          "Uncertain: Exact refractive index values of HfO2 and MgF2 at 255-280 nm - the material catalog datasets will provide measured values but I am recalling approximate values of n_HfO2≈2.0-2.1 and n_MgF2≈1.38-1.40",
+          "Uncertain: Whether 29 layers is optimal versus a different layer count with cavity-defect topology - this route tests fixed 29-layer alternating topology only",
+          "Uncertain: Absorption coefficients (k values) in the UV for these materials - high k would reduce transmission regardless of interference design",
+          "Uncertain: Stress matching between HfO2 and MgF2 for space qualification - not modeled in TMM but relevant for actual deployment",
+          "Uncertain: Whether ±2.0 nm bounds are too restrictive to escape local minima - the feedback directive specifies this temporarily for 5 rounds",
+          "Risk: If best_target_score remains below 0.30 for three consecutive rounds, the perturbation bounds may need enlargement per the feedback directive"
+        ],
+        "execution_request_english": "Optimize a 29-layer planar multilayer thin film stack on fused silica substrate with air incidence. Stack sequence: air | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | SiO2 (Gao)_substrate. Initialize all hfo2 layers at 32.6 nm thickness and all MgF2 (Rodriguez-de_Marcos) layers at 48.0 nm thickness (quarter-wave optical thickness at 267 nm center wavelength). Optimize individual layer thicknesses with bounds of ±2.0 nm from initialization values. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm, minimize transmittance in 700-1100 nm. Total layers: 29 film layers plus substrate. No metal layers. Use gradient_thickness optimizer. Evaluate candidates using coherent transfer matrix method. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates.",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Per feedback directives: temporarily cap perturbation envelope to ±2.0 nm and force thickness re-initialization centered on standard quarter-wave optical thicknesses (±10% tolerance) for this round, overriding inheritance of the highly scaled parameters from iteration 18. This tests whether QWOT-initialized designs with tight bounds outperform the previous approach."
+      }
+    },
+    {
+      "route_id": "route_01",
+      "source": "literature_planned",
+      "status": "stopped_llm_advice",
+      "termination_reason": "LLM explicitly assessed no further benefit after 3 executed rounds (stop_basis=marginal_gains_too_low)",
+      "rounds_used": 3,
+      "score_history": [
+        0.32391151815906055,
+        0.3552451154869145,
+        0.33886388484409724
+      ],
+      "best_candidate_ids": [
+        "mgf2_al2o3_defect_bp_17l__gradient_thickness__01",
+        "mgf2_al2o3_defect_bp_17l__baseline",
+        "mgf2_al2o3_defect_bp_17l__differen__3f7c96d67cb8",
+        "cavity_filter_opt__gradient_thickness__01",
+        "cavity_filter_opt__gradient_thickness__02",
+        "cavity_filter_opt__differential_ev__f8183c89e164",
+        "mgf2_al2o3_17l_bpf_opt__gradient_thickness__01",
+        "mgf2_al2o3_17l_bpf_opt__differenti__f34fa87f2551"
+      ],
+      "current_route": {
+        "route_id": "route_01",
+        "title": "Symmetry-constrained MgF2/Al2O3 defect cavity with L-BFGS-B bounded optimization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Imposing bilateral symmetry constraints on mirror layer pairs and restricting thickness search to ±5 nm around round-2 medians will reduce the optimization degrees of freedom sufficiently for L-BFGS-B to converge to a locally optimal phase-matched configuration, improving target score without increasing layer count.",
+        "design_principle": "Defect-cavity bandpass filter with symmetric Bragg mirrors. Symmetry reduces search space dimensionality while preserving the resonant transmission mechanism at 255–280 nm.",
+        "proposed_materials": [
+          "MgF2",
+          "Al2O3",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "17-layer stack: Air | [MgF2/Al2O3]_8 mirror | MgF2 defect cavity | [Al2O3/MgF2]_8 mirror | fused silica substrate. Explicit layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2).",
+        "design_variables": [
+          "layer thicknesses with bilateral symmetry constraints: L13=L16, L6=L15, L7=L14; thickness bounds ±5 nm around round-2 medians"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 255–280 nm",
+          "minimize transmittance in 300–700 nm",
+          "minimize transmittance in 700–1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers ≤ 30 (17 layers)",
+          "no metal layers",
+          "conventional inorganic dielectric materials",
+          "symmetry simplifies deposition monitoring"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for multilayer interference",
+          "defect-cavity resonant transmission principle"
+        ],
+        "expected_advantages": [
+          "reduced optimization dimensionality improves convergence",
+          "symmetry ensures phase matching between mirrors",
+          "bounded search prevents unphysical thickness excursions"
+        ],
+        "known_risks": [
+          "symmetry constraint may prevent discovery of superior asymmetric solutions",
+          "±5 nm bounds may be too restrictive if round-2 medians are suboptimal"
+        ],
+        "execution_request_english": "Optimize a 17-layer MgF2/Al2O3 defect-cavity bandpass filter on fused silica substrate. Layer sequence: L1(MgF2), L2(Al2O3), L3(MgF2), L4(Al2O3), L5(MgF2), L6(Al2O3), L7(MgF2), L8(Al2O3), L9(MgF2), L10(Al2O3-defect), L11(MgF2), L12(Al2O3), L13(MgF2), L14(Al2O3), L15(MgF2), L16(Al2O3), L17(MgF2). Impose bilateral symmetry: thickness(L13)=thickness(L16), thickness(L6)=thickness(L15), thickness(L7)=thickness(L14). Initialize thicknesses at round-2 medians: defect L10=85.5 nm, inner mirrors L1-L6=44.0 nm, outer mirrors L11-L16=47.0 nm. Apply ±5 nm bounds around these medians. Use L-BFGS-B optimizer with max function evaluations=500, tolerance=1e-5. Spectral targets: maximize transmittance 255–280 nm, minimize transmittance 300–700 nm and 700–1100 nm. Air incidence, unpolarized. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directives: bilateral symmetry constraints on layers 13-16, 6-15, 7-14; ±5 nm thickness bounds around round-2 medians; L-BFGS-B solver with 500 max eval and 1e-5 tolerance."
+      }
+    },
+    {
+      "route_id": "route_02",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.445263552562339,
+        0.6474216265878578,
+        0.6228893605349864,
+        0.433166130870216,
+        0.6521214279964046
+      ],
+      "best_candidate_ids": [
+        "chirped_mgf2_hfo2_bandpass_opt__gr__a49c841a17cd",
+        "chirped_mgf2_hfo2_bandpass_opt__gr__67e0cb237e05",
+        "chirped_mgf2_hfo2_bandpass_opt__gr__5c6beab50cbf",
+        "mghf2_chirped_stack_opt__gradient_thickness__01",
+        "mghf2_chirped_stack_opt__gradient_thickness__02",
+        "mghf2_chirped_stack_opt__different__d0f21857a48b",
+        "mgf2_hfo2_20l_bandpass_opt__gradie__75504b0007fc",
+        "mgf2_hfo2_20l_bandpass_opt__gradie__f4d45f2ffe56",
+        "mgf2_hfo2_20l_bandpass_opt__differ__75e2b31ad324",
+        "mgf2_hfo2_20l_filter_opt__gradient_thickness__01",
+        "mgf2_hfo2_20l_filter_opt__gradient_thickness__02",
+        "mgf2_hfo2_20l_filter_opt__differen__d843151936d6",
+        "mgf2_hfo2_uv_nir_opt__gradient_thickness__01",
+        "mgf2_hfo2_uv_nir_opt__gradient_thickness__04",
+        "mgf2_hfo2_uv_nir_opt__differential__fd1612ca61b8"
+      ],
+      "current_route": {
+        "route_id": "route_02",
+        "title": "Bounded perturbation MgF2/HfO2 stack with adjacent-layer smoothness constraint",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Initializing optimization from iteration_16's best thickness vector [33.0, 74.0, 101.0, 34.0, 109.0, 53.0, 21.0, 12.0, 114.0, 26.0, 74.0, 43.0, 52.0, 59.0, 138.0, 16.0, 22.0, 71.0, 190.0, 67.0] with ±8% perturbation bounds and enforcing maximum 45 nm thickness difference between adjacent layers will reduce spectral oscillations and improve best_target_score above the iteration_16 value of 0.433, potentially recovering toward the iteration_06 peak of 0.647.",
+        "design_principle": "Smooth thickness gradients prevent high-frequency spectral ripple caused by abrupt optical thickness transitions. Bounded perturbation around a known good candidate focuses search on local refinements rather than global re-exploration.",
+        "proposed_materials": [
+          "MgF2",
+          "HfO2"
+        ],
+        "proposed_topology": "20-layer alternating stack: Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | Fused Silica substrate. Exact layer count: 20 finite layers (10 MgF2, 10 HfO2).",
+        "design_variables": [
+          "layer thicknesses (20 variables, bounded ±8% around iteration_16 best candidate)",
+          "adjacent-layer thickness difference constraint (max 45 nm)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm passband",
+          "minimize mean transmittance in 300-700 nm stopband",
+          "minimize mean transmittance in 700-1100 nm stopband"
+        ],
+        "manufacturing_considerations": [
+          "total layers ≤ 30 (20 layers used)",
+          "no metal layers",
+          "conventional depositable inorganic dielectric materials",
+          "adjacent layer thickness difference ≤ 45 nm for deposition uniformity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent multilayer response",
+          "Quarter-wave stack principle for stopband formation",
+          "Smooth thickness gradients reduce spectral ripple"
+        ],
+        "expected_advantages": [
+          "Focused search around known good candidate reduces optimization iterations",
+          "Smoothness constraint prevents non-manufacturable abrupt transitions",
+          "May recover iteration_06 performance while maintaining iteration_16 structural insights"
+        ],
+        "known_risks": [
+          "±8% bounds may be too restrictive to escape local optimum",
+          "Smoothness constraint may prevent optimal chirp profiles",
+          "MgF2/HfO2 material pair may have intrinsic limitations below 0.647 score ceiling"
+        ],
+        "execution_request_english": "Optimize a 20-layer planar multilayer filter on fused silica substrate with air incidence. Stack sequence: alternating MgF2 and HfO2 layers starting with MgF2 (20 finite layers total: 10 MgF2, 10 HfO2). Initialize thicknesses at [33.0, 74.0, 101.0, 34.0, 109.0, 53.0, 21.0, 12.0, 114.0, 26.0, 74.0, 43.0, 52.0, 59.0, 138.0, 16.0, 22.0, 71.0, 190.0, 67.0] nm. Apply thickness bounds of ±8% around initialization values. Enforce constraint that absolute difference between adjacent layer thicknesses must not exceed 45 nm. Use coherent S-matrix solver across 255-1100 nm wavelength range at normal incidence. Score three mean-transmittance objectives: maximize in 255-280 nm, minimize in 300-700 nm, minimize in 700-1100 nm. Use gradient-based thickness optimizer with bound projection. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Iteration_16 showed score regression to 0.433 from iteration_06's 0.647. Feedback directives specify initializing from iteration_16 best thickness vector with ±8% perturbation and 45 nm adjacent-layer smoothness constraint to prevent spectral oscillations from abrupt transitions."
+      }
+    },
+    {
+      "route_id": "route_03",
+      "source": "literature_planned",
+      "status": "stopped_llm_advice",
+      "termination_reason": "LLM explicitly assessed no further benefit after 5 executed rounds (stop_basis=marginal_gains_too_low)",
+      "rounds_used": 5,
+      "score_history": [
+        0.29634585442197126,
+        0.3793961408114576,
+        0.2931312227391984,
+        0.38154959290364215,
+        0.3764284835379889
+      ],
+      "best_candidate_ids": [
+        "optimize_uv_multi_cavity_filter__g__ef6800af0795",
+        "optimize_uv_multi_cavity_filter__g__580f7f0f196d",
+        "optimize_uv_multi_cavity_filter__d__50c8ab6c05fb",
+        "si_o2_al_2_o_3_25_layer_uv_bandpas__5a79f8c77672",
+        "si_o2_al_2_o_3_25_layer_uv_bandpas__ab49c94429f3",
+        "si_o2_al_2_o_3_25_layer_uv_bandpas__76a037824cfa",
+        "si_o2_al_2_o_3_25_layer_uv_bandpas__cd87de8808f6",
+        "opt_29l_sv_passband__gradient_thickness__04",
+        "opt_29l_sv_passband__gradient_thickness__02",
+        "opt_29l_sv_passband__gradient_thickness__01",
+        "opt_29l_sv_passband__differential___0e001d42115b",
+        "opt_25l_dielectric_uvw_band__gradi__b3790228d8fc",
+        "opt_25l_dielectric_uvw_band__diffe__d39888cf94fd",
+        "opt_25l_dielectric_uvw_band__gradi__3408e932f94a",
+        "opt_25l_sio2_al2o3_qwot__gradient_thickness__01",
+        "opt_25l_sio2_al2o3_qwot__gradient_thickness__02",
+        "opt_25l_sio2_al2o3_qwot__different__b520667fd93a"
+      ],
+      "current_route": {
+        "route_id": "route_03",
+        "title": "Locked cavity with full Bragg mirror optimization (25-layer SiO2/Al2O3)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Locking the intermediate cavity layers (13-17) to stabilized values from iteration_14 while allowing full optimization of outer Bragg mirrors will improve target score by reducing destructive interference triggers in the passband while maintaining rejection band degrees of freedom.",
+        "design_principle": "Periodic Bragg mirrors sandwich a fixed defect cavity. Outer layers control stopband edges; inner cavity controls passband resonance. Constraining cavity thickness prevents optimizer from destabilizing the transmission peak.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3"
+        ],
+        "proposed_topology": "Air | [SiO2/Al2O3]_12 | SiO2(70nm)/Al2O3(51nm)/SiO2(61nm)/Al2O3(47nm)/SiO2(61nm) | [Al2O3/SiO2]_6 | Fused Silica. Total 25 finite coating layers.",
+        "design_variables": [
+          "thicknesses of layers 0-12",
+          "thicknesses of layers 18-24"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280nm",
+          "minimize mean transmittance 300-700nm",
+          "minimize mean transmittance 700-1100nm"
+        ],
+        "manufacturing_considerations": [
+          "layers 13-17 fixed to iteration_14 best candidate values",
+          "outer layers bounded ±20% from quarter-wave at 267.5nm",
+          "total layers 25 within 30-layer limit"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent thin-film interference",
+          "Bragg mirror stopband theory with defect cavity resonance"
+        ],
+        "expected_advantages": [
+          "stable passband position",
+          "improved optimizer convergence",
+          "reduced risk of cavity detuning"
+        ],
+        "known_risks": [
+          "fixed cavity may limit achievable passband width",
+          "outer mirrors may not compensate for cavity imperfections"
+        ],
+        "execution_request_english": "Optimize a 25-layer SiO2/Al2O3 dielectric stack on fused silica substrate with air incidence. Layers 0-12 alternate SiO2/Al2O3 starting with SiO2. Layers 13-17 are fixed at thicknesses [70.0, 51.0, 61.0, 47.0, 61.0] nm with materials [SiO2, Al2O3, SiO2, Al2O3, SiO2]. Layers 18-24 alternate Al2O3/SiO2 ending with SiO2. Optimize thicknesses of layers 0-12 and 18-24 with bounds ±20% from quarter-wave optical thickness at 267.5nm center wavelength. Score candidates by mean transmittance in 255-280nm (maximize), 300-700nm (minimize), and 700-1100nm (minimize). Use coherent TMM solver across 255-1100nm spectrum. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Implements feedback directive to lock stabilized cavity layers 13-17 from iteration_14 while permitting full optimization of Bragg mirrors to improve target score without destabilizing passband resonance."
+      }
+    }
+  ]
+}

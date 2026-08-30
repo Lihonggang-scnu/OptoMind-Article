@@ -1,0 +1,46 @@
+{
+  "route_id": "route_02",
+  "title": "Eight-Layer Thick-Subset Perturbation with Damped Learning",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Phase-coupling effects in the 8 thickest layers dominate dual-band performance; constraining optimization to these layers with reduced learning rate will improve target_score without overshoot.",
+  "design_principle": "Selective parameter optimization reduces search space dimensionality while targeting layers with highest optical path contribution. Damped learning rate (0.05x) suppresses oscillation near local optima.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating HfO2/SiO2 stack on fused silica substrate, air incidence. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2",
+  "design_variables": [
+    "Thicknesses of 8 layers with largest values from iteration_11 best candidate; remaining 16 layers fixed"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 800-1500 nm band",
+    "Maximize mean reflectance in 200-400 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 24 (within 30-layer limit)",
+    "Materials restricted to HfO2 and SiO2",
+    "Fixed layers reduce deposition complexity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Needle optimization principle: localized thickness adjustments can refine multi-wavelength performance",
+    "Gradient descent with reduced step size improves convergence near optima"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality accelerates convergence",
+    "Targeting thick layers addresses dominant phase contributions",
+    "Damped learning prevents overshoot observed in iteration_13"
+  ],
+  "known_risks": [
+    "Fixing 16 layers may prevent discovery of better global configuration",
+    "8-layer subset may not contain all critical phase-coupling layers"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 stack on fused silica substrate with air incidence. Initialize thicknesses from iteration_11 best candidate: [92.0, 45.0, 99.0, 120.0, 69.0, 120.0, 51.0, 120.0, 119.0, 46.0, 120.0, 45.0, 120.0, 47.0, 120.0, 60.0, 120.0, 84.0, 120.0, 65.0, 120.0, 75.0, 46.0, 70.0] nm. Identify the 8 layers with largest thickness values (indices: 3,5,7,10,12,14,16,18 all at 120.0 nm, then select next largest). Constrain optimization to perturb only these 8 layers; fix remaining 16 layers at initial values. Use gradient_thickness optimizer with learning rate scaled to 0.05x of default. Apply conservative acceptance: reject any step reducing best_target_score below 0.7524 (iteration_11 historical best) by more than 3%. Evaluate at normal incidence, unpolarized, coherent TMM. Spectral bands: 200-400 nm (maximize reflectance), 800-1500 nm (maximize transmittance). Thickness tolerance: ±15 nm absolute normal deviation for robustness. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct implementation of feedback directive: reinitialize from iteration_11 baseline, reduce learning rate to 0.05x, constrain to 8 thickest layers, enforce 3% acceptance threshold below historical best."
+}

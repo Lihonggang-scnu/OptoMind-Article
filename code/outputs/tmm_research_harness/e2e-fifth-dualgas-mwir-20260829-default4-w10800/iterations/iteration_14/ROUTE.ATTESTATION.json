@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_14/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "fbb9b392bdbf0ed22827e68ab1a622d4bb714fee83e7feb69c14925467c8170c",
+  "recorded_at_utc": "2026-08-29T06:34:34.670626+00:00",
+  "elapsed_seconds": 4453.014374900027,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_14",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Expanding thickness bounds to [20-450] nm with random midpoint initialization (220 nm ±40%) will enable the optimizer to discover phase-matched configurations that quarter-wave constrained initialization missed, improving best_target_score beyond 0.8679.",
+  "expected_advantages": [
+    "Wider search space may discover superior local optima",
+    "Random initialization avoids bias toward quarter-wave solutions",
+    "Disabled adaptive step-scaling prevents premature convergence"
+  ],
+  "known_risks": [
+    "Wider bounds may increase optimization iterations needed",
+    "Random initialization may require more rounds to converge",
+    "Some thickness combinations may produce high absorption"
+  ],
+  "expected_observations": [
+    "best_target_score should exceed or match route_01's 0.955 if initialization improves convergence",
+    "tightest_margin should not decrease relative to route_01 candidates",
+    "valid_candidates count should remain similar to route_01's 9 if constraints are equally feasible",
+    "If hypothesis is false: best_target_score will stagnate below 0.955 despite constrained initialization"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to route_01 historical best (0.955) is < 1e-3 for 2 consecutive rounds, judge initialization benefit as negligible -> stop and retain route_01 topology",
+    "If valid_candidates = 0, judge initialization constraints as infeasible -> relax thickness bounds to [30, 200] nm and re-run"
+  ]
+}

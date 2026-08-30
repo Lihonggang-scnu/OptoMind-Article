@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_20/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d1a66d068f585449d75a10fb5e3c4f5cbc6ab53b380b2a54fcf2bc300b5c8677",
+  "recorded_at_utc": "2026-08-29T09:54:51.921393+00:00",
+  "elapsed_seconds": 5811.794675199955,
+  "run_id": "e2e-sixth-combustion-co-20260829-default4-w10800",
+  "iteration_id": "iteration_20",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "An alternating high-low index dielectric stack with individually tunable layer thicknesses can produce two distinct transmission bands in the 4 μm region while maintaining suppression in adjacent stopbands, without requiring complex non-periodic topologies.",
+  "expected_advantages": [
+    "High index contrast enables strong spectral shaping with fewer layers",
+    "Alternating topology is simple to manufacture and model",
+    "Individual thickness tuning allows optimization of dual-band response without topology changes",
+    "ZnS and MgF2 are both in the guaranteed material name list and should resolve correctly"
+  ],
+  "known_risks": [
+    "Exact refractive indices of ZnS and MgF2 at 4 μm wavelength are recalled approximately; actual measured data from registry will determine performance",
+    "22 layers may not provide sufficient degrees of freedom for both passbands and both stopbands simultaneously - may need to increase to 24 layers if optimization stalls",
+    "Thickness bounds (50-1000 nm) are estimated from recalled deposition limits; actual manufacturable ranges may differ",
+    "No literature was consulted to verify optimal material pairs for this specific wavelength region",
+    "Daimon-20 is used to resolve CaF2 substrate ambiguity; if this dataset name fails registry resolution, the route would need repair with Daimon-25 instead"
+  ],
+  "expected_observations": [
+    "best_target_score should rise across optimization rounds if the alternating topology can support dual-band transmission",
+    "valid_candidates count should remain above zero if material data resolves correctly",
+    "tightest_margin should not fall systematically across rounds if the optimization remains in feasible region",
+    "thicknesses_nm should show non-uniform distribution if the optimizer finds non-quarter-wave solutions that improve dual-band response"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls to zero for two consecutive rounds, relax thickness bounds by 20% and continue",
+    "if tightest_margin falls below 0.1 for three consecutive rounds, reduce optimizer step-size by 50% and continue"
+  ]
+}

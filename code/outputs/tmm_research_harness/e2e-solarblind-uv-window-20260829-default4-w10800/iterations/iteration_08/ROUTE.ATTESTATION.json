@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_08/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "93e14c62ee09fd8d0519e9f5c869c47cec9988d27b2c9b0dd817df547ff434fc",
+  "recorded_at_utc": "2026-08-29T04:16:50.760186+00:00",
+  "elapsed_seconds": 1878.867822900007,
+  "run_id": "e2e-solarblind-uv-window-20260829-default4-w10800",
+  "iteration_id": "iteration_08",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack with quarter-wave optical thickness seeding at 267.5 nm center wavelength, followed by gradient-based thickness tuning, will produce higher target scores than random initialization while maintaining physical validity across all three spectral bands.",
+  "expected_advantages": [
+    "QWOT seeding should produce higher initial valid candidate counts than random initialization",
+    "Gradient optimization from physics-aware starting point should converge faster",
+    "29-layer count provides sufficient degrees of freedom for three-band spectral control",
+    "HfO2/MgF2 pair is well-established for UV applications from recalled deposition practice"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 absorption remains low enough at 255 nm - would need to check actual k values from material registry",
+    "Uncertain whether 29 layers can be deposited without excessive stress on fused silica - would need coating stress data",
+    "Uncertain whether quarter-wave design at 267.5 nm optimally balances the 255-280 nm band - center wavelength choice is a hypothesis",
+    "No literature verification of this exact stack configuration for solar-blind UV applications",
+    "Refractive index dispersion below 300 nm may differ from extrapolated values - material registry data quality is unknown to me"
+  ],
+  "expected_observations": [
+    "best_target_score should rise across rounds as QWOT seeding provides better starting points than random initialization",
+    "valid_candidates count should increase in early rounds due to physics-aware initialization reducing physically invalid configurations",
+    "tightest_margin should not fall systematically across rounds if QWOT seeding maintains design robustness",
+    "thicknesses_nm should converge toward values near QWOT baseline with localized deviations for band shaping"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero for two consecutive rounds, relax the ±15% noise bound to ±25% and continue",
+    "if tightest_margin falls below 0.1 for three consecutive rounds, reduce optimization step size and continue"
+  ]
+}

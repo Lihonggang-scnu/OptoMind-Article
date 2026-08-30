@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_12/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "93c71d97bc24c4ee5bad54130479490002f6ad91748c41ee6d247eedec5b5d55",
+  "recorded_at_utc": "2026-08-29T06:22:50.331509+00:00",
+  "elapsed_seconds": 3748.6758280000067,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_12",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 22-layer alternating ZnS/Al2O3 stack with thicknesses tuned around the empirically successful region from round 1 will improve the tightest_margin while maintaining or improving the best_target_score, demonstrating that local refinement outperforms broad exploration for this topology.",
+  "expected_advantages": [
+    "Narrower bounds reduce search space and focus computation on promising region",
+    "Smaller optimizer step size allows finer tuning of thickness values",
+    "Maintaining the same material pair isolates thickness optimization as the only variable",
+    "Building on round 1's best candidate leverages already-discovered successful configuration"
+  ],
+  "known_risks": [
+    "Uncertainty about exact n/k values for ZnS and Al2O3 at 3-5 μm wavelengths; recalled values are approximate",
+    "Uncertainty whether ±30 nm bounds are too restrictive -- may prevent escape from local optimum if the round 1 best is not near global optimum",
+    "Recalled knowledge suggests quarter-wave thickness near 1250 nm for 3-5 μm band, but actual optimal thicknesses may differ significantly",
+    "No literature verification of ZnS/Al2O3 compatibility or stress issues in 22-layer stacks",
+    "Daimon-20 dataset selection was made to resolve registry ambiguity; other CaF2 datasets (Daimon-25) may have slightly different optical properties"
+  ],
+  "expected_observations": [
+    "best_target_score should remain stable or improve slightly from 0.9158 if the local region contains better solutions",
+    "tightest_margin should increase above 0.393386 as local refinement improves robustness",
+    "valid_candidates count should remain similar or increase as bounds are more constrained around feasible region",
+    "thicknesses_nm should cluster tightly around the round 1 best candidate values with small variations"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if tightest_margin fails to improve over three consecutive rounds despite thickness refinement, stop and keep the current best",
+    "if valid_candidates drops below 5, relax thickness bounds to ±50 nm and continue"
+  ]
+}

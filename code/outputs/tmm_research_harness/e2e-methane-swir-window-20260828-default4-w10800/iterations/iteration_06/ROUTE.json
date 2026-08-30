@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Monotonicity-Constrained Chirped Stack with Cumulative Exponential Mapping",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "Enforcing monotonic thickness progression via cumulative exponential parameterization (t_i = t_base + Σ exp(ξ_j)) will reduce optimizer degrees of freedom, smooth the loss landscape, and improve convergence compared to unconstrained chirped optimization, while maintaining the depth-graded principle for broadened UV reflection band.",
+  "design_principle": "Chirped distributed Bragg reflector with monotonically increasing optical thickness from air to substrate to broaden the UV reflection band (300-450 nm) while maintaining SWIR transmission (1000-1700 nm) through reduced index contrast at longer wavelengths.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "30-layer chirped stack: Air | [HfO2/SiO2]_15 | Fused Silica substrate. Layer sequence starts with HfO2 at air interface, alternates HfO2/SiO2, ends with SiO2 at substrate interface for environmental durability.",
+  "design_variables": [
+    "15 cumulative exponential thickness parameters (ξ_j) for bilayer pairs",
+    "base thickness offset t_base"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1000-1700 nm band",
+    "Maximize average reflectance in 300-450 nm band",
+    "Minimize thickness variance for manufacturability"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 30 (within <=30 constraint)",
+    "Outermost SiO2 layer >= 200 nm for environmental durability per evidence",
+    "Monotonicity constraint reduces deposition complexity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:4902694:s2chunk:4902694:5038:6965:b83221ae082a797d",
+    "s2-chunk:CorpusId:270229843:s2chunk:270229843:8519:10043:e8ef5b26b8d926fe"
+  ],
+  "theory_basis": [
+    "Chirped DBR theory for bandwidth broadening",
+    "Cumulative exponential mapping for monotonicity enforcement",
+    "Quarter-wave stack reflectivity maximization principle"
+  ],
+  "expected_advantages": [
+    "Smoother optimization landscape due to reduced effective DOF",
+    "Faster gradient descent convergence",
+    "Physically realistic thickness progression",
+    "Maintains route_02's chirped principle while addressing numerical convergence issues"
+  ],
+  "known_risks": [
+    "Monotonicity constraint may limit optimal solutions if non-monotonic thickness profile is actually superior",
+    "Cumulative parameterization may introduce numerical stiffness if ξ_j values span large ranges"
+  ],
+  "execution_request_english": "Optimize a 30-layer HfO2/SiO2 chirped multilayer coating on fused silica substrate with air incidence. Layer sequence: HfO2(1)/SiO2(2)/HfO2(3)/SiO2(4)/HfO2(5)/SiO2(6)/HfO2(7)/SiO2(8)/HfO2(9)/SiO2(10)/HfO2(11)/SiO2(12)/HfO2(13)/SiO2(14)/HfO2(15)/SiO2(16)/HfO2(17)/SiO2(18)/HfO2(19)/SiO2(20)/HfO2(21)/SiO2(22)/HfO2(23)/SiO2(24)/HfO2(25)/SiO2(26)/HfO2(27)/SiO2(28)/HfO2(29)/SiO2(30). Implement monotonicity-enforcing parameterization: define each layer thickness t_i = t_base + cumulative_sum(exp(ξ_j)) for j=0 to i, where ξ_j are the optimizable parameters and t_base is a fixed offset. Evaluate at normal incidence, unpolarized illumination. Optimize for maximum transmittance in 1000-1700 nm band and maximum reflectance in 300-450 nm band. Constrain outermost SiO2 layer (layer 30) thickness >= 200 nm for environmental durability. Use gradient-based optimizer with the monotonicity mapping to reduce effective degrees of freedom. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: low transmission in 300-450 nm; low reflection in 1000-1700 nm. manufacturing constraints: total layer count <= 30; materials restricted to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct refinement of route_02 implementing feedback directive: monotonicity-enforcing variable mapping via cumulative exponential parameterization to constrain optimizer to physically required air-to-substrate increasing regime, reduce effective DOF, and smooth loss landscape for faster gradient descent convergence."
+}

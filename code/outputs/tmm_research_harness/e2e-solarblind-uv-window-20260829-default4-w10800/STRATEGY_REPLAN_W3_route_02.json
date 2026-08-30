@@ -1,0 +1,188 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_02 after iteration_10 material_data failure with 0 valid candidates. Three routes proposed: (1) MgF2/HfO2 chirped stack with enforced minimum thickness bounds (≥20 nm) and quarter-wave initialization centered on passband to prevent TMM phase singularities; (2) SiO2/HfO2 periodic photonic crystal with AR matching layers based on evidence from CorpusId:199509322; (3) Reduced 16-layer MgF2/HfO2 stack with wider thickness search bounds to improve optimizer convergence. All routes preserve the 30-layer maximum, no-metal constraint, and three-band spectral objectives.",
+    "routes": [
+      {
+        "route_id": "route_02_refine_01",
+        "title": "MgF2/HfO2 chirped stack with enforced minimum thickness and quarter-wave initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "The iteration_10 failure arose from thickness values approaching zero or negative values during optimization, triggering TMM phase singularities. Enforcing explicit minimum thickness bounds (≥20 nm) and initializing from quarter-wave optical depths centered on the 267.5 nm passband midpoint will produce physically valid candidates while maintaining the chirped dispersion strategy that achieved 0.647 target score in iteration_06.",
+        "design_principle": "Alternating high/low index layers with thicknesses varying gradually across the stack to create broadband rejection outside the passband while maintaining constructive interference in the 255-280 nm transmission band.",
+        "proposed_materials": [
+          "MgF2",
+          "HfO2",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "20-layer alternating stack: Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica",
+        "design_variables": [
+          "layer thicknesses (20 variables, bounds 20-200 nm)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 20 (within 30-layer limit)",
+          "minimum thickness 20 nm ensures depositability",
+          "no metal layers",
+          "conventional inorganic dielectrics only"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent multilayer interference",
+          "Quarter-wave optical thickness principle for bandpass filter design"
+        ],
+        "expected_advantages": [
+          "Enforced minimum bounds prevent TMM numerical failures",
+          "Quarter-wave initialization provides physically meaningful starting point",
+          "Chirped dispersion maintains broadband rejection capability from iteration_06"
+        ],
+        "known_risks": [
+          "May still converge to local optima if search budget insufficient",
+          "MgF2 refractive index dispersion in deep UV may differ from nominal values"
+        ],
+        "execution_request_english": "Optimize a 20-layer planar multilayer filter on fused silica substrate with air incidence. Layer sequence: MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2 (20 finite layers total). Each layer thickness bounded between 20 nm and 200 nm. Initialize thicknesses at quarter-wave optical depth centered on 267.5 nm wavelength (MgF2 n≈1.38, HfO2 n≈2.0 at UV). Use coherent S-matrix solver across 255-1100 nm spectrum. Score three transmittance objectives: maximize mean transmittance 255-280 nm, minimize mean transmittance 300-700 nm, minimize mean transmittance 700-1100 nm. Use bound-aware global optimizer with projection of out-of-bounds samples back into feasible region. Normal incidence, unpolarized light. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Iteration_10 failed with 0 valid candidates due to material_data error. This route enforces explicit minimum thickness bounds (≥20 nm) to prevent TMM phase singularities, widens thickness search interval centered on quarter-wave values, and switches to bound-aware global optimizer with projection as directed in feedback."
+      },
+      {
+        "route_id": "route_02_refine_02",
+        "title": "SiO2/HfO2 periodic photonic crystal with AR matching layers",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "Based on evidence from CorpusId:199509322, a periodic (L/2 H L/2)m photonic crystal structure with anti-reflection matching layers can achieve high transmissivity in a narrow UV passband while providing strong stopband rejection. SiO2/HfO2 material pair offers better UV transparency than MgF2 in some deposition conditions and higher index contrast for stronger rejection.",
+        "design_principle": "Periodic main-function units (L/2 H L/2) sandwiched between two anti-reflection coatings, optimized using Transfer Matrix Method with experimental optical constants.",
+        "proposed_materials": [
+          "SiO2",
+          "HfO2",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "18-layer stack: Air | SiO2(AR) | HfO2(AR) | SiO2(AR) | SiO2(L/2) | HfO2(H) | SiO2(L/2) | SiO2(L/2) | HfO2(H) | SiO2(L/2) | SiO2(L/2) | HfO2(H) | SiO2(L/2) | SiO2(L/2) | HfO2(H) | SiO2(L/2) | SiO2(AR) | HfO2(AR) | SiO2(AR) | fused silica",
+        "design_variables": [
+          "layer thicknesses (18 variables, bounds 15-150 nm)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 18 (within 30-layer limit)",
+          "minimum thickness 15 nm for AR layers",
+          "no metal layers",
+          "SiO2 and HfO2 are conventional depositable dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:15:1979:5e535f3133d84894"
+        ],
+        "theory_basis": [
+          "1-D Photonic Crystal bandgap theory",
+          "Transfer Matrix Method optimization with experimental optical constants",
+          "Anti-reflection matching for passband enhancement"
+        ],
+        "expected_advantages": [
+          "Periodic structure provides predictable stopband position and width",
+          "AR matching layers reduce passband reflection losses",
+          "SiO2/HfO2 pair has demonstrated UV filter performance in literature"
+        ],
+        "known_risks": [
+          "Periodic structure may have narrower passband than chirped design",
+          "SiO2 absorption edge near 200 nm may affect 255 nm transmission",
+          "Requires precise thickness control to maintain periodicity"
+        ],
+        "execution_request_english": "Optimize an 18-layer planar multilayer filter on fused silica substrate with air incidence. Layer sequence: SiO2, HfO2, SiO2, SiO2, HfO2, SiO2, SiO2, HfO2, SiO2, SiO2, HfO2, SiO2, SiO2, HfO2, SiO2, SiO2, HfO2, SiO2 (18 finite layers total). First 3 and last 3 layers serve as anti-reflection matching; middle 12 layers form 4-period (L/2 H L/2) photonic crystal units. Each layer thickness bounded between 15 nm and 150 nm. Initialize AR layers at 25 nm, periodic L layers at 30 nm, periodic H layers at 45 nm. Use coherent S-matrix solver across 255-1100 nm spectrum. Score three transmittance objectives: maximize mean transmittance 255-280 nm, minimize mean transmittance 300-700 nm, minimize mean transmittance 700-1100 nm. Use differential evolution optimizer with 100 population members. Normal incidence, unpolarized light. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_02",
+        "revision_reason": "Alternative topology to chirped stack based on literature evidence for periodic photonic crystal UV filters. Different material pair (SiO2/HfO2 vs MgF2/HfO2) tests whether material_data failure in iteration_10 was material-specific. Provides complementary design family to validate scientific principle."
+      },
+      {
+        "route_id": "route_02_refine_03",
+        "title": "Reduced 16-layer MgF2/HfO2 stack with expanded thickness search bounds",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 20 to 16 decreases optimization dimensionality, improving convergence reliability. Expanding thickness bounds (15-250 nm) allows optimizer to explore thicker layers that may provide better broadband rejection. This tests whether iteration_10 failure was due to optimization complexity rather than material data issues.",
+        "design_principle": "Simplified alternating high/low index stack with fewer layers but wider individual thickness ranges to maintain spectral performance with reduced optimization complexity.",
+        "proposed_materials": [
+          "MgF2",
+          "HfO2",
+          "fused silica substrate"
+        ],
+        "proposed_topology": "16-layer alternating stack: Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica",
+        "design_variables": [
+          "layer thicknesses (16 variables, bounds 15-250 nm)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total layers = 16 (within 30-layer limit, reduced from 20)",
+          "minimum thickness 15 nm ensures depositability",
+          "no metal layers",
+          "conventional inorganic dielectrics only"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for coherent multilayer interference",
+          "Dimensionality reduction for optimization convergence"
+        ],
+        "expected_advantages": [
+          "Fewer optimization variables improves convergence reliability",
+          "Wider thickness bounds allow exploration of thicker quarter-wave stacks for IR rejection",
+          "Same material pair as successful iteration_06 maintains continuity"
+        ],
+        "known_risks": [
+          "Fewer layers may reduce stopband rejection depth",
+          "Wider bounds may increase search space and require more optimization iterations",
+          "May not achieve same performance as 20-layer designs"
+        ],
+        "execution_request_english": "Optimize a 16-layer planar multilayer filter on fused silica substrate with air incidence. Layer sequence: MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2 (16 finite layers total). Each layer thickness bounded between 15 nm and 250 nm. Initialize all thicknesses at 80 nm (uniform starting point). Use coherent S-matrix solver across 255-1100 nm spectrum. Score three transmittance objectives: maximize mean transmittance 255-280 nm, minimize mean transmittance 300-700 nm, minimize mean transmittance 700-1100 nm. Use CMA-ES optimizer with 50 population members and 200 generation budget. Normal incidence, unpolarized light. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_02",
+        "revision_reason": "Tests whether iteration_10 failure was optimization complexity related rather than material-specific. Reduced dimensionality (16 vs 20 variables) with expanded bounds provides complementary search strategy. If this succeeds where iteration_10 failed, suggests bound/initialization issues rather than material data problems."
+      }
+    ],
+    "research_influence": [
+      "Evidence from CorpusId:199509322 motivated route_02_refine_02 periodic photonic crystal topology with (L/2 H L/2)m units and AR matching layers",
+      "Evidence from CorpusId:211025653 on HfO2/SiO2 material properties and deposition methods informed material choices in all three routes",
+      "Evidence from CorpusId:16516444 on ALD precision and thickness control supported the hypothesis that explicit thickness bounds prevent numerical failures",
+      "Iteration_06 success with 0.647 target score using MgF2/HfO2 chirped stack validated this material pair for route_02_refine_01 and route_02_refine_03",
+      "Iteration_10 failure with 0 valid candidates drove the enforcement of minimum thickness bounds and bound-aware optimizer selection"
+    ],
+    "unresolved_decisions": [
+      "Whether MgF2 or SiO2 provides better UV transparency at 255 nm in actual deposition conditions",
+      "Whether periodic or chirped topology better balances passband transmission with dual stopband rejection",
+      "Whether 16, 18, or 20 layers provides optimal tradeoff between performance and optimization convergence"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_02_refine_01 received canonical user controls from the problem contract",
+    "route route_02_refine_02 received canonical user controls from the problem contract",
+    "route route_02_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14783,
+      "completion_tokens": 5372,
+      "total_tokens": 20155
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

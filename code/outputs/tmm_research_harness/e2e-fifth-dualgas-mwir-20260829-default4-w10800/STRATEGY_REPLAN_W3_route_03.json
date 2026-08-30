@@ -1,0 +1,202 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_03 after three prior failures (two material_data, one layer-count mismatch). The scientific principle of defect-cavity dual-band filtering remains valid. Changes: (1) Switch to Si/Al2O3 material pair with better mid-IR optical constant availability than Ge/YbF3 or ZnS/MgF2, (2) Fix exact 22-layer count matching prior validated baseline, (3) Initialize thicknesses using quarter-wave estimates at passband centers rather than uniform random, (4) Tighten thickness bounds to 400-1100 nm to prevent solver overflow, (5) Add L2 regularization in early optimization iterations. Three complementary routes explore: Route A maintains dual-cavity with Si/Al2O3, Route B tests single-cavity with thicker blocking stacks, Route C explores asymmetric cavity coupling for improved band isolation.",
+    "routes": [
+      {
+        "route_id": "route_03_ref_A",
+        "title": "Si/Al2O3 Dual-Cavity Defect Filter with Quarter-Wave Initialization",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A 22-layer dual-cavity defect structure using Si (high-index) and Al2O3 (low-index) will produce two distinct transmission peaks at 3.30 μm and 4.25 μm with adequate out-of-band blocking, and quarter-wave initialized thicknesses will converge faster than uniform random initialization under the same optimization budget.",
+        "design_principle": "Two defect cavities separated by a central Bragg mirror section, with quarter-wave stack mirrors on both sides. Each cavity thickness tuned to resonate at one passband center wavelength.",
+        "proposed_materials": [
+          "Si",
+          "Al2O3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [Si/Al2O3]_5 | Si_cavity1 | [Si/Al2O3]_3 | Si_cavity2 | [Si/Al2O3]_5 | CaF2 substrate. Total: 22 finite layers (10 mirror pairs + 2 cavities + 2 additional mirror layers).",
+        "design_variables": [
+          "All 22 layer thicknesses (nm)",
+          "Cavity layer thicknesses initialized at quarter-wave optical thickness for respective passband centers"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm band",
+          "Maximize mean transmittance in 4.20-4.30 μm band",
+          "Minimize mean transmittance in 2.50-3.10 μm band",
+          "Minimize mean transmittance in 4.45-5.00 μm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count exactly 22 (within 24-layer limit)",
+          "No metal layers",
+          "Si and Al2O3 are conventional IR depositable dielectrics",
+          "Thickness bounds 400-1100 nm prevent deposition time excess"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack principle for Bragg mirrors",
+          "Defect cavity resonance for passband formation",
+          "TMM-based dual-objective optimization"
+        ],
+        "expected_advantages": [
+          "Si/Al2O3 pair has better mid-IR optical constant data availability than Ge/YbF3",
+          "Quarter-wave initialization reduces optimization iterations to convergence",
+          "Tighter bounds prevent solver numerical overflow"
+        ],
+        "known_risks": [
+          "Si absorption may increase beyond 4.5 μm affecting long-wavelength blocking",
+          "Al2O3 index contrast with Si lower than Ge/YbF3 may require more layers for equivalent blocking",
+          "Material registry may still lack complete n,k data for this pair in full 2.5-5.0 μm range"
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer stack on CaF2 substrate with air incidence. Layer sequence: Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si (cavity1), Si, Al2O3, Si, Al2O3, Si, Al2O3, Si (cavity2), Si, Al2O3, Si, Al2O3. Initialize cavity1 thickness at 825 nm (quarter-wave at 3.30 μm in Si), cavity2 at 1062 nm (quarter-wave at 4.25 μm in Si), all other layers at 550 nm. Thickness bounds: 400-1100 nm for all layers. Optimize for maximum mean transmittance in 3250-3350 nm and 4200-4300 nm bands, minimum mean transmittance in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized. Use L2 regularization coefficient 0.01 for first 50 iterations. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm, run_status. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Changed material pair from Ge/YbF3 to Si/Al2O3 due to prior material_data failures; fixed exact 22-layer count to match compilation validation; added quarter-wave initialization based on passband centers; tightened thickness bounds from 300-1500 nm to 400-1100 nm; added L2 regularization per feedback directive."
+      },
+      {
+        "route_id": "route_03_ref_B",
+        "title": "Si/Al2O3 Single-Cavity Dual-Peak Filter with Enhanced Blocking Stacks",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A single-cavity 22-layer design with thicker mirror stacks on both sides can produce two transmission peaks through higher-order cavity modes, achieving comparable dual-band performance with simpler topology and better manufacturability than dual-cavity approach.",
+        "design_principle": "Single defect cavity with quarter-wave mirrors optimized to support two resonant modes at target wavelengths through careful cavity thickness selection and mirror asymmetry.",
+        "proposed_materials": [
+          "Si",
+          "Al2O3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [Si/Al2O3]_7 | Si_cavity | [Si/Al2O3]_7 | CaF2 substrate. Total: 22 finite layers (14 mirror layers + 1 cavity + 7 additional mirror layers to reach 22).",
+        "design_variables": [
+          "All 22 layer thicknesses (nm)",
+          "Cavity thickness initialized at 1650 nm (half-wave at 3.30 μm to support dual modes)",
+          "Mirror layer thicknesses initialized at quarter-wave for 3.80 μm (band center)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm band",
+          "Maximize mean transmittance in 4.20-4.30 μm band",
+          "Minimize mean transmittance in 2.50-3.10 μm band",
+          "Minimize mean transmittance in 4.45-5.00 μm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count exactly 22",
+          "Single cavity simplifies deposition control compared to dual-cavity",
+          "Si and Al2O3 conventional IR dielectrics",
+          "Thickness bounds 400-1100 nm for mirrors, 1200-2000 nm for cavity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:136080761:s2chunk:136080761:15:2102:e2773f76792b7ad8",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Higher-order cavity resonance for multi-peak transmission",
+          "Quarter-wave stack for broadband blocking",
+          "Single-cavity simplification for manufacturability"
+        ],
+        "expected_advantages": [
+          "Simpler deposition sequence with single cavity",
+          "Thicker mirror stacks improve out-of-band blocking",
+          "Avoids inter-cavity coupling sensitivity of dual-cavity design"
+        ],
+        "known_risks": [
+          "Higher-order modes may have lower peak transmittance than fundamental modes",
+          "Two peaks may not align precisely with target bands without fine tuning",
+          "Cavity thickness may exceed practical deposition limits if too thick"
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer stack on CaF2 substrate with air incidence. Layer sequence: Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3 (cavity), Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3. Initialize cavity thickness at 1650 nm, all mirror layers at 550 nm. Thickness bounds: 400-1100 nm for mirror layers, 1200-2000 nm for cavity layer. Optimize for maximum mean transmittance in 3250-3350 nm and 4200-4300 nm bands, minimum mean transmittance in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized. Use L2 regularization coefficient 0.01 for first 50 iterations. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm, run_status. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Alternative topology to route_03_ref_A testing single-cavity approach; maintains Si/Al2O3 material pair to address prior material_data failures; different layer distribution (7+1+7 mirror-cavity-mirror vs 5+1+3+1+5 dual-cavity) to explore whether simpler topology achieves comparable performance."
+      },
+      {
+        "route_id": "route_03_ref_C",
+        "title": "Asymmetric Si/Al2O3 Dual-Cavity with Graded Mirror Reflectivity",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "An asymmetric dual-cavity design with graded mirror reflectivity (more layers on input side, fewer on substrate side) will improve band isolation between the two passbands and reduce spectral ripple compared to symmetric dual-cavity design.",
+        "design_principle": "Dual-cavity structure with asymmetric mirror stacks: thicker input mirror for better short-wavelength blocking, thinner output mirror to reduce substrate-side reflections that cause ripple.",
+        "proposed_materials": [
+          "Si",
+          "Al2O3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [Si/Al2O3]_6 | Si_cavity1 | [Si/Al2O3]_2 | Si_cavity2 | [Si/Al2O3]_4 | CaF2 substrate. Total: 22 finite layers (12 mirror pairs + 2 cavities + 6 additional mirror layers).",
+        "design_variables": [
+          "All 22 layer thicknesses (nm)",
+          "Cavity1 thickness initialized at 825 nm (3.30 μm quarter-wave)",
+          "Cavity2 thickness initialized at 1062 nm (4.25 μm quarter-wave)",
+          "Input mirror layers at 550 nm, output mirror layers at 500 nm (slightly thinner)"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm band",
+          "Maximize mean transmittance in 4.20-4.30 μm band",
+          "Minimize mean transmittance in 2.50-3.10 μm band",
+          "Minimize mean transmittance in 4.45-5.00 μm band",
+          "Minimize transmittance ripple amplitude in passbands"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count exactly 22",
+          "Asymmetric design may require more careful deposition monitoring",
+          "Si and Al2O3 conventional IR dielectrics",
+          "Thickness bounds 400-1100 nm uniform"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Asymmetric mirror design for reduced spectral ripple",
+          "Dual-cavity resonance for dual-band transmission",
+          "Graded reflectivity for improved band isolation"
+        ],
+        "expected_advantages": [
+          "Reduced passband ripple compared to symmetric dual-cavity",
+          "Better short-wavelength blocking from thicker input mirror",
+          "May achieve similar performance with fewer total layers than symmetric design"
+        ],
+        "known_risks": [
+          "Asymmetry may complicate optimization convergence",
+          "Two cavities still subject to inter-cavity coupling sensitivity",
+          "May not significantly outperform symmetric design for this band separation"
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer stack on CaF2 substrate with air incidence. Layer sequence: Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3, Si, Al2O3 (cavity1), Si, Al2O3, Si, Al2O3 (cavity2), Si, Al2O3, Si, Al2O3, Si, Al2O3. Initialize cavity1 at 825 nm, cavity2 at 1062 nm, input-side mirrors (layers 1-12) at 550 nm, output-side mirrors (layers 17-22) at 500 nm. Thickness bounds: 400-1100 nm for all layers. Optimize for maximum mean transmittance in 3250-3350 nm and 4200-4300 nm bands, minimum mean transmittance in 2500-3100 nm and 4450-5000 nm bands, minimize passband ripple (standard deviation of transmittance within passbands). Normal incidence, unpolarized. Use L2 regularization coefficient 0.01 for first 50 iterations. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm, run_status. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Third complementary route testing asymmetric dual-cavity topology; maintains Si/Al2O3 material pair; different mirror distribution (6+1+2+1+4 vs 5+1+3+1+5 in route_03_ref_A) to explore whether asymmetry improves ripple and band isolation; adds ripple minimization as soft objective."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:227248144 supports quarter-wave stack principle for sharp spectral profiles and low loss, motivating Si/Al2O3 alternating index design",
+      "Evidence s2-chunk:CorpusId:139773493 supports center-wavelength and bandwidth as critical parameters for gas sensing, motivating quarter-wave initialization at passband centers",
+      "Evidence s2-chunk:CorpusId:17683472 supports thickness-constrained design for manufacturability, motivating tightened bounds 400-1100 nm and explicit 22-layer count",
+      "Evidence s2-chunk:CorpusId:235711786 supports TMM-based dual-objective optimization with L2 regularization for convergence stability"
+    ],
+    "unresolved_decisions": [
+      "Material registry availability for Si and Al2O3 optical constants across full 2.5-5.0 μm range remains unverified until compilation",
+      "Whether dual-cavity or single-cavity topology provides better dual-band performance for this specific band separation unknown until results compared",
+      "Optimal layer count (20 vs 22 vs 24) for balancing performance and manufacturability not yet determined"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_ref_A received canonical user controls from the problem contract",
+    "route route_03_ref_B received canonical user controls from the problem contract",
+    "route route_03_ref_C received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 12796,
+      "completion_tokens": 5325,
+      "total_tokens": 18121
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

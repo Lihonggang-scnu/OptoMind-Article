@@ -1,0 +1,2809 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "This portfolio tests three distinct strategy axes for solar-blind UV bandpass filter design: (1) material pair selection for UV transparency with adequate index contrast, (2) stack topology choice between periodic Bragg mirrors with defect cavities versus chirped structures, and (3) layer count allocation between passband sharpness and stopband width. Route 1 explores a conventional MgF2/Al2O3 periodic stack with a single defect cavity, prioritizing manufacturability and UV transparency. Route 2 tests MgF2/HfO2 with higher index contrast for broader visible/NIR rejection, accepting potential UV absorption risk. Route 3 examines a multi-cavity SiO2/Al2O3 design for sharper bandpass edges at the cost of layer budget. These axes are genuinely distinct because success in one does not guarantee success in another: a material pair that works in a periodic stack may fail in a chirped topology, and a high-contrast pair may absorb too much in the passband. The literature (L01, L04, L12, L15, L19) supports UV filter design principles but does not prescribe a specific topology for this exact wavelength combination, so all three routes are needed to find the boundary.",
+    "routes": [
+      {
+        "route_id": "route_01",
+        "title": "MgF2/Al2O3 periodic Bragg stack with single defect cavity",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A periodic Bragg mirror pair (MgF2/Al2O3) with a single half-wave defect cavity will achieve high transmittance in 255-280 nm while suppressing 300-1100 nm, provided the mirror pair count is sufficient to create a photonic bandgap that overlaps the visible and NIR stopbands.",
+        "design_principle": "Distributed Bragg reflectors create wavelength-selective reflection through constructive interference of reflections at each interface. A defect layer breaks the periodicity and creates a transmission resonance within the stopband. MgF2 and Al2O3 both have low absorption in the solar-blind UV range, enabling high passband transmission.",
+        "proposed_materials": [
+          "MgF2 (Rodriguez-de_Marcos)",
+          "al2o3",
+          "SiO2 (Gao)"
+        ],
+        "proposed_topology": "air | (mgf2 | al2o3)_8 | mgf2 | (al2o3 | mgf2)_8 | sio2_substrate",
+        "design_variables": [
+          "individual layer thicknesses for all 17 film layers",
+          "defect cavity layer thickness"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "total 17 layers well under 30-layer limit",
+          "MgF2 and Al2O3 are conventional e-beam evaporable dielectrics",
+          "no metal layers as required",
+          "fused silica substrate matches sio2 catalog name"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L04",
+          "L12",
+          "L15",
+          "L19"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for multilayer thin-film optics",
+          "Photonic bandgap theory for periodic dielectric stacks",
+          "Defect mode resonance in Bragg mirrors"
+        ],
+        "expected_advantages": [
+          "Low UV absorption in both materials",
+          "Simple symmetric topology reduces optimization complexity",
+          "Well-understood fabrication process"
+        ],
+        "known_risks": [
+          "May not achieve sufficient stopband rejection with only 8 pair mirrors",
+          "Single cavity may produce narrow passband that does not cover full 255-280 nm range",
+          "Index contrast between MgF2 and Al2O3 is moderate, limiting stopband width"
+        ],
+        "execution_request_english": "Design a defect-cavity bandpass filter on fused silica substrate. Stack topology: air incident medium, then 8 repeated pairs of MgF2 (Rodriguez-de_Marcos) and al2o3 (MgF2 (Rodriguez-de_Marcos) first from air side), followed by a single MgF2 (Rodriguez-de_Marcos) defect cavity layer, then 8 repeated pairs of al2o3 and MgF2 (Rodriguez-de_Marcos) (al2o2 first), terminating on SiO2 (Gao) substrate. Total film layers: 17. All 17 layer thicknesses are optimizable design variables. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm and 700-1100 nm. No metal layers. Normal incidence, unpolarized light. Total layers must not exceed 30.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "route_02",
+        "title": "MgF2/HfO2 chirped mirror stack for broadband rejection",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "A chirped multilayer stack using MgF2 and HfO2 with gradually varying layer thicknesses will achieve broader stopband coverage across 300-1100 nm compared to a periodic stack, while maintaining acceptable transmission in 255-280 nm.",
+        "design_principle": "Chirped mirrors vary the optical thickness of successive layers to broaden the reflection band. Higher index contrast (HfO2 vs MgF2) increases reflectivity per interface, reducing the number of layers needed for a given stopband depth. The chirp profile can be optimized to cover both visible and NIR stopbands simultaneously.",
+        "proposed_materials": [
+          "MgF2 (Rodriguez-de_Marcos)",
+          "hfo2",
+          "SiO2 (Gao)"
+        ],
+        "proposed_topology": "air | (mgf2 | hfo2)_10_chirped | sio2_substrate",
+        "design_variables": [
+          "individual layer thicknesses for all 20 film layers with chirp constraint",
+          "chirp rate parameter implicit in thickness progression"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "20 layers within 30-layer limit",
+          "HfO2 may have higher UV absorption than Al2O3, requiring verification",
+          "Chirped profiles require precise thickness control during deposition",
+          "no metal layers as required"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L08",
+          "L09",
+          "L15"
+        ],
+        "theory_basis": [
+          "Chirped mirror design for broadband reflection",
+          "High index contrast for enhanced stopband depth",
+          "Transfer matrix method with non-periodic layer sequences"
+        ],
+        "expected_advantages": [
+          "Higher index contrast than MgF2/Al2O3 enables fewer layers for same rejection",
+          "Chirped profile can cover both visible and NIR stopbands in one structure",
+          "No defect cavity simplifies the topology"
+        ],
+        "known_risks": [
+          "HfO2 absorption edge may be near 255 nm, reducing passband transmission",
+          "Chirped optimization is more complex than periodic stack tuning",
+          "May require more layers than periodic design to achieve same passband sharpness"
+        ],
+        "execution_request_english": "Design a chirped mirror bandpass filter on fused silica substrate. Stack topology: air incident medium, then 10 repeated pairs of MgF2 (Rodriguez-de_Marcos) and hfo2 (MgF2 (Rodriguez-de_Marcos) first from air side) with chirped thickness profile, terminating on SiO2 (Gao) substrate. Total film layers: 20. All 20 layer thicknesses are optimizable design variables without requiring strict periodicity. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm and 700-1100 nm. No metal layers. Normal incidence, unpolarized light. Total layers must not exceed 30.",
+        "priority": 2,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "route_03",
+        "title": "SiO2/Al2O3 multi-cavity stack for sharp bandpass edges",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A multi-cavity design using SiO2 and Al2O3 with three defect layers will produce sharper bandpass edges than a single-cavity design, enabling better separation between the 255-280 nm passband and the 300+ nm stopbands.",
+        "design_principle": "Multiple coupled cavities create a flatter passband top and steeper edges through mode coupling. SiO2 and Al2O3 both have excellent UV transparency, minimizing passband absorption. The trade-off is increased layer count and optimization complexity.",
+        "proposed_materials": [
+          "SiO2 (Gao)",
+          "al2o3"
+        ],
+        "proposed_topology": "air | (sio2 | al2o3)_6 | sio2 | (al2o3 | sio2)_4 | al2o3 | (sio2 | al2o3)_4 | sio2 | (al2o3 | sio2)_6 | sio2_substrate",
+        "design_variables": [
+          "individual layer thicknesses for all 25 film layers",
+          "three defect cavity layer thicknesses"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm",
+          "minimize mean transmittance in 300-700 nm",
+          "minimize mean transmittance in 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "25 layers within 30-layer limit but leaves little margin",
+          "SiO2 and Al2O3 are highly conventional deposition materials",
+          "Three cavities require precise thickness matching for mode coupling",
+          "no metal layers as required"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L12",
+          "L15",
+          "L19",
+          "L27"
+        ],
+        "theory_basis": [
+          "Coupled cavity resonance theory",
+          "Multi-cavity filter design for flat-top bandpass",
+          "Transfer matrix method for complex multilayer stacks"
+        ],
+        "expected_advantages": [
+          "Sharper bandpass edges improve stopband rejection near passband",
+          "SiO2 and Al2O3 have minimal UV absorption",
+          "Flat-top passband better covers the full 255-280 nm range"
+        ],
+        "known_risks": [
+          "25 layers approaches the 30-layer manufacturing limit",
+          "Three cavities increase optimization complexity and risk of local minima",
+          "May be more sensitive to thickness errors than single-cavity design"
+        ],
+        "execution_request_english": "Design a multi-cavity bandpass filter on fused silica substrate. Stack topology: air incident medium, then 6 repeated pairs of SiO2 (Gao) and al2o3 (SiO2 (Gao) first), followed by a SiO2 (Gao) defect cavity, then 4 repeated pairs of al2o3 and SiO2 (Gao) (al2o3 first), followed by an al2o3 defect cavity, then 4 repeated pairs of SiO2 (Gao) and al2o3 (SiO2 (Gao) first), followed by a SiO2 (Gao) defect cavity, then 6 repeated pairs of al2o3 and SiO2 (Gao) (al2o3 first), terminating on SiO2 (Gao) substrate. Total film layers: 25. All 25 layer thicknesses are optimizable design variables. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm and 700-1100 nm. No metal layers. Normal incidence, unpolarized light. Total layers must not exceed 30.",
+        "priority": 3,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "control_route_01",
+        "title": "Fixed 29-layer HfO2/MgF2 Fabry-Perot bandpass with thickness optimization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A symmetric 29-layer Fabry-Perot structure with HfO2/MgF2 quarter-wave mirrors and a half-wave HfO2 cavity, optimized for layer thicknesses, can achieve high transmission in 255-280 nm while suppressing 300-700 nm and 700-1100 nm bands without exceeding 30 layers.",
+        "design_principle": "Quarter-wave optical thickness stacks create high reflectance bands centered at the design wavelength; a half-wave cavity layer between two mirror stacks creates a transmission peak within the reflectance band. The mirror pair count controls stopband width and depth, while cavity thickness controls passband center and width.",
+        "proposed_materials": [
+          "hfo2",
+          "MgF2 (Rodriguez-de_Marcos)",
+          "SiO2 (Gao)"
+        ],
+        "proposed_topology": "Air | HfO2(1) | MgF2(2) | HfO2(3) | MgF2(4) | HfO2(5) | MgF2(6) | HfO2(7) | MgF2(8) | HfO2(9) | MgF2(10) | HfO2(11) | MgF2(12) | HfO2(13) | MgF2(14) | HfO2(15-cavity) | MgF2(16) | HfO2(17) | MgF2(18) | HfO2(19) | MgF2(20) | HfO2(21) | MgF2(22) | HfO2(23) | MgF2(24) | HfO2(25) | MgF2(26) | HfO2(27) | MgF2(28) | HfO2(29) | SiO2 substrate",
+        "design_variables": [
+          "thickness_nm_layer_1",
+          "thickness_nm_layer_2",
+          "thickness_nm_layer_3",
+          "thickness_nm_layer_4",
+          "thickness_nm_layer_5",
+          "thickness_nm_layer_6",
+          "thickness_nm_layer_7",
+          "thickness_nm_layer_8",
+          "thickness_nm_layer_9",
+          "thickness_nm_layer_10",
+          "thickness_nm_layer_11",
+          "thickness_nm_layer_12",
+          "thickness_nm_layer_13",
+          "thickness_nm_layer_14",
+          "thickness_nm_layer_15",
+          "thickness_nm_layer_16",
+          "thickness_nm_layer_17",
+          "thickness_nm_layer_18",
+          "thickness_nm_layer_19",
+          "thickness_nm_layer_20",
+          "thickness_nm_layer_21",
+          "thickness_nm_layer_22",
+          "thickness_nm_layer_23",
+          "thickness_nm_layer_24",
+          "thickness_nm_layer_25",
+          "thickness_nm_layer_26",
+          "thickness_nm_layer_27",
+          "thickness_nm_layer_28",
+          "thickness_nm_layer_29"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 255-280 nm band",
+          "minimize mean transmittance in 300-700 nm band",
+          "minimize mean transmittance in 700-1100 nm band",
+          "maintain total layer count at exactly 29"
+        ],
+        "manufacturing_considerations": [
+          "all layers must be physically realizable thicknesses (10-200 nm range typical for UV coatings)",
+          "no metal layers used",
+          "HfO2 and MgF2 are conventional evaporatable/sputterable dielectrics",
+          "total layer count 29 is within the 30-layer constraint"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Quarter-wave optical thickness (n*d = lambda/4) creates constructive interference for reflection at the design wavelength",
+          "Fabry-Perot cavity with half-wave optical thickness creates transmission resonance within a high-reflectance stopband",
+          "Higher refractive index contrast between H and L materials produces wider and deeper stopbands",
+          "Symmetric mirror stacks on both sides of cavity produce symmetric passband shape",
+          "MgF2 has low refractive index (~1.38-1.40) and good UV transparency down to ~150 nm",
+          "HfO2 has moderate-high refractive index (~2.0-2.1) in UV and is commonly used for UV coatings",
+          "Stopband width scales with index ratio nH/nL; more pairs increase stopband depth"
+        ],
+        "expected_advantages": [
+          "Fixed topology allows clean isolation of thickness optimization effects",
+          "29 layers provides sufficient mirror pairs (7 per side) for deep stopbands in visible/NIR",
+          "HfO2/MgF2 pair has adequate index contrast for UV bandpass applications",
+          "Symmetric design should produce clean passband without sidelobes"
+        ],
+        "known_risks": [
+          "Refractive index values for HfO2 and MgF2 at 255-280 nm are recalled estimates; actual n/k data from the registry may differ and affect quarter-wave thickness calculations",
+          "Material absorption in deep UV (especially HfO2) is uncertain from memory; k values from registry will determine actual transmission limits",
+          "Quarter-wave thickness estimates (~32 nm for HfO2, ~48 nm for MgF2 at 267.5 nm) are approximate and will be tuned by the optimizer",
+          "Cavity layer being single HfO2 may not provide optimal passband width; multi-layer cavity could be better but would require different topology",
+          "Angle of incidence not specified in request; assumed normal incidence but space platform may have off-axis rays",
+          "Polarization effects not addressed; s and p polarization may split at non-normal incidence",
+          "Did not explore alternative material pairs (Al2O3/MgF2, SiO2/HfO2) which might have better UV transmission or index contrast",
+          "Did not explore different layer counts (25, 27, 30) which might offer better performance within constraint"
+        ],
+        "execution_request_english": "Optimize a 29-layer thin-film stack on SiO2 (Gao) substrate with air incidence. Layer sequence from air to substrate: HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2 (cavity), MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2. All 29 layer thicknesses are optimizable variables. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm, minimize transmittance in 700-1100 nm. Normal incidence, unpolarized light. No metal layers. Total layer count fixed at 29.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      }
+    ],
+    "research_influence": [
+      "L01 (JPL UV detector coatings) informed the material selection for UV transparency, particularly MgF2 and Al2O3 as conventional UV-transparent dielectrics.",
+      "L04 (solar-blind UV bandpass filter) validated the defect-cavity approach for solar-blind UV applications, though that paper used metal-dielectric structures which we adapted to all-dielectric.",
+      "L12 (linear variable optical filter for solar-blind UV) supported the wavelength band definitions and confirmed 255-280 nm is a recognized solar-blind UV filter target.",
+      "L15 (coatings for UV imaging and spectroscopy) reinforced the need for low-absorption materials in the passband.",
+      "L19 (multilayer thin-film structures with distributed cavity) motivated the multi-cavity topology in route_03 for sharper bandpass edges.",
+      "L08 (guaranteed global optimization) informed the stop condition design, emphasizing convergence criteria rather than absolute performance thresholds."
+    ],
+    "unresolved_decisions": [
+      "The exact incidence angle was not specified in the request; all routes assume normal incidence but may need adjustment for off-axis performance if required.",
+      "Polarization state was not specified; routes assume unpolarized light but may show polarization sensitivity at higher angles.",
+      "HfO2 UV absorption characteristics at 255 nm are not fully certain from the literature; route_02 may need material substitution if absorption proves too high."
+    ],
+    "stop_if_all_routes_fail": "If all three routes fail to achieve best_target_score above 0.4 after exhausting their stop conditions, the problem may require relaxing the 30-layer constraint, accepting metal-dielectric hybrid designs, or narrowing the passband specification. Return to the user with the best achieved performance from each route and request guidance on which constraint to relax.",
+    "route_sources": {
+      "route_01": "literature_planned",
+      "route_02": "literature_planned",
+      "route_03": "literature_planned",
+      "control_route_01": "llm_memory_control"
+    },
+    "normal_route_count": 3,
+    "control_route_count": 1,
+    "control_route": {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "knowledge_source": "model_prior_knowledge_only",
+      "s2_literature_included": false,
+      "method_research_supplied": false
+    }
+  },
+  "attempts": 1,
+  "normalization_warnings": [],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 7563,
+      "completion_tokens": 4787,
+      "total_tokens": 12350
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 7897,
+      "completion_tokens": 2467,
+      "total_tokens": 10364
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 6497,
+      "completion_tokens": 2420,
+      "total_tokens": 8917
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 6765,
+      "completion_tokens": 2396,
+      "total_tokens": 9161
+    }
+  ],
+  "model_name": "qwen3.5-plus",
+  "planning_mechanism": "literature_route_planning",
+  "control_route_planning": {
+    "schema_version": "tmm-control-route-planning.v1",
+    "status": "planned",
+    "model_name": "qwen3.5-plus",
+    "question_digest": "a072e2f7732cc737",
+    "route_count": 1,
+    "attempts": 1,
+    "warnings": [],
+    "validation_errors": [],
+    "queries": {
+      "status": "unavailable",
+      "queries": [],
+      "rationale": "",
+      "attempts": 0,
+      "validation_errors": [],
+      "usage": []
+    },
+    "literature": {
+      "status": "not_consulted",
+      "requested_limit": 0,
+      "returned": 0,
+      "duplicates_dropped": 0,
+      "dropped_for_context": 0,
+      "character_count": 0,
+      "errors": [
+        "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction."
+      ],
+      "papers": []
+    },
+    "planning_usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 3229,
+        "completion_tokens": 3935,
+        "total_tokens": 7164
+      },
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 6497,
+        "completion_tokens": 2372,
+        "total_tokens": 8869
+      }
+    ],
+    "material_verification": {
+      "checked": true,
+      "catalog": {
+        "schema_version": "1.0",
+        "guaranteed_names": [
+          "ag",
+          "al",
+          "al2o3",
+          "aln",
+          "hfo2",
+          "mgf2",
+          "si",
+          "si3n4",
+          "sic",
+          "sio2",
+          "ti",
+          "tio2",
+          "zno",
+          "zns"
+        ],
+        "coverage": "the guaranteed-name list proves name resolution only; the separate route candidate ranking reads actual n/k grids and records native coverage or explicit interpolation/endpoint-extension availability. Execution still keeps the registry's allow_extrapolation switch fail-closed",
+        "source": "tmm_engine.MaterialRegistry local provider, each name resolved before listing",
+        "candidate_ranking": {
+          "schema_version": "material-candidate-ranking.v1",
+          "max_candidates": 10,
+          "equal_weight_metrics": [
+            "target_band_coverage",
+            "n_k_completeness",
+            "sampling_density"
+          ]
+        },
+        "internal_selector": {
+          "schema_version": "route-material-selector.v1",
+          "enabled": true,
+          "model": "qwen3.5-plus",
+          "max_tokens": 1800
+        },
+        "catalog_status": {
+          "local_csv": {
+            "provider": "local_csv",
+            "materials_dir": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials",
+            "dataset_count": 14
+          },
+          "rii_sqlite": {
+            "provider": "rii_sqlite",
+            "database_path": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\rii_cache.db",
+            "available": true,
+            "page_count": 2712,
+            "refractive_index_point_count": 252442,
+            "extinction_coefficient_point_count": 209839,
+            "database_size_bytes": 13070336,
+            "database_mtime_epoch": 1782453108.0,
+            "database_sha256": "e4c1ec34cc4f765a8400ff87bb7dee8705b6da2cdb11a229cc57ad9bdd274989",
+            "upstream": "https://refractiveindex.info and https://github.com/polyanskiy/refractiveindex.info-database",
+            "license": "CC0-1.0"
+          }
+        }
+      },
+      "routes": {
+        "control_route_01": {
+          "selection": {
+            "schema_version": "route-material-selector.v1",
+            "ranking_schema_version": "material-candidate-ranking.v1",
+            "status": "selected_by_llm",
+            "selection_method": "ranked_candidates_then_internal_llm",
+            "max_candidates": 10,
+            "target_wavelength_ranges_um": [
+              [
+                0.255,
+                0.28
+              ],
+              [
+                0.3,
+                0.7000000000000001
+              ],
+              [
+                0.7000000000000001,
+                1.1
+              ]
+            ],
+            "user_question": "我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。",
+            "requests": [
+              {
+                "request_id": "material_01",
+                "proposed_material": "hfo2",
+                "target_wavelength_ranges_um": [
+                  [
+                    0.255,
+                    0.28
+                  ],
+                  [
+                    0.3,
+                    0.7000000000000001
+                  ],
+                  [
+                    0.7000000000000001,
+                    1.1
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "hfo2",
+                    "resolved_material": "hfo2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Hf",
+                        1
+                      ],
+                      [
+                        "O",
+                        2
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Hf",
+                        1
+                      ],
+                      [
+                        "O",
+                        2
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "hfo2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "hfo2.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 84,
+                    "k_points_in_band": 84,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.010000000000000009,
+                    "sampling_density": 99.99999999999991,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 1,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "local_csv",
+                  "dataset_id": "hfo2",
+                  "reason": "Highest ranked candidate satisfies exact formula constraint and covers target UV-NIR bands."
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "hfo2",
+                  "resolved_material": "hfo2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Hf",
+                      1
+                    ],
+                    [
+                      "O",
+                      2
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Hf",
+                      1
+                    ],
+                    [
+                      "O",
+                      2
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "hfo2",
+                  "shelf": null,
+                  "book": null,
+                  "page": "hfo2.csv",
+                  "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 84,
+                  "k_points_in_band": 84,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.010000000000000009,
+                  "sampling_density": 99.99999999999991,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                },
+                "selected_material": "hfo2"
+              },
+              {
+                "request_id": "material_02",
+                "proposed_material": "mgf2",
+                "target_wavelength_ranges_um": [
+                  [
+                    0.255,
+                    0.28
+                  ],
+                  [
+                    0.3,
+                    0.7000000000000001
+                  ],
+                  [
+                    0.7000000000000001,
+                    1.1
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "MgF2",
+                    "resolved_material": "mgf2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 204,
+                    "shelf": "main",
+                    "book": "MgF2",
+                    "page": "Rodriguez-de_Marcos",
+                    "filepath": "main\\MgF2\\Rodriguez-de Marcos.yml",
+                    "range_um": [
+                      0.0299919,
+                      2.00146
+                    ],
+                    "grid_range_um": [
+                      0.0299919,
+                      2.00146
+                    ],
+                    "n_range_um": [
+                      0.0299919,
+                      2.00146
+                    ],
+                    "k_range_um": [
+                      0.0299919,
+                      2.00146
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 960,
+                    "n_points_in_band": 318,
+                    "k_points_in_band": 318,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.002403000000000044,
+                    "sampling_density": 416.1464835622063,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      960
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "mgf2",
+                    "resolved_material": "mgf2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "F",
+                        2
+                      ],
+                      [
+                        "Mg",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "mgf2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "mgf2.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 84,
+                    "k_points_in_band": 84,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.010000000000000009,
+                    "sampling_density": 99.99999999999991,
+                    "sampling_score": 0.24030000000000418,
+                    "score": 0.746766666666668,
+                    "physical_score": 0.746766666666668,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 2,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "rii_sqlite",
+                  "dataset_id": 204,
+                  "reason": "Highest ranked candidate satisfies exact formula constraint with superior sampling density for target bands."
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "MgF2",
+                  "resolved_material": "mgf2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "F",
+                      2
+                    ],
+                    [
+                      "Mg",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "F",
+                      2
+                    ],
+                    [
+                      "Mg",
+                      1
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 204,
+                  "shelf": "main",
+                  "book": "MgF2",
+                  "page": "Rodriguez-de_Marcos",
+                  "filepath": "main\\MgF2\\Rodriguez-de Marcos.yml",
+                  "range_um": [
+                    0.0299919,
+                    2.00146
+                  ],
+                  "grid_range_um": [
+                    0.0299919,
+                    2.00146
+                  ],
+                  "n_range_um": [
+                    0.0299919,
+                    2.00146
+                  ],
+                  "k_range_um": [
+                    0.0299919,
+                    2.00146
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 960,
+                  "n_points_in_band": 318,
+                  "k_points_in_band": 318,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.002403000000000044,
+                  "sampling_density": 416.1464835622063,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    960
+                  ]
+                },
+                "selected_material": "MgF2 (Rodriguez-de_Marcos)"
+              },
+              {
+                "request_id": "material_03",
+                "proposed_material": "sio2",
+                "target_wavelength_ranges_um": [
+                  [
+                    0.255,
+                    0.28
+                  ],
+                  [
+                    0.3,
+                    0.7000000000000001
+                  ],
+                  [
+                    0.7000000000000001,
+                    1.1
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "SiO2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 410,
+                    "shelf": "main",
+                    "book": "SiO2",
+                    "page": "Gao",
+                    "filepath": "main\\SiO2\\Gao.yml",
+                    "range_um": [
+                      0.252,
+                      1.25
+                    ],
+                    "grid_range_um": [
+                      0.252,
+                      1.25
+                    ],
+                    "n_range_um": [
+                      0.252,
+                      1.25
+                    ],
+                    "k_range_um": [
+                      0.252,
+                      1.25
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 500,
+                    "n_points_in_band": 414,
+                    "k_points_in_band": 414,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.0020000000000000018,
+                    "sampling_density": 499.99999999999955,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      500
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "SiO2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 411,
+                    "shelf": "main",
+                    "book": "SiO2",
+                    "page": "Lemarchand",
+                    "filepath": "main\\SiO2\\Lemarchand.yml",
+                    "range_um": [
+                      0.25,
+                      2.5
+                    ],
+                    "grid_range_um": [
+                      0.25,
+                      2.5
+                    ],
+                    "n_range_um": [
+                      0.25,
+                      2.5
+                    ],
+                    "k_range_um": [
+                      0.25,
+                      2.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 451,
+                    "n_points_in_band": 167,
+                    "k_points_in_band": 167,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.0050000000000000044,
+                    "sampling_density": 199.99999999999983,
+                    "sampling_score": 0.4,
+                    "score": 0.7999999999999999,
+                    "physical_score": 0.7999999999999999,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      451
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 3,
+                    "material": "SiO2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 409,
+                    "shelf": "main",
+                    "book": "SiO2",
+                    "page": "Rodriguez-de_Marcos",
+                    "filepath": "main\\SiO2\\Rodriguez-de Marcos.yml",
+                    "range_um": [
+                      0.0299714,
+                      1.51066
+                    ],
+                    "grid_range_um": [
+                      0.0299714,
+                      1.51066
+                    ],
+                    "n_range_um": [
+                      0.0299714,
+                      1.51066
+                    ],
+                    "k_range_um": [
+                      0.0299714,
+                      1.51066
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 395,
+                    "n_points_in_band": 140,
+                    "k_points_in_band": 140,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.005475000000000008,
+                    "sampling_density": 182.64840182648376,
+                    "sampling_score": 0.36529680365296785,
+                    "score": 0.7884322678843226,
+                    "physical_score": 0.7884322678843226,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      395
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 4,
+                    "material": "sio2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "sio2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "sio2.csv",
+                    "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\sio2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 84,
+                    "k_points_in_band": 84,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.010000000000000009,
+                    "sampling_density": 99.99999999999991,
+                    "sampling_score": 0.2,
+                    "score": 0.7333333333333334,
+                    "physical_score": 0.7333333333333334,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 5,
+                    "material": "HIKARI-multipurpose",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 855,
+                    "shelf": "glass",
+                    "book": "HIKARI-multipurpose",
+                    "page": "NIFS-V",
+                    "filepath": "hikari\\SiO2\\NIFS-V.yml",
+                    "range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "grid_range_um": [
+                      0.157,
+                      2.5
+                    ],
+                    "n_range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "k_range_um": [
+                      0.157,
+                      2.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 36,
+                    "n_points_in_band": 13,
+                    "k_points_in_band": 24,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.06115799999999999,
+                    "sampling_density": 16.351090617744205,
+                    "sampling_score": 0.03270218123548844,
+                    "score": 0.6775673937451628,
+                    "physical_score": 0.6775673937451628,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      0,
+                      0,
+                      1,
+                      36
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 6,
+                    "material": "HIKARI-multipurpose",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 852,
+                    "shelf": "glass",
+                    "book": "HIKARI-multipurpose",
+                    "page": "NIFS-A",
+                    "filepath": "hikari\\SiO2\\NIFS-A.yml",
+                    "range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "grid_range_um": [
+                      0.184,
+                      2.5
+                    ],
+                    "n_range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "k_range_um": [
+                      0.184,
+                      2.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 35,
+                    "n_points_in_band": 13,
+                    "k_points_in_band": 24,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.06295676470588235,
+                    "sampling_density": 15.88391660009437,
+                    "sampling_score": 0.03176783320018877,
+                    "score": 0.6772559444000629,
+                    "physical_score": 0.6772559444000629,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      0,
+                      0,
+                      1,
+                      35
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 7,
+                    "material": "HIKARI-multipurpose",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 853,
+                    "shelf": "glass",
+                    "book": "HIKARI-multipurpose",
+                    "page": "NIFS-S",
+                    "filepath": "hikari\\SiO2\\NIFS-S.yml",
+                    "range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "grid_range_um": [
+                      0.18489,
+                      2.5
+                    ],
+                    "n_range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "k_range_um": [
+                      0.193,
+                      2.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 34,
+                    "n_points_in_band": 13,
+                    "k_points_in_band": 24,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.06486454545454545,
+                    "sampling_density": 15.416742582444535,
+                    "sampling_score": 0.030833485164889096,
+                    "score": 0.676944495054963,
+                    "physical_score": 0.676944495054963,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      0,
+                      0,
+                      1,
+                      34
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 8,
+                    "material": "HIKARI-multipurpose",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 854,
+                    "shelf": "glass",
+                    "book": "HIKARI-multipurpose",
+                    "page": "NIFS-U",
+                    "filepath": "hikari\\SiO2\\NIFS-U.yml",
+                    "range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "grid_range_um": [
+                      0.18489,
+                      2.5
+                    ],
+                    "n_range_um": [
+                      0.18489,
+                      2.32542
+                    ],
+                    "k_range_um": [
+                      0.193,
+                      2.5
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 34,
+                    "n_points_in_band": 13,
+                    "k_points_in_band": 24,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.06486454545454545,
+                    "sampling_density": 15.416742582444535,
+                    "sampling_score": 0.030833485164889096,
+                    "score": 0.676944495054963,
+                    "physical_score": 0.676944495054963,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      0,
+                      0,
+                      1,
+                      34
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 8,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "rii_sqlite",
+                  "dataset_id": 410,
+                  "reason": "Highest ranked candidate satisfies exact formula constraint and covers target UV-NIR bands."
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "SiO2",
+                  "resolved_material": "sio2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "O",
+                      2
+                    ],
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "O",
+                      2
+                    ],
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 410,
+                  "shelf": "main",
+                  "book": "SiO2",
+                  "page": "Gao",
+                  "filepath": "main\\SiO2\\Gao.yml",
+                  "range_um": [
+                    0.252,
+                    1.25
+                  ],
+                  "grid_range_um": [
+                    0.252,
+                    1.25
+                  ],
+                  "n_range_um": [
+                    0.252,
+                    1.25
+                  ],
+                  "k_range_um": [
+                    0.252,
+                    1.25
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 500,
+                  "n_points_in_band": 414,
+                  "k_points_in_band": 414,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.0020000000000000018,
+                  "sampling_density": 499.99999999999955,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    500
+                  ]
+                },
+                "selected_material": "SiO2 (Gao)"
+              }
+            ],
+            "call_count": 1,
+            "selector_payload": {
+              "schema_version": "route-material-selector.v1",
+              "user_question": "我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。",
+              "target_wavelength_ranges_um": [
+                [
+                  0.255,
+                  0.28
+                ],
+                [
+                  0.3,
+                  0.7000000000000001
+                ],
+                [
+                  0.7000000000000001,
+                  1.1
+                ]
+              ],
+              "selection_rule": "Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.",
+              "requests": [
+                {
+                  "request_id": "material_01",
+                  "proposed_material": "hfo2",
+                  "target_wavelength_ranges_um": [
+                    [
+                      0.255,
+                      0.28
+                    ],
+                    [
+                      0.3,
+                      0.7000000000000001
+                    ],
+                    [
+                      0.7000000000000001,
+                      1.1
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "hfo2",
+                      "resolved_material": "hfo2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "Hf",
+                          1
+                        ],
+                        [
+                          "O",
+                          2
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "Hf",
+                          1
+                        ],
+                        [
+                          "O",
+                          2
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "hfo2",
+                      "shelf": null,
+                      "book": null,
+                      "page": "hfo2.csv",
+                      "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 84,
+                      "k_points_in_band": 84,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.010000000000000009,
+                      "sampling_density": 99.99999999999991,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 1,
+                  "status": "ranked"
+                },
+                {
+                  "request_id": "material_02",
+                  "proposed_material": "mgf2",
+                  "target_wavelength_ranges_um": [
+                    [
+                      0.255,
+                      0.28
+                    ],
+                    [
+                      0.3,
+                      0.7000000000000001
+                    ],
+                    [
+                      0.7000000000000001,
+                      1.1
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "MgF2",
+                      "resolved_material": "mgf2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "F",
+                          2
+                        ],
+                        [
+                          "Mg",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "F",
+                          2
+                        ],
+                        [
+                          "Mg",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 204,
+                      "shelf": "main",
+                      "book": "MgF2",
+                      "page": "Rodriguez-de_Marcos",
+                      "filepath": "main\\MgF2\\Rodriguez-de Marcos.yml",
+                      "range_um": [
+                        0.0299919,
+                        2.00146
+                      ],
+                      "grid_range_um": [
+                        0.0299919,
+                        2.00146
+                      ],
+                      "n_range_um": [
+                        0.0299919,
+                        2.00146
+                      ],
+                      "k_range_um": [
+                        0.0299919,
+                        2.00146
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 960,
+                      "n_points_in_band": 318,
+                      "k_points_in_band": 318,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.002403000000000044,
+                      "sampling_density": 416.1464835622063,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        960
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 2,
+                      "material": "mgf2",
+                      "resolved_material": "mgf2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "F",
+                          2
+                        ],
+                        [
+                          "Mg",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "F",
+                          2
+                        ],
+                        [
+                          "Mg",
+                          1
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "mgf2",
+                      "shelf": null,
+                      "book": null,
+                      "page": "mgf2.csv",
+                      "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\mgf2.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 84,
+                      "k_points_in_band": 84,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.010000000000000009,
+                      "sampling_density": 99.99999999999991,
+                      "sampling_score": 0.24030000000000418,
+                      "score": 0.746766666666668,
+                      "physical_score": 0.746766666666668,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 2,
+                  "status": "ranked"
+                },
+                {
+                  "request_id": "material_03",
+                  "proposed_material": "sio2",
+                  "target_wavelength_ranges_um": [
+                    [
+                      0.255,
+                      0.28
+                    ],
+                    [
+                      0.3,
+                      0.7000000000000001
+                    ],
+                    [
+                      0.7000000000000001,
+                      1.1
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "SiO2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 410,
+                      "shelf": "main",
+                      "book": "SiO2",
+                      "page": "Gao",
+                      "filepath": "main\\SiO2\\Gao.yml",
+                      "range_um": [
+                        0.252,
+                        1.25
+                      ],
+                      "grid_range_um": [
+                        0.252,
+                        1.25
+                      ],
+                      "n_range_um": [
+                        0.252,
+                        1.25
+                      ],
+                      "k_range_um": [
+                        0.252,
+                        1.25
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 500,
+                      "n_points_in_band": 414,
+                      "k_points_in_band": 414,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.0020000000000000018,
+                      "sampling_density": 499.99999999999955,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        500
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 2,
+                      "material": "SiO2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 411,
+                      "shelf": "main",
+                      "book": "SiO2",
+                      "page": "Lemarchand",
+                      "filepath": "main\\SiO2\\Lemarchand.yml",
+                      "range_um": [
+                        0.25,
+                        2.5
+                      ],
+                      "grid_range_um": [
+                        0.25,
+                        2.5
+                      ],
+                      "n_range_um": [
+                        0.25,
+                        2.5
+                      ],
+                      "k_range_um": [
+                        0.25,
+                        2.5
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 451,
+                      "n_points_in_band": 167,
+                      "k_points_in_band": 167,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.0050000000000000044,
+                      "sampling_density": 199.99999999999983,
+                      "sampling_score": 0.4,
+                      "score": 0.7999999999999999,
+                      "physical_score": 0.7999999999999999,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        451
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 3,
+                      "material": "SiO2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 409,
+                      "shelf": "main",
+                      "book": "SiO2",
+                      "page": "Rodriguez-de_Marcos",
+                      "filepath": "main\\SiO2\\Rodriguez-de Marcos.yml",
+                      "range_um": [
+                        0.0299714,
+                        1.51066
+                      ],
+                      "grid_range_um": [
+                        0.0299714,
+                        1.51066
+                      ],
+                      "n_range_um": [
+                        0.0299714,
+                        1.51066
+                      ],
+                      "k_range_um": [
+                        0.0299714,
+                        1.51066
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 395,
+                      "n_points_in_band": 140,
+                      "k_points_in_band": 140,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.005475000000000008,
+                      "sampling_density": 182.64840182648376,
+                      "sampling_score": 0.36529680365296785,
+                      "score": 0.7884322678843226,
+                      "physical_score": 0.7884322678843226,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        395
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 4,
+                      "material": "sio2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "sio2",
+                      "shelf": null,
+                      "book": null,
+                      "page": "sio2.csv",
+                      "filepath": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\sio2.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 84,
+                      "k_points_in_band": 84,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.010000000000000009,
+                      "sampling_density": 99.99999999999991,
+                      "sampling_score": 0.2,
+                      "score": 0.7333333333333334,
+                      "physical_score": 0.7333333333333334,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 5,
+                      "material": "HIKARI-multipurpose",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 855,
+                      "shelf": "glass",
+                      "book": "HIKARI-multipurpose",
+                      "page": "NIFS-V",
+                      "filepath": "hikari\\SiO2\\NIFS-V.yml",
+                      "range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "grid_range_um": [
+                        0.157,
+                        2.5
+                      ],
+                      "n_range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "k_range_um": [
+                        0.157,
+                        2.5
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 36,
+                      "n_points_in_band": 13,
+                      "k_points_in_band": 24,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.06115799999999999,
+                      "sampling_density": 16.351090617744205,
+                      "sampling_score": 0.03270218123548844,
+                      "score": 0.6775673937451628,
+                      "physical_score": 0.6775673937451628,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        0,
+                        0,
+                        1,
+                        36
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 6,
+                      "material": "HIKARI-multipurpose",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 852,
+                      "shelf": "glass",
+                      "book": "HIKARI-multipurpose",
+                      "page": "NIFS-A",
+                      "filepath": "hikari\\SiO2\\NIFS-A.yml",
+                      "range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "grid_range_um": [
+                        0.184,
+                        2.5
+                      ],
+                      "n_range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "k_range_um": [
+                        0.184,
+                        2.5
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 35,
+                      "n_points_in_band": 13,
+                      "k_points_in_band": 24,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.06295676470588235,
+                      "sampling_density": 15.88391660009437,
+                      "sampling_score": 0.03176783320018877,
+                      "score": 0.6772559444000629,
+                      "physical_score": 0.6772559444000629,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        0,
+                        0,
+                        1,
+                        35
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 7,
+                      "material": "HIKARI-multipurpose",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 853,
+                      "shelf": "glass",
+                      "book": "HIKARI-multipurpose",
+                      "page": "NIFS-S",
+                      "filepath": "hikari\\SiO2\\NIFS-S.yml",
+                      "range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "grid_range_um": [
+                        0.18489,
+                        2.5
+                      ],
+                      "n_range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "k_range_um": [
+                        0.193,
+                        2.5
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 34,
+                      "n_points_in_band": 13,
+                      "k_points_in_band": 24,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.06486454545454545,
+                      "sampling_density": 15.416742582444535,
+                      "sampling_score": 0.030833485164889096,
+                      "score": 0.676944495054963,
+                      "physical_score": 0.676944495054963,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        0,
+                        0,
+                        1,
+                        34
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 8,
+                      "material": "HIKARI-multipurpose",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 854,
+                      "shelf": "glass",
+                      "book": "HIKARI-multipurpose",
+                      "page": "NIFS-U",
+                      "filepath": "hikari\\SiO2\\NIFS-U.yml",
+                      "range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "grid_range_um": [
+                        0.18489,
+                        2.5
+                      ],
+                      "n_range_um": [
+                        0.18489,
+                        2.32542
+                      ],
+                      "k_range_um": [
+                        0.193,
+                        2.5
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 34,
+                      "n_points_in_band": 13,
+                      "k_points_in_band": 24,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.06486454545454545,
+                      "sampling_density": 15.416742582444535,
+                      "sampling_score": 0.030833485164889096,
+                      "score": 0.676944495054963,
+                      "physical_score": 0.676944495054963,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        0,
+                        0,
+                        1,
+                        34
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 8,
+                  "status": "ranked"
+                }
+              ]
+            },
+            "selector_prompt": {
+              "system": "You are the internal material-dataset selector inside a scientific TMM\nharness. This is not route planning and you must not redesign the route.\nReturn exactly one JSON object and no markdown:\n{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":562,\"reason\":\"...\"}]}\n\nThe user question is authoritative. Each request contains candidates already\nretrieved from the local MaterialRegistry and sorted by three equal physical\nmetrics: target-band coverage, n/k completeness, and sampling density. Rank 1\nis the most physically reliable candidate; lower rank means less reliable.\nChoose exactly one candidate from the supplied list for every request. Never\ninvent, rename, or edit a provider or dataset_id. The selected_rank must point\nto the selected array element, and provider/dataset_id must copy that element.\n\nMaterial identity, stoichiometry, explicit material state/preparation, and an\nexplicit requested source are hard constraints. A candidate with\nformula_exact=false or semantic_match=same_element_family is not an allowed\nsubstitute for a formula request. SiO is not SiO2, even if the SiO2 candidate\nhas better physical coverage. When several candidates satisfy the hard\nconstraints, select the highest-ranked one (usually rank 1). If no candidate\nsatisfies them, return selected_rank:null, provider:null, dataset_id:null and\nreason:\"needs_confirmation\" for that request.",
+              "user": "{\"requests\": [{\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"hfo2\", \"effective_step_um\": 0.010000000000000009, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\hfo2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"Hf\", 1], [\"O\", 2]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 84, \"k_range_um\": [0.2, 25.0], \"material\": \"hfo2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 84, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"hfo2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Hf\", 1], [\"O\", 2]], \"resolved_material\": \"hfo2\", \"sampling_density\": 99.99999999999991, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 1, \"proposed_material\": \"hfo2\", \"request_id\": \"material_01\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[0.255, 0.28], [0.3, 0.7000000000000001], [0.7000000000000001, 1.1]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": \"MgF2\", \"dataset_id\": 204, \"effective_step_um\": 0.002403000000000044, \"filepath\": \"main\\\\MgF2\\\\Rodriguez-de Marcos.yml\", \"formula_exact\": true, \"formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.0299919, 2.00146], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 318, \"k_range_um\": [0.0299919, 2.00146], \"material\": \"MgF2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 318, \"n_range_um\": [0.0299919, 2.00146], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Rodriguez-de_Marcos\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 960, \"provider\": \"rii_sqlite\", \"range_um\": [0.0299919, 2.00146], \"rank\": 1, \"rank_key\": [1, 0, 1, 960], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"resolved_material\": \"mgf2\", \"sampling_density\": 416.1464835622063, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"mgf2\", \"effective_step_um\": 0.010000000000000009, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\mgf2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 84, \"k_range_um\": [0.2, 25.0], \"material\": \"mgf2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 84, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"mgf2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 0.746766666666668, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 2, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"F\", 2], [\"Mg\", 1]], \"resolved_material\": \"mgf2\", \"sampling_density\": 99.99999999999991, \"sampling_score\": 0.24030000000000418, \"score\": 0.746766666666668, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 2, \"proposed_material\": \"mgf2\", \"request_id\": \"material_02\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[0.255, 0.28], [0.3, 0.7000000000000001], [0.7000000000000001, 1.1]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": \"SiO2\", \"dataset_id\": 410, \"effective_step_um\": 0.0020000000000000018, \"filepath\": \"main\\\\SiO2\\\\Gao.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.252, 1.25], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 414, \"k_range_um\": [0.252, 1.25], \"material\": \"SiO2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 414, \"n_range_um\": [0.252, 1.25], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Gao\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 500, \"provider\": \"rii_sqlite\", \"range_um\": [0.252, 1.25], \"rank\": 1, \"rank_key\": [1, 0, 1, 500], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 499.99999999999955, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"SiO2\", \"dataset_id\": 411, \"effective_step_um\": 0.0050000000000000044, \"filepath\": \"main\\\\SiO2\\\\Lemarchand.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.25, 2.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 167, \"k_range_um\": [0.25, 2.5], \"material\": \"SiO2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 167, \"n_range_um\": [0.25, 2.5], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Lemarchand\", \"partial_candidate_fallback\": false, \"physical_score\": 0.7999999999999999, \"points\": 451, \"provider\": \"rii_sqlite\", \"range_um\": [0.25, 2.5], \"rank\": 2, \"rank_key\": [1, 0, 1, 451], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 199.99999999999983, \"sampling_score\": 0.4, \"score\": 0.7999999999999999, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"SiO2\", \"dataset_id\": 409, \"effective_step_um\": 0.005475000000000008, \"filepath\": \"main\\\\SiO2\\\\Rodriguez-de Marcos.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.0299714, 1.51066], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 140, \"k_range_um\": [0.0299714, 1.51066], \"material\": \"SiO2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 140, \"n_range_um\": [0.0299714, 1.51066], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Rodriguez-de_Marcos\", \"partial_candidate_fallback\": false, \"physical_score\": 0.7884322678843226, \"points\": 395, \"provider\": \"rii_sqlite\", \"range_um\": [0.0299714, 1.51066], \"rank\": 3, \"rank_key\": [1, 0, 1, 395], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 182.64840182648376, \"sampling_score\": 0.36529680365296785, \"score\": 0.7884322678843226, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"sio2\", \"effective_step_um\": 0.010000000000000009, \"filepath\": \"F:\\\\OptoMind\\\\OptoMind-TMM-Article-Handoff-20260813\\\\veritmm\\\\tmm_engine\\\\materials\\\\sio2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 84, \"k_range_um\": [0.2, 25.0], \"material\": \"sio2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 84, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"sio2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 0.7333333333333334, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 4, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 99.99999999999991, \"sampling_score\": 0.2, \"score\": 0.7333333333333334, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"HIKARI-multipurpose\", \"dataset_id\": 855, \"effective_step_um\": 0.06115799999999999, \"filepath\": \"hikari\\\\SiO2\\\\NIFS-V.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.157, 2.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 24, \"k_range_um\": [0.157, 2.5], \"material\": \"HIKARI-multipurpose\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 13, \"n_range_um\": [0.18489, 2.32542], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"NIFS-V\", \"partial_candidate_fallback\": false, \"physical_score\": 0.6775673937451628, \"points\": 36, \"provider\": \"rii_sqlite\", \"range_um\": [0.18489, 2.32542], \"rank\": 5, \"rank_key\": [0, 0, 1, 36], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 16.351090617744205, \"sampling_score\": 0.03270218123548844, \"score\": 0.6775673937451628, \"semantic_match\": \"exact_formula\", \"shelf\": \"glass\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"HIKARI-multipurpose\", \"dataset_id\": 852, \"effective_step_um\": 0.06295676470588235, \"filepath\": \"hikari\\\\SiO2\\\\NIFS-A.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.184, 2.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 24, \"k_range_um\": [0.184, 2.5], \"material\": \"HIKARI-multipurpose\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 13, \"n_range_um\": [0.18489, 2.32542], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"NIFS-A\", \"partial_candidate_fallback\": false, \"physical_score\": 0.6772559444000629, \"points\": 35, \"provider\": \"rii_sqlite\", \"range_um\": [0.18489, 2.32542], \"rank\": 6, \"rank_key\": [0, 0, 1, 35], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 15.88391660009437, \"sampling_score\": 0.03176783320018877, \"score\": 0.6772559444000629, \"semantic_match\": \"exact_formula\", \"shelf\": \"glass\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"HIKARI-multipurpose\", \"dataset_id\": 853, \"effective_step_um\": 0.06486454545454545, \"filepath\": \"hikari\\\\SiO2\\\\NIFS-S.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.18489, 2.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 24, \"k_range_um\": [0.193, 2.5], \"material\": \"HIKARI-multipurpose\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 13, \"n_range_um\": [0.18489, 2.32542], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"NIFS-S\", \"partial_candidate_fallback\": false, \"physical_score\": 0.676944495054963, \"points\": 34, \"provider\": \"rii_sqlite\", \"range_um\": [0.18489, 2.32542], \"rank\": 7, \"rank_key\": [0, 0, 1, 34], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 15.416742582444535, \"sampling_score\": 0.030833485164889096, \"score\": 0.676944495054963, \"semantic_match\": \"exact_formula\", \"shelf\": \"glass\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": \"HIKARI-multipurpose\", \"dataset_id\": 854, \"effective_step_um\": 0.06486454545454545, \"filepath\": \"hikari\\\\SiO2\\\\NIFS-U.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.18489, 2.5], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 24, \"k_range_um\": [0.193, 2.5], \"material\": \"HIKARI-multipurpose\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 13, \"n_range_um\": [0.18489, 2.32542], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"NIFS-U\", \"partial_candidate_fallback\": false, \"physical_score\": 0.676944495054963, \"points\": 34, \"provider\": \"rii_sqlite\", \"range_um\": [0.18489, 2.32542], \"rank\": 8, \"rank_key\": [0, 0, 1, 34], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 15.416742582444535, \"sampling_score\": 0.030833485164889096, \"score\": 0.676944495054963, \"semantic_match\": \"exact_formula\", \"shelf\": \"glass\", \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 8, \"proposed_material\": \"sio2\", \"request_id\": \"material_03\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[0.255, 0.28], [0.3, 0.7000000000000001], [0.7000000000000001, 1.1]]}], \"schema_version\": \"route-material-selector.v1\", \"selection_rule\": \"Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.\", \"target_wavelength_ranges_um\": [[0.255, 0.28], [0.3, 0.7000000000000001], [0.7000000000000001, 1.1]], \"user_question\": \"我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。\"}",
+              "sha256": "87bb12222612ce104d792b80b145116ce44e6e93e86ca7bcd14186c5731f9178"
+            },
+            "selector_model": "qwen3.5-plus",
+            "selector_response": {
+              "raw_content": "{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"hfo2\",\"reason\":\"Highest ranked candidate satisfies exact formula constraint and covers target UV-NIR bands.\"},{\"request_id\":\"material_02\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":204,\"reason\":\"Highest ranked candidate satisfies exact formula constraint with superior sampling density for target bands.\"},{\"request_id\":\"material_03\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":410,\"reason\":\"Highest ranked candidate satisfies exact formula constraint and covers target UV-NIR bands.\"}]}",
+              "sha256": "4369cc624985df3388fa6e6b1f3eb016722e9b92ce5f269de59abad6d1b41013",
+              "usage": {
+                "model_name": "qwen3.5-plus",
+                "mock_llm": false,
+                "prompt_tokens": 6497,
+                "completion_tokens": 2372,
+                "total_tokens": 8869
+              }
+            }
+          },
+          "resolved": [
+            {
+              "proposed": "hfo2",
+              "ok": true,
+              "resolved": "hfo2",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "local_csv",
+              "dataset_id": "hfo2",
+              "source": "F:\\OptoMind\\OptoMind-TMM-Article-Handoff-20260813\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+              "coverage_um": [
+                0.2,
+                25.0
+              ],
+              "dataset": "local_csv:hfo2"
+            },
+            {
+              "proposed": "MgF2 (Rodriguez-de_Marcos)",
+              "ok": true,
+              "resolved": "mgf2",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "rii_sqlite",
+              "dataset_id": "204",
+              "source": "main\\MgF2\\Rodriguez-de Marcos.yml",
+              "coverage_um": [
+                0.0299919,
+                2.00146
+              ],
+              "dataset": "rii_sqlite:204"
+            },
+            {
+              "proposed": "SiO2 (Gao)",
+              "ok": true,
+              "resolved": "sio2",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "rii_sqlite",
+              "dataset_id": "410",
+              "source": "main\\SiO2\\Gao.yml",
+              "coverage_um": [
+                0.252,
+                1.25
+              ],
+              "dataset": "rii_sqlite:410"
+            }
+          ]
+        }
+      },
+      "repaired": []
+    },
+    "plan": {
+      "problem_id": "tmm_problem_a072e2f7732cc737",
+      "planning_summary": "This control axis tests whether a fixed 29-layer Fabry-Perot bandpass topology with HfO2/MgF2 material pair can achieve the required UV transmission and visible/NIR suppression through thickness optimization alone. The design draws on recalled thin-film optics principles: quarter-wave mirror stacks for high reflectance outside the passband, and a half-wave cavity layer for transmission at the target wavelength. No literature was consulted; all material choices and layer counts come from prior knowledge of UV filter design conventions.",
+      "routes": [
+        {
+          "route_id": "control_route_01",
+          "title": "Fixed 29-layer HfO2/MgF2 Fabry-Perot bandpass with thickness optimization",
+          "route_kind": "optimize_existing_stack",
+          "scientific_hypothesis": "A symmetric 29-layer Fabry-Perot structure with HfO2/MgF2 quarter-wave mirrors and a half-wave HfO2 cavity, optimized for layer thicknesses, can achieve high transmission in 255-280 nm while suppressing 300-700 nm and 700-1100 nm bands without exceeding 30 layers.",
+          "design_principle": "Quarter-wave optical thickness stacks create high reflectance bands centered at the design wavelength; a half-wave cavity layer between two mirror stacks creates a transmission peak within the reflectance band. The mirror pair count controls stopband width and depth, while cavity thickness controls passband center and width.",
+          "proposed_materials": [
+            "hfo2",
+            "MgF2 (Rodriguez-de_Marcos)",
+            "SiO2 (Gao)"
+          ],
+          "proposed_topology": "Air | HfO2(1) | MgF2(2) | HfO2(3) | MgF2(4) | HfO2(5) | MgF2(6) | HfO2(7) | MgF2(8) | HfO2(9) | MgF2(10) | HfO2(11) | MgF2(12) | HfO2(13) | MgF2(14) | HfO2(15-cavity) | MgF2(16) | HfO2(17) | MgF2(18) | HfO2(19) | MgF2(20) | HfO2(21) | MgF2(22) | HfO2(23) | MgF2(24) | HfO2(25) | MgF2(26) | HfO2(27) | MgF2(28) | HfO2(29) | SiO2 substrate",
+          "design_variables": [
+            "thickness_nm_layer_1",
+            "thickness_nm_layer_2",
+            "thickness_nm_layer_3",
+            "thickness_nm_layer_4",
+            "thickness_nm_layer_5",
+            "thickness_nm_layer_6",
+            "thickness_nm_layer_7",
+            "thickness_nm_layer_8",
+            "thickness_nm_layer_9",
+            "thickness_nm_layer_10",
+            "thickness_nm_layer_11",
+            "thickness_nm_layer_12",
+            "thickness_nm_layer_13",
+            "thickness_nm_layer_14",
+            "thickness_nm_layer_15",
+            "thickness_nm_layer_16",
+            "thickness_nm_layer_17",
+            "thickness_nm_layer_18",
+            "thickness_nm_layer_19",
+            "thickness_nm_layer_20",
+            "thickness_nm_layer_21",
+            "thickness_nm_layer_22",
+            "thickness_nm_layer_23",
+            "thickness_nm_layer_24",
+            "thickness_nm_layer_25",
+            "thickness_nm_layer_26",
+            "thickness_nm_layer_27",
+            "thickness_nm_layer_28",
+            "thickness_nm_layer_29"
+          ],
+          "soft_objectives": [
+            "maximize mean transmittance in 255-280 nm band",
+            "minimize mean transmittance in 300-700 nm band",
+            "minimize mean transmittance in 700-1100 nm band",
+            "maintain total layer count at exactly 29"
+          ],
+          "manufacturing_considerations": [
+            "all layers must be physically realizable thicknesses (10-200 nm range typical for UV coatings)",
+            "no metal layers used",
+            "HfO2 and MgF2 are conventional evaporatable/sputterable dielectrics",
+            "total layer count 29 is within the 30-layer constraint"
+          ],
+          "evidence_ids": [],
+          "theory_basis": [
+            "Quarter-wave optical thickness (n*d = lambda/4) creates constructive interference for reflection at the design wavelength",
+            "Fabry-Perot cavity with half-wave optical thickness creates transmission resonance within a high-reflectance stopband",
+            "Higher refractive index contrast between H and L materials produces wider and deeper stopbands",
+            "Symmetric mirror stacks on both sides of cavity produce symmetric passband shape",
+            "MgF2 has low refractive index (~1.38-1.40) and good UV transparency down to ~150 nm",
+            "HfO2 has moderate-high refractive index (~2.0-2.1) in UV and is commonly used for UV coatings",
+            "Stopband width scales with index ratio nH/nL; more pairs increase stopband depth"
+          ],
+          "expected_advantages": [
+            "Fixed topology allows clean isolation of thickness optimization effects",
+            "29 layers provides sufficient mirror pairs (7 per side) for deep stopbands in visible/NIR",
+            "HfO2/MgF2 pair has adequate index contrast for UV bandpass applications",
+            "Symmetric design should produce clean passband without sidelobes"
+          ],
+          "known_risks": [
+            "Refractive index values for HfO2 and MgF2 at 255-280 nm are recalled estimates; actual n/k data from the registry may differ and affect quarter-wave thickness calculations",
+            "Material absorption in deep UV (especially HfO2) is uncertain from memory; k values from registry will determine actual transmission limits",
+            "Quarter-wave thickness estimates (~32 nm for HfO2, ~48 nm for MgF2 at 267.5 nm) are approximate and will be tuned by the optimizer",
+            "Cavity layer being single HfO2 may not provide optimal passband width; multi-layer cavity could be better but would require different topology",
+            "Angle of incidence not specified in request; assumed normal incidence but space platform may have off-axis rays",
+            "Polarization effects not addressed; s and p polarization may split at non-normal incidence",
+            "Did not explore alternative material pairs (Al2O3/MgF2, SiO2/HfO2) which might have better UV transmission or index contrast",
+            "Did not explore different layer counts (25, 27, 30) which might offer better performance within constraint"
+          ],
+          "execution_request_english": "Optimize a 29-layer thin-film stack on SiO2 (Gao) substrate with air incidence. Layer sequence from air to substrate: HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2 (cavity), MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2, MgF2 (Rodriguez-de_Marcos), HfO2. All 29 layer thicknesses are optimizable variables. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm, minimize transmittance in 700-1100 nm. Normal incidence, unpolarized light. No metal layers. Total layer count fixed at 29.",
+          "priority": 1,
+          "parent_route_id": null,
+          "revision_reason": null
+        }
+      ],
+      "knowledge_source": "model_prior_knowledge_only",
+      "knowledge_source_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+      "research_influence": [],
+      "unresolved_decisions": [
+        "Exact refractive index values for HfO2 and MgF2 at 255-280 nm need to be read from the material registry dataset",
+        "Whether HfO2 has significant extinction coefficient (k) in the 255-280 nm range that would limit maximum achievable transmission",
+        "Whether a single-layer cavity is optimal or if a multi-layer cavity would improve passband shape within the 30-layer constraint",
+        "Whether normal incidence assumption is valid for the actual space platform geometry"
+      ],
+      "stop_if_all_routes_fail": "If this control route cannot achieve a best_target_score above 0.5 after full optimization, the fixed 29-layer Fabry-Perot topology with HfO2/MgF2 may be fundamentally inadequate for this UV bandpass requirement, and alternative topologies or material pairs would need to be explored in future studies."
+    },
+    "pre_declarations": {
+      "control_route_01": {
+        "expected_observations": [
+          "If the hypothesis holds, best_target_score should increase across optimization rounds as thicknesses converge toward quarter-wave and half-wave conditions",
+          "If the hypothesis holds, valid_candidates should remain high (near total candidate count) since all-thickness variations on dielectric stacks are typically physically valid",
+          "If the hypothesis does not hold, best_target_score will plateau early and tightest_margin will show no improvement across rounds, indicating the fixed topology cannot achieve the required bandpass behavior",
+          "If material absorption in UV is higher than recalled, transmittance in 255-280 nm will be limited regardless of thickness optimization"
+        ],
+        "stop_conditions": [
+          "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+          "If valid_candidates drops below 10 percent of total candidates for two consecutive rounds, reduce thickness search range and continue",
+          "If tightest_margin becomes negative for more than half of candidates, the topology may be fundamentally unsuitable; stop and record the failure mode"
+        ]
+      }
+    },
+    "planning_mechanism": "llm_memory_control",
+    "knowledge_source": "model_prior_knowledge_only",
+    "no_literature_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+    "evidence_ids_allowed": [],
+    "literature_client_invoked": false,
+    "method_research_supplied": false
+  },
+  "route_sources": {
+    "route_01": "literature_planned",
+    "route_02": "literature_planned",
+    "route_03": "literature_planned",
+    "control_route_01": "llm_memory_control"
+  },
+  "normal_route_count": 3,
+  "control_route_count": 1
+}

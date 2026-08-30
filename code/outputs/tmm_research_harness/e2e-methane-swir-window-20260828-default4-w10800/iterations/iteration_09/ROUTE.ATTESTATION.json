@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_09/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "2a25a791f5622e224ada754e8c9858f6058546ebafc6beef8ab8d18dc7449e21",
+  "recorded_at_utc": "2026-08-28T13:37:07.380305+00:00",
+  "elapsed_seconds": 2583.541300700017,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_09",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Relaxing thickness bounds by ±10% and applying deterministic coordinate-wise perturbation of ±4.0 nm to worst-performing 25% of candidates will increase valid candidate density above 10 and escape local symmetry clusters, leading to improved best_target_score.",
+  "expected_advantages": [
+    "Higher valid candidate density enables better statistical sampling",
+    "Perturbation breaks local symmetry to escape suboptimal minima",
+    "Maintains proven 24-layer topology from prior successful iterations"
+  ],
+  "known_risks": [
+    "Relaxed bounds may increase total coating thickness beyond practical limits",
+    "Perturbation may temporarily degrade best_target_score during exploration phase"
+  ],
+  "expected_observations": [
+    "If the periodic hypothesis holds, best_target_score should increase with optimization rounds and stabilize as thicknesses converge to quarter-wave values near 375 nm center wavelength",
+    "If the periodic hypothesis fails, best_target_score will plateau below acceptable levels and tightest_margin will not improve across rounds, indicating bandwidth limitation",
+    "valid_candidates should remain high (above 10 per round) if the design space is well-conditioned",
+    "thicknesses_nm should converge to values near 90-100 nm for HfO2 and 130-140 nm for SiO2 if quarter-wave condition at 375 nm is optimal"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for three consecutive rounds, relax thickness bounds and continue for one more round before stopping"
+  ]
+}

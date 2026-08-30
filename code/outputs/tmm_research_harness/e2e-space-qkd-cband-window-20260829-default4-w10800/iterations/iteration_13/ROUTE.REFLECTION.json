@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Hypothesis validation: best_target_score reached 0.919307 with tightest_margin 0.5039, consistent with broader band coverage expectations. Thickness analysis confirms chirp utilization: Candidate 0 (round 3 top performer) exhibits a clear alternating ramp—odd-indexed layers progress 45.0→50.0→...→90.0 nm and even-indexed layers progress 65.0→79.4→...→130.0 nm. Deviation: Score history oscillated (0.918068 → 0.666488 → 0.919307). Round 2 showed a large negative deviation (-0.251580), followed by a positive recovery in Round 3 (+0.001239 over historical best), indicating transient topological instability rather than hypothesis failure.",
+  "deviation_mechanism": "Round 2's score collapse to 0.666488 occurred because the optimizer temporarily abandoned the coherent chirped topology, producing thickness distributions that violate constructive interference conditions across 400–700 nm. For example, Candidate 1 Layer 9 (130.108 nm) abuts Layer 8 (59.142 nm), creating abrupt optical path mismatches that scatter energy out of the passband. Round 3 recovered because the optimizer rediscovered the alternating ramp structure in Candidate 0, restoring phase alignment and yielding the higher reflectance.",
+  "continue_recommended": true,
+  "continue_rationale": "The route is physically executable and has proven capable of reaching 0.919307 via chirped structures. The Round 2 drop was a transient search failure, not a fundamental limit. The Round 3 improvement (+0.001239) exceeds the reference epsilon of 1e-4, demonstrating active convergence potential rather than stagnation. Continuing allows stabilization of the chirp topology and refinement toward broader bandwidth without risking premature termination of a viable physics axis.",
+  "insight_for_next": "Add a gradient smoothness penalty (lambda ~0.1) to the objective function targeting adjacent layer thickness differences to suppress the erratic jumps observed in Candidates 1–3. Simultaneously, constrain the initialization bounds to start near the identified winning ramp (odd layers ~45–90 nm, even layers ~65–130 nm) with a ±10% chirp envelope, guiding the optimizer to preserve the coherent phase-matching structure.",
+  "insight_grounding": "Evidence comes from Round 3 Candidate 0's explicit layer progression: odd layers ramp 45.0→90.0 nm (L0 to L18) and even layers ramp 65.0→130.0 nm (L1 to L19), directly correlating with the recovered score of 0.919307. Conversely, Candidates 1 and 2 display disjointed transitions (e.g., Candidate 1 L8=59.142 nm → L9=130.108 nm; Candidate 2 L16=97.606 nm → L17=115.127 nm) that correlate with poor historical performance and the Round 2 crash. Constraining gradients on these specific indices will preserve the quarter-wave equivalent optical paths driving the current best result.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-29T01:39:14.434130+00:00",
+  "attestation_sha256": "25a48020efdb1d30b02d0bb1acb1087673f29495f2adfef1c9f1c5217e460e26",
+  "observed_metrics": {
+    "best_target_score": 0.9193071302149594,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.503904351848499
+  },
+  "reflection_available": true
+}

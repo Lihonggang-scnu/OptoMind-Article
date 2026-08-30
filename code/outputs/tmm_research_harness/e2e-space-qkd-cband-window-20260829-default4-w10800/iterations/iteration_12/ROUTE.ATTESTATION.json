@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_12/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "99cf2a3a2f38362153edd572e950122cb7a334b0b7aad048526b4c1c3037d543",
+  "recorded_at_utc": "2026-08-29T01:26:42.063083+00:00",
+  "elapsed_seconds": 3081.4667707000044,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_12",
+  "route_id": "route_02",
+  "scientific_hypothesis": "The performance margin gained in iteration_07 (0.601 to 0.691) is primarily attributable to back-end layer phase adjustments; freezing layers 0-11 and optimizing only layers 12-23 should recover most of the achievable target score while reducing search dimensionality.",
+  "expected_advantages": [
+    "Reduced search dimensionality (12 vs 24 variables) accelerates convergence",
+    "Isolates back-end layer contribution to spectral performance",
+    "Tests whether front-end layers are already near-optimal"
+  ],
+  "known_risks": [
+    "Freezing front layers may prevent discovery of better global solutions",
+    "DE may stagnate if back-end layers have limited influence on target bands",
+    "Performance may drop significantly if front-back coupling is strong"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should exceed route_01's best by at least 0.1, with tightest_margin showing improved band-edge sharpness",
+    "If hypothesis fails: best_target_score should converge to similar values as route_01, indicating periodicity is sufficient",
+    "thicknesses_nm should show non-uniform distribution if aperiodic optimization finds advantage"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops below 5 for three consecutive rounds, reduce optimization dimensionality and stop"
+  ]
+}

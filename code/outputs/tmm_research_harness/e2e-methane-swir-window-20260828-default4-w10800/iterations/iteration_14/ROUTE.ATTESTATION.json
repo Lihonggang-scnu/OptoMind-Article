@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_14/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "971648168fd3291e307331979e8c651085b3f25443f89fa04351b26f6463e125",
+  "recorded_at_utc": "2026-08-28T13:51:38.399177+00:00",
+  "elapsed_seconds": 3454.5602211000223,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_14",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Initializing layer thicknesses from a constrained Gaussian distribution centered on the high-contrast ratios observed in iteration 11's best candidate (HfO2 ~180nm, SiO2 ~60nm) will increase the valid candidate pool above 12 by concentrating search in the narrow feasible basin, while 20% increased mutation step size will enable boundary probing without losing convergence.",
+  "expected_advantages": [
+    "Higher valid candidate count due to informed initialization",
+    "Faster convergence to feasible basin",
+    "Maintained exploration via enhanced mutation"
+  ],
+  "known_risks": [
+    "Gaussian concentration may miss alternative feasible regions",
+    "Enhanced mutation may cause numerical instability if step too large"
+  ],
+  "expected_observations": [
+    "valid_candidates should be >= 15 if reduced layer count eases constraint satisfaction",
+    "best_target_score should remain >= 0.45 if 20 layers suffice for dual-band operation",
+    "total thickness should decrease compared to route_02 if fewer layers reduce cumulative thickness",
+    "If best_target_score drops below 0.40, hypothesis that 20 layers maintain acceptable performance is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to historical best is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds or increase layer count",
+    "If best_target_score < 0.40 consistently across 3 rounds, judge 20-layer topology insufficient -> should increase to 24 or 28 layers"
+  ]
+}

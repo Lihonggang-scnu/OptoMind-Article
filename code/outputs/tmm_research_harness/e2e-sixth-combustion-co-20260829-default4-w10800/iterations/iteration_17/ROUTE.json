@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "Ge/ZnS Three-Cavity Fabry-Perot with Differential Evolution Optimizer",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Differential evolution global optimizer will escape local minima that gradient descent encountered in iteration_13, achieving higher target score by exploring thickness space more thoroughly while maintaining the three-cavity Fabry-Perot topology.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter with computational optimization using global search rather than local gradient methods. Three cavities enable square passband profile with strong out-of-band blocking.",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "CaF2 substrate | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Ge | ZnS | Air (24 layers total, alternating Ge/ZnS starting with Ge)",
+  "design_variables": [
+    "layer thicknesses (24 variables)",
+    "optimizer: differential_evolution_thickness"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 4150-4350 nm band",
+    "maximize mean transmittance in 4550-4750 nm band",
+    "minimize mean transmittance in 3600-4000 nm band",
+    "minimize mean transmittance in 4850-5200 nm band"
+  ],
+  "manufacturing_considerations": [
+    "24 layers within specified limit",
+    "no metal layers",
+    "conventional IR dielectric materials Ge and ZnS are depositable"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack with computational optimization principle from evidence",
+    "Multi-cavity Fabry-Perot enables square passband profile"
+  ],
+  "expected_advantages": [
+    "Global optimizer explores thickness space more thoroughly than gradient descent",
+    "May find better local minima than iteration_13's gradient-based result",
+    "Maintains proven Ge/ZnS material pair with high index contrast"
+  ],
+  "known_risks": [
+    "Differential evolution requires more function evaluations",
+    "May still converge to similar local minimum if landscape is rugged",
+    "Global search does not guarantee better solution"
+  ],
+  "execution_request_english": "Optimize a 24-layer infrared bandpass filter on CaF2 substrate with alternating Ge and ZnS layers (Ge first, ZnS second, repeating for 24 total layers). Wavelength bands: passbands at 4150-4350 nm and 4550-4750 nm, stopbands at 3600-4000 nm and 4850-5200 nm. Normal incidence, unpolarized light, coherent TMM. Initialize all layer thicknesses to 550 nm for Ge and 900 nm for ZnS (quarter-wave at ~4500 nm). Optimization bounds: 200-1500 nm for all layers. Use differential_evolution_thickness optimizer with population size 50, max generations 200. Objective: maximize weighted sum of mean transmittance in both passbands minus mean transmittance in both stopbands. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Changed optimizer from gradient_thickness (iteration_13) to differential_evolution_thickness to escape local minima and explore thickness space more globally while maintaining same 24-layer Ge/ZnS topology."
+}

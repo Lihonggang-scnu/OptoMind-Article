@@ -1,0 +1,194 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_de8a013850895ea3",
+    "planning_summary": "Refining route_01 (Ge/ZnS Fabry-Perot dual-bandpass) based on prior iteration evidence. Iteration 05 achieved 0.978 target score with broad initialization, while iteration 09's quarter-wave seeded approach scored only 0.383, suggesting over-constrained initialization. Three complementary refinement routes: (1) increase layer count to 24 for more cavity degrees of freedom, (2) test alternative IR material pair (ZnSe/ZnS) with lower absorption, (3) implement explicit 3-cavity topology with analytical quarter-wave seeding but relaxed ±25% bounds. All routes preserve CaF2 substrate, normal incidence, dual passband requirements, and 24-layer maximum constraint.",
+    "routes": [
+      {
+        "route_id": "route_01_refine_24layer",
+        "title": "Ge/ZnS Three-Cavity Fabry-Perot Dual-Bandpass with 24 Layers",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing layer count from 20 to 24 enables three Fabry-Perot cavities instead of two, providing additional degrees of freedom to simultaneously optimize both passbands (4.15-4.35 μm and 4.55-4.75 μm) while maintaining stopband suppression (3.60-4.00 μm and 4.85-5.20 μm).",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter with alternating high/low index quarter-wave stacks forming three resonant cavities, optimized via gradient-based thickness tuning with quarter-wave analytical initialization.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | (Ge/ZnS) periodic Bragg mirrors | 3 cavity spacers | (Ge/ZnS) periodic Bragg mirrors | air, exactly 24 finite layers total",
+        "design_variables": [
+          "all 24 layer thicknesses",
+          "cavity spacer thicknesses"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm band",
+          "maximize transmittance in 4.55-4.75 μm band",
+          "minimize transmittance in 3.60-4.00 μm band",
+          "minimize transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers",
+          "conventional IR dielectric deposition",
+          "24 layer maximum satisfied"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Fabry-Perot cavity resonance condition: 2nd = mλ for constructive interference",
+          "Bragg mirror reflectivity increases with layer pair count",
+          "Multi-cavity coupling produces squarer passband profiles"
+        ],
+        "expected_advantages": [
+          "More cavity degrees of freedom for dual-band optimization",
+          "Higher stopband suppression with additional mirror pairs",
+          "Better passband shape control"
+        ],
+        "known_risks": [
+          "Increased total thickness may cause stress issues",
+          "More layers increase fabrication tolerance sensitivity",
+          "Optimization may converge to local minima"
+        ],
+        "execution_request_english": "Optimize a 24-layer dielectric multilayer filter on CaF2 substrate for dual-band infrared transmission. Layer sequence: Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS (24 finite layers, alternating Ge and ZnS starting with Ge). Wavelength bands: passbands at 4150-4350 nm and 4550-4750 nm (maximize transmittance), stopbands at 3600-4000 nm and 4850-5200 nm (minimize transmittance). Normal incidence, unpolarized light, coherent TMM. Initialize all Ge layers at 550 nm and all ZnS layers at 900 nm (quarter-wave at 4.4 μm center). Optimization bounds: Ge [400, 700] nm, ZnS [650, 1150] nm. Use gradient_thickness optimizer with learning rate 0.002, clamp thickness changes to ±15% of nominal values for first 3 epochs, then release full bounds. Maximum 500 optimization iterations. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Increased layer count from 20 to 24 to enable three-cavity topology, addressing iteration 09's poor performance (0.383 score) by providing more optimization degrees of freedom while retaining quarter-wave initialization principle from feedback directives."
+      },
+      {
+        "route_id": "route_01_refine_znse",
+        "title": "ZnSe/ZnS Alternative Material Pair Dual-Bandpass with 20 Layers",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Replacing Ge with ZnSe as the high-index material will reduce absorption losses in the 4-5 μm range while maintaining sufficient index contrast with ZnS, potentially improving peak transmittance and reducing thermal emission background.",
+        "design_principle": "Same two-cavity Fabry-Perot topology as iteration 05 but with ZnSe/ZnS material pair instead of Ge/ZnS, leveraging lower absorption coefficient of ZnSe in mid-IR.",
+        "proposed_materials": [
+          "ZnSe",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | (ZnSe/ZnS) periodic Bragg mirrors | 2 cavity spacers | (ZnSe/ZnS) periodic Bragg mirrors | air, exactly 20 finite layers total",
+        "design_variables": [
+          "all 20 layer thicknesses"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm band",
+          "maximize transmittance in 4.55-4.75 μm band",
+          "minimize transmittance in 3.60-4.00 μm band",
+          "minimize transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers",
+          "ZnSe and ZnS are both conventional IR dielectrics",
+          "20 layer count matches iteration 05 baseline"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:19378:20331:022722bdb4d1219f",
+          "s2-chunk:CorpusId:233820728:s2chunk:233820728:5486:7792:4695079e7b5826ba"
+        ],
+        "theory_basis": [
+          "Material absorption coefficient directly affects maximum achievable transmittance",
+          "Index contrast determines mirror reflectivity and cavity finesse",
+          "ZnSe has lower extinction coefficient than Ge in 4-5 μm range"
+        ],
+        "expected_advantages": [
+          "Lower absorption loss in passbands",
+          "Reduced thermal emission from filter itself",
+          "Better long-term stability in harsh environments"
+        ],
+        "known_risks": [
+          "ZnSe/ZnS index contrast may be lower than Ge/ZnS, requiring more layers for same stopband",
+          "ZnSe is more expensive and may have different stress properties",
+          "Material optical constants must be verified for target wavelength range"
+        ],
+        "execution_request_english": "Optimize a 20-layer dielectric multilayer filter on CaF2 substrate for dual-band infrared transmission. Layer sequence: ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS-ZnSe-ZnS (20 finite layers, alternating ZnSe and ZnS starting with ZnSe). Wavelength bands: passbands at 4150-4350 nm and 4550-4750 nm (maximize transmittance), stopbands at 3600-4000 nm and 4850-5200 nm (minimize transmittance). Normal incidence, unpolarized light, coherent TMM. Initialize all ZnSe layers at 600 nm and all ZnS layers at 950 nm (quarter-wave at 4.4 μm center). Optimization bounds: ZnSe [450, 750] nm, ZnS [700, 1200] nm. Use gradient_thickness optimizer with learning rate 0.002, clamp thickness changes to ±15% of nominal values for first 3 epochs, then release full bounds. Maximum 500 optimization iterations. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests alternative material pair hypothesis while preserving 20-layer topology from iteration 05 (which achieved 0.978 score). Addresses feedback directive to anchor initialization while exploring whether material choice rather than topology limits performance."
+      },
+      {
+        "route_id": "route_01_refine_relaxed",
+        "title": "Ge/ZnS Two-Cavity with Relaxed Quarter-Wave Bounds (20 Layers)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Iteration 09's poor performance (0.383 score) resulted from over-constrained quarter-wave initialization with ±40% bounds. Relaxing to ±25% bounds around analytical quarter-wave targets while enforcing strict layer alternation will provide better optimization convergence than either broad initialization (iteration 05) or tight quarter-wave seeding (iteration 09).",
+        "design_principle": "Two-cavity Fabry-Perot with quarter-wave analytical initialization but relaxed optimization bounds (±25% instead of ±40%), combined with enforced alternation constraints and reduced learning rate per feedback directives.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | (Ge/ZnS) periodic Bragg mirrors | 2 cavity spacers | (Ge/ZnS) periodic Bragg mirrors | air, exactly 20 finite layers total",
+        "design_variables": [
+          "all 20 layer thicknesses with alternation constraint"
+        ],
+        "soft_objectives": [
+          "maximize transmittance in 4.15-4.35 μm band",
+          "maximize transmittance in 4.55-4.75 μm band",
+          "minimize transmittance in 3.60-4.00 μm band",
+          "minimize transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers",
+          "20 layer count for fabrication simplicity",
+          "quarter-wave thicknesses aid process control"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:288752787:s2chunk:288752787:19617:21191:efa77035af5d3c7c"
+        ],
+        "theory_basis": [
+          "Quarter-wave stacks provide analytical starting point for Fabry-Perot design",
+          "Optimization bound width affects convergence speed and final solution quality",
+          "Learning rate reduction prevents overshooting in narrow optimization basins"
+        ],
+        "expected_advantages": [
+          "Better convergence than iteration 09's tight bounds",
+          "More physically meaningful initialization than iteration 05's uniform 500 nm",
+          "Enforced alternation prevents optimizer from breaking layer sequence"
+        ],
+        "known_risks": [
+          "May still underperform compared to iteration 05's broad initialization",
+          "Learning rate reduction may slow convergence",
+          "Alternation constraint may prevent finding non-intuitive optimal sequences"
+        ],
+        "execution_request_english": "Optimize a 20-layer dielectric multilayer filter on CaF2 substrate for dual-band infrared transmission. Layer sequence: Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS (20 finite layers, strictly alternating Ge and ZnS starting with Ge). Wavelength bands: passbands at 4150-4350 nm and 4550-4750 nm (maximize transmittance), stopbands at 3600-4000 nm and 4850-5200 nm (minimize transmittance). Normal incidence, unpolarized light, coherent TMM. Initialize Ge layers at 550 nm (quarter-wave at 4.4 μm) and ZnS layers at 900 nm (quarter-wave at 4.4 μm). Optimization bounds: Ge [412, 688] nm (±25% of 550), ZnS [675, 1125] nm (±25% of 900). Use gradient_thickness optimizer with learning rate 0.001 (5x reduction from baseline), clamp thickness changes to ±15% of nominal values for first 3 epochs, enforce hard alternation constraint (odd layers must be Ge, even layers must be ZnS). Maximum 500 optimization iterations. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Directly addresses feedback directives (quarter-wave anchoring, ±15% step clamping, 5x learning rate reduction, alternation constraints) while testing whether iteration 09's failure was due to bound width rather than initialization principle. Preserves 20-layer topology from successful iteration 05."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:237542117 supports multi-cavity Fabry-Perot design for mid-IR bandpass filters with Ge/ZnS material pair, motivating route_01_refine_24layer's three-cavity topology",
+      "Evidence s2-chunk:CorpusId:139773493 demonstrates computational optimization of multilayer designs from quarter-wave starting points, supporting all three routes' initialization strategies",
+      "Evidence s2-chunk:CorpusId:288752787 shows bandwidth-selectivity tradeoffs in gas sensing filters, informing soft objective weighting for dual-band optimization",
+      "Prior iteration 05's 0.978 score with Ge/ZnS 20-layer design sets performance baseline; iteration 09's 0.383 score with quarter-wave seeding identifies over-constraint risk"
+    ],
+    "unresolved_decisions": [
+      "Whether three-cavity topology (24 layers) provides sufficient improvement over two-cavity (20 layers) to justify fabrication complexity",
+      "Whether ZnSe/ZnS material pair offers measurable absorption advantage over Ge/ZnS in 4-5 μm range without sacrificing index contrast",
+      "Optimal balance between quarter-wave analytical initialization and optimization bound width for convergence"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_refine_znse evidence id was corrected to its unique near-exact allowlist match",
+    "route route_01_refine_24layer received canonical user controls from the problem contract",
+    "route route_01_refine_znse received canonical user controls from the problem contract",
+    "route route_01_refine_relaxed received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14684,
+      "completion_tokens": 5263,
+      "total_tokens": 19947
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

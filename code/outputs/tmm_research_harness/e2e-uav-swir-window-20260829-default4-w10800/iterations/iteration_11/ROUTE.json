@@ -1,0 +1,50 @@
+{
+  "route_id": "route_02",
+  "title": "Seed-Reinitialized Bounded Optimization with Damped Step Size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reinitializing the optimizer from iteration 05's best candidate (target_score 0.7407) with thickness bounds restricted to 45-120 nm and 50% reduced step size will recover or exceed the iteration 05 performance while eliminating the >140 nm thickness drift that caused iteration 08 degradation.",
+  "design_principle": "Use verified high-performing thickness profile as optimization seed; enforce strict bounds to prevent drift into non-productive thickness regimes; reduce step size to avoid overshooting local optima in the decoupled spectral response regime.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "24-layer alternating stack starting with HfO2 on fused silica substrate, ending with SiO2 at air interface. Exact sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2",
+  "design_variables": [
+    "24 layer thicknesses (each bounded 45-120 nm)",
+    "optimizer step size (50% of default)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 800-1500 nm band",
+    "Maximize mean reflectance in 200-400 nm band",
+    "Maintain robustness score above 0.40"
+  ],
+  "manufacturing_considerations": [
+    "Total layers exactly 24 (under 30 limit)",
+    "Thickness bounds 45-120 nm compatible with standard deposition monitoring",
+    "Alternating sequence simplifies process control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for coherent multilayer interference",
+    "Gradient-based thickness optimization with bounded variables",
+    "Seed initialization from previously verified high-performing candidate"
+  ],
+  "expected_advantages": [
+    "Faster convergence from verified seed point",
+    "Elimination of thickness drift beyond productive regime",
+    "Recovery of iteration 05 performance level"
+  ],
+  "known_risks": [
+    "May converge to same local optimum as iteration 05 without improvement",
+    "Tight bounds may prevent discovery of better solutions outside 45-120 nm range",
+    "Reduced step size may require more optimization iterations"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Initialize thicknesses from the iteration 05 best candidate: [94.52, 44.39, 105.43, 125.49, 60.29, 139.57, 57.24, 132.67, 118.56, 65.78, 125.97, 50.46, 126.63, 57.34, 121.89, 87.85, 135.60, 58.91, 115.89, 87.90, 116.43, 63.74, 72.20, 76.02] nm. Apply strict thickness bounds of 45-120 nm to all layers (clip initial values outside bounds to nearest bound). Use gradient_thickness optimizer with step size reduced to 50% of default value. Spectral objectives: maximize mean transmittance over 800-1500 nm band, maximize mean reflectance over 200-400 nm band. Assume normal incidence, unpolarized light. Evaluate robustness with ±15 nm absolute normal thickness tolerance. Total layer count fixed at 24. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Reset optimizer using iteration 05 best candidate (score 0.7407) as seed; restrict bounds to 45-120 nm to eliminate >140 nm drift observed in iteration 08; reduce step size by 50% per feedback directives to enforce gentler convergence."
+}

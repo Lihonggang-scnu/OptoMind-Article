@@ -1,0 +1,200 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_757b760e21c3fd35",
+    "planning_summary": "Refining route_01 (Periodic Quarter-Wave UV Bragg Reflector) which failed with 0 valid candidates due to numerical convergence and budget exhaustion. Three refinement routes are proposed: (1) Reduced layer count periodic stack with hard thickness bounds and pre-flight validation, (2) Chirped periodic stack to broaden UV reflection bandwidth while maintaining SWIR transmission, (3) Asymmetric stack with protective SiO2 capping layer for environmental durability. All routes maintain parent_route_id='route_01' per refinement chain requirements, add thickness clamping (20-800 nm), and reduce geometric complexity to address numerical convergence failures.",
+    "routes": [
+      {
+        "route_id": "route_01_refine_01",
+        "title": "Reduced-Layer Periodic UV Bragg Reflector with Thickness Bounds",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "A periodic quarter-wave HfO2/SiO2 Bragg stack with reduced pair count (8 pairs = 16 layers) and hard thickness bounds (20-800 nm) will produce physically valid candidates that achieve high UV reflection (200-400 nm) while maintaining SWIR transmission (800-1500 nm), resolving the numerical convergence failure of the original 10-pair design.",
+        "design_principle": "Quarter-wave optical thickness at UV center wavelength (300 nm) creates constructive interference for reflection in UV band. At SWIR wavelengths (800-1500 nm), the optical thickness is 2.7-5x quarter-wave, placing the stack outside the Bragg reflection band, enabling high transmission.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | (HfO2 | SiO2) x 8 | Fused Silica substrate. Total 16 finite layers. First layer (incident side) is HfO2, alternating with SiO2, terminating at substrate.",
+        "design_variables": [
+          "Layer thicknesses for all 16 layers, bounded 20-800 nm",
+          "Initial thickness values centered at quarter-wave: HfO2 ~38 nm, SiO2 ~51 nm at 300 nm center wavelength"
+        ],
+        "soft_objectives": [
+          "Maximize average reflectance in 200-400 nm band",
+          "Maximize average transmittance in 800-1500 nm band",
+          "Minimize total layer count while meeting performance targets"
+        ],
+        "manufacturing_considerations": [
+          "Total layers = 16, well under 30-layer limit",
+          "Thickness bounds 20-800 nm prevent numerical instability",
+          "Pre-flight validation filters NaN/Inf in refractive index lookup",
+          "Quarter-wave design is fabrication-friendly with standard deposition control"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225908385:s2chunk:225908385:3717:5827:fa8289d4f398aab2",
+          "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+          "s2-chunk:CorpusId:254823355:s2chunk:254823355:13433:15268:022a61670dd41277"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory: alternating high-low index layers with optical thickness λ/4 at center wavelength creates high reflectance band",
+          "Bragg condition: reflection band center wavelength λ0 = 4*nH*dH = 4*nL*dL",
+          "Bandwidth scales with refractive index contrast: Δλ/λ0 ≈ (4/π)*arcsin((nH-nL)/(nH+nL))"
+        ],
+        "expected_advantages": [
+          "Reduced layer count (16 vs original ~20) lowers numerical complexity and improves convergence",
+          "Hard thickness bounds prevent extreme values causing numerical instability",
+          "Quarter-wave design provides predictable starting point for optimization",
+          "16 layers leaves margin under 30-layer constraint for future refinement"
+        ],
+        "known_risks": [
+          "16 layers may not achieve sufficient UV reflectance if index contrast is limited",
+          "Quarter-wave design has narrower bandwidth than optimized non-quarter-wave stacks",
+          "Reduced layer count may limit achievable reflectance in 200-400 nm band"
+        ],
+        "execution_request_english": "Execute TMM optimization for a 16-layer periodic stack on fused silica substrate with air incidence. Stack topology: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Materials: HfO2 (high index) and SiO2 (low index). Wavelength bands: 200-400 nm (target: maximize reflectance), 800-1500 nm (target: maximize transmittance). Design variables: thickness of each of 16 layers, bounded 20-800 nm. Initialize thicknesses at quarter-wave values for 300 nm center wavelength (HfO2 ~38 nm, SiO2 ~51 nm). Apply pre-flight validation to discard candidates with NaN/Inf in refractive index lookup. Use evolutionary optimization with population size 50, 100 generations. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for top 5 candidates. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Reduced layer count from original design to address numerical convergence failure. Added hard thickness bounds (20-800 nm) and pre-flight validation per feedback directives. Maintains same scientific hypothesis (periodic quarter-wave UV Bragg reflector) but with concrete execution changes to produce valid candidates."
+      },
+      {
+        "route_id": "route_01_refine_02",
+        "title": "Chirped Periodic UV Bragg Reflector for Broadband Reflection",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "A chirped periodic stack with gradually varying layer thicknesses across 18 layers will broaden the UV reflection bandwidth (200-400 nm) compared to a uniform quarter-wave stack, while maintaining SWIR transmission (800-1500 nm), addressing the narrow bandwidth limitation of standard quarter-wave designs.",
+        "design_principle": "Chirped stack varies optical thickness across the layer sequence, creating multiple overlapping reflection bands that merge into a broader high-reflection region. Thickness gradient from thinner (for shorter UV wavelengths) to thicker (for longer UV wavelengths) layers.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | (HfO2 | SiO2) x 9 | Fused Silica substrate. Total 18 finite layers. Layer thicknesses follow linear chirp: HfO2 thickness varies from 30 nm to 50 nm, SiO2 thickness varies from 40 nm to 65 nm across the stack.",
+        "design_variables": [
+          "Layer thicknesses for all 18 layers, bounded 20-800 nm",
+          "Chirp rate parameter controlling thickness gradient across stack",
+          "Base thickness values at stack center"
+        ],
+        "soft_objectives": [
+          "Maximize average reflectance across full 200-400 nm band (not just center wavelength)",
+          "Maximize average transmittance in 800-1500 nm band",
+          "Minimize reflectance variation within UV band (flat-top response preferred)"
+        ],
+        "manufacturing_considerations": [
+          "18 layers within 30-layer limit",
+          "Chirped design requires precise thickness control but is achievable with modern deposition systems",
+          "Thickness bounds 20-800 nm prevent numerical instability",
+          "Linear chirp simplifies fabrication compared to complex aperiodic designs"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:225908385:s2chunk:225908385:3717:5827:fa8289d4f398aab2"
+        ],
+        "theory_basis": [
+          "Chirped Bragg reflector theory: varying layer thickness creates multiple reflection centers that overlap to broaden bandwidth",
+          "Gradient index effect: gradual thickness change reduces spectral oscillations within reflection band",
+          "Bandwidth broadening trades peak reflectance for spectral coverage"
+        ],
+        "expected_advantages": [
+          "Broader UV reflection bandwidth compared to uniform quarter-wave stack",
+          "Better coverage of full 200-400 nm band rather than just center wavelength",
+          "18 layers provides more degrees of freedom than 16-layer periodic design",
+          "Chirped design is well-established for broadband mirrors"
+        ],
+        "known_risks": [
+          "Chirped design may have lower peak reflectance than optimized quarter-wave stack",
+          "Increased layer count (18 vs 16) may reintroduce numerical convergence issues",
+          "Thickness gradient may be more sensitive to fabrication errors"
+        ],
+        "execution_request_english": "Execute TMM optimization for an 18-layer chirped stack on fused silica substrate with air incidence. Stack topology: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica. Materials: HfO2 (high index) and SiO2 (low index). Wavelength bands: 200-400 nm (target: maximize reflectance with flat-top response), 800-1500 nm (target: maximize transmittance). Design variables: thickness of each of 18 layers, bounded 20-800 nm. Initialize with linear chirp: HfO2 layers from 30 nm (incident side) to 50 nm (substrate side), SiO2 layers from 40 nm to 65 nm. Apply pre-flight validation to discard candidates with NaN/Inf in refractive index lookup. Use evolutionary optimization with population size 50, 100 generations. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for top 5 candidates. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Introduces chirped topology as alternative to uniform periodic stack to address bandwidth limitations. Maintains parent_route_id='route_01' per refinement chain. Different layer count (18 vs 16) and thickness initialization strategy provides complementary exploration of design space."
+      },
+      {
+        "route_id": "route_01_refine_03",
+        "title": "Periodic UV Reflector with Protective SiO2 Capping Layer",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "A 17-layer periodic stack with an additional thick SiO2 capping layer (≥200 nm) on the incident side will achieve comparable UV reflection and SWIR transmission to the 16-layer design while providing environmental durability and laser damage resistance, based on literature evidence for protective outermost layers.",
+        "design_principle": "Standard periodic quarter-wave stack for UV reflection, terminated with thick SiO2 layer on air side for environmental protection. The capping layer thickness is chosen to minimize impact on optical performance while providing mechanical and chemical protection.",
+        "proposed_materials": [
+          "HfO2",
+          "SiO2",
+          "Fused Silica"
+        ],
+        "proposed_topology": "Air | SiO2 (capping, ≥200 nm) | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Fused Silica substrate. Total 17 finite layers (1 capping + 8 pairs).",
+        "design_variables": [
+          "Capping layer thickness: 200-400 nm",
+          "16 periodic layer thicknesses: 20-800 nm each",
+          "Quarter-wave center wavelength for periodic section: 300 nm"
+        ],
+        "soft_objectives": [
+          "Maximize average reflectance in 200-400 nm band",
+          "Maximize average transmittance in 800-1500 nm band",
+          "Minimize capping layer impact on spectral performance",
+          "Maximize environmental durability (thicker capping preferred)"
+        ],
+        "manufacturing_considerations": [
+          "17 layers within 30-layer limit",
+          "Capping layer ≥200 nm per literature evidence for environmental durability",
+          "SiO2 capping provides contamination resistance and laser damage protection",
+          "Thickness bounds 20-800 nm for periodic layers prevent numerical instability"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+          "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+          "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+        ],
+        "theory_basis": [
+          "Protective capping layer theory: thick low-index layer on air side reduces environmental degradation without significantly affecting optical performance",
+          "Literature evidence: outermost SiO2 layer ≥200 nm improves environmental durability and laser damage resistance",
+          "Capping layer acts as impedance matching layer if thickness is optimized"
+        ],
+        "expected_advantages": [
+          "Environmental protection for high-altitude UAV application (UV exposure, contamination)",
+          "Improved laser damage threshold per literature evidence",
+          "SiO2 capping is fabrication-friendly and provides contamination resistance",
+          "17 layers still well under 30-layer limit"
+        ],
+        "known_risks": [
+          "Capping layer may reduce UV reflectance if not properly optimized",
+          "Additional layer increases total thickness and potential stress",
+          "17 layers vs 16 layers may slightly increase numerical complexity"
+        ],
+        "execution_request_english": "Execute TMM optimization for a 17-layer stack with protective capping on fused silica substrate with air incidence. Stack topology: Air | SiO2 (layer 1, capping) | HfO2 (layer 2) | SiO2 (layer 3) | HfO2 (layer 4) | SiO2 (layer 5) | HfO2 (layer 6) | SiO2 (layer 7) | HfO2 (layer 8) | SiO2 (layer 9) | HfO2 (layer 10) | SiO2 (layer 11) | HfO2 (layer 12) | SiO2 (layer 13) | HfO2 (layer 14) | SiO2 (layer 15) | HfO2 (layer 16) | SiO2 (layer 17) | Fused Silica. Materials: HfO2 (high index) and SiO2 (low index). Wavelength bands: 200-400 nm (target: maximize reflectance), 800-1500 nm (target: maximize transmittance). Design variables: layer 1 (capping) thickness bounded 200-400 nm, layers 2-17 thickness bounded 20-800 nm. Initialize capping at 250 nm, periodic layers at quarter-wave for 300 nm (HfO2 ~38 nm, SiO2 ~51 nm). Apply pre-flight validation to discard candidates with NaN/Inf in refractive index lookup. Use evolutionary optimization with population size 50, 100 generations. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for top 5 candidates. Canonical user controls: wavelength intervals 200-400 nm, 800-1500 nm. soft objectives: High transmission in 800-1500 nm band; High reflection in 200-400 nm band. behaviors to suppress or avoid: Low transmission in 200-400 nm band; Low reflection in 800-1500 nm band. manufacturing constraints: Total layers <= 30; Materials limited to HfO2 and SiO2.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Adds protective capping layer per literature evidence for environmental durability in space/high-altitude applications. Different from route_01_refine_01 (16 layers, no capping) and route_01_refine_02 (18 layers, chirped). Maintains parent_route_id='route_01' per refinement chain requirements."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:3305144 motivated the protective SiO2 capping layer (≥200 nm) in route_01_refine_03 for environmental durability and laser damage resistance",
+      "Evidence s2-chunk:CorpusId:225461372 motivated the needle optimization approach and multi-wavelength HR design principles, informing the optimization strategy across all routes",
+      "Evidence s2-chunk:CorpusId:225908385 provided quarter-wave DBR theory foundation for periodic stack designs in routes 01_refine_01 and 01_refine_03",
+      "Evidence s2-chunk:CorpusId:254823355 supported HfO2/SiO2 material pair selection and refractive index values used in all route designs"
+    ],
+    "unresolved_decisions": [
+      "Optimal layer count balance between performance and numerical stability (16 vs 17 vs 18 layers)",
+      "Whether chirped topology provides sufficient bandwidth improvement to justify increased complexity",
+      "Trade-off between capping layer thickness for durability vs optical performance impact"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_refine_01 received canonical user controls from the problem contract",
+    "route route_01_refine_02 received canonical user controls from the problem contract",
+    "route route_01_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 13135,
+      "completion_tokens": 5791,
+      "total_tokens": 18926
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

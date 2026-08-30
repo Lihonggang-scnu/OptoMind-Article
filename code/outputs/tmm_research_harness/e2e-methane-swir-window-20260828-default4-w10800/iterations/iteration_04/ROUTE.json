@@ -1,0 +1,56 @@
+{
+  "route_id": "control_route_01",
+  "title": "UV-Blocking Quarter-Wave Stack with Thickness Optimization for SWIR Transmission",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with quarter-wave reference thicknesses centered at 375 nm, when individually optimized, will produce a reflectance band covering 300-450 nm while maintaining transmittance above 90% across 1000-1700 nm.",
+  "design_principle": "Alternating high-index (HfO2) and low-index (SiO2) layers create constructive interference for reflection at the design wavelength. The stop band width scales with index contrast. By starting with quarter-wave optical thickness at the UV band center and allowing individual layer thickness variation, the optimizer can broaden the reflection band and suppress secondary reflection peaks in the SWIR transmission band.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | fused_silica_substrate",
+  "design_variables": [
+    "individual_layer_thicknesses_nm (24 variables, one per layer)",
+    "layer_sequence_fixed_as_alternating_HfO2_SiO2_starting_with_HfO2"
+  ],
+  "soft_objectives": [
+    "maximize_mean_reflectance_300_450nm",
+    "maximize_mean_transmittance_1000_1700nm",
+    "minimize_reflectance_1000_1700nm",
+    "keep_total_layer_count_at_24"
+  ],
+  "manufacturing_considerations": [
+    "24 layers is within the 30-layer constraint",
+    "HfO2 and SiO2 are both catalog-guaranteed materials",
+    "individual thickness tuning may require precise deposition control",
+    "no layer thinner than 20 nm to avoid pinhole defects (recalled rule of thumb)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave stacks produce maximum reflectance at the design wavelength when optical thickness equals lambda/4",
+    "Stop band width increases with refractive index contrast between high and low index materials",
+    "HfO2 has higher refractive index (~2.0) than SiO2 (~1.45) in the visible-NIR range from recalled knowledge",
+    "Starting the stack with high-index material at the air interface increases first-surface reflectance contribution",
+    "Individual layer thickness optimization can reshape band edges compared to uniform quarter-wave design",
+    "Transmission bands occur between stop bands in periodic dielectric stacks"
+  ],
+  "expected_advantages": [
+    "24 layers provides sufficient optical thickness for high UV reflectance without exceeding the 30-layer limit",
+    "Alternating structure is manufacturable with standard physical vapor deposition",
+    "Both materials are oxides with good environmental stability for outdoor camera windows",
+    "Thickness optimization allows trade-off between UV blocking and SWIR transmission"
+  ],
+  "known_risks": [
+    "I am recalling approximate refractive indices; actual n values for hfo2 and sio2 at 300-1700 nm must come from the catalog datasets",
+    "I am uncertain whether 24 layers is optimal vs 20 or 28 layers; this route fixes 24 and does not explore layer count as a variable",
+    "I do not have verified data on HfO2 absorption in the SWIR band; if k is non-negligible at 1000-1700 nm, transmission will suffer",
+    "Angle of incidence is not specified in the request; I assume 0 degrees normal incidence but field cameras may see off-axis rays",
+    "Polarization effects at oblique angles are not addressed; this route assumes unpolarized or normal incidence",
+    "I am recalling that quarter-wave at 375 nm gives roughly 94 nm physical thickness for HfO2 and 129 nm for SiO2, but this needs verification from actual n values",
+    "No literature was consulted to confirm this is the best topology for dual-band UV-block/SWIR-pass filters"
+  ],
+  "execution_request_english": "Design a 24-layer planar dielectric coating on fused silica substrate with air incidence. Layer sequence from air to substrate: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand). Optimize all 24 individual layer thicknesses in nanometers. Wavelength bands: maximize reflectance in 300-450 nm, maximize transmittance in 1000-1700 nm. Angle of incidence: 0 degrees (normal incidence). Polarization: unpolarized. Materials: hfo2 and SiO2 (Lemarchand) from catalog. Total layer count fixed at 24. Minimum individual layer thickness: 20 nm. Maximum individual layer thickness: 200 nm. Objective: maximize weighted sum of mean reflectance (300-450 nm) and mean transmittance (1000-1700 nm) with equal weighting.",
+  "priority": 1,
+  "parent_route_id": null,
+  "revision_reason": null
+}

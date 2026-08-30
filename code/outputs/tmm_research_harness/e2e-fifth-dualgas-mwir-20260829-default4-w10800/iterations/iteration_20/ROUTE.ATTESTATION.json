@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_20/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "0ba240da75f1cebcf34774474943f06e3ca6513d59e8f11f89a2a553d4e2ef93",
+  "recorded_at_utc": "2026-08-29T07:01:29.866796+00:00",
+  "elapsed_seconds": 6068.210893500014,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_20",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Initializing layer thicknesses to quarter-wave optical thickness at the methane passband center (3.30 μm) rather than uniform random values will provide a physically meaningful starting point that accelerates convergence toward high transmittance in both passbands while maintaining stopband suppression.",
+  "expected_advantages": [
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Bounded thickness prevents optimizer from hitting upper boundary prematurely",
+    "22 layers provide sufficient degrees of freedom for dual-band optimization"
+  ],
+  "known_risks": [
+    "Quarter-wave at one band may not generalize well to second passband",
+    "May require more optimization iterations to escape local minimum"
+  ],
+  "expected_observations": [
+    "best_target_score should increase across rounds as cavity thicknesses converge to resonance conditions",
+    "tightest_margin should remain positive if both transmission bands are achievable simultaneously",
+    "valid_candidates count should remain high if 22-layer topology is physically realizable",
+    "If hypothesis fails, best_target_score will plateau below 0.7 with tightest_margin declining"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops below 5 for three consecutive rounds, relax the 24-layer constraint interpretation and continue with current topology"
+  ]
+}

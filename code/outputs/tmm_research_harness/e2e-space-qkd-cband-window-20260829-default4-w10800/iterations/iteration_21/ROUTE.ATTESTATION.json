@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_21/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "368d0749c23b387339fdffc071a207f5f077535fd9b8a6a7c49e8365d6374ada",
+  "recorded_at_utc": "2026-08-29T01:57:16.251333+00:00",
+  "elapsed_seconds": 4915.654309100006,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_21",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "Initializing layer thicknesses from quarter-wave optical thickness centers with ±25% Gaussian variance, combined with a coupling penalty enforcing n_H*d_H ≈ n_L*d_L for adjacent high/low index pairs, will produce higher target scores and more stable convergence than uniform random thickness initialization across the same 24-layer HfO2/SiO2 alternating stack.",
+  "expected_advantages": [
+    "Faster convergence due to physically informed initialization",
+    "More stable optimization trajectory with reduced risk of local minima",
+    "Better impedance matching reduces passband ripple",
+    "Maintains the 24-layer topology that performed well in prior iterations while improving initialization strategy"
+  ],
+  "known_risks": [
+    "Recalled refractive indices for HfO2 and SiO2 at these wavelengths are approximate; actual values from the material catalog may differ and affect optimal QWOT centers",
+    "The ±25% variance bound is a design choice from recalled practice, not validated for this specific dual-band problem",
+    "Impedance matching penalty weight is heuristic; too strong may over-constrain the optimizer, too weak may not provide benefit",
+    "24 layers may not be optimal; 26 or 28 layers could perform better but this route tests initialization strategy, not layer count",
+    "Angle of incidence not specified in request; assumed normal incidence (0 degrees) based on typical receiver window geometry, but off-axis performance is unknown"
+  ],
+  "expected_observations": [
+    "best_target_score should rise across rounds as the QWOT-centered initialization provides better starting points than uniform random",
+    "tightest_margin should remain stable or improve across rounds if impedance coupling reduces passband ripple",
+    "valid_candidates count should remain high (similar to prior iterations with 9 valid candidates) since the initialization stays within physically reasonable thickness ranges",
+    "thicknesses_nm should show clustering around quarter-wave values for both bands rather than uniform distribution"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 5 for two consecutive rounds, relax the coupling penalty weight and continue",
+    "if thicknesses_nm shows any layer exceeding 400 nm or below 30 nm for two consecutive rounds, re-center the Gaussian initialization and continue"
+  ]
+}

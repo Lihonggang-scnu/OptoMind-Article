@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Geometric chirp MgF2/HfO2 stack with thickness ratio template and HfO2 cap",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "A geometric progression thickness template (ratio r∈[1.08,1.12]) with 85nm HfO2 upper bound will produce candidates with higher UV transmission by pre-filtering absorption-dominated thick-HfO2 configurations, enabling the optimizer to focus computational budget on stopband engineering within feasible transmission windows.",
+  "design_principle": "Replace free-parameter initialization with geometric progression template for both high- and low-index layers to enforce physically realistic chirp gradient. HfO2 thickness cap prevents deep-UV absorption losses while maintaining visible/NIR rejection capability.",
+  "proposed_materials": [
+    "MgF2",
+    "HfO2"
+  ],
+  "proposed_topology": "20-layer alternating stack: air | [MgF2 | HfO2]_10 | fused_silica substrate. Exact layer count: 20 finite layers.",
+  "design_variables": [
+    "layer thicknesses with geometric progression initialization r∈[1.08,1.12]",
+    "HfO2 thickness upper bound 85nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance 255-280nm",
+    "minimize mean transmittance 300-700nm",
+    "minimize mean transmittance 700-1100nm"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30 (20 used)",
+    "no metal layers",
+    "HfO2 thickness capped at 85nm for UV transparency",
+    "geometric chirp reproducible via calibrated deposition rate"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for coherent multilayer interference",
+    "Geometric progression chirp for broadband stopband expansion"
+  ],
+  "expected_advantages": [
+    "Reduced HfO2 absorption in 255-280nm passband",
+    "Systematic chirp gradient improves visible/NIR rejection bandwidth",
+    "Initialization template guides optimizer toward physically feasible region"
+  ],
+  "known_risks": [
+    "Geometric constraint may limit optimal thickness combinations",
+    "85nm HfO2 cap may reduce stopband depth if insufficient optical thickness"
+  ],
+  "execution_request_english": "Design a 20-layer alternating MgF2/HfO2 planar multilayer filter on fused silica substrate for normal incidence. Initialize layer thicknesses using geometric progression with ratio r sampled uniformly from [1.08, 1.12] for both MgF2 and HfO2 layers. Enforce hard upper bound of 85nm on all HfO2 layer thicknesses during initialization and optimization. MgF2 layers may range 20-200nm. Evaluate coherent S-matrix transmittance spectrum from 255-1100nm. Score three objectives: mean transmittance maximization in 255-280nm passband, mean transmittance minimization in 300-700nm visible stopband, mean transmittance minimization in 700-1100nm NIR stopband. Use gradient-based thickness optimizer with bound projection. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Applied feedback directive: replaced free-parameter initialization with geometric progression template (r∈[1.08,1.12]) and imposed 85nm HfO2 upper bound to filter absorption-dominated candidates in 255-280nm range."
+}

@@ -1,0 +1,53 @@
+{
+  "route_id": "control_route_01",
+  "title": "HfO2/MgF2 Quarter-Wave Stack with QWOT-Seeded Thickness Optimization",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack with quarter-wave optical thickness seeding at 267.5 nm center wavelength, followed by gradient-based thickness tuning, will produce higher target scores than random initialization while maintaining physical validity across all three spectral bands.",
+  "design_principle": "Quarter-wave stacks create high reflectance outside the passband through constructive interference of reflected waves. A central cavity defect (thickened layer) breaks the periodicity to create a transmission peak. Starting from QWOT values anchors the search near Fabry-Pérot resonance conditions, reducing optimization iterations needed to find valid candidates.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica substrate (29 film layers total, alternating high/low index starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 29 layers with QWOT seeding at 267.5 nm center wavelength and ±15% multiplicative noise initialization"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm band",
+    "minimize transmittance in 300-700 nm band",
+    "minimize transmittance in 700-1100 nm band",
+    "maintain physical validity (no negative thicknesses, no absorption violations)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 to stay under 30-layer limit",
+    "HfO2 and MgF2 are both conventional e-beam evaporable dielectrics",
+    "no metal layers as required",
+    "fused silica substrate matches space platform optical window material"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: HfO2/MgF2 is a standard UV-compatible high/low index pair with sufficient contrast for bandpass filters",
+    "Recalled knowledge: Quarter-wave optical thickness at band center creates maximum reflectance outside the passband",
+    "Recalled knowledge: Cavity defects in periodic stacks create transmission peaks at designed wavelengths",
+    "Recalled knowledge: QWOT seeding reduces optimization search space compared to random initialization",
+    "Recalled knowledge: MgF2 has low absorption down to ~120 nm, making it suitable for 255-280 nm operation"
+  ],
+  "expected_advantages": [
+    "QWOT seeding should produce higher initial valid candidate counts than random initialization",
+    "Gradient optimization from physics-aware starting point should converge faster",
+    "29-layer count provides sufficient degrees of freedom for three-band spectral control",
+    "HfO2/MgF2 pair is well-established for UV applications from recalled deposition practice"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 absorption remains low enough at 255 nm - would need to check actual k values from material registry",
+    "Uncertain whether 29 layers can be deposited without excessive stress on fused silica - would need coating stress data",
+    "Uncertain whether quarter-wave design at 267.5 nm optimally balances the 255-280 nm band - center wavelength choice is a hypothesis",
+    "No literature verification of this exact stack configuration for solar-blind UV applications",
+    "Refractive index dispersion below 300 nm may differ from extrapolated values - material registry data quality is unknown to me"
+  ],
+  "execution_request_english": "Design a 29-layer planar multilayer thin-film filter on fused silica substrate with air incidence. Stack sequence: alternating HfO2 and MgF2 (Rodriguez-de_Marcos) layers starting with HfO2 adjacent to air, ending with HfO2 adjacent to substrate (15 HfO2 layers, 14 MgF2 (Rodriguez-de_Marcos) layers). Initialize all layer thicknesses using quarter-wave optical thickness at 267.5 nm center wavelength (thickness_i = 267.5 nm / (4 * n_i) where n_i is the refractive index of layer material i), then apply ±15% multiplicative noise to create initial population diversity. Optimize all 29 individual layer thicknesses using gradient-based methods to maximize transmission in 255-280 nm band while minimizing transmission in 300-700 nm and 700-1100 nm bands. Total film layers must equal exactly 29. No metal layers allowed. Materials must be hfo2 and MgF2 (Rodriguez-de_Marcos) only for film layers, SiO2 (Gao) for substrate. Evaluate at normal incidence unless otherwise specified in solver defaults.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation round implementing QWOT-seeded initialization per feedback directive: replaced random initialization with physics-aware quarter-wave optical thickness seeding at bandpass center wavelength with ±15% multiplicative noise to anchor search near Fabry-Pérot resonance conditions while preserving population diversity."
+}

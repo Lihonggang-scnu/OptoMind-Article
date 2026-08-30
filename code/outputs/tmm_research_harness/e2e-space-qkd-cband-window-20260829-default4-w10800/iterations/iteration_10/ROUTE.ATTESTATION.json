@@ -1,0 +1,37 @@
+{
+  "artifact": "iterations/iteration_10/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d0557da5b3343e8a0bd35c454ee531a9f64810d28cbbbda9814588ebe56e5636",
+  "recorded_at_utc": "2026-08-29T01:16:13.509245+00:00",
+  "elapsed_seconds": 2452.913072599971,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_10",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with non-quarter-wave thickness tuning can achieve simultaneous high transmittance in 1530-1565 nm and high reflectance in 400-700 nm, with optimization convergence indicated by diminishing score improvement while thickness variance stabilizes.",
+  "expected_advantages": [
+    "Maintaining exact 24-layer topology allows direct comparison with iteration 05 results",
+    "Gradient optimization with variance monitoring provides convergence diagnostics",
+    "15% step-size reduction near convergence probes local optimum without destabilizing band-edge alignments",
+    "Control arm isolates the effect of thickness tuning from material or topology changes"
+  ],
+  "known_risks": [
+    "Uncertain: Exact refractive index values of hfo2 and sio2 at 400 nm vs 1550 nm - would need material_catalog data to confirm dispersion",
+    "Uncertain: Whether 24 layers is optimal vs 20, 26, or 28 layers - this route does not explore layer count as a variable",
+    "Uncertain: Whether starting with HfO2 (high-index) vs SiO2 (low-index) at the air interface is optimal for this dual-band requirement",
+    "Uncertain: The 5 nm variance threshold and 1e-4 score improvement threshold are recalled heuristics, not validated for this specific problem",
+    "Uncertain: Fused silica substrate refractive index matching - assumed to be ~1.45 at 1550 nm but exact value from catalog needed"
+  ],
+  "expected_observations": [
+    "best_target_score should show diminishing improvement across rounds (convergence pattern)",
+    "tightest_margin should remain stable or improve slightly as optimization refines",
+    "thicknesses_nm per-layer standard deviation should decrease as optimization converges",
+    "valid_candidates count should remain high (physical validity maintained)",
+    "If variance exceeds 5 nm while score improvement drops below 1e-4, step-size reduction should stabilize thickness values without degrading target score"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops below 3 for two consecutive rounds, relax thickness bounds by 10% and continue",
+    "If per-layer thickness standard deviation falls below 1 nm across all layers for three consecutive rounds, consider convergence achieved and stop",
+    "After 5 optimization rounds complete, stop and retain the best candidate from all rounds"
+  ]
+}

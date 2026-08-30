@@ -1,0 +1,47 @@
+{
+  "route_id": "control_route_01",
+  "title": "Constrained Local Search on 24-Layer HfO2/SiO2 Dichroic with Fixed Outer Layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing the outer 17 layers (0-14 and 22-23) from the best prior candidate and optimizing only the middle 7 layers (15-21) with Nelder-Mead simplex refinement will improve the dual-band target score beyond the ~0.818 plateau while maintaining physical validity.",
+  "design_principle": "In multi-band dichroic stacks, outer layers primarily establish the high-reflectance band edge while inner layers fine-tune transmission band ripple and phase matching. Constraining the search space around a proven topology reduces optimizer wandering while allowing local improvements in the transition region.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer alternating stack starting with HfO2 on air side: HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2 on fused silica substrate",
+  "design_variables": [
+    "thicknesses of layers 15-21 (7 middle layers) with Nelder-Mead simplex, bounds ±12 nm from baseline; layers 0-14 and 22-23 fixed at baseline values; 2 uniform-random candidates injected per round for diversity"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700 nm band",
+    "maximize mean reflectance in 300-450 nm band",
+    "maintain physical validity (no negative thicknesses, no absorption violations)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 24 (within 30-layer limit)",
+    "all thicknesses within 20-200 nm range for sputter deposition feasibility",
+    "material pair HfO2/SiO2 is industry-standard for SWIR dichroics"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks at band edges create high reflectance; deviation from quarter-wave in transition region controls passband ripple",
+    "Recalled knowledge: HfO2 (n~2.0 at 1500 nm) and SiO2 (n~1.45 at 1500 nm) provide adequate index contrast for SWIR dichroics",
+    "Recalled knowledge: Nelder-Mead simplex converges well on smooth multi-dimensional thickness spaces when initialized near a local optimum",
+    "Recalled knowledge: Fixing outer layers reduces search dimensionality and prevents optimizer from destroying established band-edge performance"
+  ],
+  "expected_advantages": [
+    "Faster convergence than full 24-layer optimization due to reduced search space (7 vs 24 variables)",
+    "Lower risk of degrading the high-reflectance band since outer layers are fixed",
+    "Random candidate injection prevents trapping in local minima within the constrained subspace"
+  ],
+  "known_risks": [
+    "Uncertain whether the plateau at ~0.818 is due to middle-layer limitation or fundamental material/stack constraint - would need full-stack sensitivity analysis to confirm",
+    "±12 nm bounds may be too restrictive if optimal solution requires larger deviations - would need to relax bounds if no improvement after 3 rounds",
+    "Nelder-Mead may still converge to local optimum within the constrained subspace - random injection mitigates but does not eliminate this risk",
+    "Refractive index dispersion of HfO2 and SiO2 across 300-1700 nm is recalled approximately; actual dataset values may differ slightly"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on fused silica substrate with air incidence at normal angle. Materials: HfO2 and SiO2 (Lemarchand) in alternating order starting with HfO2 at air side. Baseline thicknesses (all 24 layers): [122.0, 67.0, 135.0, 77.0, 105.0, 118.0, 43.0, 63.0, 142.0, 59.0, 110.0, 160.0, 44.0, 64.0, 164.0, 50.0, 116.0, 156.0, 123.0, 54.0, 185.0, 96.0, 51.0, 34.0] nm. Optimization strategy: Fix layers 0-14 and 22-23 at baseline values. Optimize only layers 15-21 (7 variables) using Nelder-Mead simplex with step bounds ±12 nm from baseline. Inject 2 uniform-random candidates per round (all 24 layers randomized within 20-200 nm) to maintain population diversity. Spectral targets: maximize mean transmittance in 1000-1700 nm, maximize mean reflectance in 300-450 nm, equal weighting. Use coherent transfer-matrix method. Total layer count fixed at 24. Materials resolved from catalog as hfo2 and SiO2 (Lemarchand).",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control_route_01 with constrained local search strategy: fixed outer layers 0-14 and 22-23 from best prior candidate, Nelder-Mead refinement on middle layers 15-21 with ±12 nm bounds, 2 random candidates per round for diversity. Based on feedback directive to test reflected deviation mechanism."
+}

@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Constrained multi-cavity with fixed spacers and diversity penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing three central cavity spacer layers at exactly 67.5 nm while applying a thickness diversity penalty will prevent the layer merging observed in route_03, enabling distinct cavity resonances that improve UV passband transmission while maintaining visible/NIR rejection.",
+  "design_principle": "Multi-cavity bandpass filter with explicitly constrained spacer thicknesses and optimization bounds tightened around quarter-wave values at 267.5 nm center wavelength. Add cost penalty for consecutive layers with >95% thickness similarity.",
+  "proposed_materials": [
+    "SiO2",
+    "Al2O3"
+  ],
+  "proposed_topology": "25 finite coating layers: Air | [SiO2/Al2O3]_12 | SiO2 | Fused Silica substrate. Three central spacer layers (layers 12, 13, 14) fixed at 67.5 nm.",
+  "design_variables": [
+    "thicknesses of layers 1-11 and 15-25",
+    "optimization bounds tightened to ±15% around quarter-wave targets"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm",
+    "minimize transmittance in 300-700 nm",
+    "minimize transmittance in 700-1100 nm",
+    "maintain thickness diversity across adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "ALD or IAD deposition for thickness precision",
+    "quarter-wave layers at 267.5 nm approximately 45-70 nm depending on material index"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+    "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for multi-cavity interference",
+    "Quarter-wave stack theory for high-reflectivity mirrors",
+    "Cavity resonance theory for bandpass transmission peaks"
+  ],
+  "expected_advantages": [
+    "Prevents layer merging collapse observed in route_03",
+    "Maintains distinct cavity resonances for sharper bandpass edges",
+    "Preserves the successful SiO2/Al2O3 material pair from route_03"
+  ],
+  "known_risks": [
+    "Fixed spacer thickness may limit optimization freedom",
+    "Diversity penalty may conflict with optimal physics solution",
+    "May still achieve similar target score if merging was not the primary limitation"
+  ],
+  "execution_request_english": "Optimize a 25-layer SiO2/Al2O3 multi-cavity bandpass filter on fused silica substrate with air incidence. Layers 1-25 alternate SiO2/Al2O3 starting with SiO2. Fix layers 12, 13, and 14 at exactly 67.5 nm thickness (non-optimizable). Optimize layers 1-11 and 15-25 with bounds ±15% around quarter-wave thickness at 267.5 nm center wavelength (SiO2 ~45 nm, Al2O3 ~67 nm). Apply optimization cost penalty of 0.01 per pair of consecutive layers with thickness similarity >95%. Wavelength bands: maximize transmittance 255-280 nm, minimize transmittance 300-700 nm, minimize transmittance 700-1100 nm. Total layer count exactly 25 finite coating layers. No metal layers. Use gradient-based thickness optimizer with diversity constraint. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Directly addresses route_03 layer merging observation by fixing three central spacers at 67.5 nm and adding thickness diversity penalty per feedback directives. Maintains same material pair and layer count topology."
+}

@@ -1,0 +1,328 @@
+{
+  "schema_version": "tournament-state.v1",
+  "updated_at_utc": "2026-08-29T10:17:18.421393+00:00",
+  "wave": 6,
+  "budget_snapshot": {
+    "iterations_used": 24,
+    "maximum_iterations": 24,
+    "configured_maximum_iterations": 6,
+    "rounds_per_route": 6,
+    "shared_iteration_pool": false,
+    "wall_seconds_elapsed": 7158.295
+  },
+  "tracks": [
+    {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.5776960123318906,
+        0.6986220105473604,
+        0.486239387185473,
+        0.9525114634429747,
+        0.5596461365122549
+      ],
+      "best_candidate_ids": [
+        "opt_znsmgf2_22l_midir__gradient_thickness__01",
+        "opt_znsmgf2_22l_midir__differentia__e18e4164eed0",
+        "ir_filter_opt_22l__gradient_thickness__01",
+        "ir_filter_opt_22l__baseline",
+        "ir_filter_opt_22l__differential_ev__d64286eba7d6",
+        "ir_dual_band_filter_opt__gradient_thickness__01",
+        "ir_dual_band_filter_opt__gradient_thickness__04",
+        "opt_22layer_ir_zns_mgf2_caf2__grad__58ba7b16a7fa",
+        "opt_22layer_ir_zns_mgf2_caf2__diff__f4fdabeabfc9",
+        "ir_filter_22layer_znsmgf2__differe__613ee08fa485",
+        "ir_filter_22layer_znsmgf2__gradien__4358986a4a2d"
+      ],
+      "current_route": {
+        "route_id": "control_route_01",
+        "title": "ZnS-MgF2 Alternating Dual-Band IR Filter on Daimon-20",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "An alternating high-low index dielectric stack with optimized individual layer thicknesses can produce two distinct transmission bands at 4.15-4.35 μm and 4.55-4.75 μm while suppressing transmission at 3.60-4.00 μm and 4.85-5.20 μm, using only conventional IR-transparent materials.",
+        "design_principle": "Quarter-wave stack theory: alternating layers of high and low refractive index create constructive interference in passbands and destructive interference in stopbands. For dual-band operation, the layer thicknesses must be tuned so that multiple harmonic orders of the stack align with both target wavelengths. ZnS provides high index (~2.2-2.4 in mid-IR), MgF2 provides low index (~1.3-1.4 in mid-IR), giving sufficient index contrast for effective filtering.",
+        "proposed_materials": [
+          "zns",
+          "mgf2",
+          "CaF2 (Daimon-20)"
+        ],
+        "proposed_topology": "22-layer alternating stack: ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2/ZnS/MgF2 on Daimon-20 substrate, air incident",
+        "design_variables": [
+          "individual layer thicknesses for all 22 layers",
+          "thickness bounds 50-1000 nm per layer"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm band",
+          "maximize mean transmittance in 4.55-4.75 μm band",
+          "minimize mean transmittance in 3.60-4.00 μm band",
+          "minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers as required",
+          "22 layers within 24-layer maximum",
+          "ZnS and MgF2 are both conventional evaporatable/sputterable IR dielectrics",
+          "Daimon-20 substrate is IR-transparent and thermally stable"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled knowledge: Quarter-wave stacks produce high reflectance at design wavelength when optical thickness equals λ/4",
+          "Recalled knowledge: Dual-band filters require thickness tuning so multiple interference orders align with both passbands",
+          "Recalled knowledge: ZnS has refractive index approximately 2.2-2.4 in the 4-5 μm range with low absorption",
+          "Recalled knowledge: MgF2 has refractive index approximately 1.3-1.4 in the 4-5 μm range with low absorption",
+          "Recalled knowledge: Index contrast of ~0.8-1.0 between high and low layers provides adequate reflectance per interface for IR filtering"
+        ],
+        "expected_advantages": [
+          "ZnS/MgF2 pair is well-established for IR coatings from recalled practice",
+          "22 layers provides sufficient degrees of freedom for dual-band optimization",
+          "Alternating topology is manufacturable with standard deposition equipment",
+          "No metal layers avoids absorption losses in the IR"
+        ],
+        "known_risks": [
+          "Uncertain whether ZnS and MgF2 remain sufficiently transparent at 5.2 μm - may have absorption edges I cannot recall precisely. Would need to check measured k values in the material registry.",
+          "Uncertain about exact refractive index dispersion in the 3.6-5.2 μm range - my recalled values are approximate. The solver will read actual measured data.",
+          "Uncertain whether 22 layers is optimal vs 20 or 24 - chose 22 as a middle value from recalled practice but this is not verified.",
+          "Uncertain about adhesion between ZnS and MgF2 on Daimon-20 - may require adhesion layers not modeled here.",
+          "The quarter-wave starting point may not be optimal for dual-band operation; thickness optimization is essential.",
+          "Daimon-20 is one of four CaF2 datasets in the registry; I cannot verify from memory whether this specific dataset covers the full 3.6-5.2 μm range needed."
+        ],
+        "execution_request_english": "Design a 22-layer planar multilayer infrared filter coating on CaF2 (Daimon-20) substrate with air incidence at 0 degrees. Use alternating ZnS and MgF2 layers starting with ZnS as layer 1. Optimize individual layer thicknesses with bounds 50-1000 nm per layer. Target high transmittance in two passbands: 4150-4350 nm and 4550-4750 nm. Target low transmittance in two stopbands: 3600-4000 nm and 4850-5200 nm. Use coherent thin-film matrix method solver. Evaluate unpolarized light at normal incidence. Maximum 24 layers constraint satisfied with 22 layers. No metal layers used. Materials ZnS and MgF2 are from the guaranteed material catalog. Substrate is CaF2 (Daimon-20).",
+        "priority": 1,
+        "parent_route_id": "control_route_01",
+        "revision_reason": "Repaired material name: replaced ambiguous CaF2 with resolved dataset name Daimon-20 per registry requirement"
+      }
+    },
+    {
+      "route_id": "route_01",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.9778543412515291,
+        0.3834247264218549,
+        0.9603378182693686,
+        0.8114560356578963,
+        0.6117683472888525
+      ],
+      "best_candidate_ids": [
+        "opt_ir_dbr_dual_pass_20l__gradient_thickness__01",
+        "opt_ir_dbr_dual_pass_20l__baseline",
+        "opt_ir_dbr_dual_pass_20l__differen__0a2cca02d189",
+        "ge_zns_20l_dual_bp_opt__differenti__6dece87fa8e8",
+        "ge_zns_20l_dual_bp_opt__baseline",
+        "ge_zns_20l_dual_bp_opt__differenti__545d89aede39",
+        "opt_ge_zns_dual_band_ir__gradient_thickness__01",
+        "opt_ge_zns_dual_band_ir__baseline",
+        "opt_ge_zns_dual_band_ir__different__5e3d1fee1995",
+        "ir_bp_24lay_ge_zns_caf2__gradient_thickness__01",
+        "ir_bp_24lay_ge_zns_caf2__baseline",
+        "ir_bp_24lay_ge_zns_caf2__different__3251bf22f780",
+        "opt_ge_zns_dual_bandpass_3600_5200__0dd88cc8fda9",
+        "opt_ge_zns_dual_bandpass_3600_5200nm__baseline",
+        "opt_ge_zns_dual_bandpass_3600_5200__b895d630ec2f"
+      ],
+      "current_route": {
+        "route_id": "route_01",
+        "title": "Ge/ZnS 24-Layer with Tight ±15% Bound Constraints and Interior-Point Solver",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constraining layer thicknesses to ±15% of quarter-wave baseline values (550±82.5 nm for Ge, 900±135 nm for ZnS) while using an interior-point optimizer that penalizes large inter-layer thickness ratios will improve optimization convergence and maintain the coherent half-wave stacking foundation, yielding target scores comparable to or exceeding prior 24-layer results (0.960).",
+        "design_principle": "Trust-region optimization around verified baseline preserves the physical cavity resonance structure while allowing localized impedance tuning. Tight bounds prevent the optimizer from exploring physically unrealistic thickness combinations that degrade spectral performance.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | Ge(550nm) | ZnS(900nm) | CaF2 substrate. Total 24 finite layers with alternating Ge/ZnS sequence starting with Ge.",
+        "design_variables": [
+          "layer thicknesses with bounds 467.5-632.5 nm for Ge layers, 765-1035 nm for ZnS layers"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm band",
+          "maximize mean transmittance in 4.55-4.75 μm band",
+          "minimize mean transmittance in 3.60-4.00 μm band",
+          "minimize mean transmittance in 4.85-5.20 μm band"
+        ],
+        "manufacturing_considerations": [
+          "±15% thickness tolerance represents realistic deposition control",
+          "24 layers within specified maximum",
+          "no metal layers as required",
+          "Ge and ZnS are conventional depositable IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack theory for Fabry-Perot cavity formation",
+          "Transfer-matrix method for coherent multilayer interference",
+          "Trust-region optimization for bounded parameter spaces"
+        ],
+        "expected_advantages": [
+          "Tighter bounds prevent optimizer from exploring non-physical regions",
+          "Interior-point solver handles bound constraints naturally",
+          "Preserves cavity resonance structure from baseline design",
+          "May achieve better convergence than unconstrained gradient descent"
+        ],
+        "known_risks": [
+          "Bounds may be too restrictive to find global optimum",
+          "24-layer stack showed lower scores than 20-layer in prior iterations",
+          "Ge absorption may limit peak transmittance in target bands"
+        ],
+        "execution_request_english": "Optimize a 24-layer alternating Ge/ZnS multilayer filter on CaF2 substrate under normal incidence from air ambient. Layer sequence: Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS (24 finite layers total). Initialize all Ge layers at 550 nm with optimization bounds [467.5, 632.5] nm. Initialize all ZnS layers at 900 nm with optimization bounds [765, 1035] nm. Use coherent TMM solver across wavelength range 3600-5200 nm. Optimize for four objectives: maximize mean transmittance in 4150-4350 nm band, maximize mean transmittance in 4550-4750 nm band, minimize mean transmittance in 3600-4000 nm band, minimize mean transmittance in 4850-5200 nm band. Use interior-point or trust-region optimizer that penalizes large inter-layer thickness ratios. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directive: tight ±15% bound constraints around baseline QW values with interior-point solver to preserve coherent half-wave stacking while permitting localized impedance tuning."
+      }
+    },
+    {
+      "route_id": "route_02",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.9087703519014759,
+        0.9110909471415611,
+        0.7447381097603889,
+        0.8623351393288436
+      ],
+      "best_candidate_ids": [
+        "opt_21l_dbl_bp_ge_zns__gradient_thickness__01",
+        "opt_21l_dbl_bp_ge_zns__differentia__887c9c3c8967",
+        "opt_ge_zns_tripple_cavity_bp__grad__a6ff1caabf05",
+        "opt_ge_zns_tripple_cavity_bp__grad__9c9209cc83af",
+        "opt_ge_zns_tripple_cavity_bp__diff__cfd77410eff2",
+        "optimize_ge_zns_bp_21l__gradient_thickness__01",
+        "optimize_ge_zns_bp_21l__differenti__0a64a5f9b08f",
+        "optimize_ge_zns_21_layer_dbr__grad__6b99d043f157",
+        "optimize_ge_zns_21_layer_dbr__diff__ea9d09a8358e",
+        "optimize_ge_zns_21_layer_dbr__diff__82cb75adae52"
+      ],
+      "current_route": {
+        "route_id": "route_02",
+        "title": "Anchored Reinitialization of Three-Cavity Filter with Layer 1-2 Constraints",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Constraining the first two layers to remain near their iteration 18 optimal values (467.69 nm, 389.19 nm) with ±15 nm bounds will preserve the input coupling resonance condition that contributed to previous performance while allowing fine-grained optimization of the remaining 19 layers. The quadratic penalty beyond ±25 nm will dampen large-step excursions that may destabilize the cavity resonance.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter with anchored boundary layers to maintain input coupling condition while optimizing internal cavity structure",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "21-layer alternating Ge/ZnS stack on CaF2 substrate, starting with Ge layer 1",
+        "design_variables": [
+          "layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm",
+          "layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm",
+          "layers 3-21 thickness bounded to [50, 500] nm",
+          "quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35 μm and 4.55-4.75 μm passbands",
+          "minimize mean transmittance in 3.60-4.00 μm and 4.85-5.20 μm stopbands",
+          "maintain robustness to thickness variations"
+        ],
+        "manufacturing_considerations": [
+          "all layers within 50-500 nm range for conventional deposition",
+          "21 layers within 24-layer maximum",
+          "Ge and ZnS are conventional IR dielectrics"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for planar multilayer interference",
+          "Fabry-Perot cavity resonance condition: (φ1 + φ2 − 2δ)/2 = kπ"
+        ],
+        "expected_advantages": [
+          "Preserves resonance condition from iteration 18",
+          "Reduces optimizer search space for boundary layers",
+          "May improve convergence stability compared to free optimization"
+        ],
+        "known_risks": [
+          "Anchoring may prevent discovery of better boundary layer configurations",
+          "Quadratic penalty may create local minima",
+          "21 layers may still be insufficient for dual-band requirement"
+        ],
+        "execution_request_english": "Optimize a 21-layer alternating Ge/ZnS dielectric stack on CaF2 substrate at normal incidence. Layer 1 (Ge) thickness bounded to [452.69, 482.69] nm with target 467.69 nm. Layer 2 (ZnS) thickness bounded to [374.19, 404.19] nm with target 389.19 nm. Layers 3-21 thickness bounded to [50, 500] nm. Apply quadratic penalty weight 10x for layer 1-2 deviations beyond ±25 nm from targets. Maximize mean transmittance in passbands [4150, 4350] nm and [4550, 4750] nm. Minimize mean transmittance in stopbands [3600, 4000] nm and [4850, 5200] nm. Use gradient-based thickness optimizer. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_02",
+        "revision_reason": "Implements feedback directive for anchored reinitialization of layers 1-2 to iteration 18 optimal values with tight bounds and quadratic penalty to dampen large-step optimizer excursions"
+      }
+    },
+    {
+      "route_id": "route_03",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 6 executed rounds",
+      "rounds_used": 6,
+      "score_history": [
+        0.9027641003491529
+      ],
+      "best_candidate_ids": [
+        "ir_dbp_ge_zns_caf2_opt__gradient_thickness__01",
+        "ir_dbp_ge_zns_caf2_opt__gradient_thickness__05",
+        "ir_dbp_ge_zns_caf2_opt__baseline",
+        "ir_dbp_ge_zns_caf2_opt__differenti__c7aa4d1f2c7d"
+      ],
+      "current_route": {
+        "route_id": "route_03",
+        "title": "22-Layer Ge/ZnS Two-Cavity Fabry-Perot Dual-Band Filter with Validated Material Names",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A two-cavity Fabry-Perot structure with Ge (high-index) and ZnS (low-index) quarter-wave stacks separated by cavity spacer layers can simultaneously transmit both 4.15-4.35μm and 4.55-4.75μm bands while blocking 3.60-4.00μm and 4.85-5.20μm stopbands on CaF2 substrate.",
+        "design_principle": "Multi-cavity Fabry-Perot bandpass filter using alternating quarter-wave high-low index dielectric layers with computational thickness optimization. Two cavities enable dual-passband shaping from triangular to square profile per evidence on MIR filter design.",
+        "proposed_materials": [
+          "Ge",
+          "ZnS",
+          "CaF2"
+        ],
+        "proposed_topology": "CaF2 substrate | [Ge/ZnS]_4 mirror | Ge cavity spacer | [Ge/ZnS]_3 coupling | Ge cavity spacer | [Ge/ZnS]_4 mirror | Air. Total 22 finite layers (11 Ge + 11 ZnS).",
+        "design_variables": [
+          "individual layer thicknesses for all 22 layers",
+          "cavity spacer thicknesses (2 variables)",
+          "mirror pair thicknesses (20 variables)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance in 4.15-4.35μm passband",
+          "maximize mean transmittance in 4.55-4.75μm passband",
+          "minimize mean transmittance in 3.60-4.00μm stopband",
+          "minimize mean transmittance in 4.85-5.20μm stopband"
+        ],
+        "manufacturing_considerations": [
+          "no metal layers per requirement",
+          "22 layers within 24-layer maximum",
+          "Ge and ZnS are conventional depositable IR dielectrics",
+          "total thickness should remain under 10μm for stress management"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+          "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for coherent thin-film interference",
+          "Fabry-Perot cavity resonance condition: 2nd = mλ for constructive transmission",
+          "Quarter-wave stack reflectance increases with pair count"
+        ],
+        "expected_advantages": [
+          "Ge/ZnS has high index contrast (~4.0 vs ~2.3) for strong reflectors",
+          "Two cavities enable dual-band transmission shaping",
+          "22 layers provides sufficient degrees of freedom for optimization"
+        ],
+        "known_risks": [
+          "Material registry name mismatch caused prior failures - must verify 'Ge' and 'ZnS' are valid identifiers",
+          "Ge has absorption edge near 2μm but should be transparent in 3-5μm range",
+          "Fabrication tolerance sensitivity increases with layer count"
+        ],
+        "execution_request_english": "Design a 22-layer dielectric bandpass filter on CaF2 substrate for dual-band IR transmission. Stack topology: CaF2 | (Ge/ZnS)_4 | Ge_cavity | (Ge/ZnS)_3 | Ge_cavity | (Ge/ZnS)_4 | Air. Initialize all Ge layers at quarter-wave thickness for 4.45μm center wavelength (n_Ge≈4.0, thickness≈278nm). Initialize all ZnS layers at quarter-wave thickness (n_ZnS≈2.3, thickness≈484nm). Initialize both cavity spacers at half-wave thickness (≈556nm). Set thickness search bounds: Ge layers [150, 450]nm, ZnS layers [300, 650]nm, cavity spacers [400, 750]nm. Verify material registry accepts 'Ge' and 'ZnS' as valid identifiers before optimization. Optimize all 22 layer thicknesses to maximize transmittance in 4.15-4.35μm and 4.55-4.75μm bands while minimizing transmittance in 3.60-4.00μm and 4.85-5.20μm bands. Use coherent TMM at normal incidence. Log initialization thickness vector and material lookup results for diagnostic purposes. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Prior route_03 iterations failed due to material_data errors and compilation issues. This revision explicitly validates material registry names ('Ge' and 'ZnS' instead of potentially truncated 'si'), uses evidence-backed Ge/ZnS pair for MIR range, maintains 22-layer two-cavity Fabry-Perot topology with explicit layer count, and adds diagnostic logging for initialization to identify rejection causes."
+      }
+    }
+  ]
+}

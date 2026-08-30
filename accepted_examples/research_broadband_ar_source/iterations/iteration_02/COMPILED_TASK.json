@@ -1,0 +1,559 @@
+{
+  "schema_version": "optical-design-task.tmm.v1",
+  "task_id": "tmm_perform_one_bounded_tmm_thickness_optimization_r_3d1fdaebed",
+  "user_request_original": "Perform one bounded TMM thickness-optimization route for Fixed 7-layer analyze known stack route (MgF2/TiO2). Use these declared media constraints: substrate: fused-silica; ambient: air; candidate_coating_materials: MgF2, SiO2, Al2O3, Ta2O5, TiO2. Use exactly 7 finite layers from the incident side: MgF2 / TiO2 / MgF2 / TiO2 / MgF2 / TiO2 / MgF2. Optimize every finite layer physical thickness with finite positive bounds. Evaluate the wavelength, incidence-angle, polarization, soft-objective, and uncertainty controls supplied below. Report verified optical metrics, total thickness, and manufacturing robustness; targets rank candidates and never gate physical validity. Canonical user controls: incidence angles 0 degrees, 30 degrees, 45 degrees. polarization TE, TM. wavelength intervals 450-700 nm. soft objectives: mean reflectance <= 0.8%; worst-case reflectance <= 3%; fewer layers; lower total physical thickness. behaviors to suppress or avoid: high reflectance. robustness conditions: independent one-sigma thickness error of 2 nm; common incidence-angle offset bounded by +/- 1 degree.",
+  "normalized_request_english": "Optimize the thicknesses of a 7-layer MgF2/TiO2/MgF2/TiO2/MgF2/TiO2/MgF2 stack on fused-silica substrate in air. Minimize mean and worst-case reflectance over 450-700 nm at 0, 30, and 45 degrees for both s and p polarizations. Include robustness analysis with +/- 1 degree angle offset and 2 nm independent thickness error.",
+  "experiments": [
+    {
+      "experiment_id": "opt_7layer_mgf2_tio2_rmin",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "7layer_MgF2_TiO2_AR",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": "mgf2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 300.0,
+                "label": "layer_1"
+              },
+              {
+                "material": "tio2",
+                "thickness_nm": 50.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 10.0,
+                "max_thickness_nm": 150.0,
+                "label": "layer_2"
+              },
+              {
+                "material": "mgf2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 300.0,
+                "label": "layer_3"
+              },
+              {
+                "material": "tio2",
+                "thickness_nm": 50.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 10.0,
+                "max_thickness_nm": 150.0,
+                "label": "layer_4"
+              },
+              {
+                "material": "mgf2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 300.0,
+                "label": "layer_5"
+              },
+              {
+                "material": "tio2",
+                "thickness_nm": 50.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 10.0,
+                "max_thickness_nm": 150.0,
+                "label": "layer_6"
+              },
+              {
+                "material": "mgf2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 300.0,
+                "label": "layer_7"
+              }
+            ],
+            "exit": {
+              "constant_n": 1.458,
+              "constant_k": 0.0
+            }
+          },
+          "spectrum": {
+            "start_nm": 450.0,
+            "stop_nm": 700.0,
+            "points": 501
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0,
+              30.0,
+              45.0
+            ],
+            "polarizations": [
+              "s",
+              "p"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_0_s_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_0_p_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 30.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_30_s_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 30.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_30_p_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 45.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_45_s_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.008,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 45.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "canonical_r_450_700_at_most_mean_45_p_1_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_0_s_2_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_0_p_2_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 30.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_30_s_2_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 30.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_30_p_2_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 45.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_45_s_2_1"
+          },
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 45.0,
+            "polarization": "p",
+            "constraint": "at_most",
+            "aggregation": "worst_case",
+            "name": "canonical_r_450_700_at_most_worst_case_45_p_2_1"
+          }
+        ],
+        "optimizer": {
+          "method": "adam_lbfgs",
+          "max_steps": 60,
+          "learning_rate": 0.05,
+          "starts": 3,
+          "seed": 42,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": 1.0
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "obj_total_thick",
+          "metric": "opaque_stack_rta",
+          "sense": "report",
+          "weight": 0.1,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ]
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_0_s_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_0_p_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_30_s_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 30.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_30_p_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 30.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_45_s_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 45.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_mean_45_p_1_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.008,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 45.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_0_s_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_0_p_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_30_s_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 30.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_30_p_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 30.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_45_s_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 45.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "canonical_r_450_700_at_most_worst_case_45_p_2_1",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 45.0,
+            "polarization": "p"
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "optimize",
+        "ar_coating",
+        "7_layer"
+      ]
+    }
+  ],
+  "verification": {
+    "require_spectral_convergence": true,
+    "require_independent_solver": true,
+    "check_passivity": true,
+    "check_energy_conservation": true,
+    "forbid_material_extrapolation": true
+  },
+  "portfolio": {
+    "maximum_candidates": 8,
+    "include_best_target_score": true,
+    "include_most_robust": true,
+    "include_simplest_fabrication": true,
+    "include_structurally_distinctive": true,
+    "include_pareto_front": true
+  },
+  "uncertainty": {
+    "thickness_sigma_nm": 2.0,
+    "thickness_error_model": "absolute_normal",
+    "thickness_relative_fraction": 0.0,
+    "thickness_samples": 16,
+    "angle_perturbation_deg": 1.0,
+    "material_dataset_policy": "evaluate_all_eligible",
+    "maximum_material_scenarios": 8,
+    "random_seed": 42
+  },
+  "budget": {
+    "wall_time_seconds": 900.0,
+    "maximum_forward_evaluations": 20000,
+    "maximum_optimizer_runs": 2,
+    "maximum_qwen_calls": 2,
+    "maximum_qwen_input_tokens": 12000,
+    "maximum_qwen_output_tokens": 2000,
+    "maximum_qwen_cost_cny": 2.0
+  },
+  "benchmark_id": null,
+  "metadata": {
+    "compiler": "QwenTMMTaskCompiler",
+    "compiler_schema": "tmm-task-compilation.v1",
+    "compiler_model": "qwen3.7-flash",
+    "performance_targets_are_soft": true,
+    "diversity_required": false,
+    "target_threshold_corrections": [
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_0_s_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_0_p_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_30_s_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_30_p_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_45_s_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_mean_45_p_1_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_0_s_2_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_0_p_2_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_30_s_2_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_30_p_2_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_45_s_2_1: rebuilt canonical executable target from explicit user clause",
+      "opt_7layer_mgf2_tio2_rmin.canonical_r_450_700_at_most_worst_case_45_p_2_1: rebuilt canonical executable target from explicit user clause"
+    ],
+    "illumination_corrections": [
+      "pre-validation normalization synchronized explicit user illumination and target channels"
+    ],
+    "substrate_corrections": [],
+    "objective_synchronization": [
+      "opt_7layer_mgf2_tio2_rmin: synchronized 12 simple objectives from executable targets"
+    ],
+    "uncertainty_normalization": [
+      "explicit absolute thickness uncertainty was normalized from the user request",
+      "explicit common incidence-angle uncertainty was normalized from the user request"
+    ]
+  }
+}

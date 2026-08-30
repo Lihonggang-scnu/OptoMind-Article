@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "20-Layer Dual-Band Filter with Reduced Perturbation and Outer-Layer Locking",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing thickness perturbation bounds by 50% around iteration_15's best candidate (65/114/77/93/69/108/70/96/66/67/42/83/51/89/60/67/46/70/50/70 nm) while freezing outer 4 layers after 2 optimization iterations will improve convergence stability and maintain dual-band performance without degrading the 0.909 target score baseline.",
+  "design_principle": "Local exploitation with constrained search space: tight bounds prevent escape from proven high-performing region; outer-layer locking reduces effective dimensionality and prevents edge-effect instability during late-stage optimization.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate",
+    "Air incidence"
+  ],
+  "proposed_topology": "20 finite layers: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2 on fused silica substrate, air superstrate",
+  "design_variables": [
+    "Layer thicknesses (20 variables)",
+    "Outer 4 layers (2 top + 2 bottom) locked after iteration 2"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain target_score >= 0.85 baseline from iteration_15"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Relative uniform thickness tolerance ±20% for robustness evaluation",
+    "Outer layers frozen to reduce deposition sequence sensitivity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent multilayer interference",
+    "Quarter-wave stack theory for broadband reflection",
+    "Gradient-based optimization with bound constraints"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced search space",
+    "Improved robustness from outer-layer stabilization",
+    "Preserves iteration_15's high-performing thickness distribution"
+  ],
+  "known_risks": [
+    "Over-constraining may prevent discovery of better local optimum",
+    "Outer-layer locking may reduce ability to correct edge impedance mismatch"
+  ],
+  "execution_request_english": "Design and optimize a 20-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air superstrate. Initialize thicknesses at [65, 114, 77, 93, 69, 108, 70, 96, 66, 67, 42, 83, 51, 89, 60, 67, 46, 70, 50, 70] nm (iteration_15 best candidate). Apply optimization bounds of ±15 nm (50% reduction from iteration_15's ±30 nm). Implement cooldown schedule: after 2 optimization iterations, lock layers 1-2 and 19-20 (outermost 4 layers) at their current values. Optimize remaining 16 layers using gradient_thickness optimizer. Evaluate at normal incidence, unpolarized light, coherent assumption across all layers. Spectrum: 400-1600 nm with 2001 points. Objectives: maximize mean transmittance in 1530-1565 nm, maximize mean reflectance in 400-700 nm. Robustness: relative uniform thickness uncertainty ±20% across 400-1600 nm. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive: 50% perturbation reduction (±30nm to ±15nm) and outer-layer locking after 2 iterations. Builds on iteration_15's best_target_score=0.9094 while adding convergence stability mechanisms."
+}

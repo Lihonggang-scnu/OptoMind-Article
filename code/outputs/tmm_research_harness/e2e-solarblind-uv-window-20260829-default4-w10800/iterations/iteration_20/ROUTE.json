@@ -1,0 +1,56 @@
+{
+  "route_id": "control_route_01",
+  "title": "QWOT-Reinitialized 29-Layer HfO2/MgF2 UV Bandpass with ±2.0 nm Perturbation Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 29-layer alternating HfO2/MgF2 stack initialized at quarter-wave optical thicknesses for 267 nm center wavelength, with thickness optimization bounded to ±2.0 nm per layer, will produce higher target scores than the previous highly-scaled parameter inheritance approach, because the QWOT initialization places the design in a physically meaningful region of the solution space where UV transmission and visible/NIR rejection are simultaneously achievable through first-order interference.",
+  "design_principle": "Quarter-wave stacks create high reflectance at the design wavelength through constructive interference of reflections from each interface. For a bandpass filter, the stack is designed so that the UV band (255-280 nm) experiences transmission while longer wavelengths experience reflection. HfO2 (high index, ~2.0-2.1 in UV) and MgF2 (low index, ~1.38-1.40 in UV) provide sufficient index contrast for effective interference. Starting from QWOT thicknesses and limiting perturbations to ±2.0 nm keeps the optimizer near a physically sensible solution rather than allowing it to drift into numerically converged but physically unrealistic thickness regimes.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "air | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | mgf2 | hfo2 | sio2_substrate",
+  "design_variables": [
+    "individual layer thicknesses for all 29 film layers, initialized at quarter-wave optical thickness for 267 nm center wavelength, optimized with ±2.0 nm bounds per layer"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 255-280 nm band",
+    "minimize transmittance in 300-700 nm band",
+    "minimize transmittance in 700-1100 nm band",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "29 layers is within the 30-layer maximum constraint",
+    "HfO2 and MgF2 are both conventional e-beam or thermal evaporatable dielectrics",
+    "no metal layers as required",
+    "±2.0 nm thickness tolerance is achievable with modern deposition monitoring",
+    "fused silica substrate is standard for UV applications"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness (QWOT) at center wavelength creates constructive interference for reflection at that wavelength and harmonics",
+    "Recalled: Alternating high/low index layers produce higher reflectance with more layer pairs, with reflectance bandwidth increasing with index contrast",
+    "Recalled: MgF2 has excellent transmission down to ~115 nm vacuum UV, making it suitable for 255-280 nm solar-blind applications",
+    "Recalled: HfO2 is a common high-index dielectric for UV-VIS coatings with low absorption in the solar-blind UV region",
+    "Recalled: Starting optimization from QWOT thicknesses rather than random initialization typically converges faster to physically meaningful solutions",
+    "Recalled: Tightly bounded thickness perturbations prevent the optimizer from escaping the local basin around the QWOT solution"
+  ],
+  "expected_advantages": [
+    "QWOT initialization places the design in a physically meaningful starting point",
+    "±2.0 nm bounds prevent divergence into unrealistic thickness regimes seen in iteration 18",
+    "29 layers provides sufficient degrees of freedom for bandpass shaping without exceeding manufacturing constraints",
+    "HfO2/MgF2 pair is a well-known UV-compatible material combination from recalled thin-film practice"
+  ],
+  "known_risks": [
+    "Uncertain: Exact refractive index values of HfO2 and MgF2 at 255-280 nm - the material catalog datasets will provide measured values but I am recalling approximate values of n_HfO2≈2.0-2.1 and n_MgF2≈1.38-1.40",
+    "Uncertain: Whether 29 layers is optimal versus a different layer count with cavity-defect topology - this route tests fixed 29-layer alternating topology only",
+    "Uncertain: Absorption coefficients (k values) in the UV for these materials - high k would reduce transmission regardless of interference design",
+    "Uncertain: Stress matching between HfO2 and MgF2 for space qualification - not modeled in TMM but relevant for actual deployment",
+    "Uncertain: Whether ±2.0 nm bounds are too restrictive to escape local minima - the feedback directive specifies this temporarily for 5 rounds",
+    "Risk: If best_target_score remains below 0.30 for three consecutive rounds, the perturbation bounds may need enlargement per the feedback directive"
+  ],
+  "execution_request_english": "Optimize a 29-layer planar multilayer thin film stack on fused silica substrate with air incidence. Stack sequence: air | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | MgF2 (Rodriguez-de_Marcos) | hfo2 | SiO2 (Gao)_substrate. Initialize all hfo2 layers at 32.6 nm thickness and all MgF2 (Rodriguez-de_Marcos) layers at 48.0 nm thickness (quarter-wave optical thickness at 267 nm center wavelength). Optimize individual layer thicknesses with bounds of ±2.0 nm from initialization values. Wavelength bands: maximize transmittance in 255-280 nm, minimize transmittance in 300-700 nm, minimize transmittance in 700-1100 nm. Total layers: 29 film layers plus substrate. No metal layers. Use gradient_thickness optimizer. Evaluate candidates using coherent transfer matrix method. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Per feedback directives: temporarily cap perturbation envelope to ±2.0 nm and force thickness re-initialization centered on standard quarter-wave optical thicknesses (±10% tolerance) for this round, overriding inheritance of the highly scaled parameters from iteration 18. This tests whether QWOT-initialized designs with tight bounds outperform the previous approach."
+}

@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "Ge/ZnS Two-Cavity Fabry-Perot with Quarter-Wave Seeded Initialization (20 Layers)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Physics-informed quarter-wave thickness initialization centered at λ=4.45μm (midpoint between CO and CO2 bands) will reduce search-space entropy and accelerate convergence toward resonant stacking conditions compared to uniform 500nm initialization, while maintaining the verified Ge/ZnS two-cavity topology.",
+  "design_principle": "Start from alternating quarter-wave layers (H=L=λ/4n) at band center, then apply computational optimization to adjust thicknesses for dual-bandpass profile with stopband blocking. Two Fabry-Perot cavities coupled in series shape the passband.",
+  "proposed_materials": [
+    "Ge",
+    "ZnS",
+    "CaF2"
+  ],
+  "proposed_topology": "CaF2 substrate | [Ge/ZnS]_10 stack (20 finite layers) | Air superstrate. Explicit sequence: Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS-Ge-ZnS",
+  "design_variables": [
+    "20 layer thicknesses with quarter-wave seeded bounds",
+    "optimizer search budget"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 4.15-4.35 μm and 4.55-4.75 μm bands",
+    "minimize transmittance in 3.60-4.00 μm and 4.85-5.20 μm bands",
+    "maintain robustness to thickness variations"
+  ],
+  "manufacturing_considerations": [
+    "20 layers within 24-layer budget",
+    "Ge and ZnS are conventional depositable IR dielectrics",
+    "no metal layers"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack resonance condition: d_k = λ_center/(4*n_k)",
+    "Fabry-Perot cavity transmittance maximum when (φ1+φ2-2δ)/2 = kπ",
+    "Higher index contrast (Ge/ZnS) reduces required film thickness and increases maximum transmittance"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to physics-informed initialization",
+    "Maintains verified Ge/ZnS material performance from prior iteration",
+    "Quarter-wave seeding reduces risk of local minima far from resonant condition"
+  ],
+  "known_risks": [
+    "Quarter-wave at single center wavelength may not optimally serve dual-band requirement",
+    "20 layers may limit stopband depth compared to higher layer counts",
+    "Fabrication tolerances may cause measured transmittance to decrease relative to theoretical"
+  ],
+  "execution_request_english": "Optimize a 20-layer Ge/ZnS multilayer filter on CaF2 substrate for dual-bandpass transmission. Initialize all layer thicknesses using quarter-wave formula d_k = 4450nm/(4*n_k) where n_Ge≈4.0 and n_ZnS≈2.2 at 4.45μm center wavelength, giving initial Ge thickness ≈278nm and ZnS thickness ≈506nm. Set optimization bounds to ±40% around quarter-wave values (Ge: 167-389nm, ZnS: 304-708nm). Wavelength bands: transmit 4150-4350nm and 4550-4750nm, block 3600-4000nm and 4850-5200nm. Normal incidence, unpolarized. Max 24 layers constraint satisfied with 20 layers. No metal layers. Use gradient_thickness optimizer with coherent TMM across all bands. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implementing feedback directive to replace uniform 500nm initialization with physics-informed quarter-wave targets. Maintains verified Ge/ZnS 20-layer topology from route_01 which achieved 0.978 target score."
+}

@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "4b83c28a320ed95606410f823f496d430071d0e58ccf22b8233de7257de36001",
+  "recorded_at_utc": "2026-08-28T16:53:21.115674+00:00",
+  "elapsed_seconds": 595.6980432999553,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "A periodic quarter-wave stack centered at 300 nm will produce a photonic bandgap with high reflectance in 200-400 nm while maintaining high transmittance in 800-1500 nm due to the wavelength scaling of Bragg resonance.",
+  "expected_advantages": [
+    "Simple periodic structure reduces optimization complexity",
+    "Well-understood physics enables predictable performance",
+    "28 layers provides strong UV reflection with margin under 30-layer limit"
+  ],
+  "known_risks": [
+    "Periodic structure may create secondary reflection bands in SWIR",
+    "Quarter-wave at 300 nm may not optimally balance both bands",
+    "Fixed periodicity limits ability to fine-tune spectral edges"
+  ],
+  "expected_observations": [
+    "If hypothesis holds, best_target_score should increase with period scaling optimization and tightest_margin should remain stable across rounds",
+    "Reflectance in 200-400 nm band should exceed 90% with 14 pairs",
+    "Transmittance in 800-1500 nm band should exceed 85% if secondary bands do not overlap",
+    "If hypothesis fails, best_target_score will plateau early and tightest_margin will decrease as optimization attempts to suppress SWIR reflection bands"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If tightest_margin falls below 0.1 for three consecutive rounds while adjusting period scaling, relax the scaling range constraint and continue",
+    "If valid_candidates drops to zero for two rounds, reduce the number of pairs by 2 and restart optimization"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "artifact": "iterations/iteration_15/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "556acc81ff723f0c976209b96fcd0279bc0d1a5c9f286140a53fd506b0de1d3e",
+  "recorded_at_utc": "2026-08-28T13:52:45.477633+00:00",
+  "elapsed_seconds": 3521.639305700024,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_15",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "Fixing the outer 17 layers (0-14 and 22-23) from the best prior candidate and optimizing only the middle 7 layers (15-21) with Nelder-Mead simplex refinement will improve the dual-band target score beyond the ~0.818 plateau while maintaining physical validity.",
+  "expected_advantages": [
+    "Faster convergence than full 24-layer optimization due to reduced search space (7 vs 24 variables)",
+    "Lower risk of degrading the high-reflectance band since outer layers are fixed",
+    "Random candidate injection prevents trapping in local minima within the constrained subspace"
+  ],
+  "known_risks": [
+    "Uncertain whether the plateau at ~0.818 is due to middle-layer limitation or fundamental material/stack constraint - would need full-stack sensitivity analysis to confirm",
+    "±12 nm bounds may be too restrictive if optimal solution requires larger deviations - would need to relax bounds if no improvement after 3 rounds",
+    "Nelder-Mead may still converge to local optimum within the constrained subspace - random injection mitigates but does not eliminate this risk",
+    "Refractive index dispersion of HfO2 and SiO2 across 300-1700 nm is recalled approximately; actual dataset values may differ slightly"
+  ],
+  "expected_observations": [
+    "best_target_score should increase beyond 0.818 if middle-layer refinement unlocks additional performance",
+    "valid_candidates should remain high (≥7) since fixed outer layers preserve physical validity of baseline topology",
+    "tightest_margin should not decrease significantly if constrained search stays near valid region",
+    "If best_target_score plateaus below 0.825 after 3 rounds, the middle-layer hypothesis may be insufficient and full-stack re-optimization would be needed"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the constrained subspace as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 5 for two consecutive rounds, relax the ±12 nm bound to ±20 nm and continue",
+    "if tightest_margin falls below 0.5 for two consecutive rounds, reduce random candidate injection rate from 2 to 1 per round and continue"
+  ]
+}

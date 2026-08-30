@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "Si/SiO2 Two-Cavity Fabry-Perot Dual-Band Filter with 20 Layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A two-cavity Fabry-Perot structure using Si (high-index) and SiO2 (low-index) dielectric layers can achieve dual-band transmission at 4.15-4.35 μm and 4.55-4.75 μm with adequate stopband blocking at 3.60-4.00 μm and 4.85-5.20 μm, provided both materials have validated dispersion data across the full 3.6-5.2 μm operating range.",
+  "design_principle": "Multi-cavity Fabry-Perot bandpass filter with alternating quarter-wave layers of high and low index transparent materials, computationally optimized to shape dual passbands while maintaining out-of-band blocking. Evidence shows 24-layer 4-cavity filters achieved ~100% transmittance with FWHM ~339 nm in mid-IR.",
+  "proposed_materials": [
+    "Si",
+    "SiO2",
+    "CaF2"
+  ],
+  "proposed_topology": "CaF2 substrate | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Air (20 finite layers total, alternating Si/SiO2 starting with Si)",
+  "design_variables": [
+    "layer_thicknesses_nm (20 variables, bounded 100-800 nm)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 4.15-4.35 μm band",
+    "maximize mean transmittance in 4.55-4.75 μm band",
+    "minimize mean transmittance in 3.60-4.00 μm band",
+    "minimize mean transmittance in 4.85-5.20 μm band"
+  ],
+  "manufacturing_considerations": [
+    "Si and SiO2 are conventional depositable IR dielectrics",
+    "20 layers within 24-layer maximum constraint",
+    "no metal layers",
+    "quarter-wave seeding reduces optimization search space"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:10048:12133:9ece317b696126a3",
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:11855:13580:d170178ff9255f02",
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:9893:11737:e22e72171e70bb49"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for Fabry-Perot cavities",
+    "Multi-cavity coupling produces square-shaped passband profiles",
+    "High index contrast (Si n~3.4, SiO2 n~1.45) enables strong blocking with fewer layers"
+  ],
+  "expected_advantages": [
+    "Si/SiO2 is a widely available material pair in thin-film databases",
+    "High index contrast reduces required layer count for adequate blocking",
+    "20 layers provides margin below 24-layer constraint for potential refinement"
+  ],
+  "known_risks": [
+    "Si may have absorption features in mid-IR that reduce peak transmittance",
+    "SiO2 dispersion data may not extend to 5.2 μm in some registries",
+    "Dual-band optimization may require more than 2 cavities for adequate separation"
+  ],
+  "execution_request_english": "Design a 20-layer dielectric multilayer filter on CaF2 substrate for dual-band infrared transmission. Stack topology: CaF2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Si | SiO2 | Air (20 finite layers, alternating starting with Si). Initialize thicknesses using quarter-wave scaling at λ_target=4.45 μm: t_Si = 4450/(4*n_Si), t_SiO2 = 4450/(4*n_SiO2), constrained to [0.75*t_q, 1.25*t_q] with bounds [100, 800] nm. Before TMM execution, verify both Si and SiO2 have ≥3 validated dispersion data points within 3600-5200 nm range. Optimize layer thicknesses to maximize mean transmittance in passbands (4150-4350 nm and 4550-4750 nm) and minimize mean transmittance in stopbands (3600-4000 nm and 4850-5200 nm) at normal incidence in air. Use coherent TMM with smatrix solver. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3600-4000 nm, 4150-4350 nm, 4550-4750 nm, 4850-5200 nm. soft objectives: high transmittance in 4.15-4.35 um and 4.55-4.75 um bands; low transmittance in 3.60-4.00 um and 4.85-5.20 um bands. behaviors to suppress or avoid: high transmittance in stopbands; high reflectance in passbands. manufacturing constraints: no metal layers; maximum 24 layers; conventional depositable infrared inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Previous route_03 iterations failed due to material_data issues with Ge/ZnS and ThSi2/YbF3 pairs. This refinement switches to Si/SiO2, a more commonly available material pair in thin-film databases, while preserving the multi-cavity Fabry-Perot design principle. Added pre-execution material validation check requiring ≥3 dispersion data points per material in the operating range."
+}

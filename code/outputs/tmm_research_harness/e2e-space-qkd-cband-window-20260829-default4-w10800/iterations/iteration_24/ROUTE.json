@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "HfO2/SiO2 Dichroic Stack with Hybrid Thickness Initialization",
+  "route_kind": "custom_layered_stack",
+  "scientific_hypothesis": "A hybrid initialization scheme combining 60% QWOT-centered candidates with 40% harmonic half/double-multiple thickness candidates, plus ±5nm noise injection in the first optimization step, will produce higher best_target_score and maintain tightest_margin compared to pure QWOT±10% initialization across iteration rounds.",
+  "design_principle": "Quarter-wave optical thickness (QWOT) stacks create constructive interference for reflection at design wavelengths. For a dichroic filter blocking 400-700nm while passing 1530-1565nm, the high-index HfO2 and low-index SiO2 layers should have optical thicknesses near λ/4 at a center wavelength in the visible blocking band. However, pure QWOT initialization creates symmetry that can trap gradient-based optimizers; harmonic perturbations (λ/8, λ/2 multiples) break this symmetry while remaining physically meaningful.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer stack starting from air: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, terminated on fused silica substrate",
+  "design_variables": [
+    "Individual layer thicknesses for all 24 layers",
+    "Initialization scheme: 60% QWOT±10%, 40% harmonic multiples (λ/8, λ/2) with ±5nm noise injection in first optimization step"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565nm band",
+    "Maximize mean reflectance in 400-700nm band",
+    "Maintain tightest_margin above 0.4 across rounds"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (under 30-layer limit)",
+    "All thicknesses should remain in manufacturable range 40-350nm",
+    "HfO2 and SiO2 are standard evaporated/sputtered coating materials"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflectance at design wavelength through constructive interference of reflected waves from each interface",
+    "Recalled knowledge: High/low index contrast (HfO2 n≈2.0, SiO2 n≈1.45 at visible wavelengths) determines reflectance bandwidth and peak value",
+    "Recalled knowledge: Gradient-based thickness optimization can converge to local minima when starting from symmetric initial conditions",
+    "Recalled knowledge: Harmonic thickness perturbations (half-wave, quarter-wave multiples) maintain physical meaning while breaking optimizer symmetry",
+    "Recalled knowledge: Dichroic filters for quantum applications typically prioritize transmission in signal band over reflection in blocking band"
+  ],
+  "expected_advantages": [
+    "Hybrid initialization should escape the 130nm attractor basin observed in prior iterations",
+    "40% harmonic candidates may discover thickness combinations that pure QWOT initialization cannot reach",
+    "Noise injection prevents exact symmetry that causes gradient cancellation",
+    "Should improve best_target_score from prior 0.868-0.934 range while maintaining robustness"
+  ],
+  "known_risks": [
+    "Uncertain whether HfO2 extinction coefficient is negligible at 1530-1565nm - would need to check material dataset for k values",
+    "Uncertain optimal center wavelength for QWOT calculation (550nm vs 600nm for visible blocking) - this choice affects all baseline thicknesses",
+    "Recalled refractive indices are approximate: HfO2 n≈1.9-2.1, SiO2 n≈1.45-1.48 depending on deposition method and wavelength",
+    "Harmonic initialization may produce some candidates with thicknesses outside manufacturable range (<40nm or >350nm)",
+    "Did not verify whether 24 layers is optimal vs 20 or 28 layers - fixed by prior iteration convention"
+  ],
+  "execution_request_english": "Design a 24-layer planar dielectric stack on fused silica substrate with air incidence. Layer materials alternate HfO2 and SiO2 (Lemarchand), starting with HfO2 at the air interface. Optimize all 24 individual layer thicknesses to maximize transmittance in 1530-1565nm band while maximizing reflectance in 400-700nm band. Use hybrid initialization: 60% of candidates start from quarter-wave optical thickness (center wavelength 550nm) with ±10% perturbation, 40% start from harmonic multiples (λ/8 and λ/2 optical thicknesses) with ±5nm random noise injection in the first optimization step. All thicknesses must remain between 40nm and 350nm. Total layer count is exactly 24. Materials are hfo2 and SiO2 (Lemarchand) from the material catalog. Evaluate at normal incidence, unpolarized light. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for each round.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Hybrid initialization scheme per feedback directive: replacing strict QWOT-centered Gaussian with 60% QWOT±10% plus 40% harmonic half/double multiples with ±5nm noise injection to escape local minima observed in prior iterations"
+}

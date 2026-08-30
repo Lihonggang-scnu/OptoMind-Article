@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_19/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "d9af4927f3fde91e849fa745576ad0013b951ab8785ec149aecb4358f32eedc6",
+  "recorded_at_utc": "2026-08-29T01:54:31.390631+00:00",
+  "elapsed_seconds": 4750.793668899976,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_19",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Increasing layer count from 20 to 24 while applying simulated annealing with ±20% thickness perturbation around quarter-wave initialization will enable the optimizer to escape local minima observed in iteration_15 and achieve higher dual-band spectral separation scores through broader search space exploration.",
+  "expected_advantages": [
+    "Higher layer count provides more degrees of freedom for spectral shaping",
+    "Simulated annealing reduces risk of convergence to iteration_15 local minimum",
+    "±20% perturbation enables broader exploration than iteration_15 ±30 nm absolute bounds"
+  ],
+  "known_risks": [
+    "Increased layer count may reduce robustness to thickness variations",
+    "Simulated annealing requires more iterations to converge",
+    "May still converge to similar solution if landscape has single dominant basin"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase as reference wavelength approaches 550 nm (visible band center), with valid_candidates remaining stable across rounds",
+    "If hypothesis fails: best_target_score should plateau below 0.7 regardless of reference wavelength, indicating periodic structure cannot satisfy both bands simultaneously",
+    "tightest_margin should remain positive if both bands are achievable with this topology"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops to zero for three consecutive rounds, relax the quarter-wave constraint and stop"
+  ]
+}

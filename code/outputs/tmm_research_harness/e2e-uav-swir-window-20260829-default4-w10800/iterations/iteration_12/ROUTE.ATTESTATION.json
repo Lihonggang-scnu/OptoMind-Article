@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_12/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "18a841c8a7e8a96734675a110164e82d9a38305b1d493238b13df6058e916252",
+  "recorded_at_utc": "2026-08-28T17:24:34.814566+00:00",
+  "elapsed_seconds": 2469.39746009995,
+  "run_id": "e2e-uav-swir-window-20260829-default4-w10800",
+  "iteration_id": "iteration_12",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "An alternating HfO2/SiO2 multilayer stack with individually optimized thicknesses can produce a spectral response that reflects 200-400 nm while transmitting 800-1500 nm, with the optimal solution lying in a narrow manifold around thicknesses that produced 0.8206 target score in prior iterations.",
+  "expected_advantages": [
+    "Starting from proven high-scoring thickness vector reduces search space",
+    "Narrow perturbation bounds (±0.6 nm) focus exploration on local optimum rather than global search",
+    "Constrained optimization prevents degradation below 0.02 of running best score",
+    "20 layers provides sufficient degrees of freedom while staying well under 30-layer limit"
+  ],
+  "known_risks": [
+    "Uncertain whether the 0.8206-score solution is a local or global optimum - narrower bounds may trap search in local maximum",
+    "Recalled refractive index dispersion of HfO2 and SiO2 in UV (200-400 nm) may differ from actual catalog data - extinction coefficients in UV could affect performance",
+    "The alternating pattern may not be optimal; a different sequence could perform better but this route does not explore sequence changes",
+    "Manufacturing tolerance on thin layers (30 nm) may be challenging; actual deposition variation could shift spectral response",
+    "What would settle these: measured n/k dispersion data from material catalog, tolerance sensitivity analysis, alternative sequence testing in a separate route"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should remain at or above 0.80 across rounds, with gradual improvement or stable plateau",
+    "If hypothesis holds: tightest_margin should not decrease systematically across rounds",
+    "If hypothesis fails: best_target_score should drop below 0.75 and not recover within 2 rounds, indicating the narrow perturbation bounds have trapped search in a poor local optimum",
+    "valid_candidates should remain high (>=7) indicating the constrained search stays within physically valid region",
+    "thicknesses_nm should show small variations (within ±0.6 nm) from the seed vector rather than large structural changes"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as locally exhausted, stop and keep the current best",
+    "If valid_candidates falls below 5 for two consecutive rounds, relax perturbation bounds to ±1.0 nm and continue",
+    "If best_target_score drops below 0.70 and does not recover above 0.75 within one round, expand perturbation bounds to ±1.5 nm and reinitialize from second-best historical candidate"
+  ]
+}

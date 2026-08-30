@@ -1,0 +1,46 @@
+{
+  "route_id": "route_03",
+  "title": "QW-AR-Anchored 20-Layer Bragg Stack with Gradient Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Anchoring the first 4 AR-matching layers to quarter-wavelength thickness estimates at the telecom band center (1547.5 nm) will reduce early-round search entropy and enable the optimizer to more efficiently discover high-transmittance solutions in the 1530-1565 nm band while maintaining visible reflectance through the remaining 16 Bragg layers.",
+  "design_principle": "Quarter-wave AR matching at the passband center wavelength reduces initial parameter space volume for the impedance-graded entrance section, allowing the optimizer to focus computational budget on tuning the Bragg reflector section for visible band rejection.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | [HfO2 | SiO2] x 8 | Fused Silica substrate. Total 20 coating layers: 4 AR-matching entrance layers + 16 Bragg reflector layers (8 high-low pairs).",
+  "design_variables": [
+    "All 20 layer thicknesses (nm) with layers 0-3 initialized to quarter-wavelength estimates at 1547.5 nm"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1530-1565 nm band",
+    "Maximize average reflectance in 400-700 nm band",
+    "Minimize total optical thickness variation"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 20 (within 30-layer limit)",
+    "Individual layer thicknesses should remain within typical deposition tolerances (50-400 nm range)"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Quarter-wave impedance matching theory for reducing Fresnel reflection at dielectric interfaces",
+    "Transfer matrix method for coherent multilayer interference",
+    "Bragg reflector theory for high-reflectance band formation"
+  ],
+  "expected_advantages": [
+    "Reduced search space dimensionality for AR section accelerates convergence",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Maintains full optimization freedom for Bragg section to tune visible rejection"
+  ],
+  "known_risks": [
+    "Quarter-wave anchoring may constrain AR section from discovering superior non-quarter-wave solutions",
+    "Fixed 20-layer count may not be optimal for this dual-band requirement"
+  ],
+  "execution_request_english": "Design a 20-layer dielectric thin-film stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (20 coating layers total). Initialize layers 0-3 (first 4 layers) to quarter-wavelength optical thickness at 1547.5 nm center wavelength (HfO2: n≈2.05, target physical thickness ~189 nm; SiO2: n≈1.46, target physical thickness ~265 nm). Allow all 20 layer thicknesses to be optimized by gradient-based optimizer with bounds 50-400 nm. Evaluate coherent plane-wave transmittance and reflectance across 400-700 nm and 1530-1565 nm bands at normal incidence. Objective: maximize transmittance in 1530-1565 nm band while maximizing reflectance in 400-700 nm band. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive to anchor AR section (layers 0-3) to quarter-wavelength estimates at central operating frequency while maintaining full search freedom for interior Bragg reflectors (layers 4-19). This reduces early-round combinatorial entropy compared to route_03's unconstrained initialization."
+}

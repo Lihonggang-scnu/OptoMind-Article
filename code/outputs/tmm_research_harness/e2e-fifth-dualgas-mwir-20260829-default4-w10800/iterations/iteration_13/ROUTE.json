@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "22-Layer ZnS/MgF2 with Bounded Quasi-Periodic Initialization and Two-Phase Optimizer",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness initialization to a bounded quasi-periodic schedule centered at ~1050 nm with [750, 1250] nm bounds, combined with a two-phase optimizer (pair-wise joint optimization followed by decoupled fine-tuning), will preserve local optical phase continuity and reduce destructive interference spikes compared to unconstrained initialization.",
+  "design_principle": "Quarter-wave stack with alternating high/low index materials, initialized near modal thickness from prior successful iteration, optimized in two phases to maintain phase ramp continuity.",
+  "proposed_materials": [
+    "ZnS",
+    "MgF2",
+    "CaF2"
+  ],
+  "proposed_topology": "exactly 6 alternating ZnS/MgF2 pairs (12 finite layers)",
+  "design_variables": [
+    "All 22 layer thicknesses in nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 3.25-3.35 um and 4.20-4.30 um passbands",
+    "Minimize mean transmittance in 2.50-3.10 um and 4.45-5.00 um stopbands",
+    "Achieve best_target_score > 0.70"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 22 <= 24 limit",
+    "No metal layers",
+    "Thickness bounds [750, 1250] nm ensure depositable ranges",
+    "Two-phase optimization reduces sensitivity to deposition errors"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+    "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+    "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for coherent thin-film interference",
+    "Quarter-wave stack principle for bandpass filtering"
+  ],
+  "expected_advantages": [
+    "Reduced destructive interference spikes compared to round 2",
+    "Better phase continuity across layer interfaces",
+    "Higher best_target_score than iteration_05's 0.594"
+  ],
+  "known_risks": [
+    "May not reach iteration_01's 0.955 score due to tighter bounds",
+    "Two-phase optimizer may converge to local minima"
+  ],
+  "execution_request_english": "Optimize a 22-layer alternating ZnS/MgF2 thin-film stack on CaF2 substrate under air incidence. Initialize all layer thicknesses to a quasi-periodic schedule centered at 1050 nm with bounds [750, 1250] nm. Implement two-phase optimization: Phase 1 jointly optimizes adjacent layer pairs (d_i, d_{i+1}) for i=1,3,5,...,21 to preserve local optical phase continuity; Phase 2 decouples all 22 layers for fine-grained thickness tuning. Target: maximize mean transmittance in passbands [3250-3350 nm, 4200-4300 nm] and minimize mean transmittance in stopbands [2500-3100 nm, 4450-5000 nm]. Use coherent TMM solver with normal unpolarized illumination. Output thicknesses_nm array, best_target_score, valid_candidates count, and tightest_margin. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating ZnS/MgF2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive: replaces unconstrained thickness initialization with bounded quasi-periodic schedule centered on ~1050 nm, adds two-phase optimizer to mitigate destructive interference spikes observed in iteration_05."
+}

@@ -1,0 +1,32 @@
+{
+  "artifact": "iterations/iteration_06/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "8f58aaa0347d1b37117dc76b703cbaf3d8fdfc679188845e53c5eb0b96c75873",
+  "recorded_at_utc": "2026-08-28T13:24:12.126165+00:00",
+  "elapsed_seconds": 1808.2872573000204,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_06",
+  "route_id": "route_02",
+  "scientific_hypothesis": "Enforcing monotonic thickness progression via cumulative exponential parameterization (t_i = t_base + Σ exp(ξ_j)) will reduce optimizer degrees of freedom, smooth the loss landscape, and improve convergence compared to unconstrained chirped optimization, while maintaining the depth-graded principle for broadened UV reflection band.",
+  "expected_advantages": [
+    "Smoother optimization landscape due to reduced effective DOF",
+    "Faster gradient descent convergence",
+    "Physically realistic thickness progression",
+    "Maintains route_02's chirped principle while addressing numerical convergence issues"
+  ],
+  "known_risks": [
+    "Monotonicity constraint may limit optimal solutions if non-monotonic thickness profile is actually superior",
+    "Cumulative parameterization may introduce numerical stiffness if ξ_j values span large ranges"
+  ],
+  "expected_observations": [
+    "valid_candidates should increase from 9 (route_01) to >= 15 if initialization reduces boundary collisions",
+    "best_target_score should remain >= 0.53 or improve if quarter-wave seed is closer to optimum",
+    "tightest_margin should not decrease across rounds if constraint set remains feasible",
+    "If valid_candidates remains < 10, hypothesis that initialization causes boundary collisions is falsified"
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to route_01 historical best (0.5346) is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bounds, not re-run same route",
+    "If best_target_score exceeds 0.75, judge dual-band objective achievable -> can proceed to robustness analysis"
+  ]
+}

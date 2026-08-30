@@ -1,0 +1,35 @@
+{
+  "artifact": "iterations/iteration_12/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "dff8ee5c289e78bccb8acb7222bfff6bc2c4998216ef638ece63bab8fcd959fb",
+  "recorded_at_utc": "2026-08-28T13:41:30.235905+00:00",
+  "elapsed_seconds": 2846.39697110001,
+  "run_id": "e2e-methane-swir-window-20260828-default4-w10800",
+  "iteration_id": "iteration_12",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 24-layer alternating high-index/low-index dielectric stack with individually optimized thicknesses can simultaneously achieve high reflectance in the 300-450 nm band and high transmittance in the 1000-1700 nm band on fused silica substrate at normal incidence.",
+  "expected_advantages": [
+    "24 layers provide sufficient design freedom for dual-band optimization",
+    "Alternating sequence is manufacturable with standard deposition tools",
+    "Individual thickness optimization allows finer spectral control than periodic stacks",
+    "Fused silica substrate transmits well in both target bands"
+  ],
+  "known_risks": [
+    "Uncertain whether 24 layers is optimal vs. fewer layers with better thickness distribution; would need comparison runs to settle",
+    "Uncertain exact refractive index dispersion of hfo2 and sio2 in the 300-1700 nm range from memory; actual values come from material catalog datasets",
+    "Uncertain whether alternating sequence starting with HfO2 is superior to starting with SiO2 for this specific band combination; this is a hypothesis",
+    "The ±10% initialization variance around prior best may constrain search if the prior solution is in a local optimum; would need to verify improvement over full random seeding",
+    "Recalled quarter-wave rule is approximate; actual optimal thicknesses may deviate significantly from λ/4n predictions"
+  ],
+  "expected_observations": [
+    "best_target_score should rise or remain stable compared to iteration-08 value of 0.7999 if the refined search is effective",
+    "tightest_margin should not fall across rounds if solutions remain physically valid",
+    "valid_candidates count should remain high (≥5) indicating the search space is well-bounded",
+    "thicknesses_nm values should show reduced variance compared to full random seeding, clustering near the iteration-08 best solution"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 3 for two consecutive rounds, relax thickness bounds by 10 nm and continue",
+    "if tightest_margin falls below 0.5 for three consecutive rounds, reduce mutation step-size by another 25% and continue"
+  ]
+}

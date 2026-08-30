@@ -1,0 +1,195 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Iteration 2 refinement of route_01 (22-layer ZnS/MgF2 dual-cavity dual-band filter). All routes implement the feedback directive: physics-constrained initialization clamping dielectric spacer and cavity layers to [50, 150] nm thickness window prior to optimization. This enforces quarter-wave optical path lengths around target resonant frequencies (3.3 μm and 4.25 μm), seeding the population onto the primary resonance manifold rather than scattering across arbitrary multi-order interference regimes. Three complementary routes explore layer count variations (20, 22, 24) while preserving the dual-cavity topology principle verified in iteration_01.",
+    "routes": [
+      {
+        "route_id": "route_02",
+        "title": "22-Layer Dual-Cavity Filter with Physics-Constrained Thickness Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Clamping spacer and cavity layer thicknesses to [50, 150] nm during initialization will seed the optimizer onto the primary resonance manifold, reducing convergence time and improving final target score compared to unbounded initialization, while preserving the 22-layer dual-cavity topology that achieved 0.955 target score in iteration_01.",
+        "design_principle": "Quarter-wave optical thickness initialization around target center wavelengths (3.3 μm and 4.25 μm) for cavity/spacer layers, with gradient-based thickness optimization over all 22 layers under the same physical bounds as route_01.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate (22 finite layers)",
+        "design_variables": [
+          "All 22 layer thicknesses with gradient optimization",
+          "Initialization clamped to [50, 150] nm for cavity/spacer layers"
+        ],
+        "soft_objectives": [
+          "Maximize transmittance in 3.25-3.35 μm and 4.20-4.30 μm bands",
+          "Minimize transmittance in 2.50-3.10 μm and 4.45-5.00 μm bands",
+          "Improve target score beyond 0.955 achieved in route_01"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 22 (within 24-layer limit)",
+          "No metal layers",
+          "Conventional IR dielectrics only",
+          "Thickness control at nanometer scale required"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack principle for bandpass filters",
+          "Transfer matrix method for multilayer optimization",
+          "Physics-constrained initialization reduces search space to resonance manifold"
+        ],
+        "expected_advantages": [
+          "Faster convergence due to informed initialization",
+          "Higher final target score from better starting point",
+          "Preserves proven 22-layer topology from route_01"
+        ],
+        "known_risks": [
+          "Initialization window may be too restrictive for some cavity orders",
+          "May converge to local optimum within constrained manifold"
+        ],
+        "execution_request_english": "Optimize a 22-layer planar multilayer filter on CaF2 substrate with Air incidence. Stack sequence: Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2. All 22 layer thicknesses are optimization variables. Apply physics-constrained initialization: clamp all cavity and spacer layer thicknesses to [50, 150] nm range before gradient optimization begins. Use gradient_thickness optimizer with uniform physical bounds. Score candidates on transmittance: high in 3250-3350 nm and 4200-4300 nm bands, low in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized illumination. No metal layers permitted. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Implements feedback directive: physics-constrained initialization clamping spacer/cavity layers to [50, 150] nm to seed population onto primary resonance manifold, while preserving the verified 22-layer dual-cavity topology from route_01."
+      },
+      {
+        "route_id": "route_03",
+        "title": "24-Layer Dual-Cavity Filter with Physics-Constrained Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Increasing layer count from 22 to 24 while applying physics-constrained initialization will improve out-of-band blocking in the 2.50-3.10 μm and 4.45-5.00 μm regions without sacrificing passband transmittance, as additional quarter-wave pairs enhance stopband rejection per interference filter theory.",
+        "design_principle": "Extend the dual-cavity topology by adding one high-low index pair at each mirror section (2 additional layers total), maintaining quarter-wave initialization for all cavity/spacer layers in [50, 150] nm window.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate (24 finite layers)",
+        "design_variables": [
+          "All 24 layer thicknesses with gradient optimization",
+          "Initialization clamped to [50, 150] nm for cavity/spacer layers"
+        ],
+        "soft_objectives": [
+          "Maximize transmittance in 3.25-3.35 μm and 4.20-4.30 μm bands",
+          "Minimize transmittance in 2.50-3.10 μm and 4.45-5.00 μm bands",
+          "Achieve better blocking than 22-layer design"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 24 (at maximum limit)",
+          "No metal layers",
+          "Conventional IR dielectrics only",
+          "Increased deposition time and stress with additional layers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "More layers produce steeper spectral slopes and higher out-of-band blocking per interference filter theory",
+          "Quarter-wave stack principle for bandpass filters",
+          "Thickness-constrained design for manufacturability"
+        ],
+        "expected_advantages": [
+          "Improved stopband rejection with additional mirror pairs",
+          "Same physics-constrained initialization benefit as route_02",
+          "Tests upper layer count limit for this application"
+        ],
+        "known_risks": [
+          "Transmission may drop with increased layer count per evidence",
+          "Spectral ripple amplitude may grow with thickness",
+          "May exceed practical deposition thickness limits"
+        ],
+        "execution_request_english": "Optimize a 24-layer planar multilayer filter on CaF2 substrate with Air incidence. Stack sequence: Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2. All 24 layer thicknesses are optimization variables. Apply physics-constrained initialization: clamp all cavity and spacer layer thicknesses to [50, 150] nm range before gradient optimization begins. Use gradient_thickness optimizer with uniform physical bounds. Score candidates on transmittance: high in 3250-3350 nm and 4200-4300 nm bands, low in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized illumination. No metal layers permitted. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests layer count upper bound (24 layers) with same physics-constrained initialization principle as route_02, exploring whether additional mirror pairs improve blocking without sacrificing passband performance."
+      },
+      {
+        "route_id": "route_04",
+        "title": "20-Layer Dual-Cavity Filter with Physics-Constrained Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 22 to 20 while applying physics-constrained initialization will maintain acceptable dual-band performance with improved manufacturability and reduced deposition stress, testing whether the 22-layer design has margin that can be traded for simplicity.",
+        "design_principle": "Reduce the dual-cavity topology by removing one high-low index pair from each mirror section (2 fewer layers total), maintaining quarter-wave initialization for all cavity/spacer layers in [50, 150] nm window.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | CaF2 substrate (20 finite layers)",
+        "design_variables": [
+          "All 20 layer thicknesses with gradient optimization",
+          "Initialization clamped to [50, 150] nm for cavity/spacer layers"
+        ],
+        "soft_objectives": [
+          "Maximize transmittance in 3.25-3.35 μm and 4.20-4.30 μm bands",
+          "Minimize transmittance in 2.50-3.10 μm and 4.45-5.00 μm bands",
+          "Achieve comparable performance to 22-layer with fewer layers"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count = 20 (below 24-layer limit)",
+          "No metal layers",
+          "Conventional IR dielectrics only",
+          "Reduced deposition time and stress compared to 22/24-layer designs"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507"
+        ],
+        "theory_basis": [
+          "Thickness-constrained design for manufacturability",
+          "Quarter-wave stack principle for bandpass filters",
+          "Trade-off between layer count and spectral performance"
+        ],
+        "expected_advantages": [
+          "Improved manufacturability with fewer layers",
+          "Reduced deposition stress and time",
+          "Tests whether 22-layer design has unnecessary margin"
+        ],
+        "known_risks": [
+          "Blocking performance may degrade with fewer layers",
+          "Passband transmittance may decrease",
+          "May not meet soft objectives for out-of-band suppression"
+        ],
+        "execution_request_english": "Optimize a 20-layer planar multilayer filter on CaF2 substrate with Air incidence. Stack sequence: Air | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS | CaF2. All 20 layer thicknesses are optimization variables. Apply physics-constrained initialization: clamp all cavity and spacer layer thicknesses to [50, 150] nm range before gradient optimization begins. Use gradient_thickness optimizer with uniform physical bounds. Score candidates on transmittance: high in 3250-3350 nm and 4200-4300 nm bands, low in 2500-3100 nm and 4450-5000 nm bands. Normal incidence, unpolarized illumination. No metal layers permitted. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests layer count lower bound (20 layers) with same physics-constrained initialization principle, exploring whether performance can be maintained with reduced complexity for improved manufacturability."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:227248144 confirms that more layers produce steeper spectral slopes and higher blocking but transmission tends to drop - motivates testing 20/22/24 layer variants.",
+      "Evidence s2-chunk:CorpusId:17683472 establishes thickness constraints for manufacturability - supports testing reduced layer count for practical deposition.",
+      "Evidence s2-chunk:CorpusId:235711786 supports TMM-based dual-objective optimization with thickness as optimization variable - validates gradient_thickness optimizer approach.",
+      "Evidence s2-chunk:CorpusId:139773493 demonstrates Ge/Nb2O5 bandpass filters for gas sensing with center wavelength and bandwidth as critical parameters - validates dual-band optimization objective."
+    ],
+    "unresolved_decisions": [
+      "Optimal layer count between 20-24 for balancing performance and manufacturability remains to be determined by experimental comparison.",
+      "Whether physics-constrained initialization provides measurable improvement over unbounded initialization requires direct comparison of route_02 vs route_01 results."
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03 evidence id was corrected to its unique near-exact allowlist match",
+    "route route_04 evidence id was corrected to its unique near-exact allowlist match",
+    "route route_02 received canonical user controls from the problem contract",
+    "route route_03 received canonical user controls from the problem contract",
+    "route route_04 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14335,
+      "completion_tokens": 4982,
+      "total_tokens": 19317
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

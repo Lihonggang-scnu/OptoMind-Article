@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "MgF2/HfO2 chirped stack with enforced minimum thickness and quarter-wave initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The iteration_10 failure arose from thickness values approaching zero or negative values during optimization, triggering TMM phase singularities. Enforcing explicit minimum thickness bounds (≥20 nm) and initializing from quarter-wave optical depths centered on the 267.5 nm passband midpoint will produce physically valid candidates while maintaining the chirped dispersion strategy that achieved 0.647 target score in iteration_06.",
+  "design_principle": "Alternating high/low index layers with thicknesses varying gradually across the stack to create broadband rejection outside the passband while maintaining constructive interference in the 255-280 nm transmission band.",
+  "proposed_materials": [
+    "MgF2",
+    "HfO2",
+    "fused silica substrate"
+  ],
+  "proposed_topology": "20-layer alternating stack: Air | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | fused silica",
+  "design_variables": [
+    "layer thicknesses (20 variables, bounds 20-200 nm)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 255-280 nm",
+    "minimize mean transmittance in 300-700 nm",
+    "minimize mean transmittance in 700-1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer limit)",
+    "minimum thickness 20 nm ensures depositability",
+    "no metal layers",
+    "conventional inorganic dielectrics only"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for coherent multilayer interference",
+    "Quarter-wave optical thickness principle for bandpass filter design"
+  ],
+  "expected_advantages": [
+    "Enforced minimum bounds prevent TMM numerical failures",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Chirped dispersion maintains broadband rejection capability from iteration_06"
+  ],
+  "known_risks": [
+    "May still converge to local optima if search budget insufficient",
+    "MgF2 refractive index dispersion in deep UV may differ from nominal values"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar multilayer filter on fused silica substrate with air incidence. Layer sequence: MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2, MgF2, HfO2 (20 finite layers total). Each layer thickness bounded between 20 nm and 200 nm. Initialize thicknesses at quarter-wave optical depth centered on 267.5 nm wavelength (MgF2 n≈1.38, HfO2 n≈2.0 at UV). Use coherent S-matrix solver across 255-1100 nm spectrum. Score three transmittance objectives: maximize mean transmittance 255-280 nm, minimize mean transmittance 300-700 nm, minimize mean transmittance 700-1100 nm. Use bound-aware global optimizer with projection of out-of-bounds samples back into feasible region. Normal incidence, unpolarized light. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Iteration_10 failed with 0 valid candidates due to material_data error. This route enforces explicit minimum thickness bounds (≥20 nm) to prevent TMM phase singularities, widens thickness search interval centered on quarter-wave values, and switches to bound-aware global optimizer with projection as directed in feedback."
+}

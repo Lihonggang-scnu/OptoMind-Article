@@ -1,0 +1,36 @@
+{
+  "artifact": "iterations/iteration_04/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "da1af21c95e87fd9e942e96182ad4f231296ca4d1e0971394f31675dd67e9b62",
+  "recorded_at_utc": "2026-08-29T08:56:49.889516+00:00",
+  "elapsed_seconds": 2329.762378299958,
+  "run_id": "e2e-sixth-combustion-co-20260829-default4-w10800",
+  "iteration_id": "iteration_04",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 22-layer stack with two half-wave cavities separated by Bragg mirror sections will produce two transmission peaks centered near 4.25 μm and 4.65 μm, with stopbands at 3.60-4.00 μm and 4.85-5.20 μm showing suppressed transmittance relative to the passbands.",
+  "expected_advantages": [
+    "ZnS/MgF2 pair provides good index contrast in mid-IR from recalled knowledge",
+    "22 layers leaves margin within the 24-layer constraint for potential refinement",
+    "Dual-cavity topology directly addresses the two-passband requirement",
+    "All materials are conventional IR dielectrics without metals"
+  ],
+  "known_risks": [
+    "Refractive index values for ZnS and MgF2 at 4-5 μm are recalled approximately; actual dispersion may differ and would need to be confirmed from the material registry",
+    "Daimon-20 substrate index at these wavelengths is recalled but not verified; the registry data will determine actual performance",
+    "The exact layer count of 22 was chosen from memory of similar filters; optimal count may be different",
+    "Stopband rejection level is uncertain without running the solver; may require more layers or different cavity spacing",
+    "Thermal stability and adhesion of ZnS/MgF2 on Daimon-20 is not addressed in this optical-only design",
+    "The two passbands are close together (4.25 μm and 4.65 μm center); achieving both with adequate separation from stopbands may be challenging"
+  ],
+  "expected_observations": [
+    "best_target_score should increase over iterations as thickness optimization finds better cavity resonances",
+    "valid_candidates should remain high if the 22-layer topology is physically realizable with these materials",
+    "tightest_margin should not systematically decrease across rounds if the design is stable",
+    "thicknesses_nm should converge toward quarter-wave values at passband centers with half-wave cavities"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero for two consecutive rounds, relax the layer thickness bounds and continue",
+    "if tightest_margin falls below 0.1 for three consecutive rounds, reduce the number of free thickness variables and re-optimize"
+  ]
+}

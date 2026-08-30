@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_08/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "c5c7b91443ee4c276ff965a944e434cc53fa0311dc37d6ab4a5f596ccfa8ea8f",
+  "recorded_at_utc": "2026-08-29T01:14:26.555392+00:00",
+  "elapsed_seconds": 2345.9587521000067,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_08",
+  "route_id": "route_03",
+  "scientific_hypothesis": "Anchoring the first 4 AR-matching layers to quarter-wavelength thickness estimates at the telecom band center (1547.5 nm) will reduce early-round search entropy and enable the optimizer to more efficiently discover high-transmittance solutions in the 1530-1565 nm band while maintaining visible reflectance through the remaining 16 Bragg layers.",
+  "expected_advantages": [
+    "Reduced search space dimensionality for AR section accelerates convergence",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Maintains full optimization freedom for Bragg section to tune visible rejection"
+  ],
+  "known_risks": [
+    "Quarter-wave anchoring may constrain AR section from discovering superior non-quarter-wave solutions",
+    "Fixed 20-layer count may not be optimal for this dual-band requirement"
+  ],
+  "expected_observations": [
+    "best_target_score should exceed the prior iteration's 0.6013 if the bounded search successfully redirects density to superior local minima.",
+    "tightest_margin should deviate from the prior 0.4296 value consistent with the hypothesis that thickness bounding alters the robustness landscape.",
+    "max(thicknesses_nm) across all valid candidates must not exceed 280nm.",
+    "valid_candidates should remain > 0 indicating the 280nm bound is not infeasible for this topology."
+  ],
+  "stop_conditions": [
+    "If best_target_score improvement relative to historical best is < 1e-3 for 2 consecutive rounds, judge search as stagnated -> stop and retain current best.",
+    "If valid_candidates = 0, judge constraint set infeasible -> should relax thickness bound to 300nm, not re-run the same route.",
+    "If max(thicknesses_nm) exceeds 280nm in any valid candidate, judge bound enforcement failed -> stop and verify optimizer constraint implementation."
+  ]
+}

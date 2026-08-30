@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_15/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "46e40c941949261eb8b0b04646858ce95aefa714cd4f2f5e7430d4115b0ee8f4",
+  "recorded_at_utc": "2026-08-29T01:43:13.098644+00:00",
+  "elapsed_seconds": 4072.5018041000003,
+  "run_id": "e2e-space-qkd-cband-window-20260829-default4-w10800",
+  "iteration_id": "iteration_15",
+  "route_id": "route_01",
+  "scientific_hypothesis": "The previous zero-candidate outcome resulted from overly narrow initialization bounds around 550 nm quarter-wave thicknesses. Expanding thickness sampling to λ/4 ± 30 nm and temporarily relaxing tightest_margin by +0.07 will expand the initial basin of attraction, enabling at least one viable candidate to pass validation and allowing the optimizer to map actual trade-off gradients.",
+  "expected_advantages": [
+    "Wider sampling bounds increase probability of finding valid candidates",
+    "Relaxed margin prevents premature candidate rejection",
+    "Preserves 20-layer topology from successful iteration_01"
+  ],
+  "known_risks": [
+    "Wider bounds may increase optimization iterations needed for convergence",
+    "Relaxed margin may admit candidates with lower robustness"
+  ],
+  "expected_observations": [
+    "If hypothesis holds: best_target_score should increase as reference wavelength approaches 550 nm (visible band center), with valid_candidates remaining stable across rounds",
+    "If hypothesis fails: best_target_score should plateau below 0.7 regardless of reference wavelength, indicating periodic structure cannot satisfy both bands simultaneously",
+    "tightest_margin should remain positive if both bands are achievable with this topology"
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "If valid_candidates drops to zero for three consecutive rounds, relax the quarter-wave constraint and stop"
+  ]
+}

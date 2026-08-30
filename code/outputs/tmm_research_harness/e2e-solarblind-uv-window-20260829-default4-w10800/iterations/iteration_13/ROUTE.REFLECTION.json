@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expected observation of sustained improvement and stable margins was partially met but regressed: best_target_score peaked at 0.6474 in round 2 before dropping to 0.6229 in round 3, deviating from the anticipated stable or upward trajectory. The expectation that thicknesses_nm would show monotonic or graded progression is explicitly violated; the logged sequences exhibit erratic jumps rather than smooth chirps. The tightest_margin remained consistent at 0.2127, indicating that geometric feasibility is not the primary driver of the score volatility.",
+  "deviation_mechanism": "Unconstrained thickness perturbation has allowed the optimizer to violate the adiabatic impedance-matching conditions required for functional chirped Bragg reflectors. Specifically, large abrupt transitions between adjacent layers (e.g., Layer 3 shifting from 97.18 nm to 190.35 nm) introduce severe phase discontinuities and parasitic cavity modes, scattering energy out of the target stopband and reducing the aggregate metric. Furthermore, HfO2 exhibits intrinsic absorption in the 255–280 nm passband; as layer thicknesses expand to chase stopband depth, the accumulated HfO2 path length increases, capping passband transmission and triggering diminishing returns that manifest as the observed score drop after round 2.",
+  "continue_recommended": true,
+  "continue_rationale": "Three rounds have been executed, and the score variance between round 2 (0.6474) and round 3 (0.6229) is 0.0245, which exceeds the reference epsilon of 0.0001 by two orders of magnitude. This confirms active, non-stationary search dynamics rather than the sub-1e-3 stagnation threshold required to halt the route. Because the degradation correlates directly with broken chirp geometry rather than fundamental material limits, introducing constrained initialization offers a high-yield scientific path to either recover optimized interference conditions or definitively measure the absorption floor.",
+  "insight_for_next": "Replace the current free-parameter initialization with a geometric progression template (thickness ratio r ∈ [1.08, 1.12]) for both high- and low-index layers to enforce a physically realistic chirp gradient. Additionally, impose a hard upper bound of 85 nm on all HfO2 layer thicknesses during initialization to preemptively filter out 255–280 nm absorption-dominated candidates, allowing the optimizer to focus computational budget on stopband engineering within feasible transmission windows.",
+  "insight_grounding": "Logged thickness arrays demonstrate the violation of the chirp hypothesis: Layer 3 spans from 97.1758 nm to 190.3453 nm across the provided candidate sequences, creating physically unjustified abrupt transitions. The corresponding score decline from 0.647421 (round 2) to 0.622889 (round 3) validates that unguided thickness expansion degrades performance. The stable tightest_margin of 0.212743 confirms constraints remain satisfiable, isolating the score drop to optical design pathology rather than solver failure.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-08-29T04:47:02.265619+00:00",
+  "attestation_sha256": "4e0777888fafec5e155fa36066e19092bc308f26816948c72b424ab9478b69db",
+  "observed_metrics": {
+    "best_target_score": 0.6228893605349864,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.21274341999409985
+  },
+  "reflection_available": true
+}

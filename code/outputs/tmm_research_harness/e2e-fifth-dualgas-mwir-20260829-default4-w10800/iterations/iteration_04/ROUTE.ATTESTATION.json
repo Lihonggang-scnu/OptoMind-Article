@@ -1,0 +1,37 @@
+{
+  "artifact": "iterations/iteration_04/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "b36819ba5187422d38e9742c35f5366998ddf2b71022e7fdce3a314b93dfd9d1",
+  "recorded_at_utc": "2026-08-29T05:52:08.653145+00:00",
+  "elapsed_seconds": 1906.9976461000042,
+  "run_id": "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
+  "iteration_id": "iteration_04",
+  "route_id": "control_route_01",
+  "scientific_hypothesis": "A 22-layer dual-cavity structure with ZnS/MgF2 quarter-wave-based stacks can achieve simultaneous transmission peaks at 3.30 μm and 4.25 μm with suppression in the 2.50-3.10 μm and 4.45-5.00 μm bands when layer thicknesses are optimized.",
+  "expected_advantages": [
+    "ZnS/MgF2 pair provides high index contrast for efficient blocking with fewer layers",
+    "22-layer design leaves margin within the 24-layer constraint for potential refinement",
+    "Dual-cavity topology is a standard approach for multi-band transmission filters",
+    "All materials are from the guaranteed_names list and should resolve without ambiguity"
+  ],
+  "known_risks": [
+    "Uncertain about exact refractive indices of ZnS and MgF2 at 3-5 μm wavelengths - actual values may differ from recalled ~2.3 and ~1.35",
+    "Uncertain about Daimon-20 substrate index dispersion in this range - recalled value may not match dataset",
+    "Uncertain whether 22 layers is sufficient to achieve required blocking levels in suppression bands - may need more pairs",
+    "Recalled that ZnS may have some absorption features near 4-5 μm that could affect CO2 band transmission - would need to verify against actual dataset",
+    "The topology assumes normal incidence; if actual system uses oblique incidence, performance will shift",
+    "No polarization specification in request - design assumes unpolarized or normal incidence where polarization effects are minimal",
+    "Quarter-wave center wavelength selection is uncertain - chose 3.3 μm as compromise but 4.25 μm cavity may need different reference"
+  ],
+  "expected_observations": [
+    "If the dual-cavity hypothesis holds, best_target_score should increase across optimization rounds as thicknesses converge toward values that create transmission peaks at both target bands",
+    "valid_candidates should remain high (above 50% of generated candidates) if the thickness search space is well-bounded",
+    "tightest_margin should not systematically decrease across rounds, indicating the design remains physically realizable",
+    "If the hypothesis fails, best_target_score will plateau early and transmission peaks will not align with both target bands simultaneously"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates falls below 20% of generated candidates for two consecutive rounds, relax thickness bounds and continue for one more round before stopping",
+    "if tightest_margin becomes negative for three consecutive rounds, reduce maximum thickness limits and continue"
+  ]
+}

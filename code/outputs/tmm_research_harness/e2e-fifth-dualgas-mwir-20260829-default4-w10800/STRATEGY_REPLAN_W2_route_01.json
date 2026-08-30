@@ -1,0 +1,200 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_01 based on iteration 01 (score 0.955) vs iteration 05 (score 0.594) comparison. The sharp performance drop in iteration 05 stems from artificially tight thickness bounds [50,150]nm that conflict with quarter-wave optical thickness requirements at 3-5 μm wavelengths. This refinement restores physically-appropriate thickness ranges while applying feedback directives: initialize from empirical thickness manifold of successful iteration 01 candidates, center on mean ~950nm (not 95.5nm - the feedback contains a unit error, actual successful thicknesses were 400-1600nm range), apply Gaussian perturbation σ=150nm, and reduce optimizer step size by 40%. Three complementary routes test: (1) restored bounds with empirical initialization, (2) reduced layer count 18-layer for manufacturability, (3) asymmetric cavity design for improved dual-band balance.",
+    "routes": [
+      {
+        "route_id": "route_01_refine_01",
+        "title": "22-Layer ZnS/MgF2 Dual-Band Filter with Empirical Thickness Initialization",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "The iteration 05 performance degradation (0.594 vs 0.955) resulted from thickness bounds [50,150]nm being physically incompatible with quarter-wave optical thickness at 3-5 μm wavelengths. Restoring bounds to [400,1600]nm range observed in iteration 01 successful candidates, with initialization centered on empirical mean thickness ~950nm from top performers, will recover high target scores while maintaining the proven 22-layer alternating ZnS/MgF2 topology.",
+        "design_principle": "Quarter-wave stack principle with alternating high/low index dielectrics; layer optical thickness approximately λ/4 at center of passbands. Empirical initialization from successful iteration 01 candidates preserves the thickness manifold that achieved 0.955 score.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [ZnS | MgF2] × 11 | CaF2 substrate; exactly 22 finite layers in alternating sequence",
+        "design_variables": [
+          "All 22 layer thicknesses in nm, initialized from iteration 01 candidate mean thickness distribution with Gaussian perturbation σ=150nm",
+          "Optimizer step size reduced by 40% relative to iteration 05"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm and 4.20-4.30 μm passbands",
+          "Minimize mean transmittance in 2.50-3.10 μm and 4.45-5.00 μm stopbands",
+          "Maintain robustness score above 0.5"
+        ],
+        "manufacturing_considerations": [
+          "22 layers within 24-layer constraint",
+          "ZnS and MgF2 are conventional depositable IR dielectrics",
+          "No metal layers",
+          "Thickness ranges [400,1600]nm compatible with PVD deposition control"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Quarter-wave stack design principle for alternating index multilayers",
+          "Transfer matrix method for coherent thin-film interference calculation",
+          "Empirical thickness distribution from iteration 01 successful candidates"
+        ],
+        "expected_advantages": [
+          "Recover iteration 01 performance level (target score ~0.95) by restoring physically-appropriate thickness bounds",
+          "Empirical initialization reduces search space and prevents over-detuning",
+          "Reduced optimizer step size preserves multi-band margin feasibility"
+        ],
+        "known_risks": [
+          "Local optimization may converge to suboptimal thickness configuration",
+          "Spectral ripple may increase with 22-layer thickness",
+          "Deposition stress may cause thickness deviation from design"
+        ],
+        "execution_request_english": "Optimize a 22-layer alternating ZnS/MgF2 multilayer filter on CaF2 substrate under normal incidence. Layer sequence: ZnS(1), MgF2(2), ZnS(3), MgF2(4), ZnS(5), MgF2(6), ZnS(7), MgF2(8), ZnS(9), MgF2(10), ZnS(11), MgF2(12), ZnS(13), MgF2(14), ZnS(15), MgF2(16), ZnS(17), MgF2(18), ZnS(19), MgF2(20), ZnS(21), MgF2(22). Initialize all 22 thicknesses from empirical mean of iteration 01 top candidates (approximately 950nm mean) with Gaussian perturbation standard deviation 150nm. Constrain thickness bounds to [400, 1600]nm per layer. Use gradient-based thickness optimizer with step size reduced by 40% relative to standard. Evaluate transmittance at four wavelength bands: passbands 3250-3350nm and 4200-4300nm (maximize), stopbands 2500-3100nm and 4450-5000nm (minimize). Score via equal-weight mean aggregation across bands. Air incidence, CaF2 substrate, no metal layers, coherent TMM solver. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Iteration 05 thickness bounds [50,150]nm were physically incompatible with quarter-wave requirements at 3-5 μm wavelengths, causing score drop from 0.955 to 0.594. This refinement restores bounds to [400,1600]nm matching iteration 01 successful candidates, initializes from empirical thickness manifold, and reduces optimizer step size per feedback directives."
+      },
+      {
+        "route_id": "route_01_refine_02",
+        "title": "18-Layer ZnS/MgF2 Dual-Band Filter for Reduced Manufacturability Risk",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Reducing layer count from 22 to 18 layers will maintain acceptable dual-band performance while improving manufacturability and reducing deposition-induced stress. Evidence indicates coating thickness limits (~20-40 μm) and quality control difficulty increase with layer count. 18 layers should achieve target score >0.85 while providing margin against thickness control errors.",
+        "design_principle": "Quarter-wave stack with reduced layer count; fewer layers reduce total coating thickness and deposition time while maintaining basic bandpass functionality through cavity resonance.",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [ZnS | MgF2] × 9 | CaF2 substrate; exactly 18 finite layers in alternating sequence",
+        "design_variables": [
+          "All 18 layer thicknesses in nm, initialized from scaled iteration 01 thickness distribution",
+          "Optimizer step size reduced by 40% relative to standard"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm and 4.20-4.30 μm passbands",
+          "Minimize mean transmittance in 2.50-3.10 μm and 4.45-5.00 μm stopbands",
+          "Target score >0.85 acceptable tradeoff for manufacturability"
+        ],
+        "manufacturing_considerations": [
+          "18 layers provides margin below 24-layer constraint",
+          "Reduced total thickness improves deposition quality control",
+          "ZnS and MgF2 conventional IR dielectrics",
+          "No metal layers"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:274847893:s2chunk:274847893:11763:14268:155bf5ee10105237"
+        ],
+        "theory_basis": [
+          "Layer count directly relates to coating thickness and vacuum chamber residence time",
+          "Fewer layers reduce transmissive behavior control difficulty",
+          "Quarter-wave stack principle remains valid at reduced layer count"
+        ],
+        "expected_advantages": [
+          "Improved manufacturability with 18 vs 22 layers",
+          "Reduced deposition stress and thickness control errors",
+          "Faster vacuum deposition cycle",
+          "Maintains dual-band functionality with acceptable performance tradeoff"
+        ],
+        "known_risks": [
+          "Reduced layer count may decrease stopband blocking performance",
+          "Passband transmission may decrease with fewer cavity periods",
+          "May not achieve iteration 01 score level of 0.955"
+        ],
+        "execution_request_english": "Optimize an 18-layer alternating ZnS/MgF2 multilayer filter on CaF2 substrate under normal incidence. Layer sequence: ZnS(1), MgF2(2), ZnS(3), MgF2(4), ZnS(5), MgF2(6), ZnS(7), MgF2(8), ZnS(9), MgF2(10), ZnS(11), MgF2(12), ZnS(13), MgF2(14), ZnS(15), MgF2(16), ZnS(17), MgF2(18). Initialize all 18 thicknesses from scaled iteration 01 thickness distribution (proportionally adjusted for 18-layer topology) with Gaussian perturbation standard deviation 150nm. Constrain thickness bounds to [400, 1600]nm per layer. Use gradient-based thickness optimizer with step size reduced by 40% relative to standard. Evaluate transmittance at four wavelength bands: passbands 3250-3350nm and 4200-4300nm (maximize), stopbands 2500-3100nm and 4450-5000nm (minimize). Score via equal-weight mean aggregation across bands. Air incidence, CaF2 substrate, no metal layers, coherent TMM solver. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_01",
+        "revision_reason": "Alternative to refine_01 testing whether reduced layer count (18 vs 22) provides acceptable performance with improved manufacturability. Addresses evidence that thicker coatings increase quality control difficulty and deposition time."
+      },
+      {
+        "route_id": "route_01_refine_03",
+        "title": "22-Layer Asymmetric Cavity Design for Improved Dual-Band Balance",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "The symmetric alternating ZnS/MgF2 topology may not optimally balance the two widely separated passbands (3.3 μm and 4.25 μm). Introducing asymmetric cavity structure with modified layer sequence (thicker cavity layers for longer wavelength band) will improve spectral balance between methane and CO2 bands while maintaining 22-layer count and proven material pair.",
+        "design_principle": "Dual-cavity bandpass filter with asymmetric cavity optical thicknesses tuned to each passband center wavelength. Cavity layers adjacent to passband centers use thicker optical thickness proportional to wavelength ratio (4.25/3.3 ≈ 1.29).",
+        "proposed_materials": [
+          "ZnS",
+          "MgF2",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | ZnS | MgF2 | ZnS | MgF2 | ZnS(cavity1) | MgF2 | ZnS | MgF2 | ZnS(cavity2-thick) | MgF2 | ZnS | MgF2 | ZnS | MgF2 | ZnS(cavity3) | MgF2 | ZnS | MgF2 | ZnS | MgF2 | CaF2 substrate; exactly 22 finite layers with 3 cavity layers at positions 5, 10, 15 having differentiated thickness initialization",
+        "design_variables": [
+          "All 22 layer thicknesses in nm, with cavity layers (5, 10, 15) initialized 29% thicker than non-cavity layers to match 4.25/3.3 wavelength ratio",
+          "Non-cavity layers initialized from iteration 01 empirical mean ~950nm",
+          "Cavity layers initialized from iteration 01 empirical mean × 1.29 ≈ 1225nm",
+          "Gaussian perturbation σ=150nm applied to all layers",
+          "Optimizer step size reduced by 40%"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3.25-3.35 μm and 4.20-4.30 μm passbands with improved balance between bands",
+          "Minimize mean transmittance in 2.50-3.10 μm and 4.45-5.00 μm stopbands",
+          "Reduce passband transmission asymmetry compared to symmetric topology"
+        ],
+        "manufacturing_considerations": [
+          "22 layers within 24-layer constraint",
+          "ZnS and MgF2 conventional IR dielectrics",
+          "No metal layers",
+          "Asymmetric thickness initialization within [400, 1600]nm bounds"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:136080761:s2chunk:136080761:15:2102:e2773f76792b7ad8",
+          "s2-chunk:CorpusId:235711786:s2chunk:235711786:15932:18147:495c8f99ee6e0507",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299"
+        ],
+        "theory_basis": [
+          "Bandpass filter construction from long-pass and short-pass combinations",
+          "Cavity optical thickness proportional to center wavelength for resonance",
+          "Dual-cavity design enables multiple transmission bands"
+        ],
+        "expected_advantages": [
+          "Improved transmission balance between 3.3 μm and 4.25 μm passbands",
+          "Better stopband blocking through cavity resonance tuning",
+          "Maintains 22-layer manufacturability while improving spectral performance",
+          "Asymmetric initialization may escape local optima of symmetric topology"
+        ],
+        "known_risks": [
+          "Asymmetric design may introduce spectral ripple asymmetry",
+          "Cavity thickness differentiation may reduce overall transmission",
+          "Optimization may converge to symmetric solution negating asymmetric initialization benefit"
+        ],
+        "execution_request_english": "Optimize a 22-layer ZnS/MgF2 multilayer filter on CaF2 substrate under normal incidence with asymmetric cavity structure. Layer sequence: ZnS(1), MgF2(2), ZnS(3), MgF2(4), ZnS-cavity1(5), MgF2(6), ZnS(7), MgF2(8), ZnS(9), MgF2(10), ZnS-cavity2(11), MgF2(12), ZnS(13), MgF2(14), ZnS-cavity3(15), MgF2(16), ZnS(17), MgF2(18), ZnS(19), MgF2(20), ZnS(21), MgF2(22). Initialize non-cavity layers (all except 5, 11, 15) from empirical mean ~950nm with Gaussian perturbation σ=150nm. Initialize cavity layers (5, 11, 15) from empirical mean × 1.29 ≈ 1225nm with same perturbation. Constrain all thickness bounds to [400, 1600]nm. Use gradient-based thickness optimizer with step size reduced by 40% relative to standard. Evaluate transmittance at four wavelength bands: passbands 3250-3350nm and 4200-4300nm (maximize), stopbands 2500-3100nm and 4450-5000nm (minimize). Score via equal-weight mean aggregation across bands with additional penalty for passband transmission asymmetry. Air incidence, CaF2 substrate, no metal layers, coherent TMM solver. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_01",
+        "revision_reason": "Tests whether asymmetric cavity topology improves dual-band balance compared to symmetric alternating stack. Addresses potential limitation of symmetric design for widely separated passbands (3.3 μm vs 4.25 μm)."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:227248144 indicates more layers produce steeper slopes but transmission drops and ripple increases with thickness - supports testing 18 vs 22 layer tradeoff in route_01_refine_02",
+      "Evidence s2-chunk:CorpusId:17683472 indicates coating thickness limits (~20-40 μm) and quality control difficulty increase with layer count - motivates reduced layer count route",
+      "Evidence s2-chunk:CorpusId:136080761 supports bandpass construction from long-pass/short-pass combinations - informs asymmetric cavity design principle in route_01_refine_03",
+      "Iteration 01 empirical thickness distribution (400-1600nm range) directly informs initialization strategy for all three refinement routes"
+    ],
+    "unresolved_decisions": [
+      "Optimal layer count between 18-22 layers for balancing performance vs manufacturability",
+      "Whether asymmetric cavity topology provides measurable improvement over symmetric alternating stack for this specific dual-band requirement",
+      "Whether further thickness bound relaxation beyond [400,1600]nm would improve performance or introduce manufacturability risks"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_01_refine_01 received canonical user controls from the problem contract",
+    "route route_01_refine_02 received canonical user controls from the problem contract",
+    "route route_01_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 16170,
+      "completion_tokens": 5776,
+      "total_tokens": 21946
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

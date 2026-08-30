@@ -1,0 +1,198 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_ac5eb8ea9eee767f",
+    "planning_summary": "Refining route_03 (ZnS/MgF2 Single-Cavity Defect-Engineered Dual-Band Filter) which failed with 0 physically valid candidates due to material_data issues. Three new routes proposed: (1) Alternative material pair Ge/YbF3 with expanded thickness bounds and 20-layer defect-cavity topology, (2) Reduced 16-layer ZnSe/ThF4 stack for improved numerical stability, (3) Double-cavity 22-layer Ge/YbF3 design for better passband isolation. All routes expand thickness bounds by 20% from previous [200,1200]nm to [160,1440]nm, add NaN guards, and maintain the defect-engineered dual-band scientific principle while changing materials and topology to address material_data failure.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "Ge/YbF3 Defect-Cavity Dual-Band Filter with Expanded Thickness Bounds",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "Replacing ZnS/MgF2 with Ge/YbF3 material pair will resolve material_data failures while maintaining defect-cavity dual-band transmission physics. Germanium provides high index contrast in mid-IR, YbF3 provides low index with verified optical constants. Expanded thickness bounds [160,1440]nm ensure feasible initialization points.",
+        "design_principle": "Single defect-cavity multilayer with alternating high/low index layers. Two defect layers positioned to create transmission peaks at 3.30 μm and 4.25 μm center wavelengths. Quarter-wave optical thickness scaling for Bragg mirrors surrounding defect cavities.",
+        "proposed_materials": [
+          "Ge",
+          "YbF3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [Ge/YbF3]_5 | Ge_defect1 | [YbF3/Ge]_3 | YbF3_defect2 | [Ge/YbF3]_5 | CaF2 substrate. Total 20 finite layers.",
+        "design_variables": [
+          "All 20 layer thicknesses in nm",
+          "Defect layer positions fixed by topology"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350nm band",
+          "Maximize mean transmittance in 4200-4300nm band",
+          "Minimize mean transmittance in 2500-3100nm band",
+          "Minimize mean transmittance in 4450-5000nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 20 <= 24 limit",
+          "No metal layers",
+          "Ge and YbF3 are conventional IR dielectrics with deposition heritage",
+          "Thickness bounds [160,1440]nm expanded 20% from previous route"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:23617:24948:3169b780e7b9ea48",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for layered media",
+          "Defect-cavity resonance theory for dual-band transmission",
+          "Quarter-wave Bragg mirror reflectance scaling"
+        ],
+        "expected_advantages": [
+          "Ge/YbF3 pair has better documented IR optical constants than ZnS/MgF2",
+          "Expanded thickness bounds prevent initialization failures",
+          "20-layer count provides margin under 24-layer constraint"
+        ],
+        "known_risks": [
+          "Ge has higher absorption in mid-IR than ZnS",
+          "YbF3 mechanical properties may differ from MgF2",
+          "Defect-cavity coupling may create unwanted sidebands"
+        ],
+        "execution_request_english": "Optimize a 20-layer defect-cavity dual-band filter on CaF2 substrate under air incidence. Layer sequence: Air | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | Ge_defect | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | YbF3_defect | Ge | YbF3 | Ge | YbF3 | CaF2. All 20 finite layer thicknesses are optimization variables with bounds [160, 1440] nm. Maximize mean transmittance in 3250-3350nm and 4200-4300nm bands. Minimize mean transmittance in 2500-3100nm and 4450-5000nm bands. Use TMM solver with NaN guards and constraint-violation logging. No metal layers. Normal incidence, unpolarized. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Changed material pair from ZnS/MgF2 to Ge/YbF3 to address material_data failure. Expanded thickness bounds by 20% from [200,1200]nm to [160,1440]nm per feedback directive. Maintained 20-layer defect-cavity topology."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "ZnSe/ThF4 Reduced 16-Layer Dual-Band Filter for Numerical Stability",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "Reducing layer count from 20 to 16 will improve numerical stability and reduce material_data failure probability. ZnSe/ThF4 material pair offers verified mid-IR optical constants with lower absorption than Ge-based designs.",
+        "design_principle": "Simplified defect-cavity topology with fewer Bragg mirror pairs. Two defect cavities maintained for dual-band operation. Reduced total optical thickness improves convergence.",
+        "proposed_materials": [
+          "ZnSe",
+          "ThF4",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [ZnSe/ThF4]_4 | ZnSe_defect1 | [ThF4/ZnSe]_2 | ThF4_defect2 | [ZnSe/ThF4]_4 | CaF2 substrate. Total 16 finite layers.",
+        "design_variables": [
+          "All 16 layer thicknesses in nm",
+          "Defect layer positions fixed by topology"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350nm band",
+          "Maximize mean transmittance in 4200-4300nm band",
+          "Minimize mean transmittance in 2500-3100nm band",
+          "Minimize mean transmittance in 4450-5000nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 16 <= 24 limit with 8-layer margin",
+          "No metal layers",
+          "ZnSe and ThF4 are conventional IR dielectrics",
+          "Thickness bounds [160,1440]nm expanded 20% from previous route"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:25021:26346:5f1917d4b80dcb33",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for layered media",
+          "Defect-cavity resonance theory",
+          "Reduced layer count improves numerical conditioning"
+        ],
+        "expected_advantages": [
+          "Fewer layers reduce cumulative numerical error",
+          "ZnSe/ThF4 pair may have better registry coverage than ZnS/MgF2",
+          "8-layer margin under 24-layer limit allows future complexity increase"
+        ],
+        "known_risks": [
+          "Fewer Bragg pairs may reduce out-of-band blocking",
+          "ThF4 less common than MgF2 in deposition facilities",
+          "May not achieve same spectral slope steepness as 20-layer design"
+        ],
+        "execution_request_english": "Optimize a 16-layer defect-cavity dual-band filter on CaF2 substrate under air incidence. Layer sequence: Air | ZnSe | ThF4 | ZnSe | ThF4 | ZnSe | ThF4 | ZnSe | ThF4 | ZnSe_defect | ThF4 | ZnSe | ThF4 | ZnSe | ThF4_defect | ZnSe | ThF4 | ZnSe | ThF4 | CaF2. All 16 finite layer thicknesses are optimization variables with bounds [160, 1440] nm. Maximize mean transmittance in 3250-3350nm and 4200-4300nm bands. Minimize mean transmittance in 2500-3100nm and 4450-5000nm bands. Use TMM solver with NaN guards and constraint-violation logging. No metal layers. Normal incidence, unpolarized. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Reduced layer count from 20 to 16 to improve numerical stability. Changed material pair to ZnSe/ThF4 as alternative to failed ZnS/MgF2. Expanded thickness bounds by 20% per feedback directive."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "Ge/YbF3 Double-Cavity 22-Layer Dual-Band Filter with Enhanced Isolation",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "Double-cavity topology with 22 layers will provide better passband isolation between 3.3 μm and 4.25 μm bands compared to single-cavity design. Ge/YbF3 material pair addresses previous material_data failure.",
+        "design_principle": "Two separate defect cavities with dedicated Bragg mirror sections for each passband. Increased layer count allows steeper spectral slopes and better out-of-band blocking while staying under 24-layer limit.",
+        "proposed_materials": [
+          "Ge",
+          "YbF3",
+          "CaF2"
+        ],
+        "proposed_topology": "Air | [Ge/YbF3]_6 | Ge_defect1 | [YbF3/Ge]_4 | Ge_defect2 | [Ge/YbF3]_6 | CaF2 substrate. Total 22 finite layers.",
+        "design_variables": [
+          "All 22 layer thicknesses in nm",
+          "Defect layer positions fixed by topology"
+        ],
+        "soft_objectives": [
+          "Maximize mean transmittance in 3250-3350nm band",
+          "Maximize mean transmittance in 4200-4300nm band",
+          "Minimize mean transmittance in 2500-3100nm band",
+          "Minimize mean transmittance in 4450-5000nm band"
+        ],
+        "manufacturing_considerations": [
+          "Total layer count 22 <= 24 limit with 2-layer margin",
+          "No metal layers",
+          "Ge and YbF3 are conventional IR dielectrics",
+          "Thickness bounds [160,1440]nm expanded 20% from previous route",
+          "22 layers approaches manufacturability limit per evidence"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:139773493:s2chunk:139773493:23617:24948:3169b780e7b9ea48",
+          "s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299",
+          "s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1"
+        ],
+        "theory_basis": [
+          "Transfer-matrix method for layered media",
+          "Double-cavity filter theory for multi-band operation",
+          "Quarter-wave Bragg mirror reflectance scaling"
+        ],
+        "expected_advantages": [
+          "Better passband isolation than single-cavity",
+          "Higher layer count enables steeper spectral slopes",
+          "Ge/YbF3 pair addresses material_data failure from route_03"
+        ],
+        "known_risks": [
+          "22 layers approaches 24-layer manufacturing constraint",
+          "Increased complexity may cause convergence difficulties",
+          "Ge absorption may reduce peak transmittance"
+        ],
+        "execution_request_english": "Optimize a 22-layer double-cavity dual-band filter on CaF2 substrate under air incidence. Layer sequence: Air | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | Ge_defect1 | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge | YbF3 | Ge_defect2 | YbF3 | Ge | YbF3 | Ge | YbF3 | CaF2. All 22 finite layer thicknesses are optimization variables with bounds [160, 1440] nm. Maximize mean transmittance in 3250-3350nm and 4200-4300nm bands. Minimize mean transmittance in 2500-3100nm and 4450-5000nm bands. Use TMM solver with NaN guards and constraint-violation logging. No metal layers. Normal incidence, unpolarized. Canonical user controls: wavelength intervals 2500-3100 nm, 3250-3350 nm, 4200-4300 nm, 4450-5000 nm. soft objectives: High transmittance in 3.25-3.35 um and 4.20-4.30 um bands; Low transmittance in 2.50-3.10 um and 4.45-5.00 um bands. behaviors to suppress or avoid: High transmittance in 2.50-3.10 um and 4.45-5.00 um bands. manufacturing constraints: Total layer count <= 24; No metal layers; Conventional depositable infrared inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Increased layer count from 20 to 22 for better spectral performance. Changed to double-cavity topology for improved passband isolation. Changed material pair to Ge/YbF3 to address material_data failure. Expanded thickness bounds by 20% per feedback directive."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:139773493:s2chunk:139773493:23617:24948:3169b780e7b9ea48 motivated defect-cavity dual-band topology for gas sensor applications with center wavelength optimization",
+      "Evidence s2-chunk:CorpusId:227248144:s2chunk:227248144:13756:16101:11bc1b8f56987299 supported alternating high/low index quarter-wave stack principle for sharp spectral profiles",
+      "Evidence s2-chunk:CorpusId:17683472:s2chunk:17683472:29776:32010:c36d261f52b76fe1 informed thickness constraint considerations and layer count manufacturability limits"
+    ],
+    "unresolved_decisions": [
+      "Material registry coverage for Ge/YbF3 and ZnSe/ThF4 pairs in mid-IR range remains unverified until execution",
+      "Optimal defect cavity positioning strategy for dual-band separation not determined by literature",
+      "Trade-off between layer count (spectral performance) and manufacturability (24-layer limit) requires empirical validation"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 12482,
+      "completion_tokens": 4798,
+      "total_tokens": 17280
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

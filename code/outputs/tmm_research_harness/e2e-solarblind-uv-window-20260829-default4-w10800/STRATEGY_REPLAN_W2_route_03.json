@@ -1,0 +1,191 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_a072e2f7732cc737",
+    "planning_summary": "Refining route_03 (SiO2/Al2O3 multi-cavity UV bandpass) per feedback directives. Three complementary routes: (1) asymmetric cavity seed with expanded Bragg mirrors (29 layers), (2) same topology with global-then-local optimization to escape local minima, (3) alternative HfO2/SiO2 material system with identical asymmetric topology to test material sensitivity. All routes maintain parent_route_id='route_03' per refinement chain requirement.",
+    "routes": [
+      {
+        "route_id": "route_03_refine_01",
+        "title": "Asymmetric cavity seed with expanded Bragg mirrors (29-layer SiO2/Al2O3)",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Breaking the central cavity symmetry (layers 11-13 initialized at 66.0/67.5/69.0 nm instead of uniform 67.5 nm) while adding 2 period pairs to each Bragg mirror will enable the optimizer to redistribute spectral gain into sharper transition slopes, improving the target score beyond the 0.379 plateau observed in prior route_03 iterations.",
+        "design_principle": "1-D photonic crystal filter with periodic main-function units sandwiched between anti-reflection coatings, following the SiO2/SiNx design methodology but adapted to SiO2/Al2O3 material pair for UV transparency.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3",
+          "fused_silica_substrate"
+        ],
+        "proposed_topology": "29 finite coating layers: [SiO2/Al2O3]_7 Bragg mirror | asymmetric 3-layer cavity (SiO2/Al2O3/SiO2) | [Al2O3/SiO2]_7 Bragg mirror, total 29 layers on fused silica substrate",
+        "design_variables": [
+          "all 29 layer thicknesses",
+          "optimization bounds ±20% around quarter-wave at 267.5 nm"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280 nm",
+          "minimize mean transmittance 300-700 nm",
+          "minimize mean transmittance 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "29 layers within 30-layer limit",
+          "conventional inorganic dielectrics only",
+          "no metal layers",
+          "ALD or IAD recommended for thickness uniformity"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for periodic stack optimization",
+          "Asymmetric cavity initialization breaks optimization symmetry lock-in",
+          "Expanded Bragg mirror periods widen stopband bandwidth"
+        ],
+        "expected_advantages": [
+          "Wider stopband from additional mirror periods",
+          "Escaped local minimum from asymmetric seed",
+          "Improved transition sharpness between passband and stopband"
+        ],
+        "known_risks": [
+          "Increased layer count may amplify thickness tolerance sensitivity",
+          "Asymmetric seed may converge to different local minimum not necessarily better"
+        ],
+        "execution_request_english": "Optimize a 29-layer SiO2/Al2O3 multilayer coating on fused silica substrate for solar-blind UV bandpass filtering. Layer sequence: alternating SiO2/Al2O3 starting with SiO2 (layer 1), total 29 finite layers. Initialize layers 1-10 as quarter-wave at 267.5 nm (SiO2 ~39 nm, Al2O3 ~67.5 nm), layers 11-13 as asymmetric cavity (66.0 nm SiO2, 67.5 nm Al2O3, 69.0 nm SiO2), layers 14-29 as alternating Al2O3/SiO2 quarter-wave. Optimization bounds: ±20% around initialization. Objective: maximize mean transmittance in 255-280 nm, minimize mean transmittance in 300-700 nm and 700-1100 nm. Use gradient-based thickness optimizer with coherent TMM solver. Air incidence, unpolarized or average of s/p. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 1,
+        "parent_route_id": "route_03",
+        "revision_reason": "Per feedback directive: break symmetry lock-in by seeding central cavity block (layers 11-13) with asymmetric profile (66.0/67.5/69.0 nm) instead of identical 67.5 nm; add 2 period pairs to Bragg mirrors (25→29 layers) to widen stopband and force optimizer to redistribute gain into sharper transition slopes."
+      },
+      {
+        "route_id": "route_03_refine_02",
+        "title": "Global-then-local optimization on 29-layer asymmetric topology",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "The 0.379 target score plateau in route_03 resulted from gradient optimizer converging to local minimum; a global search phase (differential evolution or particle swarm) followed by gradient refinement will discover superior thickness configurations on the same 29-layer asymmetric topology.",
+        "design_principle": "Same 29-layer SiO2/Al2O3 asymmetric cavity topology as route_03_refine_01, but with hybrid optimization strategy to explore broader thickness space before local refinement.",
+        "proposed_materials": [
+          "SiO2",
+          "Al2O3",
+          "fused_silica_substrate"
+        ],
+        "proposed_topology": "29 finite coating layers: [SiO2/Al2O3]_7 Bragg mirror | asymmetric 3-layer cavity (SiO2/Al2O3/SiO2) | [Al2O3/SiO2]_7 Bragg mirror, total 29 layers on fused silica substrate",
+        "design_variables": [
+          "all 29 layer thicknesses",
+          "optimization bounds ±25% around quarter-wave at 267.5 nm for global phase, then ±15% for local refinement"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280 nm",
+          "minimize mean transmittance 300-700 nm",
+          "minimize mean transmittance 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "29 layers within 30-layer limit",
+          "conventional inorganic dielectrics only",
+          "no metal layers",
+          "wider bounds may require tighter process control"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:3946:5623:26c9c1ed8967f37b",
+          "s2-chunk:CorpusId:16516444:s2chunk:16516444:21027:23130:bbea4e62e741809c"
+        ],
+        "theory_basis": [
+          "Global optimization escapes local minima in multimodal thickness space",
+          "Transfer Matrix Method gradient refinement converges rapidly near optimum",
+          "Hybrid strategy balances exploration and exploitation"
+        ],
+        "expected_advantages": [
+          "Discovery of superior thickness configurations unreachable by gradient-only optimization",
+          "Validation that route_03 plateau was optimizer-limited rather than topology-limited"
+        ],
+        "known_risks": [
+          "Global search requires more function evaluations, may exceed computational budget",
+          "Wider bounds may produce candidates with impractical thicknesses"
+        ],
+        "execution_request_english": "Optimize a 29-layer SiO2/Al2O3 multilayer coating on fused silica substrate using hybrid global-then-local optimization. Layer sequence identical to route_03_refine_01: alternating SiO2/Al2O3 starting with SiO2 (layer 1), 29 finite layers, asymmetric cavity initialization (layers 11-13: 66.0/67.5/69.0 nm). Phase 1: differential evolution or particle swarm with ±25% bounds, 500 evaluations. Phase 2: gradient-based refinement from best Phase 1 candidate with ±15% bounds, 200 evaluations. Objective: maximize mean transmittance in 255-280 nm, minimize mean transmittance in 300-700 nm and 700-1100 nm. Use coherent TMM solver. Air incidence, unpolarized or average of s/p. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 2,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests whether route_03 plateau (0.379) was optimizer-limited rather than topology-limited. Same 29-layer asymmetric topology as route_03_refine_01 but with global search phase to escape local minima that gradient-only optimization cannot."
+      },
+      {
+        "route_id": "route_03_refine_03",
+        "title": "HfO2/SiO2 material substitution on 29-layer asymmetric topology",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "HfO2/SiO2 material pair provides higher refractive index contrast than SiO2/Al2O3 in the UV range, enabling wider stopband and sharper transitions with same 29-layer topology; target score should improve if index contrast is the limiting factor rather than layer count.",
+        "design_principle": "Same 29-layer asymmetric cavity topology as route_03_refine_01, substituting HfO2 (high-index) for Al2O3 while retaining SiO2 (low-index), leveraging HfO2 transparency and higher index in UV range.",
+        "proposed_materials": [
+          "SiO2",
+          "HfO2",
+          "fused_silica_substrate"
+        ],
+        "proposed_topology": "29 finite coating layers: [SiO2/HfO2]_7 Bragg mirror | asymmetric 3-layer cavity (SiO2/HfO2/SiO2) | [HfO2/SiO2]_7 Bragg mirror, total 29 layers on fused silica substrate",
+        "design_variables": [
+          "all 29 layer thicknesses",
+          "optimization bounds ±20% around quarter-wave at 267.5 nm (SiO2 ~39 nm, HfO2 ~31 nm based on n~2.2)"
+        ],
+        "soft_objectives": [
+          "maximize mean transmittance 255-280 nm",
+          "minimize mean transmittance 300-700 nm",
+          "minimize mean transmittance 700-1100 nm"
+        ],
+        "manufacturing_considerations": [
+          "29 layers within 30-layer limit",
+          "HfO2 requires ion-assisted deposition for moisture stability",
+          "no metal layers",
+          "HfO2 may exhibit inhomogeneity without IAD"
+        ],
+        "evidence_ids": [
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:49718:51695:0cddbdf39f509a98",
+          "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341",
+          "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404"
+        ],
+        "theory_basis": [
+          "Higher index contrast (HfO2 n~2.2 vs Al2O3 n~1.7) widens photonic stopband",
+          "HfO2/SiO2 demonstrated for UV long-pass edge filters with 90%+ transmission",
+          "IAD process reduces moisture-induced index shifts"
+        ],
+        "expected_advantages": [
+          "Wider stopband from higher index contrast",
+          "Potentially fewer layers needed for same rejection (future optimization)",
+          "Validates material sensitivity of route_03 topology"
+        ],
+        "known_risks": [
+          "HfO2 absorption edge may encroach on 255-280 nm passband",
+          "HfO2 inhomogeneity without IAD may cause thickness reproducibility issues",
+          "Material optical constants at 255-280 nm may differ from nominal values"
+        ],
+        "execution_request_english": "Optimize a 29-layer HfO2/SiO2 multilayer coating on fused silica substrate for solar-blind UV bandpass filtering. Layer sequence: alternating SiO2/HfO2 starting with SiO2 (layer 1), total 29 finite layers. Initialize layers 1-10 as quarter-wave at 267.5 nm (SiO2 ~39 nm, HfO2 ~31 nm based on n~2.2), layers 11-13 as asymmetric cavity (38.0 nm SiO2, 31.0 nm HfO2, 40.0 nm SiO2), layers 14-29 as alternating HfO2/SiO2 quarter-wave. Optimization bounds: ±20% around initialization. Objective: maximize mean transmittance in 255-280 nm, minimize mean transmittance in 300-700 nm and 700-1100 nm. Use gradient-based thickness optimizer with coherent TMM solver. Air incidence, unpolarized or average of s/p. Note: HfO2 requires ion-assisted deposition for UV transparency and moisture stability. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: high transmittance in 255–280 nm; low transmittance in 300–700 nm; low transmittance in 700–1100 nm. behaviors to suppress or avoid: transmittance in 300–700 nm; transmittance in 700–1100 nm. manufacturing constraints: total layers ≤ 30; no metal layers; conventional depositable inorganic dielectric materials only.",
+        "priority": 3,
+        "parent_route_id": "route_03",
+        "revision_reason": "Tests material sensitivity of route_03 topology. Same 29-layer asymmetric topology but substitutes HfO2 for Al2O3 to leverage higher index contrast. If target score improves, index contrast was limiting factor; if score decreases, Al2O3 was superior for this UV bandpass application."
+      }
+    ],
+    "research_influence": [
+      "Evidence s2-chunk:CorpusId:199509322 (SiO2/SiNx 1-D PC UV filter) motivated the periodic stack with asymmetric cavity topology and TMM optimization approach",
+      "Evidence s2-chunk:CorpusId:211025653 (HfO2/SiO2 UV filters) motivated Route 3 material substitution to test index contrast hypothesis",
+      "Evidence s2-chunk:CorpusId:16516444 (ALD for UV coatings) informed manufacturing considerations for thickness uniformity and moisture stability",
+      "Prior route_03 iterations (scores 0.296 and 0.379) established baseline performance and identified symmetry lock-in as deviation mechanism per feedback directive"
+    ],
+    "unresolved_decisions": [
+      "Whether 29 layers provides sufficient improvement over 25 layers to justify increased manufacturing complexity",
+      "Whether HfO2 absorption at 255-280 nm will degrade passband transmission relative to Al2O3",
+      "Whether global optimization phase justifies computational cost over gradient-only approach"
+    ],
+    "stop_if_all_routes_fail": "Stop after the bounded route portfolio is exhausted or further search stagnates. Return every physically verified candidate and report soft objective trade-offs without a performance admission threshold."
+  },
+  "attempts": 1,
+  "validation_errors": [],
+  "normalization_warnings": [
+    "route route_03_refine_01 received canonical user controls from the problem contract",
+    "route route_03_refine_02 received canonical user controls from the problem contract",
+    "route route_03_refine_03 received canonical user controls from the problem contract",
+    "the model-authored stopping sentence was replaced by the fixed soft-objective policy"
+  ],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 14978,
+      "completion_tokens": 5923,
+      "total_tokens": 20901
+    }
+  ],
+  "model_name": "qwen3.5-plus"
+}

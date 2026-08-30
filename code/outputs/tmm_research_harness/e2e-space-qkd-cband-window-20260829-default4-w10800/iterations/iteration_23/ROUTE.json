@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Boundary-Decoupled Edge Optimization on 24-Layer Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The latest score improvement (0.909 to 0.916) originated primarily from boundary-layer adjustments rather than central resonant layers; isolating boundary degrees of freedom (layers 0-3 and 20-23) while freezing central layers (4-19) at iteration_20 best values will reveal whether edge-coupling optimization can further improve dual-band performance without disrupting internal interference conditions.",
+  "design_principle": "Decouple edge-coupling optimization from internal resonance tuning by fixing proven central layer thicknesses and allowing full optimizer freedom only at air-film and film-substrate interfaces where impedance matching most strongly affects broadband transmission and reflection.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica (substrate)",
+    "Air (incident medium)"
+  ],
+  "proposed_topology": "24-layer alternating HfO2/SiO2 stack on fused silica substrate, air incidence. Layer sequence: HfO2(0), SiO2(1), HfO2(2), SiO2(3), HfO2(4), SiO2(5), HfO2(6), SiO2(7), HfO2(8), SiO2(9), HfO2(10), SiO2(11), HfO2(12), SiO2(13), HfO2(14), SiO2(15), HfO2(16), SiO2(17), HfO2(18), SiO2(19), HfO2(20), SiO2(21), HfO2(22), SiO2(23). Total finite layers: 24.",
+  "design_variables": [
+    "thicknesses_nm for layers 0-3 and 20-23 (8 variables); layers 4-19 fixed to iteration_20 best candidate values"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain robustness_score above historical trend"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 24 (within 30-layer limit)",
+    "Thickness bounds 50-280 nm for optimized layers",
+    "Fixed layers retain proven manufacturable values"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:92993850:s2chunk:92993850:1765:3736:69b2ad685bc8c493"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent thin-film interference",
+    "Impedance matching theory for air-film and film-substrate interfaces",
+    "Quarter-wave stack principle for high-reflectance band formation"
+  ],
+  "expected_advantages": [
+    "Isolates boundary-layer contribution to performance improvement",
+    "Reduces optimization dimensionality from 24 to 8 variables for faster convergence",
+    "Preserves proven internal resonance structure from iteration_20"
+  ],
+  "known_risks": [
+    "Boundary-layer changes may disrupt carefully tuned internal interference if coupling is stronger than hypothesized",
+    "Freezing 16 layers may prevent discovery of globally superior configurations"
+  ],
+  "execution_request_english": "Design a 24-layer alternating HfO2/SiO2 dichroic stack on fused silica substrate with air incidence at normal angle. Initialize layer thicknesses to iteration_20 best candidate values: [77.18, 127.42, 59.02, 106.51, 103.69, 102.04, 251.49, 58.47, 224.32, 105.91, 53.27, 91.43, 222.25, 66.18, 67.71, 74.85, 55.68, 94.62, 161.84, 234.50, 54.81, 81.35, 186.93, 53.33] nm. Fix layers 4-19 (indices 4 through 19 inclusive) to these exact values. Allow gradient-based thickness optimization only on layers 0-3 and 20-23 with bounds 50-280 nm. Score using coherent TMM at normal incidence, unpolarized light, over 400-1600 nm wavelength range. Optimize for simultaneous mean transmittance maximization in 1530-1565 nm and mean reflectance maximization in 400-700 nm bands. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Following feedback directive to apply systematic boundary-scan protocol: decouple edge-coupling from internal resonance by fixing central layers 4-19 to iteration_20 best values and optimizing only boundary layers 0-3 and 20-23."
+}

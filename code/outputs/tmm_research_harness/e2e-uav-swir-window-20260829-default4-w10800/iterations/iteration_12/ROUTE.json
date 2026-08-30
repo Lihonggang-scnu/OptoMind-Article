@@ -1,0 +1,49 @@
+{
+  "route_id": "control_route_01",
+  "title": "20-layer HfO2/SiO2 alternating stack with fine-tuned thicknesses for UV-reflection/SWIR-transmission",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "An alternating HfO2/SiO2 multilayer stack with individually optimized thicknesses can produce a spectral response that reflects 200-400 nm while transmitting 800-1500 nm, with the optimal solution lying in a narrow manifold around thicknesses that produced 0.8206 target score in prior iterations.",
+  "design_principle": "Recalled knowledge: Alternating high/low index dielectric layers create constructive interference for reflection at certain wavelengths. By adjusting individual layer thicknesses away from strict quarter-wave values, the reflection band can be positioned in the UV while maintaining transmission in the SWIR. The stack acts as a distributed Bragg reflector for UV but becomes increasingly transparent at longer wavelengths where optical thicknesses are smaller relative to wavelength.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Rodriguez-de_Marcos)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (20 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses for all 20 layers, seeded from the 0.8206-score thickness vector [30.0, 40.0, 30.0, 40.0, 31.0, 40.0, 31.0, 40.0, 30.0, 40.0, 49.0, 40.0, 50.0, 40.0, 49.0, 40.0, 50.0, 40.0, 49.0, 40.0] nm, with perturbation bounds ±0.6 nm"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 800-1500 nm band",
+    "Maximize average reflectance in 200-400 nm band",
+    "Maintain smooth spectral transitions between bands"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 20 (within 30-layer limit)",
+    "All thicknesses in practical deposition range (30-50 nm)",
+    "Alternating sequence simplifies process control"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflection at design wavelength; deviating from quarter-wave shifts the reflection band",
+    "Recalled knowledge: HfO2 has higher refractive index than SiO2 in visible-SWIR range, creating index contrast for interference effects",
+    "Recalled knowledge: UV wavelengths are shorter, so thinner layers can still produce constructive interference for reflection",
+    "Recalled knowledge: At longer wavelengths (SWIR), the same physical thicknesses represent smaller optical thicknesses, reducing reflection and increasing transmission"
+  ],
+  "expected_advantages": [
+    "Starting from proven high-scoring thickness vector reduces search space",
+    "Narrow perturbation bounds (±0.6 nm) focus exploration on local optimum rather than global search",
+    "Constrained optimization prevents degradation below 0.02 of running best score",
+    "20 layers provides sufficient degrees of freedom while staying well under 30-layer limit"
+  ],
+  "known_risks": [
+    "Uncertain whether the 0.8206-score solution is a local or global optimum - narrower bounds may trap search in local maximum",
+    "Recalled refractive index dispersion of HfO2 and SiO2 in UV (200-400 nm) may differ from actual catalog data - extinction coefficients in UV could affect performance",
+    "The alternating pattern may not be optimal; a different sequence could perform better but this route does not explore sequence changes",
+    "Manufacturing tolerance on thin layers (30 nm) may be challenging; actual deposition variation could shift spectral response",
+    "What would settle these: measured n/k dispersion data from material catalog, tolerance sensitivity analysis, alternative sequence testing in a separate route"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar multilayer dielectric stack on fused silica substrate with air incidence. Materials: alternating hfo2 and SiO2 (Rodriguez-de_Marcos) layers, starting with hfo2 adjacent to air. Layer sequence: hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos), hfo2, SiO2 (Rodriguez-de_Marcos) (20 layers total). Initialize thicknesses at [30.0, 40.0, 30.0, 40.0, 31.0, 40.0, 31.0, 40.0, 30.0, 40.0, 49.0, 40.0, 50.0, 40.0, 49.0, 40.0, 50.0, 40.0, 49.0, 40.0] nm. Optimize all 20 thicknesses with perturbation bounds ±0.6 nm around current best. Apply penalty if target score drops more than 0.02 below running best. Wavelength bands: maximize reflectance in 200-400 nm, maximize transmittance in 800-1500 nm. Normal incidence, unpolarized light. Total layers must equal exactly 20.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refinement based on prior iteration results: seeding from 0.8206 target score thickness vector, reducing perturbation bounds from ±1.5 nm to ±0.6 nm to constrain search within proven optimal manifold, adding constrained optimization mode that penalizes score drops >0.02 relative to running best"
+}
