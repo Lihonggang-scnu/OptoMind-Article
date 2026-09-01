@@ -16,26 +16,20 @@ OptoMind-Article 的主对象是 `code/` 下的 TMM research harness。`veritmm/
 
 ## 2. 目录与入口
 
-从仓库根目录执行：
-
-```powershell
-Set-Location -LiteralPath .\code
-```
-
 主要入口和资产如下：
 
 | 路径 | 用途 |
 |---|---|
-| `scripts/run_tmm_research_harness.py` | 完整研究链路入口 |
-| `scripts/run_static_replay_ui.py` | 六组固化产物的只读可视化回放入口 |
-| `scripts/run_research_console.py` | 真实研究与静态回放一体化控制台入口 |
-| `replay_ui/` | 静态回放前端文件 |
-| `prompts/optical_harness/` | 运行时提示模板 |
-| `tests/` | 单元、协议、物理链路和回归测试 |
-| `api_keys/qwen-api-key.txt` | Qwen 空密钥模板 |
-| `api_keys/semantic-scholar-api-key.txt` | Semantic Scholar 空密钥模板 |
-| `outputs/tmm_research_harness/` | 新运行的默认输出位置 |
-| `..\veritmm\scripts\run_tmm_task.py` | 独立 VeriTMM 任务入口 |
+| `START_REPLAY.cmd` / `python quickstart.py replay` | 六组固化产物的只读可视化入口 |
+| `RUN_LIGHT_TEST.cmd` / `python quickstart.py test` | 自动配置环境并执行有界真实测试 |
+| `code/scripts/run_tmm_research_harness.py` | 完整研究链路底层入口 |
+| `code/replay_ui/` | 静态回放前端文件 |
+| `code/prompts/optical_harness/` | 运行时提示模板 |
+| `code/tests/` | 单元、协议、物理链路和回归测试 |
+| `code/api_keys/qwen-api-key.txt` | Qwen 空密钥模板 |
+| `code/api_keys/semantic-scholar-api-key.txt` | Semantic Scholar 空密钥模板 |
+| `code/outputs/tmm_research_harness/` | 六组正式记录与新运行的默认输出位置 |
+| `veritmm/scripts/run_tmm_task.py` | 独立 VeriTMM 任务入口 |
 
 主 harness 会优先使用仓库根目录同级的 `veritmm/`，因此不应把它改回原开发机的绝对路径。
 
@@ -44,38 +38,20 @@ Set-Location -LiteralPath .\code
 无需配置任何密钥即可启动静态研究回放台：
 
 ```powershell
-python scripts\run_static_replay_ui.py
+python quickstart.py replay
 ```
 
-该入口只读取 `outputs/tmm_research_harness/` 下已经完成的运行，不调用模型、文献服务、优化器或 VeriTMM，也不修改原始记录。评估时可依次核对题面、冻结标准、路线来源、逐轮曲线、反馈状态、最终排名和原始证据链接。默认端口不可用时程序会自动选择可用端口，也可显式追加 `--port 0`。
+该入口只读取 `code/outputs/tmm_research_harness/` 下已经完成的运行，不调用模型、文献服务、优化器或 VeriTMM，也不修改原始记录。评估时可依次核对题面、冻结标准、路线来源、逐轮曲线、反馈状态、最终排名和原始证据链接。默认端口不可用时程序会自动选择可用端口，也可显式追加 `--port 0`。
 
-## 4. 真实研究控制台与跨设备运行
+## 4. 回放前端与十倍速模拟
 
-统一入口会同时提供真实研究页和静态回放页：
+静态回放前端只读取 `code/outputs/tmm_research_harness/` 下已完成的六组记录，不提供网页端真实提问或启动新研究的接口：
 
 ```powershell
-python scripts\run_research_console.py
+python quickstart.py replay --port 0
 ```
 
-网页提交的是自然语言问题和受限研究参数；服务端只会启动固定的 `run_tmm_research_harness.py`，不会接受浏览器传入的任意命令或可执行文件路径。运行时事件来自 `RESEARCH_EVENTS.jsonl`，完成后可进入该运行的静态回放。
-
-真实运行前检查：
-
-- `QWEN_API_KEY`、`DASHSCOPE_API_KEY` 或本地 Qwen 密钥模板至少有一个已配置；
-- `..\veritmm\tmm_engine\` 存在且可导入；
-- 输出目录可写；
-- 远程监听时已设置 `OPTOMIND_UI_ACCESS_TOKEN`。
-
-容器/云端建议使用仓库根目录的 `Dockerfile` 或 `compose.yaml`，输出根目录固定为 `/data/runs`，并使用持久磁盘。Render 部署可参考 `render.yaml`。云端不应把六组约 2.9 GB 的历史目录打入镜像；需要展示归档时，将归档以单独的只读卷挂载，并把实时运行写入另一处可写目录。
-
-远程启动示例：
-
-```powershell
-$env:OPTOMIND_UI_ACCESS_TOKEN = '<随机长口令>'
-python scripts\run_research_console.py --host 0.0.0.0 --port 8765 --no-open
-```
-
-如果 Qwen 未配置，服务应返回未就绪状态并拒绝真实启动；只允许以假 runner 做自动化界面联调，不得将其结果作为科研实验。
+页面读取每组运行保存的 `RESEARCH_EVENTS.jsonl`，将原始阶段事件以浏览器端时间线呈现。播放速度可选 1×、2×、5× 或 10×；模拟播放不会调用 Qwen、文献服务、优化器或 VeriTMM，也不会修改任何历史产物。评估时应确认地址栏只访问 `/api/catalog`、`/api/runs/{run_id}` 和只读 `/artifacts/` 路径。
 
 ## 5. 离线摸底
 
@@ -83,22 +59,23 @@ python scripts\run_research_console.py --host 0.0.0.0 --port 8765 --no-open
 
 ```powershell
 python -m pytest -q `
-  tests/test_static_replay.py `
-  tests/test_run_harness_smoke.py `
-  tests/test_tmm_material_registry.py `
-  tests/test_tmm_task_compiler.py
+  code/tests/test_static_replay.py `
+  code/tests/test_quickstart.py `
+  code/tests/test_run_harness_smoke.py `
+  code/tests/test_tmm_material_registry.py `
+  code/tests/test_tmm_task_compiler.py
 ```
 
 如需检查 CLI 是否可启动：
 
 ```powershell
-python -u scripts/run_tmm_research_harness.py --help
+python -u code/scripts/run_tmm_research_harness.py --help
 ```
 
 如需检查模型不可用时的关闭行为：
 
 ```powershell
-python -u scripts/run_tmm_research_harness.py `
+python -u code/scripts/run_tmm_research_harness.py `
   '测试一个双波段薄膜设计需求' `
   --force-mock `
   --no-online-method-research `
@@ -113,30 +90,13 @@ python -u scripts/run_tmm_research_harness.py `
 
 ## 6. 真实轻量运行
 
-先在 `api_keys/` 填入使用者自己的密钥，不要把密钥写进命令行参数。然后设置超时并运行一条路线一轮迭代的真实测试：
+将私发的 `api_keys` 文件夹复制到 `code/api_keys` 后，从仓库根目录执行：
 
 ```powershell
-$env:QWEN_API_KEY_FILE = (Resolve-Path .\api_keys\qwen-api-key.txt).Path
-$env:QWEN_HTTP_TIMEOUT_SEC = '45'
-$env:QWEN_MAX_KEY_CANDIDATES = '1'
-$env:QWEN_MAX_TRANSPORT_KEY_CANDIDATES = '1'
-
-python -u scripts/run_tmm_research_harness.py `
-  '我需要一个双功能多层膜：在近红外 800-1500nm 波段透射率尽可能高，同时在紫外 200-400nm 波段反射率尽可能高。衬底是熔融石英，总层数控制在 30 层以内。' `
-  --output-dir .\outputs\tmm_research_harness\agent-smoke-<date> `
-  --no-online-method-research `
-  --no-qwen-method-synthesis `
-  --maximum-iterations 1 `
-  --maximum-initial-routes 1 `
-  --route-planning-maximum-routes 1 `
-  --max-rounds-per-route 1 `
-  --minimum-rounds-before-llm-stop 1 `
-  --no-control-route `
-  --maximum-refinement-rounds 0 `
-  --maximum-method-research-rounds 1 `
-  --wall-time-seconds 900 `
-  --task-compiler-tier turbo
+python quickstart.py test
 ```
+
+Windows 可直接双击 `RUN_LIGHT_TEST.cmd`，不需要设置环境变量。该入口检查两个密钥文件但不输出内容，自动准备 `.venv`，执行一次有界真实测试，最长墙钟预算 30 分钟。题面位于 `code/examples/evaluator_quick_test_question.txt`；输出写入 Git 忽略的 `local_runs/evaluator-smoke-<时间>`，不进入、不覆盖也不改变六组正式记录。成功后会自动打开六组静态回放台。
 
 评估结果时，至少确认以下阶段是否按顺序出现：
 
@@ -171,12 +131,12 @@ python -u scripts/run_tmm_research_harness.py `
 六组记录是随仓库分发的原始证据资产，不是 Agent 的默认输入，也不是待自动修复的缓存：
 
 ```text
-outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800
-outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800
-outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800
-outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800
-outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800
-outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800
+code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800
+code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800
+code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800
+code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800
+code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800
+code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800
 ```
 
 评估或展示时只读这些目录；新问题、新参数和新修复必须写入新 `run_id` 目录。

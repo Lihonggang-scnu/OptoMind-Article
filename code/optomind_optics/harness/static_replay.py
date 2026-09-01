@@ -135,6 +135,68 @@ def _list(value: Any) -> list[Any]:
     return []
 
 
+_EVENT_FIELDS = (
+    "sequence",
+    "recorded_at_utc",
+    "elapsed_seconds",
+    "event_type",
+    "formula",
+    "status",
+    "run_status",
+    "source",
+    "route_id",
+    "iteration_id",
+    "wave",
+    "rounds_used",
+    "metric_count",
+    "route_count",
+    "normal_route_count",
+    "control_route_count",
+    "routes",
+    "racing",
+    "papers",
+    "queries",
+    "evidence_count",
+    "tasks",
+    "valid_candidates",
+    "best_target_score",
+    "literature_status",
+    "s2_literature_included",
+    "warnings",
+    "action",
+    "reason",
+    "ranked",
+    "winner",
+    "frontier",
+    "shared_iteration_pool",
+    "rounds_per_route",
+    "iteration_ceiling",
+)
+
+
+def _read_event_timeline(path: Path) -> list[JsonObject]:
+    """Read a compact, safe projection of the immutable event stream."""
+
+    if not path.is_file():
+        return []
+    rows: list[JsonObject] = []
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as stream:
+            for raw in stream:
+                try:
+                    value = json.loads(raw)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(value, Mapping):
+                    continue
+                row = {key: value[key] for key in _EVENT_FIELDS if key in value}
+                if row.get("event_type"):
+                    rows.append(row)
+    except OSError:
+        return []
+    return sorted(rows, key=lambda item: _int(item.get("sequence")))
+
+
 def _float(value: Any) -> float | None:
     if isinstance(value, bool):
         return None
@@ -368,6 +430,7 @@ class ReplayCatalog:
             _mapping(item)
             for item in _list(_load_json(run_dir / "FEEDBACK_HISTORY.json", []))
         ]
+        event_timeline = _read_event_timeline(run_dir / "RESEARCH_EVENTS.jsonl")
 
         formula = str(standard.get("formula") or ranking.get("formula") or "")
         variables = [str(item) for item in _list(standard.get("formula_variables"))]
@@ -744,6 +807,7 @@ class ReplayCatalog:
             "champion": champion,
             "source_comparison": source_comparison,
             "telemetry": dict(telemetry),
+            "event_timeline": event_timeline,
             "evidence": evidence,
         }
 

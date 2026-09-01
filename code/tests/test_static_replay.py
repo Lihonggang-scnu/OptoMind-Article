@@ -45,6 +45,9 @@ def test_each_replay_keeps_routes_iterations_and_raw_evidence(
         assert replay["routes"]
         assert replay["leaderboard"]
         assert replay["champion"]["score"] is not None
+        assert len(replay["event_timeline"]) > 0
+        assert replay["event_timeline"][0]["event_type"] == "request_received"
+        assert replay["event_timeline"][-1]["event_type"] == "research_finished"
         assert sum(len(route["rounds"]) for route in replay["routes"]) == replay[
             "summary"
         ]["iteration_count"]

@@ -1,23 +1,18 @@
 "use strict";
 
 const state = {
-  mode: "replay",
   catalog: null,
   run: null,
   selectedRunId: null,
   selectedRouteId: null,
   selectedStage: 0,
   hiddenRoutes: new Set(),
-  readiness: null,
-  liveRuns: [],
-  activeLiveRunId: null,
-  livePoller: null,
-  accessToken: "",
-};
-
-const researchExamples = {
-  swir: "我需要一个双功能多层膜：在近红外 800–1500 nm 波段透射率尽可能高，同时在紫外 200–400 nm 波段反射率尽可能高。衬底是熔融石英，总层数控制在 30 层以内。",
-  gas: "我正在为工业烟气在线监测系统设计共享前端红外滤光膜。探测器需要同时透过一氧化碳 4.55–4.75 μm 和二氧化碳 4.15–4.35 μm 两个窄波段，并在 3.60–4.00 μm 和 4.85–5.20 μm 抑制背景热辐射。请在空气正入射、CaF2 基底条件下，使用常规可沉积红外无机介质材料设计不超过 24 层的平面多层膜。",
+  simulation: {
+    index: -1,
+    running: false,
+    speed: 10,
+    timer: null,
+  },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -238,79 +233,15 @@ async function getJson(url) {
   return response.json();
 }
 
-async function postJson(url, payload, token = "") {
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    let message = `${response.status} ${response.statusText}`;
-    try {
-      const body = await response.json();
-      if (body.error) message = body.error;
-    } catch (_) {
-      // Keep the HTTP status when no JSON error body is available.
-    }
-    throw new Error(message);
-  }
-  return response.json();
-}
-
-function liveStatusLabel(status) {
-  const labels = {
-    starting: "正在启动",
-    running: "研究进行中",
-    stopping: "正在停止",
-    stopped: "已停止",
-    completed: "研究完成",
-    failed: "运行未完成",
-    interrupted: "服务重启前中断",
-  };
-  return labels[status] || status || "状态待确认";
-}
-
-function formatElapsed(seconds) {
-  const value = Math.max(0, Math.floor(finiteNumber(seconds) ?? 0));
-  const hours = Math.floor(value / 3600);
-  const minutes = Math.floor((value % 3600) / 60);
-  const remainder = value % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
-}
-
-function setMode(mode) {
-  state.mode = mode === "live" ? "live" : "replay";
-  const live = state.mode === "live";
-  $("#live-content").hidden = !live;
-  $("#replay-content").hidden = live || !state.run;
-  $("#mode-live").classList.toggle("active", live);
-  $("#mode-replay").classList.toggle("active", !live);
-  $("#mode-live").setAttribute("aria-selected", live ? "true" : "false");
-  $("#mode-replay").setAttribute("aria-selected", live ? "false" : "true");
-  if (live) {
-    location.hash = state.activeLiveRunId ? `live=${encodeURIComponent(state.activeLiveRunId)}` : "live";
-    renderLiveWorkspace();
-  } else if (state.selectedRunId) {
-    location.hash = `run=${encodeURIComponent(state.selectedRunId)}`;
-  }
-  window.scrollTo({ top: 0, behavior: "instant" });
-}
-
 function setLoading(loading) {
   $("#loading-state").hidden = !loading;
-  if (loading) {
-    $("#replay-content").hidden = true;
-    $("#live-content").hidden = true;
-  }
+  if (loading) $("#replay-content").hidden = true;
   if (loading) $("#error-state").hidden = true;
 }
 
 function showError(error) {
   $("#loading-state").hidden = true;
   $("#replay-content").hidden = true;
-  $("#live-content").hidden = true;
   $("#error-state").hidden = false;
   $("#error-message").textContent = error instanceof Error ? error.message : String(error);
 }
@@ -318,26 +249,10 @@ function showError(error) {
 async function initialize() {
   setLoading(true);
   try {
-    const [catalog, readiness, livePayload] = await Promise.all([
-      getJson("/api/catalog"),
-      getJson("/api/live/readiness"),
-      getJson("/api/live/runs"),
-    ]);
+    const catalog = await getJson("/api/catalog");
     state.catalog = catalog;
-    state.readiness = readiness;
-    state.liveRuns = livePayload.runs || [];
-    const liveHash = location.hash.match(/^#live(?:=(.+))?$/);
-    if (liveHash?.[1]) {
-      const requestedLiveId = decodeURIComponent(liveHash[1]);
-      if (state.liveRuns.some((run) => run.run_id === requestedLiveId)) {
-        state.activeLiveRunId = requestedLiveId;
-      }
-    }
     renderArchiveSummary();
     renderRunList();
-    $("#mode-replay").disabled = !state.catalog.runs.length;
-    renderReadiness();
-    renderLiveHistory();
     const requested = decodeURIComponent(location.hash.replace(/^#run=/, ""));
     const initial = state.catalog.runs.some((run) => run.run_id === requested)
       ? requested
@@ -347,7 +262,6 @@ async function initialize() {
     } else {
       $("#loading-state").hidden = true;
     }
-    if (liveHash || !initial) setMode("live");
   } catch (error) {
     showError(error);
   }
@@ -373,7 +287,7 @@ function renderArchiveSummary() {
 function renderRunList() {
   const list = $("#run-list");
   if (!state.catalog.runs.length) {
-    list.replaceChildren(node("p", "sidebar-empty", "完成一次真实研究后，运行会出现在这里。"));
+    list.replaceChildren(node("p", "sidebar-empty", "当前没有可回放的正式运行记录。"));
     return;
   }
   const buttons = state.catalog.runs.map((run, index) => {
@@ -402,6 +316,7 @@ async function loadRun(runId) {
   if (!runId) return;
   setLoading(true);
   try {
+    clearSimulationTimer();
     state.run = await getJson(`/api/runs/${encodeURIComponent(runId)}`);
     state.selectedRunId = runId;
     state.selectedRouteId = state.run.routes.find((route) => route.winner)?.route_id
@@ -409,12 +324,14 @@ async function loadRun(runId) {
       || null;
     state.selectedStage = 0;
     state.hiddenRoutes.clear();
+    state.simulation.index = -1;
+    state.simulation.running = false;
     location.hash = `run=${encodeURIComponent(runId)}`;
     renderRunList();
     renderRun();
     document.body.classList.remove("sidebar-open");
     $("#loading-state").hidden = true;
-    setMode("replay");
+    $("#replay-content").hidden = false;
     window.scrollTo({ top: 0, behavior: "instant" });
   } catch (error) {
     showError(error);
@@ -424,6 +341,7 @@ async function loadRun(runId) {
 function renderRun() {
   renderHero();
   renderKpis();
+  renderSimulation();
   renderWorkflow();
   renderScoring();
   renderComparison();
@@ -924,81 +842,6 @@ function openIterationDialog(route, iteration) {
   dialog.showModal();
 }
 
-const liveStages = [
-  { key: "request", label: "接收问题", events: ["request_received"] },
-  { key: "standard", label: "理解与定标", events: ["problem_analyzed", "scoring_standard_fixed"] },
-  { key: "research", label: "文献与路线", events: ["routes_planned_from_literature", "control_route_planned", "method_research_completed"] },
-  { key: "strategy", label: "实验计划", events: ["strategy_planned", "route_round_quota_allocated"] },
-  { key: "execution", label: "仿真执行", events: ["wave_started", "route_started", "tmm_batch_executed", "route_completed"] },
-  { key: "feedback", label: "反馈再规划", events: ["feedback_decided", "reflection_completed", "route_revised"] },
-  { key: "result", label: "排名与交付", events: ["scoring_standard_ranking_written", "tournament_summarized", "research_finished"] },
-];
-
-function renderReadiness() {
-  const readiness = state.readiness || {};
-  const rows = [
-    ["Qwen 规划与编译", readiness.qwen_configured, false],
-    ["Semantic Scholar 文献密钥", readiness.semantic_scholar_configured, true],
-    ["VeriTMM 物理执行器", readiness.veritmm_available, false],
-    ["运行目录可写", readiness.output_root_writable, false],
-  ];
-  const container = $("#readiness-panel");
-  const title = node("div", "readiness-title", "服务端运行条件");
-  const items = rows.map(([label, ready, optional]) => {
-    const row = node("div", "readiness-row");
-    const value = node("strong", ready ? "" : optional ? "optional" : "missing");
-    value.textContent = ready ? "已就绪" : optional ? "未配置，可降级" : "待配置";
-    row.append(node("span", "", label), value);
-    return row;
-  });
-  const access = node("div", "readiness-row");
-  access.append(
-    node("span", "", "真实运行访问控制"),
-    node("strong", "", readiness.access_token_required ? "需要口令" : "当前设备可直接运行"),
-  );
-  container.replaceChildren(title, ...items, access);
-  $("#access-token-field").hidden = !readiness.access_token_required;
-  const start = $("#start-research");
-  start.disabled = !readiness.ready_for_real_run;
-  start.textContent = readiness.ready_for_real_run
-    ? "启动真实端到端研究"
-    : "请先在服务端配置 Qwen 密钥";
-}
-
-function renderLiveWorkspace() {
-  renderReadiness();
-  renderLiveHistory();
-  const run = state.liveRuns.find((item) => item.run_id === state.activeLiveRunId) || null;
-  renderActiveLiveRun(run);
-}
-
-function renderLiveHistory() {
-  const container = $("#live-history");
-  if (!state.liveRuns.length) {
-    container.replaceChildren(node("div", "empty-state", "尚未从网页发起真实研究。"));
-    return;
-  }
-  const cards = state.liveRuns.map((run) => {
-    const card = node(
-      "button",
-      `live-history-card${run.run_id === state.activeLiveRunId ? " active" : ""}`,
-    );
-    card.type = "button";
-    const question = String(run.question || "未记录问题");
-    const created = run.created_at_utc
-      ? new Intl.DateTimeFormat("zh-CN", { dateStyle: "short", timeStyle: "short" }).format(new Date(run.created_at_utc))
-      : "时间未记录";
-    card.append(
-      node("code", "", run.run_id),
-      node("strong", "", question.length > 72 ? `${question.slice(0, 72)}…` : question),
-      node("span", "", `${liveStatusLabel(run.status)} · ${created}`),
-    );
-    card.addEventListener("click", () => selectLiveRun(run.run_id));
-    return card;
-  });
-  container.replaceChildren(...cards);
-}
-
 function eventDescription(event) {
   const type = event.event_type;
   if (type === "request_received") return "研究问题已写入本次运行证据链。";
@@ -1006,13 +849,18 @@ function eventDescription(event) {
   if (type === "scoring_standard_fixed") return `已锁定 ${event.metric_count || "多"} 项指标及本次评分公式。`;
   if (type === "routes_planned_from_literature") return `文献检索形成 ${event.route_count || 0} 条候选路线，关联 ${event.papers || 0} 篇文献记录。`;
   if (type === "control_route_planned") return "独立记忆对照路线已经生成，未接收文献内容。";
+  if (type === "method_research_completed") return `方法研究完成，整理 ${event.evidence_count || 0} 项证据记录。`;
   if (type === "strategy_planned") return `实验策略已形成：${event.normal_route_count || 0} 条文献路线，${event.control_route_count || 0} 条对照路线。`;
+  if (type === "route_round_quota_allocated") return `已为 ${event.routes || 0} 条路线分配每条 ${event.rounds_per_route || 0} 轮的探索额度。`;
+  if (type === "wave_started") return `第 ${event.wave || "—"} 个执行波次开始，${event.racing?.length || 0} 条路线进入排程。`;
   if (type === "route_started") return `${event.route_id || "路线"} 开始第 ${event.iteration_id || "新"} 轮任务。`;
   if (type === "tmm_batch_executed") return `VeriTMM 已执行本波次任务批次，共 ${event.tasks || 0} 个任务。`;
   if (type === "route_completed") return `${event.route_id || "路线"} 本轮状态为 ${statusLabel(event.run_status)}，产生 ${event.valid_candidates || 0} 个物理有效候选。`;
+  if (type === "track_status") return `${event.route_id || "路线"} 当前状态：${statusLabel(event.status)}。`;
   if (type === "feedback_decided") return `${event.route_id || "路线"} 的观测已转化为下一步反馈决定。`;
+  if (type === "reflection_completed") return `${event.route_id || "路线"} 已完成本轮路线反思。`;
   if (type === "route_revised") return `${event.route_id || "路线"} 已根据真实结果更新后续实验计划。`;
-  if (type === "scoring_standard_ranking_written") return "冻结标准排名已经写入。";
+  if (type === "scoring_standard_ranking_written") return `冻结标准排名已经写入，共 ${event.ranked || event.routes || 0} 条路线进入汇总。`;
   if (type === "tournament_summarized") return "跨路线比较、冠军与鲁棒性汇总已经完成。";
   if (type === "research_finished") return `本次研究结束，最终状态：${event.status || "已记录"}。`;
   return "该阶段状态已经写入运行事件流。";
@@ -1042,168 +890,162 @@ function eventLabel(type) {
   return labels[type] || type || "状态记录";
 }
 
-function renderActiveLiveRun(run) {
-  const section = $("#active-run-section");
-  if (!run) {
-    section.hidden = true;
-    stopLivePolling();
+const simulationStages = [
+  { label: "问题与目标", events: ["request_received"] },
+  { label: "理解与定标", events: ["problem_analyzed", "scoring_standard_fixed"] },
+  { label: "文献与路线", events: ["routes_planned_from_literature", "control_route_planned", "method_research_completed"] },
+  { label: "实验计划", events: ["strategy_planned", "route_round_quota_allocated"] },
+  { label: "仿真与观测", events: ["wave_started", "route_started", "tmm_batch_executed", "route_completed", "track_status"] },
+  { label: "反馈再规划", events: ["feedback_decided", "reflection_completed", "route_revised"] },
+  { label: "比较与交付", events: ["scoring_standard_ranking_written", "tournament_summarized", "research_finished"] },
+];
+
+function formatEventElapsed(seconds) {
+  const value = Math.max(0, Math.floor(finiteNumber(seconds) ?? 0));
+  const hours = Math.floor(value / 3600);
+  const minutes = Math.floor((value % 3600) / 60);
+  const remainder = value % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`;
+}
+
+function simulationEvents() {
+  return state.run?.event_timeline || [];
+}
+
+function simulationStageLabel(eventType) {
+  return simulationStages.find((stage) => stage.events.includes(eventType))?.label || "研究状态";
+}
+
+function clearSimulationTimer() {
+  if (state.simulation.timer !== null) {
+    window.clearTimeout(state.simulation.timer);
+    state.simulation.timer = null;
+  }
+}
+
+function scheduleSimulationStep() {
+  clearSimulationTimer();
+  if (!state.simulation.running) return;
+  const events = simulationEvents();
+  if (state.simulation.index >= events.length - 1) {
+    state.simulation.running = false;
+    renderSimulation();
     return;
   }
-  section.hidden = false;
-  $("#live-run-id").textContent = run.run_id;
-  $("#live-question").textContent = run.question;
-  $("#live-elapsed").textContent = formatElapsed(run.elapsed_seconds);
-  const status = $("#live-status");
-  status.textContent = liveStatusLabel(run.status);
-  status.className = `live-status ${run.status || ""}`;
+  const speed = Math.min(10, Math.max(1, finiteNumber(state.simulation.speed) || 10));
+  const delay = Math.max(45, Math.round(560 / speed));
+  state.simulation.timer = window.setTimeout(() => {
+    state.simulation.timer = null;
+    state.simulation.index += 1;
+    renderSimulation();
+    scheduleSimulationStep();
+  }, delay);
+}
 
-  const kpis = [
-    [run.event_count, "阶段事件"],
-    [run.iteration_count, "迭代目录"],
-    [run.completed_execution_count, "完成仿真轮次"],
-    [run.physically_valid_candidate_count, "物理有效候选"],
-  ].map(([value, label]) => {
-    const item = node("div", "live-kpi");
-    item.append(node("strong", "", formatNumber(value)), node("span", "", label));
-    return item;
-  });
-  $("#live-kpis").replaceChildren(...kpis);
-
-  const eventTypes = new Set(run.event_types || (run.recent_events || []).map((event) => event.event_type));
-  let currentStage = 0;
-  liveStages.forEach((stage, index) => {
-    if (stage.events.some((event) => eventTypes.has(event))) currentStage = index;
-  });
-  if (run.status === "completed") currentStage = liveStages.length - 1;
-  const stages = liveStages.map((stage, index) => {
-    const item = node("div", `live-stage${index < currentStage ? " done" : ""}${index === currentStage ? " current" : ""}`);
-    item.append(node("strong", "", String(index + 1).padStart(2, "0")), document.createTextNode(stage.label));
-    return item;
-  });
-  $("#live-stage-track").replaceChildren(...stages);
-
-  const eventRows = (run.recent_events || []).slice(-18).map((event) => {
-    const row = node("div", "live-event-row");
-    row.append(
-      node("time", "", formatElapsed(event.elapsed_seconds)),
-      node("strong", "", eventLabel(event.event_type)),
-      node("span", "", eventDescription(event)),
+function renderSimulation() {
+  const events = simulationEvents();
+  const current = state.simulation.index;
+  const hasEvents = events.length > 0;
+  const toggle = $("#simulation-toggle");
+  const reset = $("#simulation-reset");
+  const speed = $("#simulation-speed");
+  const fill = $("#simulation-progress-fill");
+  const readout = $("#simulation-readout");
+  const clock = $("#simulation-clock");
+  const timeline = $("#simulation-timeline");
+  if (!hasEvents) {
+    toggle.disabled = true;
+    reset.disabled = true;
+    fill.style.width = "0%";
+    clock.textContent = "没有事件流";
+    readout.replaceChildren(node("span", "simulation-empty", "本组没有可播放的事件流记录。"));
+    timeline.replaceChildren(node("div", "empty-state", "未找到 RESEARCH_EVENTS.jsonl。"));
+    return;
+  }
+  toggle.disabled = false;
+  reset.disabled = false;
+  speed.value = String(state.simulation.speed);
+  toggle.textContent = state.simulation.running
+    ? "暂停模拟"
+    : current >= events.length - 1
+      ? "重新播放"
+      : current >= 0
+        ? "继续模拟"
+        : "开始模拟";
+  const completed = Math.max(0, Math.min(events.length, current + 1));
+  fill.style.width = `${(completed / events.length) * 100}%`;
+  const activeEvent = events[current] || null;
+  if (!activeEvent) {
+    clock.textContent = `准备播放 · ${events.length} 条事件`;
+    readout.replaceChildren(
+      node("strong", "", "准备开始"),
+      node("span", "", `将按原始顺序播放 ${events.length} 条阶段事件；当前速度 ${state.simulation.speed}×。`),
     );
-    return row;
+  } else {
+    clock.textContent = `${state.simulation.running ? "播放中" : current >= events.length - 1 ? "已完成" : "已暂停"} · ${formatEventElapsed(activeEvent.elapsed_seconds)}`;
+    const copy = node("div", "simulation-readout-copy");
+    copy.append(
+      node("strong", "", `${eventLabel(activeEvent.event_type)} · ${simulationStageLabel(activeEvent.event_type)}`),
+      node("span", "", eventDescription(activeEvent)),
+    );
+    readout.replaceChildren(
+      node("span", "simulation-sequence", `${completed} / ${events.length}`),
+      copy,
+    );
+  }
+  const items = events.map((event, index) => {
+    const stateClass = index < current ? " completed" : index === current ? " current" : " pending";
+    const item = node("article", `simulation-event${stateClass}`);
+    item.dataset.sequence = String(event.sequence || index + 1);
+    const marker = node("span", "simulation-event-marker", String(event.sequence || index + 1).padStart(3, "0"));
+    const copy = node("div", "simulation-event-copy");
+    const head = node("div", "simulation-event-head");
+    head.append(
+      node("strong", "", eventLabel(event.event_type)),
+      node("span", "simulation-stage", simulationStageLabel(event.event_type)),
+    );
+    copy.append(
+      head,
+      node("p", "", eventDescription(event)),
+      node("time", "", `${formatEventElapsed(event.elapsed_seconds)} · ${event.event_type}`),
+    );
+    item.append(marker, copy);
+    return item;
   });
-  if (run.launch_error) {
-    const row = node("div", "live-event-row");
-    row.append(node("time", "", "—"), node("strong", "", "启动失败"), node("span", "", run.launch_error));
-    eventRows.push(row);
-  }
-  $("#live-event-stream").replaceChildren(
-    ...(eventRows.length ? eventRows : [node("div", "empty-state", "进程已经启动，正在等待第一条阶段事件。")]),
-  );
-
-  const active = ["starting", "running", "stopping"].includes(run.status);
-  $("#stop-live-run").hidden = !active;
-  $("#stop-live-run").disabled = run.status === "stopping";
-  $("#open-live-replay").hidden = !run.replay_available;
-  if (active) startLivePolling(run.run_id);
-  else stopLivePolling();
-}
-
-async function selectLiveRun(runId) {
-  stopLivePolling();
-  state.activeLiveRunId = runId;
-  setMode("live");
-  try {
-    const run = await getJson(`/api/live/runs/${encodeURIComponent(runId)}`);
-    const index = state.liveRuns.findIndex((item) => item.run_id === runId);
-    if (index >= 0) state.liveRuns[index] = run;
-    else state.liveRuns.unshift(run);
-    renderLiveHistory();
-    renderActiveLiveRun(run);
-  } catch (error) {
-    showLiveFormError(error);
+  timeline.replaceChildren(...items);
+  if (current >= 0) {
+    const active = timeline.querySelector(".simulation-event.current");
+    if (active) active.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 }
 
-function stopLivePolling() {
-  if (state.livePoller !== null) {
-    window.clearInterval(state.livePoller);
-    state.livePoller = null;
+function toggleSimulation() {
+  const events = simulationEvents();
+  if (!events.length) return;
+  if (state.simulation.running) {
+    state.simulation.running = false;
+    clearSimulationTimer();
+    renderSimulation();
+    return;
   }
+  if (state.simulation.index >= events.length - 1) state.simulation.index = -1;
+  state.simulation.running = true;
+  if (state.simulation.index < 0) state.simulation.index = 0;
+  renderSimulation();
+  scheduleSimulationStep();
 }
 
-function startLivePolling(runId) {
-  if (state.livePoller !== null) return;
-  state.livePoller = window.setInterval(() => refreshLiveRun(runId), 2500);
+function resetSimulation() {
+  clearSimulationTimer();
+  state.simulation.index = -1;
+  state.simulation.running = false;
+  renderSimulation();
 }
 
-async function refreshLiveRun(runId) {
-  try {
-    const run = await getJson(`/api/live/runs/${encodeURIComponent(runId)}`);
-    const index = state.liveRuns.findIndex((item) => item.run_id === runId);
-    if (index >= 0) state.liveRuns[index] = run;
-    else state.liveRuns.unshift(run);
-    if (state.activeLiveRunId === runId) renderActiveLiveRun(run);
-    renderLiveHistory();
-    if (!["starting", "running", "stopping"].includes(run.status)) {
-      stopLivePolling();
-      state.catalog = await getJson("/api/catalog");
-      renderArchiveSummary();
-      renderRunList();
-      $("#mode-replay").disabled = !state.catalog.runs.length;
-    }
-  } catch (_) {
-    // A transient polling failure must not erase the last visible run state.
-  }
-}
-
-function showLiveFormError(error) {
-  const box = $("#live-form-error");
-  box.hidden = false;
-  box.textContent = error instanceof Error ? error.message : String(error);
-}
-
-async function startResearch(event) {
-  event.preventDefault();
-  const errorBox = $("#live-form-error");
-  errorBox.hidden = true;
-  const button = $("#start-research");
-  const question = $("#research-question").value.trim();
-  const hours = finiteNumber($("#wall-time-hours").value) ?? 3;
-  const payload = {
-    question,
-    maximum_iterations: 6,
-    maximum_initial_routes: Number($("#initial-routes").value),
-    route_planning_maximum_routes: Number($("#literature-routes").value),
-    max_rounds_per_route: Number($("#max-rounds").value),
-    minimum_rounds_before_llm_stop: Number($("#minimum-rounds").value),
-    maximum_refinement_rounds: 1,
-    maximum_method_research_rounds: 2,
-    method_research_wall_time_seconds: 360,
-    s2_request_budget_seconds: 75,
-    wall_time_seconds: Math.round(hours * 3600),
-    task_compiler_tier: $("#compiler-tier").value,
-    online_method_research: $("#online-research").checked,
-    qwen_method_synthesis: $("#method-synthesis").checked,
-    control_route: $("#control-route").checked,
-  };
-  state.accessToken = $("#access-token").value.trim();
-  button.disabled = true;
-  button.textContent = "正在启动研究进程…";
-  try {
-    const run = await postJson("/api/live/runs", payload, state.accessToken);
-    stopLivePolling();
-    state.liveRuns.unshift(run);
-    state.activeLiveRunId = run.run_id;
-    renderLiveWorkspace();
-    $("#active-run-section").scrollIntoView({ behavior: "smooth", block: "start" });
-  } catch (error) {
-    showLiveFormError(error);
-  } finally {
-    button.disabled = !state.readiness?.ready_for_real_run;
-    button.textContent = state.readiness?.ready_for_real_run
-      ? "启动真实端到端研究"
-      : "请先在服务端配置 Qwen 密钥";
-  }
+function changeSimulationSpeed(event) {
+  state.simulation.speed = Math.min(10, Math.max(1, Number(event.target.value) || 10));
+  if (state.simulation.running) scheduleSimulationStep();
+  else renderSimulation();
 }
 
 $("#dialog-close").addEventListener("click", () => $("#iteration-dialog").close());
@@ -1211,47 +1053,9 @@ $("#iteration-dialog").addEventListener("click", (event) => {
   if (event.target === $("#iteration-dialog")) $("#iteration-dialog").close();
 });
 $("#retry-button").addEventListener("click", initialize);
-$("#mode-live").addEventListener("click", () => setMode("live"));
-$("#mode-replay").addEventListener("click", () => {
-  if (state.run) setMode("replay");
-});
-$("#research-form").addEventListener("submit", startResearch);
-$("#research-question").addEventListener("input", () => {
-  $("#question-count").textContent = `${$("#research-question").value.length} / 6000`;
-});
-document.querySelectorAll(".example-button").forEach((button) => {
-  button.addEventListener("click", () => {
-    const value = researchExamples[button.dataset.example] || "";
-    $("#research-question").value = value;
-    $("#question-count").textContent = `${value.length} / 6000`;
-    $("#research-question").focus();
-  });
-});
-$("#stop-live-run").addEventListener("click", async () => {
-  if (!state.activeLiveRunId) return;
-  try {
-    const run = await postJson(
-      `/api/live/runs/${encodeURIComponent(state.activeLiveRunId)}/stop`,
-      {},
-      state.accessToken,
-    );
-    const index = state.liveRuns.findIndex((item) => item.run_id === run.run_id);
-    if (index >= 0) state.liveRuns[index] = run;
-    renderLiveWorkspace();
-  } catch (error) {
-    showLiveFormError(error);
-  }
-});
-$("#open-live-replay").addEventListener("click", async () => {
-  if (!state.activeLiveRunId) return;
-  state.catalog = await getJson("/api/catalog");
-  renderArchiveSummary();
-  renderRunList();
-  $("#mode-replay").disabled = !state.catalog.runs.length;
-  if (state.catalog.runs.some((run) => run.run_id === state.activeLiveRunId)) {
-    await loadRun(state.activeLiveRunId);
-  }
-});
+$("#simulation-toggle").addEventListener("click", toggleSimulation);
+$("#simulation-reset").addEventListener("click", resetSimulation);
+$("#simulation-speed").addEventListener("change", changeSimulationSpeed);
 $("#mobile-menu").addEventListener("click", () => document.body.classList.toggle("sidebar-open"));
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") document.body.classList.remove("sidebar-open");
