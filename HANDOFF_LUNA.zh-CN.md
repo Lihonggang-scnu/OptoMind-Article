@@ -5,7 +5,7 @@
 目标仓库：`https://github.com/Lihonggang-scnu/OptoMind-Article`
 当前分支：`main`
 当前基线提交：`9be701a Merge GitHub repository initialization`
-当前状态：本轮实现已经完成，正在进行最终验证、白名单提交和 GitHub 推送。
+当前状态：本轮实现、最终验证和白名单提交已经完成；GitHub 推送待本机恢复到 github.com:443 的网络连接。
 
 ## 1. 用户本轮最终目标
 
@@ -17,7 +17,7 @@
 4. 不得制造“伪真实结果”。没有 Qwen 密钥时必须明确拒绝启动真实研究；模拟 runner 只用于界面和接口联调。
 5. 完成代码、测试、公开说明后，将改动推送到现有 GitHub 仓库。
 
-用户在上一轮暂停了工作并要求交接；本轮已在此基础上完成实现，但截至本次交接更新时仍**尚未提交、尚未推送**。
+用户在上一轮暂停了工作并要求交接；本轮已在此基础上完成实现并提交为本地提交 `70eea62`，但截至本次交接更新时仍**尚未推送**。
 
 ## 2. 已完成的实现
 
@@ -147,9 +147,9 @@ python -m pytest tests\test_live_research.py tests\test_static_replay.py -q
 
 ### 4.2 仍需收尾的事项
 
-- 只暂存本轮代码、配置、测试和交接文档；排除两份无关的 Word 文件、运行输出、缓存和任何密钥内容。
-- 完成暂存区统计、`git diff --cached --check` 和提交前文件边界复核。
-- 提交到 `main` 并推送 `origin/main`，随后用 `git ls-remote` 核对远端提交。
+- 恢复本机到 `github.com:443` 的 TCP 连接后，执行 `git push origin main`。
+- 推送完成后用 `git ls-remote origin refs/heads/main` 核对远端是否为 `70eea62`。
+- 若仍无法连接，不要重建提交或改写历史；本地 `70eea62` 已是完整可推送提交。
 
 ### 4.3 真实在线轻量测试
 
@@ -157,9 +157,9 @@ python -m pytest tests\test_live_research.py tests\test_static_replay.py -q
 
 ## 5. 建议的继续顺序
 
-1. 只暂存白名单文件，排除用户文档、输出、缓存和密钥。
-2. 检查暂存区统计、差异格式和密钥模板状态。
-3. 提交后推送 `origin/main`，再核对远端提交。
+1. 恢复到 GitHub 的网络连接。
+2. 推送现有本地提交 `70eea62`，不要重复创建内容相同的提交。
+3. 用远端只读查询确认 `origin/main` 已更新。
 
 ## 6. Git 与文件边界（非常重要）
 
@@ -260,28 +260,4 @@ python scripts\run_research_console.py --no-open --host 0.0.0.0 --port 8765
 
 ## 10. 当前工作树概要
 
-已修改但未提交：
-
-- `README.md`
-- `AGENT_GUIDE.zh-CN.md`
-- `code/requirements-handoff.txt`
-
-已新增但未提交：
-
-- `HANDOFF_LUNA.zh-CN.md`
-- `code/optomind_optics/harness/live_research.py`
-- `code/optomind_optics/harness/research_console.py`
-- `code/optomind_optics/harness/static_replay.py`
-- `code/replay_ui/`
-- `code/scripts/run_research_console.py`
-- `code/scripts/run_static_replay_ui.py`
-- `code/tests/fixtures/fake_live_runner.py`
-- `code/tests/test_live_research.py`
-- `code/tests/test_static_replay.py`
-- `Dockerfile`
-- `.dockerignore`
-- `compose.yaml`
-- `.env.example`
-- `render.yaml`
-
-本交接更新时没有活动的本地研究控制台进程；最终定向验证已完成，但仍未完成 Git 提交和 GitHub 推送。
+本轮目标文件已经提交到本地 `main`，提交为 `70eea62 Add live research console and portable deployment`。工作树中只剩两份与本轮无关、未跟踪的 Word 用户资产；它们没有进入提交。当前没有活动的本地研究控制台进程；最终定向验证已完成，但 GitHub 推送因当前 TCP 网络不可达尚未完成。
