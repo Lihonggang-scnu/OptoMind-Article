@@ -41,6 +41,13 @@ VeriTMM 执行、物理证书与候选验证
 | 路径 | 内容 |
 |---|---|
 | `code/` | 主 harness、配置、测试、工具和运行脚本。 |
+| `code/replay_ui/` | 六组完整运行的只读可视化静态回放前端。 |
+| `code/optomind_optics/harness/research_console.py` | 研究控制台服务，同时提供回放接口和真实研究接口。 |
+| `code/optomind_optics/harness/live_research.py` | 受限的真实运行管理器，负责启动、观察、停止和恢复研究任务。 |
+| `code/scripts/run_research_console.py` | 跨平台启动真实研究与静态回放一体化控制台。 |
+| `code/scripts/run_static_replay_ui.py` | 静态回放台本地启动入口。 |
+| `code/requirements-runtime.txt` | 容器化实时研究所需的最小运行依赖。 |
+| `Dockerfile`、`compose.yaml`、`render.yaml` | 本地容器和云端部署配置。 |
 | `code/prompts/optical_harness/` | 运行时使用的结构化提示模板。 |
 | `veritmm/` | 与本项目同级挂载的 VeriTMM 物理执行引擎。 |
 | `accepted_examples/` | 验收与示例资产。 |
@@ -50,7 +57,7 @@ VeriTMM 执行、物理证书与候选验证
 
 根目录的 Agent 指南是评测入口；面向普通使用者的项目说明以本 README 为准。运行时真正读取的是 `code/prompts/optical_harness/`，根目录不再保留历史 handoff 提示词目录。
 
-公开发布包聚焦 TMM 科研 Harness 和六组可回放运行记录；论文流水线历史资产、文献缓存和 VeriTMM 引擎归档不随本项目分发。它们不会影响六组运行树中的题面、路线、迭代、仿真、证书、排名和最终结果。
+公开发布包聚焦 TMM 科研 Harness、随项目固定的 VeriTMM 执行组件和六组可回放运行记录；论文流水线历史资产与在线文献缓存不属于运行时必需内容。六组运行树中的题面、路线、迭代、仿真、证书、排名和最终结果保持原始记录，不依赖这些历史缓存。
 
 ## 六次完整端到端运行成果
 
@@ -258,6 +265,95 @@ VeriTMM 执行、物理证书与候选验证
 
 这种目录结构支持两种使用方式：可以直接阅读 `FINAL_ANSWER.md` 和冻结排名，也可以沿 `REQUEST.json → SCORING_STANDARD.json → ROUTE_PLANNING.json → iterations/ → SCORING_RANKING.json` 的顺序回放每个决定是如何由真实实验产物支撑的。每组代表性冠军均带有物理接受证书；鲁棒性记录采用 16 个厚度扰动样本，失败次数也保存在原始 JSON 中。
 
+## 可视化静态回放
+
+仓库内置只读的“静态研究回放台”，用于直接浏览随项目固化的六组完整运行。它会从产物目录实时生成索引，不维护另一份手工录入的数据，也不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
+
+- 六组原始工程题面与每组独立锁定的评分标准；
+- 文献启发路线和独立记忆对照路线的同标准比较；
+- 24 条路线、126 轮记录及其逐轮冻结得分曲线；
+- 每轮任务状态、代表候选、观测值、反馈动作和异常记录；
+- 最终路线排名、冠军候选以及从结论返回原始 JSON、JSONL 和 Markdown 的证据链接。
+
+从仓库根目录启动：
+
+```powershell
+Set-Location -LiteralPath .\code
+python scripts\run_static_replay_ui.py
+```
+
+程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python scripts\run_static_replay_ui.py --port 0`。页面只监听本机回环地址，支持直接切换六组运行、选择路线、打开逐轮详情并访问对应原始文件。
+
+## 真实研究控制台
+
+除浏览六组固化记录外，项目还提供同源的真实研究入口。使用者可以在网页中输入一段新的中文光学设计需求，提交后由现有研究链路完成问题分析、指标锁定、路线规划、任务编译、VeriTMM 仿真、候选验证、反馈迭代和最终交付。页面显示的是运行目录中实时产生的事件和结果，完成后可以直接切换到同一条运行的完整回放。
+
+真实研究控制台的职责边界是明确的：浏览器只提交问题和受限参数，Qwen、文献服务和 VeriTMM 均在服务端运行；服务端不把密钥返回浏览器，也不允许浏览器指定任意可执行命令。未配置 Qwen 密钥时，开始按钮保持不可用，服务端也会拒绝启动请求。
+
+### 本地运行
+
+从仓库根目录进入 `code/`，安装完整交接环境依赖后启动：
+
+```powershell
+Set-Location -LiteralPath .\code
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-handoff.txt
+.\.venv\Scripts\python.exe scripts\run_research_console.py
+```
+
+macOS 或 Linux 使用同一入口，虚拟环境激活路径改为：
+
+```bash
+cd code
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-handoff.txt
+.venv/bin/python scripts/run_research_console.py
+```
+
+服务默认监听 `127.0.0.1:8765`，如果该端口被占用会自动选择可用端口。也可以使用 `--port 0` 强制选择临时端口，或使用 `--no-open` 禁止自动打开浏览器。静态回放和真实研究使用同一个页面，不需要启动两个服务。
+
+### 服务密钥
+
+真实研究所需的密钥只配置在服务端：
+
+- `QWEN_API_KEY` 或 `DASHSCOPE_API_KEY`：必需；用于自然语言分析、路线规划和任务编译。
+- `SEMANTIC_SCHOLAR_API_KEY`：可选；用于在线方法检索。未配置时仍会记录检索不可用状态，并按链路定义继续处理。
+
+可以使用环境变量，也可以在 `code/api_keys/` 的空模板文件中填写本机密钥。密钥文件已经加入忽略规则，真实内容不得提交到 GitHub。对外提供网页访问时，还需要在服务端设置 `OPTOMIND_UI_ACCESS_TOKEN`；它只保护启动和停止真实运行的接口，不能替代模型服务密钥。
+
+### 局域网或远程访问
+
+在一台设备上运行服务、让同一局域网的其他设备访问时，先设置访问口令，再绑定所有网卡地址：
+
+```powershell
+$env:OPTOMIND_UI_ACCESS_TOKEN = '<部署者生成的随机长口令>'
+python scripts\run_research_console.py --host 0.0.0.0 --port 8765 --no-open
+```
+
+将运行设备的局域网地址和端口交给访问者，例如 `http://192.168.x.x:8765/`。不要把口令写入 URL、网页代码、日志、截图或仓库。直接暴露到互联网时，应额外使用云平台的 HTTPS、访问控制和网络策略。
+
+### Docker Compose
+
+项目提供不依赖宿主机路径的容器配置。复制环境模板并填写服务端密钥与访问口令：
+
+```bash
+cp .env.example .env
+# 编辑 .env，填写 QWEN_API_KEY 和 OPTOMIND_UI_ACCESS_TOKEN
+docker compose up --build
+```
+
+然后访问 `http://127.0.0.1:8765/`。新研究结果写入名为 `optomind-runs` 的持久卷，容器重启后仍可从网页回放。容器默认使用 `/data/runs`，不依赖 Windows 盘符或用户主目录；宿主机端口可以通过 `.env` 中的 `PORT` 修改。
+
+默认 Docker 镜像不把约 2.9 GB 的六组历史仿真目录复制进镜像，因此镜像适合部署实时研究服务。直接在 GitHub 工作树中用 Python 启动时，六组正式记录仍由静态回放读取；若希望容器也展示六组记录，可将本地 `code/outputs/tmm_research_harness` 作为只读归档卷单独挂载，并为新运行保留 `/data/runs` 可写卷。两类数据不应混写。
+
+### 云端部署
+
+根目录的 `render.yaml` 是一个可选的 Render Blueprint：它使用 Docker 构建单实例 Web 服务，将 `PORT` 交给容器，将 `/data` 挂载到持久磁盘，并把 `/healthz` 作为健康检查地址。首次创建服务时，在平台界面填写 `QWEN_API_KEY`；Semantic Scholar 密钥可按需要填写；访问口令由 Blueprint 生成或由部署者在平台密钥管理界面设置。
+
+该服务使用单实例持久卷，是因为研究运行会持续写入 SQLite、JSON、JSONL 和候选结果；带持久磁盘的服务不适合自动横向扩展。Render 的官方配置参考见 [Blueprint YAML Reference](https://render.com/docs/blueprint-spec)、[Docker Services](https://render.com/docs/docker)、[Health Checks](https://render.com/docs/health-checks) 和 [Persistent Disks](https://render.com/docs/disks)。其他支持 Docker 的云平台也可以直接使用根目录 `Dockerfile`，只需将持久输出目录配置为 `/data` 并把平台分配的端口传入 `PORT`。
+
+云端启动后，访问者打开平台生成的 HTTPS 地址，在页面的“云端运行访问口令”输入框中临时输入口令即可发起或停止任务。Qwen 和文献服务密钥始终留在云端，不进入浏览器。
+
 ## 快速开始
 
 以下命令适用于 PowerShell。Python 3.11 或兼容版本通常更适合当前依赖组合。
@@ -273,11 +369,17 @@ python -m venv .venv
 - `qwen-api-key.txt`：Qwen 调用所需密钥；
 - `semantic-scholar-api-key.txt`：在线文献方法检索所需密钥，可按运行配置启用。
 
+安装后直接启动研究控制台即可同时访问真实研究和静态回放两种模式：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_research_console.py
+```
+
 
 准备好密钥后，在 `code` 目录运行：
 
 ```powershell
-\.venv\Scripts\python.exe -u scripts\run_tmm_research_harness.py `
+.\.venv\Scripts\python.exe -u scripts\run_tmm_research_harness.py `
   '我需要一个双功能多层膜：在近红外 800-1500nm 波段透射率尽可能高，同时在紫外 200-400nm 波段反射率尽可能高。衬底是熔融石英，总层数控制在 30 层以内。' `
   --wall-time-seconds 3600 `
   --maximum-iterations 6 `
@@ -312,6 +414,7 @@ python -m venv .venv
 ```powershell
 Set-Location -LiteralPath .\code
 python -m pytest -q `
+  tests/test_static_replay.py `
   tests/test_run_harness_smoke.py `
   tests/test_tmm_material_registry.py `
   tests/test_tmm_task_compiler.py

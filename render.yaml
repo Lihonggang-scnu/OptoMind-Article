@@ -1,0 +1,36 @@
+# Optional Render Blueprint for a single-instance Docker deployment.
+# The attached disk is intentional: live research writes append-only JSON,
+# JSONL and result files that must survive a restart or redeploy.
+#
+# QWEN_API_KEY and SEMANTIC_SCHOLAR_API_KEY are requested interactively by
+# Render on the first Blueprint creation. OPTOMIND_UI_ACCESS_TOKEN is generated
+# by Render and is required by the remote mutation endpoints.
+services:
+  - type: web
+    name: optomind-article
+    runtime: docker
+    plan: 1c-2g
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    numInstances: 1
+    envVars:
+      - key: QWEN_API_KEY
+        sync: false
+      - key: SEMANTIC_SCHOLAR_API_KEY
+        sync: false
+      - key: OPTOMIND_UI_ACCESS_TOKEN
+        generateValue: true
+      - key: OPTOMIND_HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8080
+      - key: OPTOMIND_OUTPUT_ROOT
+        value: /data/runs
+      - key: OPTOMIND_MAX_CONCURRENT_RUNS
+        value: 1
+    disk:
+      name: optomind-runs
+      mountPath: /data
+      sizeGB: 10

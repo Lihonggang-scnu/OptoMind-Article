@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="OptoMind 自主光学研究任务提交、实时进度与静态证据回放界面"
+    />
+    <title>OptoMind 自主研究控制台</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="运行记录导航">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <p class="brand-name">OptoMind</p>
+            <p class="brand-subtitle">自主研究控制台</p>
+          </div>
+        </div>
+
+        <div class="read-only-notice">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div>
+          <strong>真实研究与证据回放</strong>
+          <span>运行密钥仅由服务端管理</span>
+          </div>
+        </div>
+
+        <section class="archive-summary" aria-labelledby="archive-title">
+          <p class="sidebar-label" id="archive-title">正式运行档案</p>
+          <div class="archive-stats" id="archive-stats" aria-live="polite"></div>
+        </section>
+
+        <nav class="run-list" id="run-list" aria-label="可回放研究运行"></nav>
+
+        <div class="sidebar-footer">
+          <span>证据链</span>
+          <strong>需求 → 规划 → 执行 → 反馈 → 结论</strong>
+        </div>
+      </aside>
+
+      <main class="main" id="main-content">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobile-menu" type="button" aria-label="打开运行列表">
+            <span></span><span></span><span></span>
+          </button>
+          <div>
+            <p class="topbar-kicker">AUTONOMOUS OPTICAL RESEARCH</p>
+            <h1>自主光学研究控制台</h1>
+          </div>
+          <div class="mode-switch" role="tablist" aria-label="控制台模式">
+            <button id="mode-live" type="button" role="tab">发起真实研究</button>
+            <button id="mode-replay" type="button" role="tab" class="active">静态证据回放</button>
+          </div>
+          <div class="topbar-state">
+            <span class="pulse" aria-hidden="true"></span>
+            <span>固化产物已载入</span>
+          </div>
+        </header>
+
+        <div class="loading-state" id="loading-state" role="status">
+          <div class="loading-orbit" aria-hidden="true"><span></span></div>
+          <strong>正在读取研究档案</strong>
+          <span>仅解析本地固化产物</span>
+        </div>
+
+        <section class="error-state" id="error-state" hidden>
+          <strong>无法载入静态回放数据</strong>
+          <p id="error-message"></p>
+          <button type="button" id="retry-button">重新读取</button>
+        </section>
+
+        <div class="live-content" id="live-content" hidden>
+          <section class="live-hero panel-accent">
+            <div>
+              <p class="section-kicker">REAL END-TO-END RESEARCH</p>
+              <h2>用一个真实工程问题启动完整研究链路</h2>
+              <p>
+                输入自然语言需求后，服务端将依次执行问题理解、动态指标选择、文献检索、路线规划、
+                VeriTMM 仿真、真实反馈迭代、冻结排名和最终交付。浏览器不接触模型密钥。
+              </p>
+            </div>
+            <div class="readiness-panel" id="readiness-panel" aria-label="服务端运行条件"></div>
+          </section>
+
+          <section class="live-grid">
+            <form class="panel research-form" id="research-form">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">NEW RESEARCH REQUEST</p>
+                  <h2>提交研究问题</h2>
+                </div>
+                <span class="form-state" id="question-count">0 / 6000</span>
+              </div>
+
+              <label class="field-label" for="research-question">自然语言工程需求</label>
+              <textarea
+                id="research-question"
+                name="question"
+                rows="8"
+                maxlength="6000"
+                required
+                placeholder="例如：我需要一个双功能多层膜，在近红外 800–1500 nm 波段透射率尽可能高，同时在紫外 200–400 nm 波段反射率尽可能高。衬底是熔融石英，总层数控制在 30 层以内。"
+              ></textarea>
+              <p class="field-help">只描述实际需求与约束；实验规划、指标选择和反馈迭代由系统完成。</p>
+
+              <div class="example-row" aria-label="示例题面">
+                <button type="button" class="example-button" data-example="swir">双波段防护窗口</button>
+                <button type="button" class="example-button" data-example="gas">双气体红外滤光膜</button>
+              </div>
+
+              <details class="advanced-settings">
+                <summary>运行参数</summary>
+                <div class="settings-grid">
+                  <label>
+                    <span>最长运行时间（小时）</span>
+                    <input id="wall-time-hours" type="number" min="0.25" max="6" step="0.25" value="3" />
+                  </label>
+                  <label>
+                    <span>每条路线最多轮数</span>
+                    <input id="max-rounds" type="number" min="1" max="10" value="6" />
+                  </label>
+                  <label>
+                    <span>初始路线候选上限</span>
+                    <input id="initial-routes" type="number" min="1" max="8" value="5" />
+                  </label>
+                  <label>
+                    <span>文献规划路线上限</span>
+                    <input id="literature-routes" type="number" min="1" max="6" value="4" />
+                  </label>
+                  <label>
+                    <span>任务编译模型</span>
+                    <select id="compiler-tier">
+                      <option value="turbo">Qwen 3.7 Flash</option>
+                      <option value="plus">Qwen 3.5 Plus</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>允许停止前最少有效轮数</span>
+                    <input id="minimum-rounds" type="number" min="1" max="6" value="2" />
+                  </label>
+                </div>
+                <div class="toggle-grid">
+                  <label><input id="online-research" type="checkbox" checked />启用在线文献检索</label>
+                  <label><input id="method-synthesis" type="checkbox" checked />启用文献方法综合</label>
+                  <label><input id="control-route" type="checkbox" checked />加入独立记忆对照路线</label>
+                </div>
+              </details>
+
+              <div class="access-token-field" id="access-token-field" hidden>
+                <label class="field-label" for="access-token">云端运行访问口令</label>
+                <input id="access-token" type="password" autocomplete="off" placeholder="由部署者提供；不会写入浏览器存储" />
+              </div>
+
+              <div class="form-error" id="live-form-error" hidden></div>
+              <button class="primary-action" id="start-research" type="submit">
+                启动真实端到端研究
+              </button>
+              <p class="submit-note">真实运行会消耗模型额度和计算时间；同一服务默认只并行执行一个任务。</p>
+            </form>
+
+            <aside class="panel live-explanation">
+              <p class="section-kicker">WHAT WILL HAPPEN</p>
+              <h2>提交之后</h2>
+              <ol>
+                <li><strong>锁定问题与指标</strong><span>从题面选择 VeriTMM 可计算的动态波段指标，并固定评分公式。</span></li>
+                <li><strong>生成并比较路线</strong><span>文献启发路线和不接收文献的记忆对照路线并行研究。</span></li>
+                <li><strong>执行真实仿真</strong><span>任务编译后交给 VeriTMM，候选经过物理核验再进入评分。</span></li>
+                <li><strong>根据结果再规划</strong><span>逐轮观测决定继续、修正或停止，所有状态进入证据链。</span></li>
+                <li><strong>进入静态回放</strong><span>完成后自动加入运行档案，可从最终结论回到每一轮原始文件。</span></li>
+              </ol>
+            </aside>
+          </section>
+
+          <section class="active-run-section" id="active-run-section" hidden>
+            <div class="section-heading">
+              <div>
+                <span class="section-index">01</span>
+                <div>
+                  <p class="section-kicker">LIVE RESEARCH PROGRESS</p>
+                  <h2>当前真实研究</h2>
+                </div>
+              </div>
+              <div class="active-run-actions">
+                <button id="stop-live-run" type="button" class="secondary-action">停止运行</button>
+                <button id="open-live-replay" type="button" class="primary-small" hidden>进入完整回放</button>
+              </div>
+            </div>
+            <article class="panel active-run-panel">
+              <div class="live-run-head">
+                <div>
+                  <span class="live-status" id="live-status"></span>
+                  <h3 id="live-run-id"></h3>
+                  <p id="live-question"></p>
+                </div>
+                <div class="live-elapsed"><strong id="live-elapsed"></strong><span>已用墙钟时间</span></div>
+              </div>
+              <div class="live-kpis" id="live-kpis"></div>
+              <div class="live-stage-track" id="live-stage-track"></div>
+              <div class="live-event-stream" id="live-event-stream"></div>
+            </article>
+          </section>
+
+          <section class="live-history-section" aria-labelledby="live-history-title">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">02</span>
+                <div>
+                  <p class="section-kicker">LIVE RUN HISTORY</p>
+                  <h2 id="live-history-title">本设备发起的研究</h2>
+                </div>
+              </div>
+              <p>重新启动服务后，已完成和中断的网页任务仍可从输出目录恢复状态。</p>
+            </div>
+            <div class="live-history" id="live-history"></div>
+          </section>
+        </div>
+
+        <div class="content" id="replay-content" hidden>
+          <section class="run-hero panel-accent" aria-labelledby="run-title">
+            <div class="hero-copy">
+              <div class="eyebrow-row">
+                <span class="group-label" id="group-label"></span>
+                <span class="status-pill success" id="run-status"></span>
+              </div>
+              <h2 id="run-title"></h2>
+              <p class="question" id="run-question"></p>
+              <div class="tag-row" id="run-tags"></div>
+            </div>
+            <div class="hero-identity">
+              <span>运行标识</span>
+              <code id="run-id"></code>
+              <a id="open-final-answer" class="text-link" target="_blank" rel="noreferrer">
+                查看最终研究报告
+              </a>
+            </div>
+          </section>
+
+          <section class="kpi-grid" id="kpi-grid" aria-label="运行规模"></section>
+
+          <section class="workflow-section" aria-labelledby="workflow-heading">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">01</span>
+                <div>
+                  <p class="section-kicker">RESEARCH WORKFLOW</p>
+                  <h2 id="workflow-heading">从需求到结论的完整闭环</h2>
+                </div>
+              </div>
+              <p>点击任一阶段查看对应说明与原始证据。</p>
+            </div>
+            <div class="workflow" id="workflow"></div>
+            <div class="stage-detail panel" id="stage-detail"></div>
+          </section>
+
+          <section class="two-column" aria-label="评价标准与路线对照">
+            <article class="panel scoring-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">FROZEN STANDARD</p>
+                  <h2>实验前固定的评价标准</h2>
+                </div>
+                <span class="lock-badge">已锁定</span>
+              </div>
+              <div class="formula" id="formula"></div>
+              <div class="metric-list" id="metric-list"></div>
+              <p class="panel-note">所有路线和所有轮次使用同一公式，后续结果不会改变评价口径。</p>
+            </article>
+
+            <article class="panel comparison-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">CONTROLLED COMPARISON</p>
+                  <h2>文献路线与记忆路线对照</h2>
+                </div>
+                <span class="comparison-valid" id="comparison-valid"></span>
+              </div>
+              <div class="comparison-bars" id="comparison-bars"></div>
+              <div class="comparison-conclusion" id="comparison-conclusion"></div>
+            </article>
+          </section>
+
+          <section class="analysis-section" aria-labelledby="analysis-heading">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">02</span>
+                <div>
+                  <p class="section-kicker">ITERATIVE EVIDENCE</p>
+                  <h2 id="analysis-heading">路线得分如何随真实反馈变化</h2>
+                </div>
+              </div>
+              <p>横轴为各路线自身的实验轮次，纵轴为冻结标准得分。</p>
+            </div>
+            <article class="panel chart-panel">
+              <div class="chart-legend" id="chart-legend"></div>
+              <div class="score-chart" id="score-chart" role="img" aria-label="各路线逐轮冻结得分折线图"></div>
+            </article>
+          </section>
+
+          <section class="route-section" aria-labelledby="route-heading">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">03</span>
+                <div>
+                  <p class="section-kicker">ROUTE-BY-ROUTE REPLAY</p>
+                  <h2 id="route-heading">逐路线查看假设、实验与反馈</h2>
+                </div>
+              </div>
+              <p>选择路线后，可按轮次打开任务、观测、反馈与物理证据。</p>
+            </div>
+            <div class="route-tabs" id="route-tabs" role="tablist"></div>
+            <article class="panel route-overview" id="route-overview"></article>
+            <div class="iteration-grid" id="iteration-grid"></div>
+          </section>
+
+          <section class="result-section" aria-labelledby="result-heading">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">04</span>
+                <div>
+                  <p class="section-kicker">FINAL EVIDENCE</p>
+                  <h2 id="result-heading">最终排名与冠军方案</h2>
+                </div>
+              </div>
+              <p>排名只采用实验前固定的公式，并仅纳入可评分候选。</p>
+            </div>
+            <div class="two-column result-columns">
+              <article class="panel leaderboard-panel">
+                <div class="panel-heading compact">
+                  <h3>路线排行榜</h3>
+                  <span id="leaderboard-count"></span>
+                </div>
+                <div class="leaderboard" id="leaderboard"></div>
+              </article>
+              <article class="panel champion-panel" id="champion-panel"></article>
+            </div>
+          </section>
+
+          <section class="evidence-section" aria-labelledby="evidence-heading">
+            <div class="section-heading">
+              <div>
+                <span class="section-index">05</span>
+                <div>
+                  <p class="section-kicker">RAW ARTIFACTS</p>
+                  <h2 id="evidence-heading">全过程原始证据索引</h2>
+                </div>
+              </div>
+              <p>所有链接均指向随项目保留的原始只读文件。</p>
+            </div>
+            <div class="evidence-grid" id="evidence-grid"></div>
+          </section>
+
+          <footer class="page-footer">
+            <strong>OptoMind Research Console</strong>
+            <span>真实任务由服务端执行 · 固化产物只读回放 · 密钥不进入浏览器</span>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <dialog class="iteration-dialog" id="iteration-dialog">
+      <div class="dialog-shell">
+        <header class="dialog-header">
+          <div>
+            <p class="section-kicker" id="dialog-kicker"></p>
+            <h2 id="dialog-title"></h2>
+          </div>
+          <button type="button" class="dialog-close" id="dialog-close" aria-label="关闭">×</button>
+        </header>
+        <div class="dialog-content" id="dialog-content"></div>
+      </div>
+    </dialog>
+
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
