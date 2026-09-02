@@ -49,3 +49,20 @@ def test_light_command_is_bounded_and_keeps_question_out_of_cli(tmp_path: Path) 
     assert command[command.index("--max-rounds-per-route") + 1] == "1"
     assert "--no-control-route" in command
     assert not any("近红外" in item for item in command)
+
+
+def test_full_command_uses_current_default_research_limits(tmp_path: Path) -> None:
+    question = tmp_path / "question.txt"
+    output = tmp_path / "output"
+
+    command = QUICKSTART.build_full_test_command(
+        "python", question_file=question, output_dir=output
+    )
+
+    assert command[command.index("--route-planning-maximum-routes") + 1] == "4"
+    assert command[command.index("--maximum-initial-routes") + 1] == "5"
+    assert command[command.index("--max-rounds-per-route") + 1] == "6"
+    assert command[command.index("--minimum-rounds-before-llm-stop") + 1] == "2"
+    assert command[command.index("--wall-time-seconds") + 1] == "10800"
+    assert str(question.resolve()) in command
+    assert not any("近红外" in item for item in command)

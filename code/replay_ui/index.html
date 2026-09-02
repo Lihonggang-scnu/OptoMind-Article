@@ -8,7 +8,7 @@
       content="OptoMind 六组自主光学研究产物的只读证据回放与事件时间线模拟"
     />
     <title>OptoMind 光学研究证据回放</title>
-    <link rel="stylesheet" href="/assets/styles.css" />
+    <link rel="stylesheet" href="assets/styles.css" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到主要内容</a>
@@ -24,12 +24,38 @@
           </div>
         </div>
 
-        <div class="read-only-notice">
+        <div class="read-only-notice" id="mode-notice">
           <span class="status-dot" aria-hidden="true"></span>
           <div>
-            <strong>只读静态回放</strong>
-            <span>不调用模型、文献服务或仿真器</span>
+            <strong id="mode-notice-title">只读静态回放</strong>
+            <span id="mode-notice-copy">不调用模型、文献服务或仿真器</span>
           </div>
+        </div>
+
+        <div class="portal-mode-switch" role="tablist" aria-label="功能选择">
+          <button
+            class="portal-mode-button active"
+            id="replay-mode-button"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="replay-workspace"
+          >
+            <span class="mode-icon" aria-hidden="true">▶</span>
+            <span><strong>成果回放</strong><small>已完成的真实运行</small></span>
+          </button>
+          <button
+            class="portal-mode-button"
+            id="live-mode-button"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="live-workspace"
+            disabled
+          >
+            <span class="mode-icon" aria-hidden="true">✦</span>
+            <span><strong>真实提问</strong><small id="live-mode-caption">正在识别运行环境</small></span>
+          </button>
         </div>
 
         <section class="archive-summary" aria-labelledby="archive-title">
@@ -54,25 +80,26 @@
             <p class="topbar-kicker">AUTONOMOUS OPTICAL RESEARCH</p>
             <h1>自主光学研究证据回放</h1>
           </div>
-          <div class="topbar-state">
+          <div class="topbar-state" id="topbar-state">
             <span class="pulse" aria-hidden="true"></span>
-            <span>六组固化产物已载入</span>
+            <span id="topbar-state-copy">正在载入固化产物</span>
           </div>
         </header>
 
-        <div class="loading-state" id="loading-state" role="status">
-          <div class="loading-orbit" aria-hidden="true"><span></span></div>
-          <strong>正在读取研究档案</strong>
-          <span>仅解析本地固化产物</span>
-        </div>
+        <section id="replay-workspace" role="tabpanel" aria-labelledby="replay-mode-button">
+          <div class="loading-state" id="loading-state" role="status">
+            <div class="loading-orbit" aria-hidden="true"><span></span></div>
+            <strong>正在读取研究档案</strong>
+            <span>仅解析已经固化的端到端产物</span>
+          </div>
 
-        <section class="error-state" id="error-state" hidden>
-          <strong>无法载入静态回放数据</strong>
-          <p id="error-message"></p>
-          <button type="button" id="retry-button">重新读取</button>
-        </section>
+          <section class="error-state" id="error-state" hidden>
+            <strong>无法载入静态回放数据</strong>
+            <p id="error-message"></p>
+            <button type="button" id="retry-button">重新读取</button>
+          </section>
 
-        <div class="content" id="replay-content" hidden>
+          <div class="content" id="replay-content" hidden>
           <section class="run-hero panel-accent" aria-labelledby="run-title">
             <div class="hero-copy">
               <div class="eyebrow-row">
@@ -242,11 +269,120 @@
             <div class="evidence-grid" id="evidence-grid"></div>
           </section>
 
-          <footer class="page-footer">
-            <strong>OptoMind Evidence Replay</strong>
-            <span>固化产物只读回放 · 模拟播放不重新执行研究 · 不需要服务密钥</span>
-          </footer>
-        </div>
+            <footer class="page-footer">
+              <strong>OptoMind Evidence Replay</strong>
+              <span>固化产物只读回放 · 模拟播放不重新执行研究 · 不需要服务密钥</span>
+            </footer>
+          </div>
+        </section>
+
+        <section
+          class="live-workspace"
+          id="live-workspace"
+          role="tabpanel"
+          aria-labelledby="live-mode-button"
+          hidden
+        >
+          <div class="live-intro panel-accent">
+            <div>
+              <p class="section-kicker">LOCAL VERIFIED EXECUTION</p>
+              <h2>从一个新问题开始真实研究</h2>
+              <p>
+                真实提问只在下载源码后的本机界面开放。系统会先核验密钥、运行依赖、
+                Qwen、文献服务、材料数据库与 VeriTMM；所有必要检查通过后才允许启动。
+              </p>
+            </div>
+            <div class="local-only-badge">
+              <span class="status-dot" aria-hidden="true"></span>
+              <strong>仅监听本机</strong>
+              <small>密钥仅用于直连 Qwen 与文献服务，不经过中转服务器</small>
+            </div>
+          </div>
+
+          <div class="live-grid">
+            <article class="panel readiness-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">01 · PREFLIGHT</p>
+                  <h2>运行准备检查</h2>
+                </div>
+                <span class="readiness-state idle" id="readiness-state">尚未检查</span>
+              </div>
+              <p class="panel-note">
+                首次检查可能自动创建隔离环境并安装依赖；检查过程不会显示或记录密钥内容。
+              </p>
+              <div class="diagnostic-list" id="diagnostic-list" aria-live="polite"></div>
+              <button class="primary-action" id="diagnostic-button" type="button">
+                检查并准备真实运行
+              </button>
+            </article>
+
+            <article class="panel question-panel" id="question-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">02 · NEW RESEARCH</p>
+                  <h2>提交真实光学设计需求</h2>
+                </div>
+                <span class="locked-badge" id="question-lock">等待检查</span>
+              </div>
+              <label class="field-label" for="research-question">用户问题</label>
+              <textarea
+                id="research-question"
+                rows="7"
+                maxlength="4000"
+                disabled
+                placeholder="例如：我需要一个双功能多层膜，在近红外波段尽可能高透射，同时在紫外波段尽可能高反射……"
+              ></textarea>
+              <div class="question-meta">
+                <span id="question-count">0 / 4000</span>
+                <span>只提交需求与约束，实验规划由系统完成</span>
+              </div>
+              <fieldset class="profile-options" id="profile-options" disabled>
+                <legend>运行模式</legend>
+                <label class="profile-card selected">
+                  <input type="radio" name="run-profile" value="quick" checked />
+                  <span>
+                    <strong>快速真实验证</strong>
+                    <small>1 条路线、1 轮，最长 30 分钟；结果独立保存</small>
+                  </span>
+                </label>
+                <label class="profile-card">
+                  <input type="radio" name="run-profile" value="full" />
+                  <span>
+                    <strong>完整自主研究</strong>
+                    <small>默认 4 条规划路线并包含对照，最多 6 轮，最长 3 小时</small>
+                  </span>
+                </label>
+              </fieldset>
+              <button class="primary-action" id="start-run-button" type="button" disabled>
+                开始真实研究
+              </button>
+              <p class="form-message" id="run-form-message" aria-live="polite"></p>
+            </article>
+          </div>
+
+          <article class="panel live-run-panel" id="live-run-panel" hidden>
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">03 · LIVE TRACE</p>
+                <h2>当前研究任务</h2>
+              </div>
+              <span class="readiness-state" id="live-run-status">等待</span>
+            </div>
+            <div class="live-run-summary" id="live-run-summary"></div>
+            <div class="live-progress-track" aria-hidden="true">
+              <div class="live-progress-fill" id="live-progress-fill"></div>
+            </div>
+            <div class="live-event" id="live-event"></div>
+            <div class="live-run-actions">
+              <button class="secondary-action" id="refresh-run-button" type="button">刷新状态</button>
+              <button class="danger-action" id="cancel-run-button" type="button">停止任务</button>
+              <button class="primary-small" id="open-live-result-button" type="button" hidden>
+                在回放台打开新结果
+              </button>
+            </div>
+          </article>
+        </section>
       </main>
     </div>
 
@@ -263,6 +399,7 @@
       </div>
     </dialog>
 
-    <script src="/assets/app.js" defer></script>
+    <script src="assets/config.js"></script>
+    <script src="assets/app.js" defer></script>
   </body>
 </html>

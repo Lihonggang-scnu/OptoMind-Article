@@ -1,5 +1,14 @@
 "use strict";
 
+const portalConfig = Object.freeze({
+  mode: "auto",
+  catalogUrl: "api/catalog",
+  runUrlTemplate: "api/runs/{run_id}",
+  artifactBase: "artifacts",
+  localStatusUrl: "api/local/status",
+  ...(window.OPTOMIND_PORTAL_CONFIG || {}),
+});
+
 const state = {
   catalog: null,
   run: null,
@@ -12,6 +21,13 @@ const state = {
     running: false,
     speed: 10,
     timer: null,
+  },
+  portalMode: "replay",
+  local: {
+    available: false,
+    diagnostics: null,
+    activeRun: null,
+    statusTimer: null,
   },
 };
 
@@ -74,7 +90,15 @@ function artifactUrl(runId, path) {
     .split("/")
     .map((part) => encodeURIComponent(part))
     .join("/");
-  return `/artifacts/${encodeURIComponent(runId)}/${encodedPath}`;
+  const base = String(portalConfig.artifactBase || "artifacts").replace(/\/+$/, "");
+  return `${base}/${encodeURIComponent(runId)}/${encodedPath}`;
+}
+
+function runDataUrl(runId) {
+  return String(portalConfig.runUrlTemplate || "api/runs/{run_id}").replace(
+    "{run_id}",
+    encodeURIComponent(runId),
+  );
 }
 
 function artifactLink(runId, file, label = null) {
@@ -233,6 +257,26 @@ async function getJson(url) {
   return response.json();
 }
 
+async function postJson(url, payload = {}) {
+  const response = await fetch(url, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    let message = `${response.status} ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (body.error) message = body.error;
+    } catch (_) {
+      // Preserve the HTTP status when the response is not JSON.
+    }
+    throw new Error(message);
+  }
+  return response.json();
+}
+
 function setLoading(loading) {
   $("#loading-state").hidden = !loading;
   if (loading) $("#replay-content").hidden = true;
@@ -249,10 +293,14 @@ function showError(error) {
 async function initialize() {
   setLoading(true);
   try {
-    const catalog = await getJson("/api/catalog");
+    const [catalog] = await Promise.all([
+      getJson(portalConfig.catalogUrl),
+      discoverLocalExecution(),
+    ]);
     state.catalog = catalog;
     renderArchiveSummary();
     renderRunList();
+    $("#topbar-state-copy").textContent = `${formatNumber(catalog.totals?.runs)} 组固化产物已载入`;
     const requested = decodeURIComponent(location.hash.replace(/^#run=/, ""));
     const initial = state.catalog.runs.some((run) => run.run_id === requested)
       ? requested
@@ -317,7 +365,7 @@ async function loadRun(runId) {
   setLoading(true);
   try {
     clearSimulationTimer();
-    state.run = await getJson(`/api/runs/${encodeURIComponent(runId)}`);
+    state.run = await getJson(runDataUrl(runId));
     state.selectedRunId = runId;
     state.selectedRouteId = state.run.routes.find((route) => route.winner)?.route_id
       || state.run.routes[0]?.route_id
@@ -1048,6 +1096,256 @@ function changeSimulationSpeed(event) {
   else renderSimulation();
 }
 
+function localApiUrl(name) {
+  const statusUrl = String(portalConfig.localStatusUrl || "api/local/status");
+  return statusUrl.replace(/\/status$/, `/${name}`);
+}
+
+function setPortalMode(mode) {
+  if (mode === "live" && !state.local.available) return;
+  state.portalMode = mode;
+  const live = mode === "live";
+  $("#replay-workspace").hidden = live;
+  $("#live-workspace").hidden = !live;
+  $("#replay-mode-button").classList.toggle("active", !live);
+  $("#live-mode-button").classList.toggle("active", live);
+  $("#replay-mode-button").setAttribute("aria-selected", String(!live));
+  $("#live-mode-button").setAttribute("aria-selected", String(live));
+  $("#mode-notice-title").textContent = live ? "本地真实执行" : "只读静态回放";
+  $("#mode-notice-copy").textContent = live
+    ? "通过检查后才会调用模型、文献服务与 VeriTMM"
+    : "不调用模型、文献服务或仿真器";
+  if (live) {
+    pollLocalStatus();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+}
+
+function configureLocalAvailability(available, message) {
+  state.local.available = Boolean(available);
+  const button = $("#live-mode-button");
+  button.disabled = !available;
+  $("#live-mode-caption").textContent = message;
+  if (!available && state.portalMode === "live") setPortalMode("replay");
+}
+
+async function discoverLocalExecution() {
+  if (portalConfig.mode === "static" || portalConfig.liveEnabled === false) {
+    configureLocalAvailability(false, "下载源码后可用");
+    return;
+  }
+  try {
+    const payload = await getJson(portalConfig.localStatusUrl);
+    configureLocalAvailability(Boolean(payload.live_enabled), "本地执行已接入");
+    applyLocalStatus(payload);
+  } catch (_) {
+    configureLocalAvailability(false, "请使用统一入口启动");
+  }
+}
+
+function diagnosticStatusLabel(status) {
+  const labels = {
+    idle: "尚未检查",
+    running: "检查中",
+    ready: "全部通过",
+    failed: "检查未通过",
+  };
+  return labels[status] || "尚未检查";
+}
+
+function renderDiagnostics() {
+  const diagnostics = state.local.diagnostics || { status: "idle", checks: [] };
+  const status = diagnostics.ready ? "ready" : diagnostics.status || "idle";
+  const badge = $("#readiness-state");
+  badge.className = `readiness-state ${status}`;
+  badge.textContent = diagnosticStatusLabel(status);
+  const list = $("#diagnostic-list");
+  const checks = diagnostics.checks || [];
+  if (!checks.length) {
+    list.replaceChildren(
+      node(
+        "div",
+        "diagnostic-empty",
+        "点击下方按钮后，将依次检查本地环境、服务密钥、模型与文献接口以及物理执行组件。",
+      ),
+    );
+  } else {
+    list.replaceChildren(
+      ...checks.map((check) => {
+        const item = node("div", `diagnostic-item ${check.status || "pending"}`);
+        const symbols = { passed: "✓", failed: "!", running: "…", pending: "·" };
+        const indicator = node(
+          "span",
+          "diagnostic-indicator",
+          symbols[check.status] || "·",
+        );
+        const copy = node("div", "diagnostic-copy");
+        copy.append(
+          node("strong", "", check.label || check.id || "检查项"),
+          node("span", "", check.detail || "等待检查"),
+        );
+        item.append(indicator, copy);
+        return item;
+      }),
+    );
+  }
+  const running = status === "running";
+  const activeResearch = ["queued", "running"].includes(state.local.activeRun?.status);
+  $("#diagnostic-button").disabled = running || activeResearch;
+  $("#diagnostic-button").textContent = running ? "正在检查，请稍候…" : "重新检查并准备真实运行";
+  setQuestionActivation(Boolean(diagnostics.ready) && !activeResearch);
+}
+
+function setQuestionActivation(active) {
+  $("#research-question").disabled = !active;
+  $("#profile-options").disabled = !active;
+  $("#start-run-button").disabled = !active || !$("#research-question").value.trim();
+  $("#question-lock").textContent = active ? "可以提交" : "等待检查";
+  $("#question-lock").className = active ? "readiness-state ready" : "locked-badge";
+}
+
+function renderActiveRun() {
+  const run = state.local.activeRun;
+  const panel = $("#live-run-panel");
+  if (!run) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  const status = run.status || "queued";
+  const badge = $("#live-run-status");
+  badge.className = `readiness-state ${status}`;
+  const labels = {
+    queued: "等待启动",
+    running: "正在研究",
+    completed: "运行完成",
+    failed: "运行未完成",
+    cancelled: "已停止",
+  };
+  badge.textContent = labels[status] || status;
+  const profileLabel = run.profile === "full" ? "完整自主研究" : "快速真实验证";
+  const summaryRows = [
+    [run.run_id || "—", "运行标识"],
+    [profileLabel, "运行模式"],
+    [formatDuration(run.elapsed_seconds), "已经过时间"],
+    [run.output_label || "local_runs", "产物位置"],
+  ];
+  $("#live-run-summary").replaceChildren(
+    ...summaryRows.map(([value, label]) => {
+      const item = node("div", "live-run-stat");
+      item.append(node("strong", "", value), node("span", "", label));
+      return item;
+    }),
+  );
+  $("#live-progress-fill").style.width = `${Math.max(0, Math.min(100, Number(run.progress) || 0))}%`;
+  const event = run.last_event || {};
+  const eventParts = [];
+  if (event.event_type) eventParts.push(eventLabel(event.event_type));
+  if (event.route_id) eventParts.push(`路线 ${event.route_id}`);
+  if (event.iteration_id) eventParts.push(`轮次 ${event.iteration_id}`);
+  $("#live-event").textContent = eventParts.length
+    ? `${eventParts.join(" · ")}。${eventDescription(event)}`
+    : run.message || "任务状态已经保存，正在等待新的阶段事件。";
+  const finished = ["completed", "failed", "cancelled"].includes(status);
+  $("#cancel-run-button").disabled = finished;
+  $("#open-live-result-button").hidden = !(status === "completed" && run.replay_available);
+  setQuestionActivation(Boolean(state.local.diagnostics?.ready) && finished);
+}
+
+function applyLocalStatus(payload) {
+  state.local.diagnostics = payload.diagnostics || state.local.diagnostics;
+  state.local.activeRun = payload.active_run || null;
+  renderDiagnostics();
+  renderActiveRun();
+}
+
+function scheduleLocalPoll(delay = 1200) {
+  if (state.local.statusTimer) window.clearTimeout(state.local.statusTimer);
+  const diagnosticsRunning = state.local.diagnostics?.status === "running";
+  const runRunning = ["queued", "running"].includes(state.local.activeRun?.status);
+  if (diagnosticsRunning || runRunning) {
+    state.local.statusTimer = window.setTimeout(pollLocalStatus, delay);
+  }
+}
+
+async function pollLocalStatus() {
+  if (!state.local.available) return;
+  try {
+    const payload = await getJson(portalConfig.localStatusUrl);
+    applyLocalStatus(payload);
+    scheduleLocalPoll();
+  } catch (error) {
+    $("#run-form-message").textContent = `无法读取本地状态：${error.message}`;
+  }
+}
+
+async function startDiagnostics() {
+  $("#run-form-message").textContent = "";
+  try {
+    const payload = await postJson(localApiUrl("diagnostics"));
+    applyLocalStatus(payload);
+    scheduleLocalPoll(500);
+  } catch (error) {
+    $("#run-form-message").textContent = error.message;
+  }
+}
+
+function updateQuestionState() {
+  const textarea = $("#research-question");
+  const value = textarea.value;
+  $("#question-count").textContent = `${value.length} / 4000`;
+  const activeResearch = ["queued", "running"].includes(state.local.activeRun?.status);
+  const ready = Boolean(state.local.diagnostics?.ready) && !activeResearch;
+  $("#start-run-button").disabled = !ready || value.trim().length < 12;
+  $("#run-form-message").textContent = value.trim() && value.trim().length < 12
+    ? "请用一句完整需求描述目标波段、性能方向或主要约束。"
+    : "";
+}
+
+async function startLiveRun() {
+  const question = $("#research-question").value.trim();
+  const profile = document.querySelector('input[name="run-profile"]:checked')?.value || "quick";
+  if (question.length < 12) {
+    updateQuestionState();
+    return;
+  }
+  $("#start-run-button").disabled = true;
+  $("#run-form-message").textContent = "正在创建本地研究任务…";
+  try {
+    const payload = await postJson(localApiUrl("runs"), { question, profile });
+    applyLocalStatus(payload);
+    $("#run-form-message").textContent = "任务已经启动；关闭页面不会终止后台研究进程。";
+    scheduleLocalPoll(500);
+  } catch (error) {
+    $("#run-form-message").textContent = error.message;
+    updateQuestionState();
+  }
+}
+
+async function cancelLiveRun() {
+  if (!state.local.activeRun || !window.confirm("确认停止当前研究任务？已经写入的产物会被保留。")) return;
+  try {
+    const payload = await postJson(localApiUrl("runs/current/cancel"));
+    applyLocalStatus(payload);
+  } catch (error) {
+    $("#run-form-message").textContent = error.message;
+  }
+}
+
+async function openLiveResult() {
+  const runId = state.local.activeRun?.run_id;
+  if (!runId) return;
+  try {
+    state.catalog = await getJson(portalConfig.catalogUrl);
+    renderArchiveSummary();
+    renderRunList();
+    setPortalMode("replay");
+    await loadRun(runId);
+  } catch (error) {
+    $("#run-form-message").textContent = `新结果尚未形成可回放索引：${error.message}`;
+  }
+}
+
 $("#dialog-close").addEventListener("click", () => $("#iteration-dialog").close());
 $("#iteration-dialog").addEventListener("click", (event) => {
   if (event.target === $("#iteration-dialog")) $("#iteration-dialog").close();
@@ -1057,6 +1355,20 @@ $("#simulation-toggle").addEventListener("click", toggleSimulation);
 $("#simulation-reset").addEventListener("click", resetSimulation);
 $("#simulation-speed").addEventListener("change", changeSimulationSpeed);
 $("#mobile-menu").addEventListener("click", () => document.body.classList.toggle("sidebar-open"));
+$("#replay-mode-button").addEventListener("click", () => setPortalMode("replay"));
+$("#live-mode-button").addEventListener("click", () => setPortalMode("live"));
+$("#diagnostic-button").addEventListener("click", startDiagnostics);
+$("#research-question").addEventListener("input", updateQuestionState);
+$("#profile-options").addEventListener("change", (event) => {
+  if (!event.target.matches('input[name="run-profile"]')) return;
+  document.querySelectorAll(".profile-card").forEach((card) => {
+    card.classList.toggle("selected", Boolean(card.querySelector("input")?.checked));
+  });
+});
+$("#start-run-button").addEventListener("click", startLiveRun);
+$("#refresh-run-button").addEventListener("click", pollLocalStatus);
+$("#cancel-run-button").addEventListener("click", cancelLiveRun);
+$("#open-live-result-button").addEventListener("click", openLiveResult);
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") document.body.classList.remove("sidebar-open");
 });

@@ -4,6 +4,8 @@ OptoMind-Article 是一个面向光学薄膜设计的可审计科学实验任务
 
 项目的当前验证范围是平面、各向同性、多层薄膜的频域传输矩阵法（TMM）设计。它面向计算科学实验与方案筛选，不替代真实制备、实验测量或超出 TMM 适用范围的全波求解器。
 
+**无需下载即可查看：** [打开六组端到端研究的在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。在线页面无需密钥，不重新调用模型或仿真器，可切换六组任务、比较路线、查看逐轮得分与反馈，并以最高 10 倍速度模拟播放原始事件时间线。
+
 ## 核心能力
 
 - 从用户问题中建立结构化的研究对象、波段、观测量、约束和假设。
@@ -40,6 +42,7 @@ VeriTMM 执行、物理证书与候选验证
 
 | 路径 | 内容 |
 |---|---|
+| `START_OPTOMIND.cmd` | Windows 统一入口：静态回放立即可用，连通检查通过后解锁真实提问。 |
 | `START_REPLAY.cmd` | Windows 双击启动六组只读静态回放，无需安装依赖和配置密钥。 |
 | `RUN_LIGHT_TEST.cmd` | Windows 双击执行一次有界的真实轻量研究测试。 |
 | `quickstart.py` | Windows、macOS 和 Linux 共用的评审快捷入口。 |
@@ -263,22 +266,28 @@ VeriTMM 执行、物理证书与候选验证
 
 这种目录结构支持两种使用方式：可以直接阅读 `FINAL_ANSWER.md` 和冻结排名，也可以沿 `REQUEST.json → SCORING_STANDARD.json → ROUTE_PLANNING.json → iterations/ → SCORING_RANKING.json` 的顺序回放每个决定是如何由真实实验产物支撑的。每组代表性冠军均带有物理接受证书；鲁棒性记录采用 16 个厚度扰动样本，失败次数也保存在原始 JSON 中。
 
-## 三步开始评审
+## 两种评审方式
 
-推荐使用 Python 3.11 或 3.12；Windows 安装 Python 时请勾选“Add Python to PATH”。除 Python 外，查看六组静态回放不需要预装任何第三方依赖，也不需要模型密钥。
+### 方式一：在线查看，不下载源码
 
-1. 从 GitHub 下载并解压本仓库；Windows 用户双击根目录的 `START_REPLAY.cmd`。程序会自动打开浏览器并展示六组完整记录。
+直接访问 [OptoMind 在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。页面由仓库中的六组正式端到端产物自动构建，展示原始题面、动态冻结评分、文献路线与独立对照路线、逐轮观测与反馈、冠军候选、物理证书和原始证据链接。在线版完全只读，不需要 Python、源码或服务密钥。
+
+### 方式二：下载源码，使用统一前端
+
+推荐使用 Python 3.11 或 3.12；Windows 安装 Python 时请勾选“Add Python to PATH”。
+
+1. 从 GitHub 下载并解压本仓库；Windows 用户双击根目录的 `START_OPTOMIND.cmd`。统一前端会自动打开，六组静态回放立即可用。
 2. 如需真实测试，将项目方私下提供的整个 `api_keys` 文件夹复制到 `code/api_keys`，覆盖其中两个同名空模板。密钥只保存在评委本机，不要上传到 GitHub。
-3. 双击根目录的 `RUN_LIGHT_TEST.cmd`。首次运行会自动创建 `.venv` 并安装依赖，随后执行一次有界的真实轻量测试。测试记录单独写入 Git 忽略的 `local_runs/`，不会进入、覆盖或改变六组正式记录；完成后自动打开六组静态回放台。
+3. 在统一前端选择“真实提问”，点击“检查并准备真实运行”。程序会核对项目资产、准备隔离 Python 环境，并对 Qwen 和 Semantic Scholar 发起最小真实连通请求；只有全部通过后，问题输入框和运行按钮才会激活。
+4. 输入一个自然语言光学设计需求，选择“快速真实验证”或“完整自主研究”。当前任务的阶段事件和进度会显示在同一页面；运行完成后可直接切回回放台打开新结果。新记录保存在 Git 忽略的 `local_runs/`，不会覆盖六组正式档案。
 
 macOS、Linux 或希望使用终端的用户在仓库根目录执行：
 
 ```bash
-python3 quickstart.py replay
-python3 quickstart.py test
+python3 quickstart.py ui
 ```
 
-可先执行 `python quickstart.py doctor` 检查六组回放资产、密钥文件和当前 Python 依赖。检查只确认密钥文件是否存在且非空，不输出密钥内容。首次依赖安装通常比后续运行更久；真实轻量测试的模型和文献请求速度取决于网络与服务状态，最长运行预算为 30 分钟。
+真实提问入口只监听 `127.0.0.1`，不会开放为局域网或公网服务；密钥只用于用户电脑直连 Qwen 与 Semantic Scholar，不经过项目方中转服务器，也不会被写入页面、启动命令或运行产物。首次依赖安装通常比后续运行更久；“快速真实验证”使用 1 条路线、1 轮和 30 分钟墙钟上限，“完整自主研究”使用当前默认路线配置、最多 6 轮和 3 小时墙钟上限。模型和文献请求的实际时间取决于用户网络与服务状态。
 
 ### 评委收到私发密钥后的操作
 
@@ -290,11 +299,11 @@ api_keys/
 └── semantic-scholar-api-key.txt
 ```
 
-评委只需把该文件夹放到仓库的 `code/` 目录下，使最终路径成为 `code/api_keys/qwen-api-key.txt` 和 `code/api_keys/semantic-scholar-api-key.txt`，然后双击 `RUN_LIGHT_TEST.cmd`。不需要把密钥粘贴到命令行、环境变量、配置文件或网页。快捷入口只把这两个文件的路径交给研究子进程；密钥值不会出现在启动命令中。
+评委只需把该文件夹放到仓库的 `code/` 目录下，使最终路径成为 `code/api_keys/qwen-api-key.txt` 和 `code/api_keys/semantic-scholar-api-key.txt`，然后双击 `START_OPTOMIND.cmd`。不需要把密钥粘贴到命令行、环境变量、配置文件或网页。统一入口只把这两个文件的路径交给本地研究子进程；密钥值不会出现在启动命令中。
 
 ## 可视化静态回放
 
-仓库内置只读的“静态研究回放台”，用于直接浏览随项目固化的六组完整运行。它会从产物目录实时生成索引，不维护另一份手工录入的数据，也不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
+仓库内置只读的“静态研究回放台”，并通过 GitHub Pages 提供同一界面的在线版本。它由正式产物自动生成，不维护另一份手工录入的数据，也不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
 
 - 六组原始工程题面与每组独立锁定的评分标准；
 - 文献启发路线和独立记忆对照路线的同标准比较；
@@ -303,19 +312,23 @@ api_keys/
 - 最终路线排名、冠军候选以及从结论返回原始 JSON、JSONL 和 Markdown 的证据链接；
 - 按每组 `RESEARCH_EVENTS.jsonl` 原始顺序进行的浏览器端模拟播放，速度可调至最高 10 倍。
 
-Windows 从仓库根目录双击：
+在线直接访问：
+
+[https://lihonggang-scnu.github.io/OptoMind-Article/](https://lihonggang-scnu.github.io/OptoMind-Article/)
+
+Windows 从仓库根目录双击统一入口：
 
 ```text
-START_REPLAY.cmd
+START_OPTOMIND.cmd
 ```
 
 也可使用终端启动：
 
 ```powershell
-python quickstart.py replay
+python quickstart.py ui
 ```
 
-程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python quickstart.py replay --port 0`。页面只监听本机回环地址，支持直接切换运行、以 1×、2×、5× 或 10× 模拟播放事件时间线、选择路线、打开逐轮详情并访问对应原始文件。模拟播放只改变浏览器中的展示进度，不会重新发起模型请求或仿真计算。
+程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python quickstart.py ui --port 0`。页面支持直接切换运行、以 1×、2×、5× 或 10× 模拟播放事件时间线、选择路线、打开逐轮详情并访问对应原始文件。模拟播放只改变浏览器中的展示进度，不会重新发起模型请求或仿真计算。仍可使用 `START_REPLAY.cmd` 或 `python quickstart.py replay` 启动纯回放模式。
 
 完整科研链路仍可直接使用 `code/scripts/run_tmm_research_harness.py`；面向评委的 `RUN_LIGHT_TEST.cmd` 是该入口的有界封装，并未用模拟结果替代真实 Qwen、文献检索和 VeriTMM 执行。临时测试结果与六组正式样本完全分开。更多产物核验方法见 [AGENT_GUIDE.zh-CN.md](AGENT_GUIDE.zh-CN.md)。
 

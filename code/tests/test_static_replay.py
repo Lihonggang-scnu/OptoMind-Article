@@ -77,3 +77,24 @@ def test_artifact_endpoint_rejects_traversal_and_non_text_files(
         replay_catalog.resolve_artifact(run_id, "../../README.md")
     with pytest.raises(FileNotFoundError):
         replay_catalog.resolve_artifact(run_id, "secret.exe")
+
+
+def test_catalog_can_add_completed_local_runs_without_changing_formal_root(
+    tmp_path: Path,
+    replay_catalog: ReplayCatalog,
+) -> None:
+    local_run = tmp_path / "local-completed-run"
+    local_run.mkdir()
+    source_run = OUTPUT_ROOT / replay_catalog.discover_run_ids()[0]
+    for filename in (
+        "REQUEST.json",
+        "SCORING_STANDARD.json",
+        "ITERATION_HISTORY.json",
+        "SCORING_RANKING.json",
+    ):
+        (local_run / filename).write_bytes((source_run / filename).read_bytes())
+
+    catalog = ReplayCatalog(OUTPUT_ROOT, additional_roots=(tmp_path,))
+
+    assert "local-completed-run" in catalog.discover_run_ids()
+    assert catalog._run_dir("local-completed-run").is_relative_to(tmp_path.resolve())

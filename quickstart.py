@@ -176,12 +176,77 @@ def build_light_test_command(
     ]
 
 
+def build_full_test_command(
+    python: str | Path,
+    *,
+    question_file: Path,
+    output_dir: Path,
+) -> list[str]:
+    """Build the current default full-chain command for the local portal."""
+
+    return [
+        str(python),
+        "-u",
+        str(HARNESS_SCRIPT),
+        "--question-file",
+        str(question_file.resolve()),
+        "--output-dir",
+        str(output_dir.resolve()),
+        "--run-id",
+        output_dir.name,
+        "--maximum-iterations",
+        "6",
+        "--maximum-initial-routes",
+        "5",
+        "--route-planning-maximum-routes",
+        "4",
+        "--max-rounds-per-route",
+        "6",
+        "--minimum-rounds-before-llm-stop",
+        "2",
+        "--wall-time-seconds",
+        "10800",
+    ]
+
+
 def run_replay(*, port: int = 8765, no_open: bool = False) -> int:
     command = [sys.executable, "-u", str(REPLAY_SCRIPT), "--port", str(port)]
     if no_open:
         command.append("--no-open")
     print("正在启动六组完整记录的只读回放台；此功能不需要密钥。")
     return _run(command)
+
+
+def run_portal(args: argparse.Namespace) -> int:
+    if str(CODE_ROOT) not in sys.path:
+        sys.path.insert(0, str(CODE_ROOT))
+    from optomind_portal.local_runtime import (  # noqa: PLC0415
+        LocalRuntimeController,
+        serve_local_portal,
+    )
+
+    key_dir = Path(args.key_dir).expanduser().resolve()
+    controller = LocalRuntimeController(
+        project_root=ROOT,
+        code_root=CODE_ROOT,
+        key_dir=key_dir,
+        local_run_root=LOCAL_RUN_ROOT,
+        runtime_preparer=lambda: _prepare_runtime(
+            use_current_env=bool(args.use_current_env)
+        ),
+        credential_resolver=credential_paths,
+        light_command_builder=build_light_test_command,
+        full_command_builder=build_full_test_command,
+    )
+    serve_local_portal(
+        formal_output_root=OUTPUT_ROOT,
+        local_output_root=LOCAL_RUN_ROOT,
+        ui_root=CODE_ROOT / "replay_ui",
+        controller=controller,
+        port=int(args.port),
+        open_browser=not bool(args.no_open),
+    )
+    return 0
 
 
 def run_light_test(args: argparse.Namespace) -> int:
@@ -263,6 +328,16 @@ def build_parser() -> argparse.ArgumentParser:
     replay.add_argument("--port", type=int, default=8765, help="监听端口；0 表示自动选择")
     replay.add_argument("--no-open", action="store_true", help="不自动打开浏览器")
 
+    portal = subparsers.add_parser(
+        "ui",
+        aliases=["portal"],
+        help="打开统一前端：静态回放与检查后激活的真实提问",
+    )
+    portal.add_argument("--key-dir", default=str(DEFAULT_KEY_DIR), help="密钥文件夹")
+    portal.add_argument("--use-current-env", action="store_true", help="不自动创建隔离环境")
+    portal.add_argument("--port", type=int, default=8765, help="监听端口；0 表示自动选择")
+    portal.add_argument("--no-open", action="store_true", help="不自动打开浏览器")
+
     test = subparsers.add_parser("test", help="使用本地密钥执行轻量真实链路")
     test.add_argument("--key-dir", default=str(DEFAULT_KEY_DIR), help="密钥文件夹")
     test.add_argument("--question-file", default=str(DEFAULT_QUESTION_FILE), help="UTF-8 测试题")
@@ -281,6 +356,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "replay":
             return run_replay(port=int(args.port), no_open=bool(args.no_open))
+        if args.command in {"ui", "portal"}:
+            return run_portal(args)
         if args.command == "test":
             return run_light_test(args)
         return run_doctor(args)

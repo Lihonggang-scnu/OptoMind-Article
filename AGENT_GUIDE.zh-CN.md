@@ -20,6 +20,7 @@ OptoMind-Article 的主对象是 `code/` 下的 TMM research harness。`veritmm/
 
 | 路径 | 用途 |
 |---|---|
+| `START_OPTOMIND.cmd` / `python quickstart.py ui` | 统一前端：静态回放，以及检查通过后激活的真实提问 |
 | `START_REPLAY.cmd` / `python quickstart.py replay` | 六组固化产物的只读可视化入口 |
 | `RUN_LIGHT_TEST.cmd` / `python quickstart.py test` | 自动配置环境并执行有界真实测试 |
 | `code/scripts/run_tmm_research_harness.py` | 完整研究链路底层入口 |
@@ -43,15 +44,15 @@ python quickstart.py replay
 
 该入口只读取 `code/outputs/tmm_research_harness/` 下已经完成的运行，不调用模型、文献服务、优化器或 VeriTMM，也不修改原始记录。评估时可依次核对题面、冻结标准、路线来源、逐轮曲线、反馈状态、最终排名和原始证据链接。默认端口不可用时程序会自动选择可用端口，也可显式追加 `--port 0`。
 
-## 4. 回放前端与十倍速模拟
+## 4. 统一前端与十倍速回放
 
-静态回放前端只读取 `code/outputs/tmm_research_harness/` 下已完成的六组记录，不提供网页端真实提问或启动新研究的接口：
+统一前端的“成果回放”页读取 `code/outputs/tmm_research_harness/` 下已完成的六组记录；“真实提问”页默认锁定，只有本地资产、密钥、Python 依赖、Qwen 与 Semantic Scholar 的实际连通检查全部通过后才激活：
 
 ```powershell
-python quickstart.py replay --port 0
+python quickstart.py ui --port 0
 ```
 
-页面读取每组运行保存的 `RESEARCH_EVENTS.jsonl`，将原始阶段事件以浏览器端时间线呈现。播放速度可选 1×、2×、5× 或 10×；模拟播放不会调用 Qwen、文献服务、优化器或 VeriTMM，也不会修改任何历史产物。评估时应确认地址栏只访问 `/api/catalog`、`/api/runs/{run_id}` 和只读 `/artifacts/` 路径。
+页面读取每组运行保存的 `RESEARCH_EVENTS.jsonl`，将原始阶段事件以浏览器端时间线呈现。播放速度可选 1×、2×、5× 或 10×；模拟播放不会调用 Qwen、文献服务、优化器或 VeriTMM，也不会修改任何历史产物。真实任务一次只允许启动一个，题面和结果保存于 Git 忽略的 `local_runs/`；任务完成后可在同一回放页查看。服务器只监听本机回环地址，浏览器端不接收、保存或显示密钥值。
 
 ## 5. 离线摸底
 
@@ -93,10 +94,10 @@ python -u code/scripts/run_tmm_research_harness.py `
 将私发的 `api_keys` 文件夹复制到 `code/api_keys` 后，从仓库根目录执行：
 
 ```powershell
-python quickstart.py test
+python quickstart.py ui
 ```
 
-Windows 可直接双击 `RUN_LIGHT_TEST.cmd`，不需要设置环境变量。该入口检查两个密钥文件但不输出内容，自动准备 `.venv`，执行一次有界真实测试，最长墙钟预算 30 分钟。题面位于 `code/examples/evaluator_quick_test_question.txt`；输出写入 Git 忽略的 `local_runs/evaluator-smoke-<时间>`，不进入、不覆盖也不改变六组正式记录。成功后会自动打开六组静态回放台。
+Windows 可直接双击 `START_OPTOMIND.cmd`，不需要设置环境变量。进入“真实提问”后先运行准备检查；检查通过才会激活题面和运行方式。快速模式为 1 条路线、1 轮、最长 30 分钟，完整模式采用当前默认路线配置、最多 6 轮、最长 3 小时。输出写入 Git 忽略的 `local_runs/`，不进入、不覆盖也不改变六组正式记录。原有 `RUN_LIGHT_TEST.cmd` / `python quickstart.py test` 仍保留为固定题面的命令行轻量入口。
 
 评估结果时，至少确认以下阶段是否按顺序出现：
 

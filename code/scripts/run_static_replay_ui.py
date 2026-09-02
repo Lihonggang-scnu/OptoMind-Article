@@ -3,16 +3,28 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import sys
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+STATIC_REPLAY_MODULE = PROJECT_ROOT / "optomind_optics" / "harness" / "static_replay.py"
 
-from optomind_optics.harness.static_replay import serve_static_replay  # noqa: E402
+
+def _load_serve_static_replay():
+    """Load the standard-library replay module without importing the harness."""
+
+    spec = importlib.util.spec_from_file_location(
+        "optomind_static_replay_launcher", STATIC_REPLAY_MODULE
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"无法载入静态回放模块：{STATIC_REPLAY_MODULE}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module.serve_static_replay
 
 
 def _default_port() -> int:
@@ -61,6 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     host = str(args.host)
+    serve_static_replay = _load_serve_static_replay()
     serve_static_replay(
         output_root=args.output_root,
         ui_root=PROJECT_ROOT / "replay_ui",

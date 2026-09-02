@@ -340,32 +340,43 @@ def _best_iteration_candidate(
 class ReplayCatalog:
     """Build a public, read-only projection of completed research artifacts."""
 
-    def __init__(self, output_root: Path) -> None:
+    def __init__(
+        self,
+        output_root: Path,
+        *,
+        additional_roots: Sequence[Path] = (),
+    ) -> None:
         self.output_root = output_root.resolve()
+        roots = [self.output_root, *(Path(item).resolve() for item in additional_roots)]
+        self.output_roots = tuple(dict.fromkeys(roots))
         self._cache: dict[str, JsonObject] = {}
 
     def discover_run_ids(self) -> list[str]:
-        if not self.output_root.is_dir():
-            return []
         discovered: list[tuple[int, str]] = []
-        for child in self.output_root.iterdir():
-            if not child.is_dir():
+        seen: set[str] = set()
+        for root in self.output_roots:
+            if not root.is_dir():
                 continue
-            if not all((child / name).is_file() for name in _REQUIRED_RUN_FILES):
-                continue
-            group = _int(_DISPLAY_META.get(child.name, {}).get("group"), 999)
-            discovered.append((group, child.name))
+            for child in root.iterdir():
+                if not child.is_dir() or child.name in seen:
+                    continue
+                if not all((child / name).is_file() for name in _REQUIRED_RUN_FILES):
+                    continue
+                seen.add(child.name)
+                group = _int(_DISPLAY_META.get(child.name, {}).get("group"), 999)
+                discovered.append((group, child.name))
         return [name for _, name in sorted(discovered, key=lambda item: item)]
 
     def _run_dir(self, run_id: str) -> Path:
         if not run_id or "/" in run_id or "\\" in run_id:
             raise KeyError(run_id)
-        run_dir = (self.output_root / run_id).resolve()
-        if run_dir.parent != self.output_root or not run_dir.is_dir():
-            raise KeyError(run_id)
-        if not all((run_dir / name).is_file() for name in _REQUIRED_RUN_FILES):
-            raise KeyError(run_id)
-        return run_dir
+        for root in self.output_roots:
+            run_dir = (root / run_id).resolve()
+            if run_dir.parent != root or not run_dir.is_dir():
+                continue
+            if all((run_dir / name).is_file() for name in _REQUIRED_RUN_FILES):
+                return run_dir
+        raise KeyError(run_id)
 
     def catalog(self) -> JsonObject:
         runs = [self.get_run(run_id)["summary"] for run_id in self.discover_run_ids()]
@@ -820,10 +831,12 @@ class ReplayHTTPServer(ThreadingHTTPServer):
         server_address: tuple[str, int],
         catalog: ReplayCatalog,
         ui_root: Path,
+        *,
+        handler_class: type[BaseHTTPRequestHandler] | None = None,
     ) -> None:
         self.catalog = catalog
         self.ui_root = ui_root.resolve()
-        super().__init__(server_address, ReplayRequestHandler)
+        super().__init__(server_address, handler_class or ReplayRequestHandler)
 
 
 class ReplayRequestHandler(BaseHTTPRequestHandler):
