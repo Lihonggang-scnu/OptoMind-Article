@@ -289,7 +289,7 @@ python3 quickstart.py ui
 
 真实提问入口只监听 `127.0.0.1`，不会开放为局域网或公网服务；密钥只用于用户电脑直连 Qwen 与 Semantic Scholar，不经过项目方中转服务器，也不会被写入页面、启动命令或运行产物。首次依赖安装通常比后续运行更久；“快速真实验证”使用 1 条路线、1 轮和 30 分钟墙钟上限，“完整自主研究”使用当前默认路线配置、最多 6 轮和 3 小时墙钟上限。模型和文献请求的实际时间取决于用户网络与服务状态。
 
-### 评委收到私发密钥后的操作
+### 阿里云挑战杯评委收到私发密钥后的操作
 
 私发压缩包内应保持以下文件名：
 
@@ -303,7 +303,7 @@ api_keys/
 
 ## 可视化静态回放
 
-仓库内置只读的“静态研究回放台”，并通过 GitHub Pages 提供同一界面的在线版本。它由正式产物自动生成，不维护另一份手工录入的数据，也不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
+仓库内置只读的“静态研究回放台”，并通过 GitHub Pages 提供同一界面的在线版本。它由正式产物自动生成，不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
 
 - 六组原始工程题面与每组独立锁定的评分标准；
 - 文献启发路线和独立记忆对照路线的同标准比较；
@@ -330,9 +330,9 @@ python quickstart.py ui
 
 程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python quickstart.py ui --port 0`。页面支持直接切换运行、以 1×、2×、5× 或 10× 模拟播放事件时间线、选择路线、打开逐轮详情并访问对应原始文件。模拟播放只改变浏览器中的展示进度，不会重新发起模型请求或仿真计算。仍可使用 `START_REPLAY.cmd` 或 `python quickstart.py replay` 启动纯回放模式。
 
-完整科研链路仍可直接使用 `code/scripts/run_tmm_research_harness.py`；面向评委的 `RUN_LIGHT_TEST.cmd` 是该入口的有界封装，并未用模拟结果替代真实 Qwen、文献检索和 VeriTMM 执行。临时测试结果与六组正式样本完全分开。更多产物核验方法见 [AGENT_GUIDE.zh-CN.md](AGENT_GUIDE.zh-CN.md)。
+完整科研链路仍可直接使用 `code/scripts/run_tmm_research_harness.py`；面向评委的 `RUN_LIGHT_TEST.cmd` 是该入口的有界封装。临时测试结果与六组正式样本完全分开。更多产物核验方法见 [AGENT_GUIDE.zh-CN.md](AGENT_GUIDE.zh-CN.md)。
 
-六组正式运行已经随仓库保存于 `code/outputs/tmm_research_harness/`；页面只读这些目录，不会覆盖或补写历史记录。
+六组正式运行已经随仓库保存于 `code/outputs/tmm_research_harness/`。
 
 ## 运行产物
 
@@ -365,7 +365,7 @@ python -m pytest -q `
   tests/test_tmm_task_compiler.py
 ```
 
-VeriTMM 的独立任务入口位于 `veritmm/scripts/run_tmm_task.py`。其输出包含规范化任务、运行清单、仿真结果、物理接受证书和结果摘要；该引擎是 Article-1 harness 的执行组件，而不是整条研究链路本身。
+VeriTMM 的独立任务入口位于 `veritmm/scripts/run_tmm_task.py`。其输出包含规范化任务、运行清单、仿真结果、物理接受证书和结果摘要；该引擎是OptoMind-Article harness 的执行组件。
 
 ## 许可与引用
 
