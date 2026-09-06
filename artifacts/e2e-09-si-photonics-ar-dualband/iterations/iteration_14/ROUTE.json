@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Quarter-Wave Initialized 12L with Weighted Center Wavelength",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses at exact quarter-wave optical thickness (d = lambda_0/4n) using a weighted center wavelength between the two bands, with all thicknesses explicitly projected above 80 nm, will provide a better optimization starting point than uniform or median initialization, enabling the gradient optimizer to achieve target_score > 0.9968 with improved robustness.",
+  "design_principle": "Quarter-wave stacks provide predictable interference minima; initializing near these physical resonances reduces optimization search space and avoids local minima far from physically meaningful solutions.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Silicon (12 finite layers, alternating high-low starting with high-index)",
+  "design_variables": [
+    "layer thicknesses (12 variables, bounded 20-400 nm)"
+  ],
+  "soft_objectives": [
+    "maximize target_score (mean transmittance across both bands)",
+    "maintain robustness_score > 0.7",
+    "keep all thicknesses within 20-400 nm bounds"
+  ],
+  "manufacturing_considerations": [
+    "all layers must be >= 20 nm for deposition control",
+    "all layers must be <= 400 nm for stress management",
+    "12 layers maximum per user constraint"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:85444779:s2chunk:85444779:12499:14753:a3ae379b5a33f693"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness d = lambda_0/(4*n) creates destructive interference for reflected waves at design wavelength",
+    "Multi-layer AR coatings require thickness tuning away from exact quarter-wave to broaden bandwidth across disjoint bands"
+  ],
+  "expected_advantages": [
+    "Better initialization reduces optimization iterations to convergence",
+    "Quarter-wave starting point is physically meaningful, not arbitrary",
+    "Explicit 80 nm floor avoids lower-bound clipping artifacts"
+  ],
+  "known_risks": [
+    "Exact quarter-wave may not be optimal for dual-band; optimizer must still tune away from initialization",
+    "Weighted center wavelength choice may favor one band over the other"
+  ],
+  "execution_request_english": "Optimize a 12-layer alternating Ta2O5/SiO2 antireflection stack on silicon substrate for normal-incidence unpolarized illumination. Initialize all layer thicknesses using quarter-wave optical thickness formula d = lambda_0/(4*n) where lambda_0 = 1380 nm (weighted center between 1260-1360 nm and 1530-1565 nm bands), then explicitly project all thicknesses to be >= 80 nm before optimization begins. Use gradient-based thickness optimizer with step-size multiplier reduced to 0.5x compared to standard settings. Optimize for mean transmittance across both wavelength bands [1260-1360 nm, 1530-1565 nm]. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2 (12 finite layers total). Thickness bounds: 20-400 nm per layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Following insight appendage directive: reinitialize with quarter-wave targets projected above 80 nm, reduce optimizer step-size by 50% to enable micro-refinements in sensitive outer layers after global topology is established."
+}

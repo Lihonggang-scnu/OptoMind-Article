@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score initially increased to 0.870642 in round 2 but subsequently collapsed to ~0.800 in rounds 3 and 4, deviating negatively from the expected monotonic increase. tightest_margin measured 0.442916, remaining stable as anticipated. valid_candidates count dropped to 9; while the prior expectation favored a high count throughout, this reduction aligns with tightening feasibility margins as the optimizer explored extreme thickness regimes.",
+  "deviation_mechanism": "The score collapse coincides precisely with thickness parameters snapping to exact integers in round 3. Satisfying the quarter-wave condition at 375 nm requires sub-nanometer precision in physical thickness (d = λ/4n). Integer quantization imposes a ±0.5 nm discretization error per layer. With typical coating indices (~1.5–2.0), this introduces 0.75–1.0 nm of uncontrolled optical path difference at each interface, destroying the delicate phase-matching accumulation required by the target metric and forcing the optimizer into a degenerate local minimum.",
+  "continue_recommended": true,
+  "continue_rationale": "The route did not physically converge; it was artificially truncated by integer quantization starting in round 3. Continuous optimization demonstrated strong viability by reaching 0.870642 in round 2. Since the pre-execution stop condition (<1e-3 gain over historical best for two consecutive rounds) is not met (the current gap remains ~0.07 below the peak), and the degradation mechanism is identified as a solver artifact rather than fundamental infeasibility, continuing with corrected precision offers high scientific leverage.",
+  "insight_for_next": "Disable integer-rounding post-processing. Warm-start the next round using candidate 2 thicknesses to resume near the proven optimum. Switch to a continuous-only optimizer with a reduced learning rate (1e-4) and apply soft-boundary clipping (±2% margin) instead of hard casting to maintain gradient flow. Monitor tightest_margin to ensure sub-wavelength phase accuracy is preserved across all 20 layers.",
+  "insight_grounding": "Round 2 achieved best_target_score=0.8706417518950067 with continuous values (e.g., candidate 2, layer 2: 116.0307 nm, layer 3: 59.4726 nm). In round 3, the exact same indices were rounded to integers (candidate 3, layer 2: 116.0 nm, layer 3: 59.0 nm), immediately dropping the score to 0.7995171436660515. The ±0.5 nm quantization step exceeds the optical tolerance budget for 375 nm resonance, empirically confirming the degradation mechanism.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:42:00.908143+00:00",
+  "attestation_sha256": "5984882e1c700eb047a3fb675af06644bf455706fa7839ef7d7ff56a82695f63",
+  "observed_metrics": {
+    "best_target_score": 0.7999882278940496,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4429156560181571
+  },
+  "reflection_available": true
+}

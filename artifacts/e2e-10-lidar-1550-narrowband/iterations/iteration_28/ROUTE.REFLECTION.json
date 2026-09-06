@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected observations were: (1) best_target_score should show different convergence behavior than route_01, (2) tightest_margin should improve in the more challenging stopband, and (3) if the hypothesis fails, best_target_score will not exceed route_01's best. Actual observations show an oscillatory, non-convergent trajectory: best_target_score swung from 0.9227203917815648 (round 1) down to 0.019643078049391395 (round 3), rebounded to 0.9211285870424771 (round 7), and ended at 0.6737747515220259 (round 8). The tightest_margin sits at 0.43247918500847404. The direction of deviation is unstable/flat relative to the expectation of steady divergence or improvement, with a magnitude exceeding 0.90 score points across the sequence. None of the convergence criteria have been satisfied.",
+  "deviation_mechanism": "The optimizer sampled extreme thickness values that violate the Bragg stack resonance condition. For example, candidate 3 features layers at indices 1-3 with thicknesses 381.719 nm, 394.990 nm, and 381.192 nm. Assuming a refractive index near 2.0, these correspond to ~0.76λ optical thickness each, adding roughly 2.28π extra phase shift per layer compared to the nominal ~0.5λ half-wave period. This excessive phase accumulation scrambles the constructive interference required for the stopband, producing transmission ripples that randomly intersect the tolerance window. The result is a score history dominated by stochastic-like oscillations rather than monotonic margin improvement, preventing the anticipated asymmetric benefit from manifesting consistently.",
+  "continue_recommended": true,
+  "continue_rationale": "Eight rounds have been executed, and the score sequence exhibits high variance (min 0.019643078049391395, max 0.9227203917815648) that drastically exceeds the reference epsilon of 0.0001, confirming active exploration rather than stagnation. The current best_target_score (0.6737747515220259) remains well below the historical peaks achieved in rounds 1 and 7, indicating the algorithm has not yet locked onto a stable asymmetric optimum. The physical constraints are still feasible (valid_candidates = 9), so bounding the parameter space and adjusting the optimizer can plausibly recover convergent behavior.",
+  "insight_for_next": "Enforce hard box constraints limiting all layer thicknesses to 120–250 nm to preserve quasi-half-wave optical spacing, and switch to a bounded derivative-free optimizer (e.g., differential evolution or particle swarm with explicit clipping) to eliminate sampling of the >380 nm regime that triggers phase scrambling.",
+  "insight_grounding": "Candidate 3 in observed_metrics contains layer 1 at 381.71903185668435 nm, layer 2 at 394.9904967296445 nm, and layer 3 at 381.19177307070913 nm. These excursions coincide with the catastrophic score drop in round 3 (0.019643078049391395), whereas rounds 1 and 7 recovered near-peak scores (0.9227203917815648 and 0.9211285870424771) using thinner, more regular stacks. Constraining to the 120–250 nm band directly eliminates the >0.25π phase overshoot demonstrated by these outlier thicknesses.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:32:02.642906+00:00",
+  "attestation_sha256": "88fe50fabdb5750f68449f59a254000d73d1381261cbdd55e42dd93f46fbac96",
+  "observed_metrics": {
+    "best_target_score": 0.6737747515220259,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.43247918500847404
+  },
+  "reflection_available": true
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Bounded Aperiodic Stack with Quarter-Wave Initialized Thicknesses (24L)",
+  "route_kind": "custom_layered_stack",
+  "scientific_hypothesis": "Imposing a 2000nm per-layer thickness bound with stratified quarter-wave initialization will prevent optimizer budget monopolization by extreme outliers and enable more distributed phase correction across all 24 layers, improving spectral selectivity between 8-13μm emission band and 3-5μm suppression band.",
+  "design_principle": "Aperiodic dielectric stack with thickness optimization bounded to prevent single-layer dominance; quarter-wave estimates at band edges provide physically-motivated initialization.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | [HfO2, SiO2] repeated 12 times | Si substrate (24 finite layers total)",
+  "design_variables": [
+    "layer thicknesses (bounded 200-2000nm per layer)",
+    "thickness initialization stratified around quarter-wave estimates at 8000nm and 13000nm"
+  ],
+  "soft_objectives": [
+    "maximize emissivity in 8000-13000nm band",
+    "minimize emissivity in 3000-5000nm band",
+    "maintain layer count at 24"
+  ],
+  "manufacturing_considerations": [
+    "individual layer thickness capped at 2000nm for deposition uniformity",
+    "±15% variance tolerance around nominal thicknesses"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:11834683:s2chunk:11834683:19297:21346:f13e973aab3fb109",
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for multilayer interference",
+    "Kirchhoff's law relating emissivity to absorptance",
+    "Quarter-wave optical thickness principle for band edge positioning"
+  ],
+  "expected_advantages": [
+    "More uniform thickness distribution prevents optimizer from concentrating optical path in few layers",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "2000nm bound improves fabrication feasibility"
+  ],
+  "known_risks": [
+    "Thickness bounds may constrain optimal solution space",
+    "Quarter-wave estimates may not be optimal for aperiodic design",
+    "24-layer count may still produce solver disagreement if thicknesses vary too widely"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on silicon substrate with air incidence using HfO2 and SiO2 in alternating sequence. Initialize layer thicknesses using stratified sampling with ±15% variance around theoretical quarter-wave optical thicknesses calculated at 8000nm and 13000nm band edges. Impose hard upper bound of 2000nm on each individual layer thickness during optimization. Target high emissivity (absorptance) in 8000-13000nm wavelength band and low emissivity in 3000-5000nm band. Use differential evolution or gradient-based optimizer with Transfer Matrix Method evaluation. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Applied feedback directive: imposed 2000nm per-layer thickness bound and stratified quarter-wave initialization to prevent budget monopolization by extreme outliers observed in iteration_02."
+}

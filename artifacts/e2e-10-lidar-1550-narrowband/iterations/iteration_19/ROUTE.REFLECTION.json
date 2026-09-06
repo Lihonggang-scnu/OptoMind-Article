@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score deviated downward significantly (lower): rose to 0.9934468483949733 by round 2 but declined to 0.8335103605318478 by round 5, a net drop of 0.1599364878631255. tightest_margin remained at 0.6080547434456375, consistent with the expectation that regularization prevents marginal collapse. valid_candidates remained at 9, consistent with the ≥7 threshold. thicknesses_nm for layers 13-17 showed oscillating deviations rather than smooth convergence (e.g., layer 13 shifted from 185.0 nm to 138.92979527976203 nm, then 156.80997637131912 nm, then 152.60380503878753 nm), contradicting the expectation of steady resonance targeting.",
+  "deviation_mechanism": "The multilayer cavity operates in a highly nonlinear optical interference regime where the Transfer Matrix Method objective function contains extremely sharp peaks and valleys around half-wave/half-quarter-wave optical thickness conditions at 1550 nm. Gradient-based thickness updates overshot the constructive interference maxima, causing cumulative phase mismatch between reflected waves. This phase slip converts bright resonance modes into dark/detransmitted states, explaining the non-monotonic score trajectory (0.987→0.993→0.907→0.945→0.833) and the fluctuating layer adjustments. The degradation is purely an optimization dynamic failure in a steep photonic bandgap landscape, not a violation of physical bounds or material constraints.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 5 rounds with 9 valid candidates and a stable tightest_margin of 0.6080547434456375, confirming the design space remains physically feasible and well-constrained. The recent score decline to 0.8335103605318478 reflects search oscillation and local-trap entrapment in the interference landscape rather than physical infeasibility. Since neither stop condition for margin collapse, candidate exhaustion, nor marginal-gain saturation (delta < 1e-3) has been met, adjusting the optimization step dynamics can plausibly recover proximity to the 1550 nm resonance condition.",
+  "insight_for_next": "Restart optimization for layers 13-17 initialized from the round 4 candidate profile ([152.60380503878753, 301.8428075726175, 288.5336134132102, 158.60076523935905, 265.56546788485934]). Reduce the optimizer learning rate to 50% of its previous value and enable gradient clipping at 0.05 to prevent phase-slip overshoot. Temporarily freeze outer reflector layers (0-12 and 18-28) to isolate cavity-core tuning and resolve narrower spectral features without destructive inter-layer coupling artifacts.",
+  "insight_grounding": "Candidate 3 at round 4 achieved a score of 0.9446682698252697 with layers 13-17 set to [152.60380503878753, 301.8428075726175, 288.5336134132102, 158.60076523935905, 265.56546788485934]. When these exact layers were subsequently perturbed by approximately 10–30 nm in round 5, the score collapsed to 0.8335103605318478, empirically demonstrating that the objective function has a sub-20 nm resolution threshold near resonance. Halving the step size directly targets this measured sensitivity limit to maintain constructive phase alignment.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:51:26.915845+00:00",
+  "attestation_sha256": "8b0619fdc7b8885377e5ce982a1e24c0e069ffcd2d6c7b4788ddef28fab7bea4",
+  "observed_metrics": {
+    "best_target_score": 0.8335103605318478,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.6080547434456375
+  },
+  "reflection_available": true
+}

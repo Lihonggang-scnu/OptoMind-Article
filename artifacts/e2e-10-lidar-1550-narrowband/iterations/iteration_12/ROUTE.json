@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Reduced Chirp Magnitude Defect-Cavity Filter (0.7× Deviation Scaling)",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Scaling layer thickness deviations from quarter-wave targets by 0.7 while fixing the central cavity layer at 540.0 nm will reduce passband-splitting artifacts and yield tighter stopband margins compared to the previous 1.0× deviation initialization.",
+  "design_principle": "Defective DBR bandpass filter with (HL)^6 D (LH)^6 topology where H=Ta2O5, L=SiO2, D=cavity. Reduced chirp magnitude tests whether shallower refractive-index gradients improve spectral purity without sacrificing passband transmittance.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5(cavity) | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (25 finite layers total, 6 DBR pairs per side plus central cavity)",
+  "design_variables": [
+    "all 25 layer thicknesses with central layer (index 12) fixed at 540.0 nm",
+    "initialization scaled to 0.7× deviation from quarter-wave targets (126 nm Ta2O5, 189 nm SiO2 nominal)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band",
+    "maintain total layers ≤ 30"
+  ],
+  "manufacturing_considerations": [
+    "25 layers within 30-layer constraint",
+    "quarter-wave based initialization simplifies thickness monitoring",
+    "central cavity layer thickness critical for passband positioning"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95"
+  ],
+  "theory_basis": [
+    "Defective DBR structure (HL)^N D (LH)^N creates transmission peak at defect mode wavelength",
+    "Quarter-wave optical thickness n*d = lambda0/4 for DBR layers, n*d = lambda0/2 for cavity"
+  ],
+  "expected_advantages": [
+    "Reduced chirp may eliminate passband-splitting observed in previous optimization",
+    "Shallower gradients may improve fabrication tolerance",
+    "Maintains proven 25-layer topology from route_03"
+  ],
+  "known_risks": [
+    "Reduced chirp magnitude may limit stopband suppression strength",
+    "May not achieve higher target score than 0.9694 baseline",
+    "Optimization may converge to similar solution as previous route"
+  ],
+  "execution_request_english": "Design a 25-layer defect-cavity bandpass filter on fused silica substrate using Ta2O5 and SiO2. Stack sequence: Air | (Ta2O5|SiO2)_6 | Ta2O5(cavity) | (SiO2|Ta2O5)_6 | Fused Silica. Initialize all DBR layers with thicknesses scaled to 0.7× deviation from quarter-wave targets at 1550 nm (Ta2O5 nominal 126 nm, SiO2 nominal 189 nm). Fix central cavity layer (layer index 12, 13th layer) at exactly 540.0 nm. Allow all other 24 layers to be optimized via gradient-based thickness optimization. Evaluate coherent TMM transmittance at normal incidence for unpolarized light across 1400-1700 nm. Target high transmittance at 1550 nm with suppression in 1400-1500 nm and 1600-1700 nm bands. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Direct implementation of insight appendage guidance: reduce chirp magnitude by 0.7× scaling factor while fixing central cavity at 540.0 nm to test whether shallower gradients eliminate passband-splitting artifacts"
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "350 nm QW-Centered 36-Layer DBR with Bounded Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Shifting the quarter-wave initialization center from 360 nm to 350 nm will improve spectral anchoring in the UV transition zone (355-365 nm stopband edge), reducing passband ripple while maintaining dual-stopband suppression. Bounded ±15 nm perturbation for early iterations will smooth late-layer thickness oscillations observed in prior runs.",
+  "design_principle": "Modified quarter-wavelength optimization with shifted reference wavelength and staged perturbation bounds per feedback directive.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | (Ta2O5 | SiO2) × 18 | Fused Silica substrate; exactly 36 finite layers, alternating high-low index starting with Ta2O5",
+  "design_variables": [
+    "all 36 layer thicknesses",
+    "initial QW center wavelength fixed at 350 nm",
+    "perturbation bound ±15 nm for iterations 1-5 then released"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "36 layers within specified maximum",
+    "all thicknesses within 20-350 nm bounds",
+    "alternating sequence simplifies deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Optical thickness tuning away from quarter-wavelength for band smoothing"
+  ],
+  "expected_advantages": [
+    "Tighter UV stopband edge control",
+    "Reduced late-layer thickness oscillation",
+    "Improved convergence stability"
+  ],
+  "known_risks": [
+    "May sacrifice some NIR stopband depth for UV performance",
+    "Bounded perturbation may slow initial convergence"
+  ],
+  "execution_request_english": "Design a 36-layer alternating Ta2O5/SiO2 multilayer filter on fused silica substrate with air incidence at 0 degrees unpolarized illumination. Initialize all layer optical thicknesses as quarter-wave at 350 nm center wavelength (Ta2O5 physical thickness = 350/(4*n_Ta2O5), SiO2 physical thickness = 350/(4*n_SiO2)). Apply gradient-based thickness optimization with line-search damping coefficient halved relative to baseline. For optimization iterations 1-5, constrain each layer thickness to remain within ±15 nm of its initial quarter-wave value; release this bound for iterations 6+. Enforce hard bounds 20-350 nm on all final thicknesses. Optimize to maximize average transmittance in 420-700 nm band while minimizing average transmittance in 355-365 nm and 1030-1080 nm bands, and minimizing transmittance at 355 nm. Report final thickness array, spectral transmittance from 300-1200 nm, and band-averaged metrics. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Per feedback directive: shift QW center from 360 nm to 350 nm for tighter UV anchoring, halve optimizer damping, enforce ±15 nm symmetric perturbation bound for first 5 iterations to smooth late-layer oscillations observed in prior runs."
+}

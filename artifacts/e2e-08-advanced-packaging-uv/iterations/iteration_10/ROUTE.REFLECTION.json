@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score: Expected progressive rise, observed regression from 0.8995857518038861 (round 2) to 0.5314561184228155 (round 3), a negative deviation of ~0.368. tightest_margin: Expected positive, observed 0.3894959715648046, fully consistent. valid_candidates: Expected high retention, observed 9, indicating significant population pruning during final round.",
+  "deviation_mechanism": "The optimizer pushed multiple layer thicknesses to the enforced lower boundary of ~20 nm (e.g., candidate 1, layer 0: 21.694805366950785 nm; candidate 4, layer 0: 20.849553032319076 nm). At these sub-quarter-wave depths, optical phase accumulation collapses, destroying the periodic refractive-index contrast required for Bragg reflection. This generates uncontrolled parasitic Fabry-Pérot resonances across the transmission spectrum, directly degrading the objective score and eliminating viable design configurations.",
+  "continue_recommended": true,
+  "continue_rationale": "Three rounds have been executed and the degradation is attributable to a correctable optimization boundary artifact (layer thinning to the 20 nm floor) rather than intrinsic physical infeasibility. The tightest margin remains robust at 0.3895, proving feasible parameter space exists. Continuing with corrected bounds is necessary to isolate whether the UV stopband hypothesis fails due to material limitations or merely optimizer overfitting.",
+  "insight_for_next": "Increase the minimum thickness constraint from 20 nm to 45 nm and reinitialize the entire population to exact quarter-wave optical thicknesses (n*d = λ/4) centered at 360 nm. Implement a hard clip operator that prevents any thickness update below 45 nm during the initial 50% of optimization epochs.",
+  "insight_grounding": "Layer 0 of candidate 1 collapsed to 21.694805366950785 nm and candidate 4 to 20.849553032319076 nm, both striking the 20 nm lower bound. Concurrently, the population's peak score fell from 0.8995857518038861 (round 2) to 0.5314561184228155 (round 3) exactly as this thinning occurred. Valid candidate count contracted to 9 under current constraints, confirming the boundary collision degraded the search space.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:40:55.777062+00:00",
+  "attestation_sha256": "34794531b1daa9af8c0559ba0d9542a79af66143492897cea471bf9d1e20e6e3",
+  "observed_metrics": {
+    "best_target_score": 0.5314561184228155,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.3894959715648046
+  },
+  "reflection_available": true
+}

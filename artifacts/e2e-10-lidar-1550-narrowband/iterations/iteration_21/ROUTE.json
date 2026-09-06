@@ -1,0 +1,53 @@
+{
+  "route_id": "route_02",
+  "title": "20-Layer Asymmetric FP with ±15nm Bounded Perturbation and Curvature Penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining layers 8-19 to ±15nm perturbation bounds while preserving the high-performing layers 1-8 baseline (158.5/268.4 nm quarter-wave) will recover the 0.92+ target score by preventing optimizer-induced resonance destruction while allowing sufficient local refinement of the asymmetric cavity region.",
+  "design_principle": "Hybrid optimization: freeze proven high-performance mirror section, apply bounded perturbation with curvature regularization to cavity section. Based on defective DBR principle where cavity layers determine transmission peak characteristics while mirror layers establish stopband foundation.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20 explicit layers: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica substrate. Layers 1-8 fixed at iteration 02 baseline; layers 9-20 optimized within ±15nm of mean thickness from iterations 13, 17, and 06.",
+  "design_variables": [
+    "thicknesses_nm for layers 9-20",
+    "curvature_penalty_weight"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550nm",
+    "minimize mean transmittance in 1400-1500nm band",
+    "minimize mean transmittance in 1600-1700nm band",
+    "maintain thickness continuity between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer constraint)",
+    "±15nm bounds compatible with standard deposition monitoring",
+    "alternating Ta2O5/SiO2 sequence simplifies process control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter principle: (HL)^N D(LH)^N structure creates transmission resonance",
+    "Quarter-wave optical thickness n*d = lambda0/4 for mirror layers establishes stopband",
+    "Curvature penalty prevents rapid thickness oscillations that break interference coherence"
+  ],
+  "expected_advantages": [
+    "Preserves proven mirror performance from iteration 02",
+    "Bounded search prevents optimizer divergence observed in iterations 09 and 13",
+    "Curvature penalty maintains physical layer continuity",
+    "±15nm bounds balance exploration freedom with stability"
+  ],
+  "known_risks": [
+    "May not exceed iteration 02 best score if cavity physics already optimized",
+    "Curvature penalty could slow convergence",
+    "Fixed front mirror may limit further stopband improvement"
+  ],
+  "execution_request_english": "Optimize a 20-layer Ta2O5/SiO2 alternating stack on Fused Silica substrate for 1550nm bandpass filtering. Layers 1-8 (Ta2O5/SiO2 pairs) fixed at thicknesses [158.5, 268.4, 158.3, 268.2, 158.1, 268.0, 157.9, 267.9] nm from iteration 02 baseline. Layers 9-20 initialized at mean thickness from iterations 06, 13, and 17 candidates, optimized within ±15nm absolute bounds. Apply gradient-based thickness optimization with curvature penalty term penalizing |d[i+1] - 2*d[i] + d[i-1]| > 5nm. Evaluate transmittance at normal incidence, unpolarized. Score objectives: maximize mean T at 1550nm (weight 1.0), minimize mean T in 1400-1500nm (weight 0.5), minimize mean T in 1600-1700nm (weight 0.5). Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive: ±15nm bounded perturbation on layers 8-19, re-initialization from iteration 02 baseline for layers 1-8, asymmetric half constrained to mean of last three candidates, curvature penalty added. Differs from iteration 17 which used ±20nm bounds without curvature penalty and from iteration 09 which used overly restrictive ±4nm bounds."
+}

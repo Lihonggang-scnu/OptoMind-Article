@@ -1,0 +1,120 @@
+{
+  "status": "standardized",
+  "standard": {
+    "schema_version": "tmm-scoring-standard.v1",
+    "catalog_schema_version": "tmm-metric-catalog.v1",
+    "locked": true,
+    "question_digest": "f4a81a81e8c59d00",
+    "metrics": [
+      {
+        "variable": "mean_reflectance_1260_1360nm",
+        "canonical_id": "mean_reflectance@1260-1360nm",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1260.0,
+            1360.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly states '在上述两个波段分别尽可能降低平均反射率' (minimize average reflectance in both bands separately) for the 1260-1360 nm communication band."
+      },
+      {
+        "variable": "mean_reflectance_1530_1565nm",
+        "canonical_id": "mean_reflectance@1530-1565nm",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1530.0,
+            1565.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly states '在上述两个波段分别尽可能降低平均反射率' (minimize average reflectance in both bands separately) for the 1530-1565 nm communication band."
+      }
+    ],
+    "formula": "0 - mean_reflectance_1260_1360nm - mean_reflectance_1530_1565nm",
+    "formula_variables": [
+      "mean_reflectance_1260_1360nm",
+      "mean_reflectance_1530_1565nm"
+    ],
+    "metric_rationale": "Two separate mean_reflectance metrics directly capture the user's dual-band optimization requirement: '分别尽可能降低平均反射率' means each band must be optimized independently, not combined into one metric. This allows the ranking system to properly evaluate trade-offs between the 1260-1360 nm and 1530-1565 nm bands when comparing broadband vs dual-band matching schemes. Transmittance is not included as a scoring metric because the user's optimization goal is stated as reducing reflectance ('降低反射'), and for low-absorption dielectric AR coatings (Ta2O5/SiO2), transmittance is complementary to reflectance (T ≈ 1-R). The user's phrase '报告进入硅基底的透射率' indicates transmittance should be reported in results, not used to rank designs. Using exactly 2 metrics (within the maximum of 4) keeps the ranking focused on what matters most without dilution from redundant or secondary metrics.",
+    "formula_rationale": "Both metrics represent average reflectance that must be minimized, so subtracting them ensures lower reflectance yields a higher score. Equal weighting is used because the user requires compatibility with both communication bands without stating a preference for one over the other, treating total reflection loss across the dual-band spectrum as the primary optimization target.",
+    "provenance": {
+      "model": "qwen3.5-plus",
+      "metric_selection_attempts": 1,
+      "formula_attempts": 1,
+      "maximum_metrics": 4
+    }
+  },
+  "selection": {
+    "status": "selected",
+    "metrics": [
+      {
+        "variable": "mean_reflectance_1260_1360nm",
+        "canonical_id": "mean_reflectance@1260-1360nm",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1260.0,
+            1360.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly states '在上述两个波段分别尽可能降低平均反射率' (minimize average reflectance in both bands separately) for the 1260-1360 nm communication band."
+      },
+      {
+        "variable": "mean_reflectance_1530_1565nm",
+        "canonical_id": "mean_reflectance@1530-1565nm",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1530.0,
+            1565.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly states '在上述两个波段分别尽可能降低平均反射率' (minimize average reflectance in both bands separately) for the 1530-1565 nm communication band."
+      }
+    ],
+    "rationale": "Two separate mean_reflectance metrics directly capture the user's dual-band optimization requirement: '分别尽可能降低平均反射率' means each band must be optimized independently, not combined into one metric. This allows the ranking system to properly evaluate trade-offs between the 1260-1360 nm and 1530-1565 nm bands when comparing broadband vs dual-band matching schemes. Transmittance is not included as a scoring metric because the user's optimization goal is stated as reducing reflectance ('降低反射'), and for low-absorption dielectric AR coatings (Ta2O5/SiO2), transmittance is complementary to reflectance (T ≈ 1-R). The user's phrase '报告进入硅基底的透射率' indicates transmittance should be reported in results, not used to rank designs. Using exactly 2 metrics (within the maximum of 4) keeps the ranking focused on what matters most without dilution from redundant or secondary metrics.",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 3389,
+        "completion_tokens": 3022,
+        "total_tokens": 6411
+      }
+    ]
+  },
+  "formula": {
+    "status": "authored",
+    "formula": "0 - mean_reflectance_1260_1360nm - mean_reflectance_1530_1565nm",
+    "variables": [
+      "mean_reflectance_1260_1360nm",
+      "mean_reflectance_1530_1565nm"
+    ],
+    "rationale": "Both metrics represent average reflectance that must be minimized, so subtracting them ensures lower reflectance yields a higher score. Equal weighting is used because the user requires compatibility with both communication bands without stating a preference for one over the other, treating total reflection loss across the dual-band spectrum as the primary optimization target.",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 1440,
+        "completion_tokens": 4379,
+        "total_tokens": 5819
+      }
+    ]
+  },
+  "validation_errors": [],
+  "ranking_mechanism": "frozen_scoring_standard",
+  "human_modified": true
+}

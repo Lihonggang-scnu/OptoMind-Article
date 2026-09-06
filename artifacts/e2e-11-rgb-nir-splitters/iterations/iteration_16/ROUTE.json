@@ -1,0 +1,45 @@
+{
+  "route_id": "route_02",
+  "title": "Two-Phase Mid-Stack Perturbation on 18-Layer Baseline",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Larger perturbations (±10 nm) on mid-stack layers (indices 4-10) while clamping outer layers will enable the optimizer to cross interference barriers that fine-tuning cannot escape, potentially reaching the 0.9200 score threshold where Phase 2 fine-tuning becomes effective.",
+  "design_principle": "Two-phase optimization: Phase 1 uses coarse perturbations on mid-stack layers to explore new interference configurations; Phase 2 activates fine-tuning (±2 nm) only after score exceeds 0.9200 to converge within the new basin.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "18-layer alternating TiO2/SiO2 stack on fused silica substrate, starting with TiO2 as layer 1, ending with SiO2 as layer 18",
+  "design_variables": [
+    "layer thicknesses with phase-dependent bounds: layers 4-10 get ±10 nm in Phase 1, all layers get ±2 nm in Phase 2 after score > 0.9200"
+  ],
+  "soft_objectives": [
+    "maximize reflectance in 450-650 nm band",
+    "maximize transmittance in 700-1000 nm band",
+    "minimize cross-band leakage"
+  ],
+  "manufacturing_considerations": [
+    "18 layers within 24-layer limit",
+    "thickness bounds respect deposition control capability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Mid-stack layers dominate interference pattern formation; outer layers primarily affect boundary conditions and environmental durability"
+  ],
+  "expected_advantages": [
+    "Larger OPD swings can cross local minima that fine-tuning cannot escape",
+    "Clamping outer layers reduces search space dimensionality",
+    "Two-phase approach balances exploration and convergence"
+  ],
+  "known_risks": [
+    "Phase 1 may not reach 0.9200 threshold, preventing Phase 2 activation",
+    "Mid-stack perturbations could degrade already-optimized outer layer performance"
+  ],
+  "execution_request_english": "Optimize an 18-layer TiO2/SiO2 dielectric stack on fused silica substrate at 45-degree unpolarized incidence. Layer sequence: TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2, TiO2, SiO2. Initialize thicknesses from the best prior candidate: [174.84, 198.67, 185.68, 93.00, 163.54, 311.81, 51.85, 93.07, 212.16, 96.65, 172.08, 229.24, 172.56, 90.43, 214.43, 87.04, 206.41, 272.65] nm. Implement two-phase optimization: Phase 1 applies ±10 nm bounds on layers 4-10 (indices 3-9 zero-based) while clamping layers 0-3 and 11-17 to within ±2 nm of initialization. If best_target_score exceeds 0.9200, activate Phase 2 with ±2 nm bounds on all 18 layers. Spectral targets: maximize mean reflectance in 450-650 nm, maximize mean transmittance in 700-1000 nm, suppress transmittance in 450-650 nm and reflectance in 700-1000 nm. Use gradient-based thickness optimizer with coherent transfer matrix solver. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive for two-phase perturbation strategy with mid-stack focus to cross interference barriers that previous fine-tuning could not escape"
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Refined Thickness Bounds for High-Index Layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Narrowing optimization bounds for HfO2 layers in the 200-240 nm range will reduce overshooting during gradient optimization and improve convergence toward the optimal cavity resonance, yielding higher target scores than route_01's broad 50-250 nm bounds.",
+  "design_principle": "Admittance locus method with bounded thickness optimization; tight bounds prevent optimizer from exploring non-productive thickness regions identified in route_01 candidates.",
+  "proposed_materials": [
+    "Cr",
+    "HfO2",
+    "SiO2",
+    "Al"
+  ],
+  "proposed_topology": "Air | Cr (1 layer) | [HfO2/SiO2] x 8 pairs | Al substrate; total 17 finite layers",
+  "design_variables": [
+    "Cr thickness (50-100 nm)",
+    "HfO2 thickness (180-240 nm, narrowed from route_01)",
+    "SiO2 thickness (100-200 nm)"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700 nm",
+    "maximize reflectance in 700-2000 nm",
+    "improve target score over route_01 baseline"
+  ],
+  "manufacturing_considerations": [
+    "17 layers within 20-layer limit",
+    "thickness tolerances ±5 nm feasible for sputtering"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance locus tracking for layer-by-layer deposition optimization",
+    "Gradient-based thickness optimization with bounded search space"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced search space",
+    "Avoids overshooting optimal resonance identified in route_01 candidates",
+    "Maintains proven 17L topology"
+  ],
+  "known_risks": [
+    "Bounds may be too restrictive if optimal thickness lies outside 180-240 nm range",
+    "May not escape local optimum from route_01"
+  ],
+  "execution_request_english": "Optimize a 17-layer stack on Al substrate: Layer 1 is Cr (50-100 nm), Layers 2-17 are 8 alternating HfO2/SiO2 pairs. HfO2 layers (even indices 2,4,6,8,10,12,14,16) bounded 180-240 nm. SiO2 layers (odd indices 3,5,7,9,11,13,15,17) bounded 100-200 nm. Use gradient_thickness optimizer with reduced adaptive step size for HfO2 layers. Evaluate at normal incidence, unpolarized, 400-2000 nm spectrum. Score: weighted absorptance in 400-700 nm plus weighted reflectance in 700-2000 nm. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Narrowed HfO2 thickness bounds from 50-250 nm to 180-240 nm based on route_01 candidate analysis showing optimal layers cluster in 200-240 nm range; reduced step size to prevent overshooting"
+}

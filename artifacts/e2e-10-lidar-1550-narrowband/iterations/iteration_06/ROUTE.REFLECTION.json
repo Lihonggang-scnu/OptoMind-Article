@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "1. Convergence behavior: Inconsistent. Instead of stable divergent behavior relative to the symmetric baseline, the trajectory exhibits a steep downward trend (lower). Magnitude: best_target_score dropped from 0.9227 to 0.7961 (Δ = -0.1266). 2. Tightest margin improvement: Observed tightest_margin = 0.2619. Without a prior baseline in this dataset, the metric cannot be confirmed as improved, though it remains physically valid and non-degenerate. 3. Hypothesis failure condition: Consistent. The pronounced score decline aligns with the conditional expectation that the asymmetry hypothesis fails to sustain or exceed baseline performance under unconstrained perturbations.",
+  "deviation_mechanism": "The score collapse originates from asymmetric thickness perturbations breaking the phase-coherent stacking required for high reflectivity. Each layer’s optical thickness (n·d) dictates the round-trip phase shift; when physical thicknesses drift beyond the narrow quarter-wave tolerance window (~±2–3 nm), accumulated phase errors introduce destructive interference at stopband edges. Specifically, uncontrolled shifts such as layer 0 expanding from 157.12 nm to 164.00 nm (+6.88 nm) and layer 6 expanding from 120.47 nm to 129.00 nm (+8.53 nm) desynchronize the impedance matching across dielectric interfaces. This redistributes optical energy into leakage and passband regions, directly degrading the target objective despite the search remaining numerically stable.",
+  "continue_recommended": true,
+  "continue_rationale": "Two rounds have executed with a completed run status and 9 valid candidates, yet the objective degraded significantly (0.9227 → 0.7961) rather than hitting a hard physical limit or compilation barrier. The route remains physically executable: tightest_margin sustains at 0.2619, and all thickness sets are finite and well-defined. The deterioration reflects a temporary excursion into a destructive-interference manifold caused by overly aggressive asymmetry, not material or geometric infeasibility. Continuing with a corrected initialization strategy offers direct scientific benefit by testing whether constrained asymmetry can recover phase coherence while preserving the design hypothesis.",
+  "insight_for_next": "Initialize the next round with thicknesses locked within ±4 nm of quarter-wave optical targets for the central wavelength, and add a hard penalty on adjacent-layer thickness gradients (|t_i - t_{i+1}| ≤ 12 nm) to prevent rapid phase drift. Retain lightweight stochastic offsets (≤2 nm) to preserve the asymmetry hypothesis while keeping the optimizer confined to the constructive-interference basin.",
+  "insight_grounding": "The recommendation is grounded in score_history[0] = 0.9227 collapsing to score_history[1] = 0.7961 (Δ = -0.1266, far exceeding the reference_epsilon of 0.0001, confirming genuine regression rather than numerical noise). This degradation correlates directly with measured thickness drift in candidate_thicknesses_nm: comparing the first array to the second, candidate layer 0 increased from 157.12 nm to 164.00 nm (+6.88 nm) and layer 6 increased from 120.47 nm to 129.00 nm (+8.53 nm). These absolute shifts exceed the typical ±3 nm phase-tolerance budget for multi-layer Bragg stacks, directly causing the observed objective drop. Constraining gradients to ≤12 nm/interface and initializing within ±4 nm of nominal quarter-wave values addresses these exact parameter excursions.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:08:04.048716+00:00",
+  "attestation_sha256": "569b187a674c2b5af5248110392592f571f6adbd16080c39c632355fb2ae45df",
+  "observed_metrics": {
+    "best_target_score": 0.7961270195875917,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.2619073685722168
+  },
+  "reflection_available": true
+}

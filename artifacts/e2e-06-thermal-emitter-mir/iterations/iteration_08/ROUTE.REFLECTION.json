@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score increased from 0.8022 to 0.9027 (+0.1005), consistent with expectation. valid_candidates remained stable at 9, consistent. tightest_margin stayed high at 0.735, consistent with robustness expectation. run_status remained 'completed', consistent. However, thicknesses_nm deviated significantly from the expected 1000–1500 nm QWOT cluster for odd-indexed layers; observed values predominantly range between 319.39 nm (Candidate 3, Layer 4) and 955.48 nm (Candidate 3, Layer 7), showing a LOWER magnitude deviation of roughly 40–60% below the hypothesized range.",
+  "deviation_mechanism": "Strict quarter-wave optical thickness assumes normal incidence, zero absorption, and negligible interface phase shifts. In a multi-dielectric stack optimized for broadband/multi-angle response, optimal physical thicknesses are determined by the gradient of the spectral objective function, which frequently yields sub-quarter-wave or mixed-order thicknesses due to material dispersion, oblique-incidence phase changes, and interference coupling between adjacent pairs. The optimizer correctly identified that relaxing rigid QWOT geometric constraints allows the stack to fine-tune optical path differences for each layer pair, directly improving the score from 0.8022 to 0.9027. This deviation is physically testable by imposing hard QWOT bounds in the next round and measuring the resulting score drop.",
+  "continue_recommended": true,
+  "continue_rationale": "The route demonstrates active, non-stagnant progress: the score improved by +0.1004 (12.5% relative gain) against the historical best, far exceeding the 1e-3 exhaustion threshold. Both valid_candidates (9) and tightest_margin (0.735) indicate a healthy, feasible design space. No stop conditions are triggered, and the significant gain suggests the optimizer has not yet reached a local plateau where further refinement yields diminishing returns.",
+  "insight_for_next": "Initiate a localized refinement round using only the top-2 scoring candidates from this batch, applying a 0.5% perturbation amplitude and introducing a quadratic penalty term (weight=0.05) for deviations from exact quarter-wave optical thickness. This tests whether forcing the hypothesized geometry closes the remaining performance gap or confirms the current asymmetric optimum is globally superior.",
+  "insight_grounding": "The basis for this plan comes directly from the executed candidates: Candidate 0 strictly alternates 500.0/690.0 nm, while Candidates 1–3 show highly asymmetric distributions (e.g., Candidate 3 Layer 2: 386.1432 nm, Layer 3: 761.2329 nm, Layer 4: 319.3869 nm). Despite these values falling outside the expected 1000–1500 nm cluster, the route still achieved a 0.902658 score and maintained a 0.7350 margin. Because the score improved substantially without QWOT adherence, the next scientific step must explicitly test the QWOT hypothesis via a soft penalty to quantify its marginal cost/benefit.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:40:57.018013+00:00",
+  "attestation_sha256": "92d746f2354233c6023a083a2530a050e50d0e399374ef031493d64af637e725",
+  "observed_metrics": {
+    "best_target_score": 0.9026581140768866,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.7350337453699047
+  },
+  "reflection_available": true
+}

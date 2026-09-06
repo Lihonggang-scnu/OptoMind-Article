@@ -1,0 +1,45 @@
+{
+  "route_id": "route_02",
+  "title": "Decoupled boundary-layer optimization with frozen central cavity",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Layers 4-11 have converged to a local optimum contributing minimally to score improvement; restricting optimization to boundary layers 0-3 and 12-15 while freezing the central 8 layers will reduce search dimensionality and enable finer convergence on the sensitivity-critical entrance and exit interfaces.",
+  "design_principle": "Freeze converged strata to eliminate wasted optimization budget; apply asymmetric step sizing based on observed oscillation magnitude per layer from iteration 20 results.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "16-layer alternating stack: ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS on Ge substrate, with layers 4-11 thickness fixed at [411, 966, 878, 1273, 500, 465, 454, 403] nm and layers 0-3, 12-15 optimizable",
+  "design_variables": [
+    "thicknesses_nm for layers 0, 1, 2, 3, 12, 13, 14, 15"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 16",
+    "Fixed central layers reduce deposition complexity variability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "Gradient-based optimization efficiency improves when dimensionality is reduced by fixing converged parameters",
+    "Boundary layers in dichroic stacks typically dominate impedance matching at air-film and film-substrate interfaces"
+  ],
+  "expected_advantages": [
+    "Reduced search space enables finer convergence on critical layers",
+    "Eliminates oscillation in already-converged central layers",
+    "Lower computational cost per iteration"
+  ],
+  "known_risks": [
+    "Freezing suboptimal central layers may prevent escape from local optimum",
+    "Boundary-layer-only optimization may not capture coupling effects with central cavity"
+  ],
+  "execution_request_english": "Optimize a fixed 16-layer alternating ZnSe/ZnS multilayer stack on Ge substrate at normal incidence. Initialize with thicknesses [1130, 874, 481, 227, 411, 966, 878, 1273, 500, 465, 454, 403, 275, 938, 733, 1257] nm. Freeze layers 4-11 (indices 4 through 11 inclusive) at their current values. Optimize only layers 0, 1, 2, 3, 12, 13, 14, 15 with bounds ±40 nm from initialization. Use gradient-based thickness optimizer. Evaluate mean transmittance in 8000-11000 nm band (maximize) and 3000-5000 nm band (minimize) with equal weighting. Total layer count: 16 finite layers. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Responds to feedback directive to decouple parameter update schedule by freezing converged layers 4-11 and restricting optimization to 8 boundary layers. Addresses score stagnation observed in rounds 3-5."
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Reduced perturbation initialization with weighted 400-550 nm spectral loss",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing optimizer perturbation amplitude from ±20 nm to ±10 nm while seeding from the iteration_06 best candidate thickness vector will enable finer convergence in the thickness discontinuity zone, and applying weighted loss prioritizing 400-550 nm sub-band will decouple coupled resonance modes that limit visible reflection uniformity.",
+  "design_principle": "Local refinement around a known high-performing configuration with spectrally-weighted optimization to disentangle overlapping interference modes in the short-wavelength visible band.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "All 30 layer thicknesses, initialized from iteration_06 candidate opt_hfo2_sio2_30l_chirp_hpfs__grad__226e03faf954 thickness vector with ±10 nm perturbation bounds"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band with 2x weight on 400-550 nm sub-band",
+    "Minimize reflectance in 1530-1565 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 30 (within 30-layer constraint)",
+    "Individual layer thicknesses should remain within 40-200 nm range for deposition feasibility"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Weighted spectral optimization for mode decoupling",
+    "Local refinement around known optima reduces search space dimensionality"
+  ],
+  "expected_advantages": [
+    "Finer convergence in thickness space near known high-performing configuration",
+    "Improved 400-550 nm reflection uniformity through weighted loss",
+    "Reduced risk of escaping the 0.940 score basin while exploring local improvements"
+  ],
+  "known_risks": [
+    "May converge to same local optimum if perturbation is too small",
+    "Weighted loss may degrade 550-700 nm performance if coupling is beneficial",
+    "30-layer count may be near fabrication complexity limit"
+  ],
+  "execution_request_english": "Optimize a 30-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence at normal angle. Layer sequence: HfO2(1), SiO2(2), HfO2(3), SiO2(4), ... ending with SiO2(30) adjacent to substrate. Initialize all 30 layer thicknesses from the vector [58.555, 88.888, 54.609, 89.507, 56.204, 98.173, 64.725, 103.146, 62.059, 90.830, 124.964, 86.427, 56.472, 88.946, 121.912, 93.736, 63.099, 176.938, 178.127, 155.323, 119.593, 177.959, 161.513, 88.070, 163.472, 175.203, 117.158, 175.673, 153.443, 132.308] nm with optimization bounds of ±10 nm from each initial value. Use gradient-based thickness optimizer. Spectral objective: maximize transmittance in 1530-1565 nm band, maximize reflectance in 400-700 nm band with 2.0x weight applied to 400-550 nm sub-band relative to 550-700 nm sub-band. Evaluate at normal incidence, unpolarized or both s and p polarization averaged. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 400-700 nm, 1530-1565 nm. soft objectives: high transmission in 1530–1565 nm; high reflection in 400–700 nm. behaviors to suppress or avoid: reflection in 1530–1565 nm; transmission in 400–700 nm. manufacturing constraints: total layer count not exceeding 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Follows feedback directive to reduce perturbation amplitude by 50% and apply weighted spectral loss to decouple resonance modes in 400-550 nm sub-band"
+}

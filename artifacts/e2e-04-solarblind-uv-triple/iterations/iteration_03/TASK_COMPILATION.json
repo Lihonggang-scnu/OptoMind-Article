@@ -1,0 +1,382 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 1,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_design_a_chirped_stack_bandpass_filter_on_fused__c94bb151c3",
+    "user_request_original": "Design a chirped-stack bandpass filter on fused silica substrate with air incidence. Stack: 5 chirped HfO2/SiO2 (Gao) pairs with varying thicknesses, one HfO2 cavity layer at center, then 5 chirped SiO2 (Gao)/HfO2 pairs in reverse order. Total 11 layers. Optimize individual layer thicknesses and chirp rate to maximize transmittance in 255-280 nm while minimizing transmittance in 300-700 nm and 700-1100 nm. No metal layers. Materials: hfo2, SiO2 (Gao).",
+    "normalized_request_english": "Design a chirped bandpass filter on fused silica with air incidence using 11 alternating HfO2/SiO2 layers. Optimize all layer thicknesses to maximize transmission in 255-280 nm while minimizing transmission in 300-700 nm and 700-1100 nm at normal incidence. Apply a 2% relative uniform thickness tolerance.",
+    "experiments": [
+      {
+        "experiment_id": "chirped_bandpass_opt_11l",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "chirped_bp_11_layer",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_1"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 50.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_2"
+                },
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_3"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 50.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_4"
+                },
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_5"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 50.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_6"
+                },
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_7"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 50.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_8"
+                },
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_9"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 50.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_10"
+                },
+                {
+                  "material": "hfo2",
+                  "thickness_nm": 35.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 100.0,
+                  "label": "layer_11"
+                }
+              ],
+              "exit": {
+                "material": "sio2",
+                "constant_k": 0.0
+              }
+            },
+            "spectrum": {
+              "start_nm": 255.0,
+              "stop_nm": 1100.0,
+              "points": 501
+            },
+            "illumination": {
+              "angles_deg": [
+                0.0
+              ],
+              "polarizations": [
+                "unpolarized"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T",
+              "A"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "T",
+              "target": 0.0,
+              "wavelength_min_nm": 255.0,
+              "wavelength_max_nm": 280.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "passband_maximize_T"
+            },
+            {
+              "observable": "T",
+              "target": 0.0,
+              "wavelength_min_nm": 300.0,
+              "wavelength_max_nm": 700.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "stopband1_minimize_T"
+            },
+            {
+              "observable": "T",
+              "target": 0.0,
+              "wavelength_min_nm": 700.0,
+              "wavelength_max_nm": 1100.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "stopband2_minimize_T"
+            }
+          ],
+          "optimizer": {
+            "method": "adam_lbfgs",
+            "max_steps": 60,
+            "learning_rate": 0.05,
+            "starts": 3,
+            "seed": 42,
+            "early_stop_patience": 15,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 100.0,
+            "quantization_nm": 1.0
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "passband_maximize_t",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.0,
+            "region": {
+              "wavelength_nm": [
+                255.0,
+                280.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband1_minimize_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.0,
+            "region": {
+              "wavelength_nm": [
+                300.0,
+                700.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband2_minimize_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.0,
+            "region": {
+              "wavelength_nm": [
+                700.0,
+                1100.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_255_280nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                255.0,
+                280.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.reflectance_stopband_300_700nm",
+            "metric": "reflectance_stopband",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                300.0,
+                700.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.reflectance_stopband_700_1100nm",
+            "metric": "reflectance_stopband",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                700.0,
+                1100.0
+              ]
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "bandpass",
+          "chirped",
+          "uv_to_nir"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 1.0,
+      "thickness_error_model": "relative_uniform",
+      "thickness_relative_fraction": 0.02,
+      "thickness_samples": 16,
+      "angle_perturbation_deg": 0.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [],
+      "scoring_standard_target_alignments": [],
+      "illumination_corrections": [],
+      "substrate_corrections": [
+        "chirped_bandpass_opt_11l: explicit fused-silica substrate uses local sio2 dispersion instead of a constant index"
+      ],
+      "solver_corrections": [],
+      "objective_synchronization": [
+        "chirped_bandpass_opt_11l: synchronized 3 simple objectives from executable targets"
+      ],
+      "objective_freeze": [
+        "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_transmittance_255_280nm + reflectance_stopband_300_700nm + reflectance_stopband_700_1100nm)",
+        "chirped_bandpass_opt_11l: attached the 3 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+      ],
+      "objective_gate": [],
+      "objective_signature": "0bbd40e308504de0",
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "Compiled exactly 11 explicit coating layers as directed, setting aside the contradictory '5 pairs + cavity + 5 reversed pairs' phrase which would yield 21 layers. Assigned 20–100 nm thickness bounds around nominal quarter-wave values to allow sufficient chirp variation. Targets split across three distinct bands per policy. Applied a standard 2% relative uniform thickness tolerance.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 3230,
+      "completion_tokens": 10008,
+      "total_tokens": 13238
+    }
+  ],
+  "raw_response_sha256": [
+    "300c4dbfb7b355fecb6d69db0ff3ec2cfa1bd0da0911864185512e52f8e25d2e"
+  ],
+  "rejected_draft": ""
+}

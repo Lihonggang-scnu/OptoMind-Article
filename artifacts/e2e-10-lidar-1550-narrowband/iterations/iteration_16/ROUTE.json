@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "27-Layer Chirped Defect-Cavity Filter with Linear Quarter-Wave Scaling",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Expanding from 25 to 27 layers with deterministic linear chirp initialization (0.8x to 1.2x quarter-wave optical thickness across stack depth) will enable broader stopband suppression in 1400-1500 nm and 1600-1700 nm regions while maintaining ≥0.95 transmittance at 1550 nm, because additional DBR pairs increase stopband width and chirp breaks periodicity to suppress secondary transmission peaks.",
+  "design_principle": "Defective DBR bandpass structure (HL)^N D(LH)^N with N=6 pairs per side plus central half-wave cavity, initialized with linear chirp schedule scaling quarter-wave target from 0.8x at layer 1 to 1.2x at layer 27, then optimized via gradient-based thickness search.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers)",
+  "design_variables": [
+    "all 27 layer thicknesses (nm)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "27 layers within 30-layer constraint",
+    "chirped thicknesses may require enhanced deposition monitoring",
+    "Ta2O5/SiO2 material pair well-established for 1550 nm applications"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR structure (HL)^N D(LH)^N creates transmission peak at defect resonance wavelength",
+    "Linear chirp breaks strict periodicity to broaden stopband and suppress side lobes",
+    "Quarter-wave optical thickness n*d = lambda0/4 maximizes reflectance per pair for DBR mirrors"
+  ],
+  "expected_advantages": [
+    "2 additional layers provide extra stopband suppression degrees of freedom",
+    "Chirp initialization explores non-quarter-wave design space more systematically",
+    "May achieve wider effective stopband than uniform 25L designs"
+  ],
+  "known_risks": [
+    "27 layers approaches 30-layer manufacturing constraint",
+    "Chirped designs may be more sensitive to thickness errors",
+    "Optimizer may converge to local minima different from 25L baseline"
+  ],
+  "execution_request_english": "Design a 27-layer defective DBR bandpass filter on Fused Silica substrate with Air incident medium using Ta2O5 (high index) and SiO2 (low index). Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5 (cavity), SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2. Initialize thicknesses using linear chirp: layer k thickness = quarter_wave_1550nm * (0.8 + 0.4*(k-1)/26) where quarter_wave_1550nm for Ta2O5 is lambda0/(4*n_Ta2O5) and for SiO2 is lambda0/(4*n_SiO2), cavity layer (layer 15, Ta2O5) initialized at half-wave optical thickness. Optimize all 27 thicknesses with bounds 50-350 nm for mirror layers, 400-700 nm for cavity. Evaluate coherent TMM transmittance at normal incidence, unpolarized. Target wavelengths: maximize at 1550 nm, suppress in 1400-1500 nm and 1600-1700 nm bands. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Increased layer count from 25 to 27 to expand stopband suppression degrees of freedom; introduced deterministic linear chirp initialization (0.8x to 1.2x scaling) per insight appendage recommendation to explore non-quarter-wave design space systematically while preserving defect-cavity scientific principle."
+}

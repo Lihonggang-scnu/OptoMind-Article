@@ -1,0 +1,120 @@
+{
+  "status": "standardized",
+  "standard": {
+    "schema_version": "tmm-scoring-standard.v1",
+    "catalog_schema_version": "tmm-metric-catalog.v1",
+    "locked": true,
+    "question_digest": "ea95ca380529c3b7",
+    "metrics": [
+      {
+        "variable": "mean_absorption_400_700nm",
+        "canonical_id": "mean_absorption@400-700nm",
+        "metric": "mean_absorption",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            400.0,
+            700.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly requests '在 400-700 nm 可见波段吸收率尽可能高' (absorptance as high as possible in 400-700 nm visible band) for heat absorption"
+      },
+      {
+        "variable": "mean_reflectance_700_2000nm",
+        "canonical_id": "mean_reflectance@700-2000nm",
+        "metric": "mean_reflectance",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            700.0,
+            2000.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly requests '在 700-2000 nm 近红外波段反射率尽可能高以抑制热输入' (reflectance as high as possible in 700-2000 nm near-infrared band to suppress heat input)"
+      }
+    ],
+    "formula": "mean_absorption_400_700nm + mean_reflectance_700_2000nm",
+    "formula_variables": [
+      "mean_absorption_400_700nm",
+      "mean_reflectance_700_2000nm"
+    ],
+    "metric_rationale": "These two metrics directly capture the spectral selectivity requirement stated in the user's request: high absorption in the visible band (400-700 nm) for heat collection, and high reflection in the near-infrared band (700-2000 nm) to suppress thermal load. I chose mean metrics rather than worst_case because the user says '尽可能高' (as high as possible) indicating average performance across each band is the optimization target. I deliberately did not add a separate reflectance metric for the visible band because for an opaque system with Al substrate, high absorption inherently implies low reflection, so adding it would be redundant and dilute the scoring weight. I also did not use band_emissivity_contrast as a single metric because the user's language emphasizes both bands separately, and two explicit metrics give clearer control over each spectral region's performance.",
+    "formula_rationale": "The user requires two complementary spectral goals: maximizing absorption in the visible band (400-700 nm) and maximizing reflectance in the near-infrared band (700-2000 nm). Both metrics are marked as 'maximize', so both are added positively. No weighting coefficients are applied because the request treats both spectral regions as equally critical for the selective surface function (absorbing visible light while rejecting infrared heat). A simple sum ensures that improving performance in either band increases the total score, reflecting the dual objective without arbitrary prioritization.",
+    "provenance": {
+      "model": "qwen3.5-plus",
+      "metric_selection_attempts": 1,
+      "formula_attempts": 1,
+      "maximum_metrics": 4
+    }
+  },
+  "selection": {
+    "status": "selected",
+    "metrics": [
+      {
+        "variable": "mean_absorption_400_700nm",
+        "canonical_id": "mean_absorption@400-700nm",
+        "metric": "mean_absorption",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            400.0,
+            700.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly requests '在 400-700 nm 可见波段吸收率尽可能高' (absorptance as high as possible in 400-700 nm visible band) for heat absorption"
+      },
+      {
+        "variable": "mean_reflectance_700_2000nm",
+        "canonical_id": "mean_reflectance@700-2000nm",
+        "metric": "mean_reflectance",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            700.0,
+            2000.0
+          ]
+        },
+        "target": null,
+        "rationale": "User explicitly requests '在 700-2000 nm 近红外波段反射率尽可能高以抑制热输入' (reflectance as high as possible in 700-2000 nm near-infrared band to suppress heat input)"
+      }
+    ],
+    "rationale": "These two metrics directly capture the spectral selectivity requirement stated in the user's request: high absorption in the visible band (400-700 nm) for heat collection, and high reflection in the near-infrared band (700-2000 nm) to suppress thermal load. I chose mean metrics rather than worst_case because the user says '尽可能高' (as high as possible) indicating average performance across each band is the optimization target. I deliberately did not add a separate reflectance metric for the visible band because for an opaque system with Al substrate, high absorption inherently implies low reflection, so adding it would be redundant and dilute the scoring weight. I also did not use band_emissivity_contrast as a single metric because the user's language emphasizes both bands separately, and two explicit metrics give clearer control over each spectral region's performance.",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 3114,
+        "completion_tokens": 2548,
+        "total_tokens": 5662
+      }
+    ]
+  },
+  "formula": {
+    "status": "authored",
+    "formula": "mean_absorption_400_700nm + mean_reflectance_700_2000nm",
+    "variables": [
+      "mean_absorption_400_700nm",
+      "mean_reflectance_700_2000nm"
+    ],
+    "rationale": "The user requires two complementary spectral goals: maximizing absorption in the visible band (400-700 nm) and maximizing reflectance in the near-infrared band (700-2000 nm). Both metrics are marked as 'maximize', so both are added positively. No weighting coefficients are applied because the request treats both spectral regions as equally critical for the selective surface function (absorbing visible light while rejecting infrared heat). A simple sum ensures that improving performance in either band increases the total score, reflecting the dual objective without arbitrary prioritization.",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 1344,
+        "completion_tokens": 1360,
+        "total_tokens": 2704
+      }
+    ]
+  },
+  "validation_errors": [],
+  "ranking_mechanism": "frozen_scoring_standard",
+  "human_modified": true
+}

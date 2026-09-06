@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "Fixed Ratio Thickness Scaling Optimization for Vis-NIR Dichroic",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A dichroic beam splitter with fixed Hi/Lo physical thickness ratio of 1.667 can achieve high visible reflectance and NIR transmittance when only a global scaling factor is optimized, reducing degeneracy in the design space while preserving the interference condition.",
+  "design_principle": "Quarter-wave stack theory suggests that maintaining consistent optical thickness ratios between high and low index layers preserves the interference condition across the stack while allowing overall spectral position to shift via scaling. The 1.667 ratio approximates the inverse refractive index ratio needed for equal optical thickness.",
+  "proposed_materials": [
+    "TiO2 (Siefke)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "24-layer alternating stack starting with TiO2: Layer1-TiO2, Layer2-SiO2, Layer3-TiO2, Layer4-SiO2, Layer5-TiO2, Layer6-SiO2, Layer7-TiO2, Layer8-SiO2, Layer9-TiO2, Layer10-SiO2, Layer11-TiO2, Layer12-SiO2, Layer13-TiO2, Layer14-SiO2, Layer15-TiO2, Layer16-SiO2, Layer17-TiO2, Layer18-SiO2, Layer19-TiO2, Layer20-SiO2, Layer21-TiO2, Layer22-SiO2, Layer23-TiO2, Layer24-SiO2 on fused silica substrate",
+  "design_variables": [
+    "global_thickness_scaling_factor",
+    "base_SiO2_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize reflectance in 450-650 nm band",
+    "maximize transmittance in 700-1000 nm band",
+    "minimize spectral crosstalk between bands"
+  ],
+  "manufacturing_considerations": [
+    "24 layers maximum",
+    "all thicknesses must be positive",
+    "thicknesses should remain within practical deposition ranges 20-200 nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks achieve high reflectance when each layer has optical thickness of quarter wavelength at design center",
+    "Recalled knowledge: Hi/Lo thickness ratio of approximately 1.667 corresponds to matching optical thicknesses given typical TiO2 (n~2.4) and SiO2 (n~1.46) refractive indices at visible wavelengths",
+    "Recalled knowledge: Global scaling shifts the entire spectral response without changing band shape characteristics",
+    "Recalled knowledge: Reducing optimization degrees of freedom can improve convergence and reduce local minima trapping in gradient-based optimizers"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced optimization dimensionality",
+    "Reduced risk of overfitting to specific wavelength points",
+    "More manufacturable design with consistent layer ratios",
+    "Clearer understanding of scaling effects on spectral position"
+  ],
+  "known_risks": [
+    "Fixed ratio may not be optimal for this specific band separation requirement - would need literature search to confirm optimal ratio for 450-650/700-1000 nm dichroic",
+    "Two-parameter optimization (base thickness + scaling) may not achieve as high performance as full 24-variable optimization",
+    "Refractive index dispersion across 450-1000 nm range may make fixed optical thickness suboptimal at band edges",
+    "The 1.667 ratio derived from 95/57 nm pairing assumes specific refractive indices that vary with wavelength - exact dispersion data would settle this",
+    "Polarization splitting at 45 degree incidence may require different optimization for s and p polarizations"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating TiO2 (Siefke)/SiO2 (Gao) dichroic coating on fused silica substrate at 45 degree incidence for unpolarized light. The stack sequence is TiO2 (Siefke)-SiO2 (Gao) repeated 12 times. Fix the physical thickness ratio between TiO2 (Siefke) and SiO2 (Gao) layers at 1.667 (TiO2 (Siefke) thickness = 1.667 × SiO2 (Gao) base thickness). Optimize two parameters: base_SiO2 (Gao)_thickness_nm and global_thickness_scaling_factor. All 24 layer thicknesses are determined by: SiO2 (Gao) layers = base_SiO2 (Gao)_thickness_nm × scaling_factor, TiO2 (Siefke) layers = base_SiO2 (Gao)_thickness_nm × 1.667 × scaling_factor. Maximize reflectance in 450-650 nm band and transmittance in 700-1000 nm band. Use gradient-based optimization with bounds: base_SiO2 (Gao)_thickness_nm in [30, 120] nm, scaling_factor in [0.5, 2.0].",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Following feedback directive to fix Hi/Lo thickness ratio at 1.667 derived from candidate 0's 95.0/57.0 nm pairing and reduce optimization to global scaling factor to address phase-mismatch instability from uncorrelated layer drift"
+}

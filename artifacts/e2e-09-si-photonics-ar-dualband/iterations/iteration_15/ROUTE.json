@@ -1,0 +1,46 @@
+{
+  "route_id": "route_01",
+  "title": "Constrained 10-Layer Refinement with Reduced Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing thickness perturbation bounds to ±5 nm during optimization will restrict search to the immediate basin of attraction around the iteration_05 best configuration (score 0.9977), preventing the volatility that caused regression to 0.9922 in iteration_11.",
+  "design_principle": "Local refinement with bounded step sizes preserves the superior configuration found in round 2 while allowing fine-tuning. Evidence s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b supports thickness optimization over analytical quarter-wave solutions for broadband requirements.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si (10 finite layers, alternating high-low starting with Ta2O5)",
+  "design_variables": [
+    "all 10 layer thicknesses"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance over 1260-1360 nm band",
+    "minimize mean reflectance over 1530-1565 nm band",
+    "maximize transmittance into Si substrate"
+  ],
+  "manufacturing_considerations": [
+    "individual layer thickness between 20 nm and 400 nm",
+    "maximum 12 layers (using 10)",
+    "materials restricted to Ta2O5 and SiO2"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23"
+  ],
+  "theory_basis": [
+    "Transfer matrix method thickness optimization for multi-band AR coatings",
+    "Local search with bounded perturbations for refinement of known good configurations"
+  ],
+  "expected_advantages": [
+    "Reduced search volatility compared to iteration_11",
+    "Preservation of iteration_05 best configuration characteristics",
+    "Fine-tuning capability within ±5 nm bounds"
+  ],
+  "known_risks": [
+    "May converge to local optimum if global structure needs larger changes",
+    "±5 nm bounds may be too restrictive if iteration_05 configuration is not in optimal basin"
+  ],
+  "execution_request_english": "Optimize a 10-layer Ta2O5/SiO2 anti-reflection coating on silicon substrate for dual-band operation at 1260-1360 nm and 1530-1565 nm. Stack topology: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si (10 finite layers, alternating starting with high-index Ta2O5). Initialize all layer thicknesses from iteration_05 best candidate: [56.0, 110.0, 176.0, 172.0, 88.0, 117.0, 111.0, 250.0, 112.0, 45.0] nm. Apply gradient-based thickness optimization with perturbation bounds restricted to ±5 nm per layer per iteration. Thickness constraints: 20-400 nm per layer. Incidence: 0 deg, unpolarized. Objective: minimize weighted mean reflectance across both bands equally, report transmittance into Si. Evaluate candidates by target_score (reflectance minimization), robustness_score, and thicknesses_nm outputs. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Reduced thickness perturbation bounds from unconstrained to ±5 nm per feedback directive addressing search space volatility that caused score regression from 0.9977 to 0.9922. Initialization preserved from iteration_05 best candidate."
+}

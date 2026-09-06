@@ -1,0 +1,51 @@
+{
+  "route_id": "route_03",
+  "title": "23-Layer Defect Cavity with Linear Chirp Initialization and 15 nm Adjacent Delta Constraint",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A 23-layer Ta2O5/SiO2 defect-cavity filter initialized with monotonic linear chirp (150-300 nm) and constrained to ≤15 nm adjacent-layer thickness changes will maintain constructive interference while enabling finer spectral tuning, potentially exceeding the 0.9831 historical best score.",
+  "design_principle": "Defective DBR bandpass structure (HL)^N D(LH)^N with quarter-wave mirrors and half-wave cavity, but with linearly chirped initial thicknesses to broaden the search basin. The 15 nm delta constraint prevents layer collapse while allowing smooth chirp evolution.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers)",
+  "design_variables": [
+    "all 23 layer thicknesses (nm)",
+    "chirp slope during optimization"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "adjacent-layer thickness delta ≤15 nm for deposition continuity",
+    "total layers 23 within 30-layer budget",
+    "Ta2O5/SiO2 material pair compatible with standard sputtering"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR creates transmission resonance within stopband",
+    "Linear chirp initialization broadens optimization basin",
+    "Adjacent-layer continuity constraint prevents thickness collapse"
+  ],
+  "expected_advantages": [
+    "23 layers provides more degrees of freedom than 21L without exceeding budget",
+    "15 nm delta constraint enforces smooth chirp evolution",
+    "Linear initialization avoids local minima from quarter-wave starting point"
+  ],
+  "known_risks": [
+    "May not exceed 0.9831 historical best if 21L was near-optimal",
+    "Tighter delta constraint may limit optimizer freedom",
+    "Cavity layer position sensitivity"
+  ],
+  "execution_request_english": "Design a 23-layer Ta2O5/SiO2 defect-cavity bandpass filter on fused silica substrate for 1550 nm LiDAR application. Layer sequence: alternating Ta2O5/SiO2 starting with Ta2O5, with central Ta2O5 layer as half-wave cavity. Initialize all 23 layer thicknesses with strictly monotonic linear chirp from 150.0 nm (layer 1) to 300.0 nm (layer 23). Apply hard penalty constraint during optimization: maximum adjacent-layer thickness difference ≤15.0 nm. Optimize all 23 thicknesses to maximize transmittance at 1550 nm while minimizing transmittance in 1400-1500 nm and 1600-1700 nm bands. Use gradient_thickness optimizer with thickness bounds 50-400 nm for all layers except cavity (300-700 nm). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Following insight appendage directive: changed from 21L/25L previous attempts to 23L with explicit linear chirp initialization (150-300 nm) and tightened adjacent-layer delta constraint from 40 nm to 15 nm to force perturbed chirp exploration rather than layer collapse."
+}

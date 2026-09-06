@@ -1,0 +1,45 @@
+{
+  "route_id": "route_02",
+  "title": "Reduced 16-Layer Quarter-Wave Stack Initialized at 10.5 μm",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A reduced 16-layer HfO2/SiO2 stack with quarter-wave optical thickness initialization centered at 10.5 μm (midpoint of 8-13 μm emission band) will produce physically valid candidates where 24-layer stacks failed, while maintaining sufficient spectral selectivity through constructive interference in the target band.",
+  "design_principle": "Quarter-wave stack design principle: alternating high/low index layers with optical thickness λ/4 at target wavelength creates high reflectance (low emissivity) outside the target band through Bragg reflection, while allowing transmission (high emissivity via Kirchhoff's law) within the design band.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Si substrate (16 finite layers, 8 pairs)",
+  "design_variables": [
+    "layer_thicknesses_nm (16 variables, bounded 200-1800 nm)"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 8000-13000 nm band",
+    "minimize absorptance in 3000-5000 nm band",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "16 layers reduces fabrication complexity vs 24 layers",
+    "thickness bounds 200-1800 nm avoid boundary singularities that caused material_data failures"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:284897971:s2chunk:284897971:2899:5008:7a5ec08c6adb0915"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for spectral filtering",
+    "Kirchhoff's law relating absorptance to emissivity for thermal emitters"
+  ],
+  "expected_advantages": [
+    "Lower layer count reduces optimization complexity and material_data failure risk",
+    "Initialization at 10.5 μm centers the high-emissivity band",
+    "Thickness bounds away from 2000 nm limit avoid boundary-related solver failures"
+  ],
+  "known_risks": [
+    "16 layers may provide insufficient spectral selectivity compared to 24 layers",
+    "Quarter-wave initialization may not capture optimal aperiodic solution"
+  ],
+  "execution_request_english": "Optimize a 16-layer planar dielectric stack on Si substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (16 finite layers). Initialize thicknesses at quarter-wave optical thickness for 10500 nm wavelength using HfO2 and SiO2 refractive indices in the 8-13 μm range. Allow all 16 thicknesses to vary during optimization with bounds 200-1800 nm. Evaluate spectral absorptance from 3000-13000 nm. Target: maximize absorptance in 8000-13000 nm, minimize absorptance in 3000-5000 nm. Include deterministic fallback: if stochastic optimizer yields valid_candidates=0, inject three periodic quarter-wave templates with 8, 10, and 12 layer pairs at 10500 nm center wavelength. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Reduced layer count from 24 to 16 to address material_data failure in iteration_06; shifted thickness bounds from 2000 nm maximum to 1800 nm to avoid boundary singularities; added deterministic periodic template fallback per feedback directives."
+}

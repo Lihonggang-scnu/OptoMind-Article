@@ -1,0 +1,53 @@
+{
+  "route_id": "control_route_01",
+  "title": "Eight-layer Ta2O5/SiO2 dual-band AR coating thickness optimization on silicon",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "An 8-layer alternating Ta2O5/SiO2 stack with optimized non-quarter-wave thicknesses can achieve simultaneously low average reflectance in both 1260-1360 nm and 1530-1565 nm bands on silicon, with the best target score increasing as thickness optimization progresses across rounds.",
+  "design_principle": "Recalled from thin-film optics: alternating high-index (Ta2O5) and low-index (SiO2) layers create multiple interference conditions. Quarter-wave stacks centered at one wavelength give narrowband performance; deviating from quarter-wave thicknesses allows broader or multi-band optimization. The large index contrast between air (~1.0), SiO2 (~1.45), Ta2O5 (~2.1), and Si (~3.5-3.9) enables strong reflection cancellation when layer optical thicknesses are properly tuned.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)",
+    "si"
+  ],
+  "proposed_topology": "air | ta2o5 | sio2 | ta2o5 | sio2 | ta2o5 | sio2 | ta2o5 | sio2 | si (8 layers total, alternating starting with ta2o5)",
+  "design_variables": [
+    "individual layer thicknesses for all 8 layers, each bounded 20-400 nm"
+  ],
+  "soft_objectives": [
+    "minimize average reflectance in 1260-1360 nm band",
+    "minimize average reflectance in 1530-1565 nm band",
+    "maximize transmittance into silicon substrate",
+    "maintain thicknesses within 20-400 nm manufacturable range"
+  ],
+  "manufacturing_considerations": [
+    "maximum 8 layers keeps process complexity moderate",
+    "20 nm minimum thickness avoids pinhole and continuity issues",
+    "400 nm maximum thickness limits deposition time and stress accumulation",
+    "alternating material sequence requires no material grading or alloying"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness (n*d = lambda/4) gives minimum reflectance at design wavelength for single-layer AR coatings",
+    "Recalled: Multi-layer stacks enable broader bandwidth by creating multiple interference minima",
+    "Recalled: Ta2O5 has higher refractive index (~2.1 at 1550 nm) than SiO2 (~1.45 at 1550 nm), providing stronger index stepping",
+    "Recalled: Silicon substrate has high refractive index (~3.5-3.9 in near-IR), requiring careful impedance matching from air",
+    "Recalled: Normal incidence simplifies design as polarization splitting does not occur at 0 degrees"
+  ],
+  "expected_advantages": [
+    "Eight layers provide sufficient degrees of freedom for dual-band optimization without excessive complexity",
+    "Alternating sequence is a standard AR topology that is well-understood in thin-film design",
+    "Thickness-only optimization keeps the material choice fixed, isolating geometry as the variable",
+    "Starting from quarter-wave references at intermediate wavelength gives physically reasonable initialization"
+  ],
+  "known_risks": [
+    "Ta2O5 name resolution: I am using 'ta2o5' following the catalog's lowercase convention, but this name is not in guaranteed_names and may fail local resolution. If rejected, the route must be repaired with a resolved name from the rejection list.",
+    "Refractive index dispersion: I recall approximate n values but the actual n/k data comes from the dataset. If Ta2O5 or SiO2 dispersion differs significantly from my recollection in these bands, optimal thicknesses will shift.",
+    "Dual-band trade-off: I am uncertain whether 8 layers can achieve equally low reflectance in both bands simultaneously, or if one band must be prioritized. The optimization will reveal this.",
+    "Stress and adhesion: Thick Ta2O5 layers (>200 nm) may develop tensile stress; I have no data on acceptable stress limits for this application and would need to look up process specifications.",
+    "Extinction coefficients: I assume both materials are low-loss in these bands, but if k values are non-negligible, absorption will reduce transmittance targets."
+  ],
+  "execution_request_english": "Optimize an 8-layer anti-reflection coating on silicon substrate. Stack sequence from air side: Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), then semi-infinite si substrate. Incident medium is air at 0 degrees, unpolarized light. Wavelength bands: 1260-1360 nm and 1530-1565 nm. Each layer thickness is an independent optimization variable bounded between 20 nm and 400 nm. Objective: minimize weighted average reflectance across both wavelength bands while maximizing transmittance into silicon. Report best candidate thicknesses, reflectance spectra across both bands, and transmittance into substrate. Use gradient-based or evolutionary thickness optimization with multiple random initializations to avoid local minima.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control axis with refined initialization strategy: quarter-wave reference thicknesses at 1400 nm center wavelength with randomized perturbations to escape boundary traps observed in prior rounds."
+}

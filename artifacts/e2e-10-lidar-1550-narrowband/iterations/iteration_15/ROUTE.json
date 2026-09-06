@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Defect-cavity narrowband transmission filter at 1550 nm using Ta2O5/SiO2 quarter-wave stacks",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A symmetric 29-layer stack with alternating Ta2O5/SiO2 quarter-wave mirrors and a central half-wave SiO2 defect layer will produce a narrow transmission peak at 1550 nm with transmittance ≥0.95, while achieving strong suppression in the 1400-1500 nm and 1600-1700 nm stopbands.",
+  "design_principle": "Quarter-wave alternating layers form high-reflectivity distributed Bragg reflectors that create stopbands. Inserting a half-wave defect layer in the center breaks the periodicity and creates a resonant transmission mode within the stopband. The number of mirror pairs controls stopband depth; the defect thickness controls resonance wavelength.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "29 explicit layers: Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/SiO2(cavity)/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5, incident medium air, substrate fused silica",
+  "design_variables": [
+    "individual thickness of each of the 29 layers",
+    "initialization centered on quarter-wave optical thickness at 1550 nm for mirrors and half-wave for cavity"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1550±5 nm passband",
+    "minimize mean transmittance in 1400-1500 nm stopband",
+    "minimize mean transmittance in 1600-1700 nm stopband"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (within 30-layer limit)",
+    "thickness bounds 50-400 nm for deposition feasibility",
+    "all layers laterally uniform and isotropic"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stacks produce stopbands centered at the design wavelength with bandwidth proportional to index contrast",
+    "Recalled: A half-wave defect layer in a symmetric Bragg stack creates a transmission resonance within the stopband",
+    "Recalled: Ta2O5 has higher refractive index (~2.1) than SiO2 (~1.45) at near-infrared wavelengths, providing sufficient contrast for narrowband filtering",
+    "Recalled: More mirror pairs increase stopband depth but add complexity and stress",
+    "Recalled: Normal incidence simplifies design and is typical for LiDAR receiver filters"
+  ],
+  "expected_advantages": [
+    "Narrow passband suitable for laser line selection",
+    "Symmetric topology reduces sensitivity to deposition errors",
+    "Well-understood physics enables predictable optimization behavior",
+    "29 layers provides substantial stopband depth while staying under the 30-layer constraint"
+  ],
+  "known_risks": [
+    "Uncertain: Exact refractive indices of ta2o5 and sio2 at 1550 nm - must be read from material registry datasets, not assumed",
+    "Uncertain: Whether 14 mirror pairs per side provides sufficient stopband depth for the 1400-1500 nm and 1600-1700 nm suppression targets - may need verification after first optimization round",
+    "Uncertain: Quarter-wave thickness calculation depends on actual n values from registry; my recalled estimates (Ta2O5 ~185 nm, SiO2 ~267 nm at 1550 nm) may differ from measured data",
+    "Uncertain: Stress accumulation in 29-layer Ta2O5/SiO2 stacks may affect mechanical stability - not modeled in TMM solver",
+    "Gave up by not running other axes: Did not explore chirped stacks for wider stopbands, did not test alternative material pairs, did not vary layer count as a design variable"
+  ],
+  "execution_request_english": "Optimize a 29-layer planar dielectric stack with incident medium air and substrate fused silica. Layer sequence is fixed as alternating Ta2O5 (Gao) and SiO2 (Lemarchand) starting and ending with Ta2O5 (Gao), with layer 15 (the middle layer, SiO2 (Lemarchand)) serving as the defect cavity. Optimize all 29 layer thicknesses with bounds 50-400 nm. Initialize mirror layers (1-14 and 16-29) at quarter-wave optical thickness for 1550 nm and the cavity layer (15) at half-wave optical thickness for 1550 nm. Objective: maximize mean transmittance at 1550 nm (single wavelength), minimize mean transmittance in 1400-1500 nm band, minimize mean transmittance in 1600-1700 nm band. Use coherent smatrix solver at normal incidence. Materials Ta2O5 (Gao) and SiO2 (Lemarchand) resolved from registry.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": null
+}

@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The primary expectation that 'best_target_score should rise' was strongly violated; the score declined from 0.9274780922215423 (round 1) to 0.52508165452097 (round 7). The expectation regarding 'tightest_margin remaining positive' is satisfied (0.34292395807749626 > 0). The expectation that 'valid_candidates should remain stable' is consistent, as 9 valid candidates persist across the execution window. Overall, performance degraded in the opposite direction of the hypothesized trajectory.",
+  "deviation_mechanism": "The systematic score drop indicates the optimization phase displaced the design from a near-quarter-wave resonant stack into an asymmetric regime. Early configurations maintained alternating low/high refractive index pairs around 40 nm / 240 nm, naturally maximizing constructive interference across 420–700 nm. Later iterations introduced severe optical path imbalance (e.g., layer 7 contracting to 148.0580303502745 nm and layer 11 to 122.27969600817224 nm), breaking the interference condition required for broadband transmission. This reduces the passband average transmittance and thus the composite score, while the optimizer likely chased secondary constraints or suffered from accumulated gradient overshoot past the local peak.",
+  "continue_recommended": true,
+  "continue_rationale": "A final score of 0.52508165452097 represents a significant degradation from the round-1 peak of 0.9274780922215423, proving the search has not converged but rather migrated away from optimal interference conditions. Because valid_candidates remains at 9 and tightest_margin stays comfortably positive (0.34292395807749626), the design space is fully accessible and physically capable of higher performance. Continuing provides necessary iterations to either recover the initial optimum through bounded retracing or discover a new equilibrium before resource limits are hit.",
+  "insight_for_next": "Reinitialize the active population using the round-1 thickness profile ([40.0, 244.0, 32.0, 210.0, 39.0, 251.0, 41.0, 245.0, 34.0, 239.0, 32.0, 258.0]), lock layers 2-9 to a ±5 nm tolerance band to preserve core resonance, and apply the optimizer exclusively to the outer cladding layers (indices 0-1 and 10-11) with a halved step-size to prevent catastrophic phase misalignment.",
+  "insight_grounding": "Score decay is quantified by `score_history[0] = 0.9274780922215423` versus `score_history[6] = 0.52508165452097`. Thickness tracking confirms the mechanism: Candidate 1 retains the expected ~40/244 nm alternation, while Candidate 3 exhibits destructive displacement at layer index 7 (148.0580303502745 nm) and layer index 11 (122.27969600817224 nm) against the historical ~210–275 nm band. The persistent `valid_candidates = 9` confirms the 20–350 nm box constraint is not filtering out solutions, isolating the failure to parametric drift rather than feasibility boundaries.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T23:07:36.175606+00:00",
+  "attestation_sha256": "eee81bdced2268bf04c40dc93cfcb2dcd7edc4510e5d2d0eb0244785e7cbe2cf",
+  "observed_metrics": {
+    "best_target_score": 0.52508165452097,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.34292395807749626
+  },
+  "reflection_available": true
+}

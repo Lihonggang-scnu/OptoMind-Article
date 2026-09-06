@@ -1,0 +1,150 @@
+{
+  "status": "standardized",
+  "standard": {
+    "schema_version": "tmm-scoring-standard.v1",
+    "catalog_schema_version": "tmm-metric-catalog.v1",
+    "locked": true,
+    "question_digest": "e467ee0eba52d92e",
+    "metrics": [
+      {
+        "variable": "mean_transmittance_355_365nm",
+        "canonical_id": "mean_transmittance@355-365nm",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            355.0,
+            365.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 355-365 nm 干扰波段尽可能降低平均透射率'，用于压低紫外激发光泄漏到收集通道。"
+      },
+      {
+        "variable": "mean_transmittance_1030_1080nm",
+        "canonical_id": "mean_transmittance@1030-1080nm",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1030.0,
+            1080.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 1030-1080 nm 干扰波段尽可能降低平均透射率'，用于抑制辅助近红外对准光进入可见探测通道。"
+      },
+      {
+        "variable": "mean_transmittance_420_700nm",
+        "canonical_id": "mean_transmittance@420-700nm",
+        "metric": "mean_transmittance",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            420.0,
+            700.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 420-700 nm 信号波段尽可能提高平均透射率'，用于保留可见波段的荧光信息。"
+      }
+    ],
+    "formula": "mean_transmittance_420_700nm - mean_transmittance_355_365nm - mean_transmittance_1030_1080nm",
+    "formula_variables": [
+      "mean_transmittance_1030_1080nm",
+      "mean_transmittance_355_365nm",
+      "mean_transmittance_420_700nm"
+    ],
+    "metric_rationale": "这三个指标完整覆盖用户请求的三波段滤光需求：两个阻带（355-365 nm 紫外激发光和 1030-1080 nm 近红外对准光）需要最小化透射率，一个通带（420-700 nm 可见荧光信号）需要最大化透射率。选用 mean_transmittance 而非 worst_case_transmittance 是因为用户原文明确使用'平均透射率'表述。未添加第四个指标是因为三波段已完整表达设计目标，额外指标会稀释核心权衡关系的权重。入射角 0 deg 和非偏振条件使用默认通道，无需在 region 中指定 angle_deg 或 polarization。",
+    "formula_rationale": "该表达式将可见光波段的透射率视为正向收益，对应保留荧光信号的需求；将紫外和近红外波段的透射率视为负向损耗，对应抑制激发光泄漏和对准光干扰的需求。由于所有指标均为 0 到 1 之间的透射率分数，量纲一致，且用户未明确指定三个波段性能之间的相对优先级，因此各项系数设为 1，避免引入任意权重导致排名偏差，确保评分公平反映整体滤光性能。",
+    "provenance": {
+      "model": "qwen3.5-plus",
+      "metric_selection_attempts": 1,
+      "formula_attempts": 1,
+      "maximum_metrics": 4
+    }
+  },
+  "selection": {
+    "status": "selected",
+    "metrics": [
+      {
+        "variable": "mean_transmittance_355_365nm",
+        "canonical_id": "mean_transmittance@355-365nm",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            355.0,
+            365.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 355-365 nm 干扰波段尽可能降低平均透射率'，用于压低紫外激发光泄漏到收集通道。"
+      },
+      {
+        "variable": "mean_transmittance_1030_1080nm",
+        "canonical_id": "mean_transmittance@1030-1080nm",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "region": {
+          "wavelength_nm": [
+            1030.0,
+            1080.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 1030-1080 nm 干扰波段尽可能降低平均透射率'，用于抑制辅助近红外对准光进入可见探测通道。"
+      },
+      {
+        "variable": "mean_transmittance_420_700nm",
+        "canonical_id": "mean_transmittance@420-700nm",
+        "metric": "mean_transmittance",
+        "sense": "maximize",
+        "region": {
+          "wavelength_nm": [
+            420.0,
+            700.0
+          ]
+        },
+        "target": null,
+        "rationale": "用户明确要求'在 420-700 nm 信号波段尽可能提高平均透射率'，用于保留可见波段的荧光信息。"
+      }
+    ],
+    "rationale": "这三个指标完整覆盖用户请求的三波段滤光需求：两个阻带（355-365 nm 紫外激发光和 1030-1080 nm 近红外对准光）需要最小化透射率，一个通带（420-700 nm 可见荧光信号）需要最大化透射率。选用 mean_transmittance 而非 worst_case_transmittance 是因为用户原文明确使用'平均透射率'表述。未添加第四个指标是因为三波段已完整表达设计目标，额外指标会稀释核心权衡关系的权重。入射角 0 deg 和非偏振条件使用默认通道，无需在 region 中指定 angle_deg 或 polarization。",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 3478,
+        "completion_tokens": 1185,
+        "total_tokens": 4663
+      }
+    ]
+  },
+  "formula": {
+    "status": "authored",
+    "formula": "mean_transmittance_420_700nm - mean_transmittance_355_365nm - mean_transmittance_1030_1080nm",
+    "variables": [
+      "mean_transmittance_1030_1080nm",
+      "mean_transmittance_355_365nm",
+      "mean_transmittance_420_700nm"
+    ],
+    "rationale": "该表达式将可见光波段的透射率视为正向收益，对应保留荧光信号的需求；将紫外和近红外波段的透射率视为负向损耗，对应抑制激发光泄漏和对准光干扰的需求。由于所有指标均为 0 到 1 之间的透射率分数，量纲一致，且用户未明确指定三个波段性能之间的相对优先级，因此各项系数设为 1，避免引入任意权重导致排名偏差，确保评分公平反映整体滤光性能。",
+    "attempts": 1,
+    "validation_errors": [],
+    "usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 1579,
+        "completion_tokens": 4130,
+        "total_tokens": 5709
+      }
+    ]
+  },
+  "validation_errors": [],
+  "ranking_mechanism": "frozen_scoring_standard",
+  "human_modified": true
+}

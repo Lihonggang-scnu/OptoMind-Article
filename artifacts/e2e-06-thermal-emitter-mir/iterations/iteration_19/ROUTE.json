@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "16-Layer Quarter-Wave Initialized Stack with ±8% Bounded Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses at quarter-wave optical thickness for the 10.5 μm central wavelength of the high-emissivity band, then optimizing within ±8% bounds, will reduce search entropy and recover or exceed the iteration_01 best score of 0.8903 by maintaining constructive interference in the target band while suppressing the 3-5 μm band.",
+  "design_principle": "Quarter-wave stack initialization provides a physically motivated starting point that reduces optimization search space while allowing local refinement for spectral shaping.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2] × 8 | Si substrate (16 finite layers, alternating starting with HfO2)",
+  "design_variables": [
+    "layer thicknesses (16 variables, initialized at quarter-wave values for 10.5 μm, bounded ±8%)"
+  ],
+  "soft_objectives": [
+    "Maximize mean absorptance in 8000-13000 nm band",
+    "Minimize mean absorptance in 3000-5000 nm band",
+    "Maintain total layer count at exactly 16"
+  ],
+  "manufacturing_considerations": [
+    "16 layers within 24-layer limit",
+    "Quarter-wave thicknesses in IR range are fabrication-feasible (approximately 1000-1500 nm per layer)",
+    "±8% tolerance represents realistic deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:11834683:s2chunk:11834683:19297:21346:f13e973aab3fb109",
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:284897971:s2chunk:284897971:2899:5008:7a5ec08c6adb0915"
+  ],
+  "theory_basis": [
+    "Quarter-wave stacks produce high reflectance/transmittance bands centered at design wavelength",
+    "Kirchhoff's law relates absorptance to emissivity for thermal equilibrium",
+    "Transfer Matrix Method accurately models multilayer interference in frequency domain"
+  ],
+  "expected_advantages": [
+    "Reduced search entropy compared to uniform/random initialization",
+    "Physical motivation for initial thickness values",
+    "More layers than prior 12-layer routes may improve spectral selectivity"
+  ],
+  "known_risks": [
+    "Quarter-wave initialization may trap optimizer in local minimum",
+    "16 layers may increase fabrication complexity without proportional performance gain",
+    "HfO2/SiO2 index contrast in mid-IR may be insufficient for ideal spectral shaping"
+  ],
+  "execution_request_english": "Optimize a 16-layer planar dielectric stack on silicon substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (16 finite layers total). Initialize all HfO2 layers at quarter-wave optical thickness for 10500 nm central wavelength, initialize all SiO2 layers at quarter-wave optical thickness for 10500 nm. Apply ±8% thickness bounds around initial values during optimization. Target: maximize mean absorptance in 8000-13000 nm band, minimize mean absorptance in 3000-5000 nm band. Use gradient-based thickness optimizer. Evaluate at normal incidence, unpolarized or both TE/TM. Materials: HfO2 and SiO2 from material registry with IR refractive index data. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Increased layer count from 12 to 16 to test whether additional degrees of freedom improve spectral contrast; quarter-wave initialization with ±8% bounds per feedback directive to reduce search entropy compared to prior uniform/broad initialization approaches."
+}

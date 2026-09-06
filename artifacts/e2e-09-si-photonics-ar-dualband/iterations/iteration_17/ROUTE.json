@@ -1,0 +1,49 @@
+{
+  "route_id": "control_route_01",
+  "title": "Localized Gradient Refinement of 8-Layer Dual-Band AR Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Applying small Gaussian perturbations (±2.5%) to a high-scoring 8-layer thickness configuration while reducing optimizer step-size will reveal whether the previous optimum sits in a narrow local peak or can be further improved toward 0.999+ target score.",
+  "design_principle": "Thin-film optimization landscapes often contain narrow spectral resonances where small thickness changes produce large reflectance variations. Gradient-based refinement with reduced step-size can resolve these features without overshooting, while population perturbation tests local robustness.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "8-layer stack: ta2o5/sio2/ta2o5/sio2/ta2o5/sio2/ta2o5/sio2 on silicon substrate, air incidence",
+  "design_variables": [
+    "individual layer thicknesses (8 variables), each perturbed by ±2.5% Gaussian from iteration_13 best candidate, bounded 20-400 nm"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance in 1260-1360 nm band",
+    "minimize mean reflectance in 1530-1565 nm band",
+    "maximize transmittance into silicon substrate"
+  ],
+  "manufacturing_considerations": [
+    "maximum 8 layers (fixed topology)",
+    "individual layer thickness between 20 nm and 400 nm",
+    "materials restricted to ta2o5 and sio2",
+    "normal incidence, unpolarized light"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave and non-quarter-wave multilayer stacks can achieve broadband anti-reflection through impedance matching across multiple interfaces",
+    "Recalled knowledge: Ta2O5 (high index ~2.1-2.3) and SiO2 (low index ~1.45-1.46) form a standard high-contrast dielectric pair for near-IR coatings",
+    "Recalled knowledge: Gradient-based thickness optimization can converge to local optima; small perturbations test whether the optimum is isolated or part of a broader basin",
+    "Recalled knowledge: Reducing optimizer step-size near convergence prevents oscillation around narrow spectral peaks"
+  ],
+  "expected_advantages": [
+    "Maintains the high target score (~0.999) from iteration_13 while testing local robustness",
+    "Reduced step-size should prevent overshooting the narrow optimum region",
+    "Gaussian perturbations reveal sensitivity of each layer to thickness variation",
+    "Single topology keeps the axis focused on thickness tuning only"
+  ],
+  "known_risks": [
+    "Ta2O5 name resolution: I believe 'ta2o5' will resolve in the local registry, but if it matches multiple datasets the route will be rejected. The guaranteed_names list does not include ta2o5, so this depends on registry resolution. If rejected, I would need the exact measurement name from the registry's rejection list.",
+    "Index values are recalled approximations: Ta2O5 n~2.1-2.3 at 1300-1550 nm, SiO2 n~1.45-1.46. Actual measured data from the dataset will be used by the solver, not my recalled numbers.",
+    "The 2.5% perturbation magnitude is a design choice from recalled optimization practice; if too small it won't escape local traps, if too large it loses the refinement character. This would be settled by testing multiple perturbation scales.",
+    "Step-size multiplier 0.5 is recalled heuristic; the optimal value depends on the local curvature which I cannot know without running the solver."
+  ],
+  "execution_request_english": "Optimize an 8-layer planar dielectric anti-reflection coating on silicon substrate. Stack sequence: Ta2O5 (Gao)/SiO2 (Lemarchand)/Ta2O5 (Gao)/SiO2 (Lemarchand)/Ta2O5 (Gao)/SiO2 (Lemarchand)/Ta2O5 (Gao)/SiO2 (Lemarchand) (8 layers total). Incident medium: air. Substrate: semi-infinite si. Wavelength bands: 1260-1360 nm and 1530-1565 nm, sampled with 401 points across both bands. Incidence angle: 0 degrees. Polarization: unpolarized. Design variables: all 8 layer thicknesses, initialized from iteration_13 best candidate thicknesses [186.89515355427594, 54.74908283070094, 61.206258309194304, 107.5698805241882, 224.3202400032046, 120.82075986426855, 21.73374005461409, 22.08119866905926] nm, each perturbed by independent ±2.5% Gaussian noise, bounded between 20 nm and 400 nm. Optimizer: gradient_thickness with step-size multiplier 0.5. Objectives: minimize mean reflectance in 1260-1360 nm band, minimize mean reflectance in 1530-1565 nm band, maximize transmittance into silicon. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control arm with localized gradient refinement: applying ±2.5% Gaussian perturbations to iteration_13 best candidate thicknesses and reducing optimizer step-size multiplier to 0.5 per feedback directives."
+}

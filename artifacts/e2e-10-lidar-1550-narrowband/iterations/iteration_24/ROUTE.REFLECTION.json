@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expected convergence trajectory for a successful chirp hypothesis did not materialize. Instead of stabilizing or improving, `best_target_score` declined sharply from 0.98306 in round 3 to 0.70723 in round 5. The `tightest_margin` measurement settled at 0.4697, showing no quantitative improvement in stopband width over baseline periodic designs. This directional failure (lowering rather than plateauing) directly matches the declared fallback condition that a rejected hypothesis produces degraded scoring or spectral distortion.",
+  "deviation_mechanism": "Chirped layers intentionally vary optical path lengths, but when thickness deviations exceed the quarter-wave phase-matching tolerance, individual Fresnel reflections spectrally detune from the target Bragg wavelength. The accumulated reflection coefficient becomes a superposition of shifted resonances rather than a coherent standing wave, scattering energy into parasitic stopbands. This destructive interference breakdown reduces passband confinement, measurably collapsing the integration metric (`best_target_score`) as the optimizer pushes unbounded thickness variations.",
+  "continue_recommended": true,
+  "continue_rationale": "Five rounds have been executed, but the negative trend correlates explicitly with unchecked parameter excursions that violate realistic fabrication and coherence limits. The route has not exhausted its scientific utility; it has escaped a valid physical regime. Constraining the chirp amplitude to a bounded envelope will test whether the underlying hypothesis holds at low perturbation levels, separating genuine material behavior from optimizer-induced divergence.",
+  "insight_for_next": "Reinitialize the stack using a bounded chirp envelope capped at ±8% thickness variation around nominal values. Apply hard symmetry constraints to the outermost four layers to preserve input/output impedance matching, and restrict the optimizer to perturb only the central 13 layers within the tightened bounds. Add a penalty term for inter-layer thickness gradients exceeding 15% to stabilize convergence.",
+  "insight_grounding": "candidate 3, layer 15 thickness reached 316.65 nm in round 3 and candidate 4, layer 11 thickness reached 377.77 nm in round 4, representing >50% deviation from the 200 nm nominal initialization. Concurrently, `best_target_score` collapsed from 0.98306 (round 3) to 0.70723 (round 5). The score degradation magnitude scales directly with these unchecked thickness excursions, confirming that the optimizer exited the valid chirp region rather than discovering an inherent limitation of the material system.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:03:38.134531+00:00",
+  "attestation_sha256": "2fe2810e2ccfebc92d2001e9824a6d6533efb6d98e2db9a1cda5d62eb103da40",
+  "observed_metrics": {
+    "best_target_score": 0.7072366782448362,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4697492907769345
+  },
+  "reflection_available": true
+}

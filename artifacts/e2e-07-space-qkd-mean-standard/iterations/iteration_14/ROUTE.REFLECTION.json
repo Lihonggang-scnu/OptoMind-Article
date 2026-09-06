@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected improvement in best_target_score as chirp parameters converged was not met; instead, the metric exhibited high volatility with a net downward trend from round 1 (0.948203811668944) through round 3 (0.7195087632995022), followed by a partial recovery in round 4 (0.8286756112010787). Direction: lower/unstable. Magnitude: ~0.1286 peak-to-valley swing. Expected visible reflectance bandwidth increase relative to route_01 is unsupported; the score collapse indicates reduced coverage. Expected tightest_margin stability is consistent with observed 0.9415109166622251, which remains high. The failure-mode expectation (score does not exceed baseline, chirp introduces excessive ripple) aligns with the observed trajectory, as the target score fell well below the initial peak and the fluctuating scores imply out-of-band spectral disturbances.",
+  "deviation_mechanism": "The chirp hypothesis relies on a controlled, monotonic variation in layer thickness to broaden the photonic bandgap smoothly. Unconstrained optimization produced abrupt optical path discontinuities (e.g., candidate 4 layer 5 at 101.05912461266945 nm jumping to layer 6 at 64.85397917780637 nm). These sharp gradients break the cumulative phase-matching condition required for constructive interference in the visible band, scattering coherent energy into higher-order diffraction modes and increasing in-band ripple. The optimizer initially discarded the uniform 75.0 nm starting stack (candidate 1) because it could not satisfy the chirp gradient constraints, and subsequent free-form searches lacked physical regularization, driving the system into locally deep but globally suboptimal interference minima.",
+  "continue_recommended": true,
+  "continue_rationale": "The score sequence 0.948203811668944 → 0.8317204869915095 → 0.7195087632995022 → 0.8286756112010787 demonstrates non-stationary dynamics rather than saturation. The +0.1091668479015765 rebound between round 3 and round 4 exceeds the 0.0001 reference_epsilon and confirms active exploration of viable regions. With only 4 rounds executed and no hard physical constraint violations reported, stopping would prematurely abandon a tractable design space. Continued rounds with bounded gradient steps and anchored boundaries are required to determine whether the chirp hypothesis can be stabilized.",
+  "insight_for_next": "Enforce a maximum inter-layer thickness delta of |Δd| ≤ 25 nm during optimization and reparameterize the inner 8 layers with an analytical quadratic chirp profile instead of free variables. Fix the first and last two layers to 75.0 nm to stabilize boundary phase reflection. This constrains the search to physically realizable index-thickness trajectories that maintain continuous impedance matching while testing whether a smoother chirp gradient yields the expected broadband expansion.",
+  "insight_grounding": "Candidate 4 thicknesses [44.9316610537295, 56.60806396168364, 100.50969578476878, 79.61984776787347, 101.05912461266945, 64.85397917780637, 84.04760842713516, 57.35575327891168, 67.13533893685755, 46.29556238915631, 71.5490841813386, 58.45782447540911] nm contain transitions exceeding 30 nm (e.g., layer 5→6: Δ ≈ -36.2 nm; layer 8→10: Δ ≈ -11.0 nm over two steps), which directly coincide with the trough at round 3 score 0.7195087632995022. Constraining these specific jumps prevents the phase cancellation that collapsed the target metric.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T19:53:48.349446+00:00",
+  "attestation_sha256": "7e3b718cda1821ee90c75f7c2d8c35a5a24ab28503d62dfee53d57e89995287e",
+  "observed_metrics": {
+    "best_target_score": 0.8286756112010787,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.9415109166622251
+  },
+  "reflection_available": true
+}

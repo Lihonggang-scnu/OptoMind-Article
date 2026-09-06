@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected observation 1 ('different convergence than route_01') aligns with the observed highly non-monotonic score trajectory [0.9227, 0.7961, 0.0196, 0.4406, 0.7425], which contrasts sharply with typical smooth asymptotic convergence. Expected observation 2 ('tightest_margin should improve') notes an observed tightest_margin of 0.5916; while a direct baseline comparison is absent in this dataset, the metric registers actively rather than collapsing to zero, confirming the asymmetry modification is structurally active. Expected observation 3 ('if hypothesis fails, best_target_score will not exceed route_01's best') cannot be fully verified without route_01 data, but the current best of 0.7425 remains well below the initial peak of 0.9227, indicating the asymmetry hypothesis has not yet surpassed prior performance levels.",
+  "deviation_mechanism": "The sharp score collapse from 0.7961 to 0.0196 in round 3 and subsequent rebound is caused by disruptive thickness perturbations in the asymmetric mirror section (layers 9–19). Initial asymmetric guesses clustered near 128/238 nm deviated significantly from the quarter-wave optical thickness required to maintain the target stopband reflection. These deviations altered the local optical path length and phase accumulation, shifting the photonic bandgap edge away from the design wavelength and causing destructive interference (score drop). As the optimizer aggressively corrected layer 14 from 129.4 nm to 143.3 nm and layer 15 to 148.0 nm in rounds 4–5, partial restoration of the resonance condition occurred, explaining the recovery to 0.7425. The optimizer is jumping between disjoint resonance peaks rather than following a gradient descent path.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 5 rounds with extreme score volatility (range 0.0196 to 0.9227) and has not reached a stable optimum. The evidence clearly shows the search is dynamically exploring parameter space rather than stagnating; the rebound from 0.0196 to 0.7425 proves viable configurations exist nearby. The stated stop condition for marginal gains (<1e-3 over 2 rounds) is not triggered since consecutive deltas exceed 0.7. Continuing is necessary to impose convergence safeguards and allow the optimizer to settle into a physically consistent local minimum.",
+  "insight_for_next": "Impose a bounded perturbation constraint on the asymmetric layers (indices 8–19) limiting thickness changes to ±15 nm per iteration. Re-initialize the next round using the round 1 baseline (layers 1–8 @ 158.5/268.4 nm) with the asymmetric half constrained to narrow brackets around the mean of the last three executed candidates. Add a mild curvature penalty to the optimizer's update rule to penalize rapid inter-layer thickness swaps that break quarter-wave resonance.",
+  "insight_grounding": "The score_history entry 0.019643078049391395 corresponds to the candidate where layers 9–14 abruptly settled near 128.0/238.0 nm, severely misaligning the stopband. The immediate rebound to score 0.44064920303447486 (round 4) coincided with layers 9–14 shifting to 129.4/239.5 nm, and further to 0.7424605278742971 (round 5) as layers 14–19 expanded to 143.3/261.9 nm, 148.0/278.0 nm, and 158.0/283.4 nm. Unconstrained jumps in these specific indices directly drove the non-convergent trajectory observed in the score history.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:51:03.887598+00:00",
+  "attestation_sha256": "34d1130b06e2bc8b0d4e33aeeef5941299a8faa6c602b5391a211901f8211148",
+  "observed_metrics": {
+    "best_target_score": 0.7424605278742971,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.5915938481150775
+  },
+  "reflection_available": true
+}

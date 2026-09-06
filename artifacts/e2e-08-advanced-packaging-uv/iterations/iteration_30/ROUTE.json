@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "24-Layer Periodic Quarter-Wave Stack with Verified Grid Alignment",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "A 24-layer alternating Ta2O5/SiO2 periodic stack initialized at quarter-wave optical thickness for the geometric mean of the two stopband centers (360 nm and 1055 nm) will achieve dual-band suppression while maintaining visible passband transmission, with reduced numerical instability compared to 36-layer configurations.",
+  "design_principle": "Quarter-wave Bragg reflector theory: alternating high-low index layers at λ/4 optical thickness create high reflectance (low transmittance) bands centered at design wavelength. Using geometric mean of dual stopband centers balances suppression across both UV and NIR bands.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 8 alternating Ta2O5/SiO2 pairs (16 finite layers)",
+  "design_variables": [
+    "layer thicknesses (24 variables, bounded 20-350 nm)"
+  ],
+  "soft_objectives": [
+    "minimize mean transmittance in 355-365 nm",
+    "minimize mean transmittance in 1030-1080 nm",
+    "maximize mean transmittance in 420-700 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "24 layers within 36-layer maximum constraint",
+    "all thicknesses within 20-350 nm fabrication bounds",
+    "alternating sequence simplifies deposition monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack reflectance bandwidth scales with refractive index contrast",
+    "Geometric mean wavelength balancing for multi-band designs"
+  ],
+  "expected_advantages": [
+    "Reduced layer count may improve numerical convergence compared to 36-layer runs",
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Explicit 601-point grid ensures all target bands overlap simulation domain"
+  ],
+  "known_risks": [
+    "24 layers may provide insufficient stopband depth compared to 36-layer configurations",
+    "Single periodic structure may not optimally balance dual widely-separated stopbands"
+  ],
+  "execution_request_english": "Design a 24-layer alternating Ta2O5/SiO2 multilayer filter on fused silica substrate at 0 degree incidence with unpolarized light. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2... (24 total layers, starting with Ta2O5). Initialize thicknesses at quarter-wave optical thickness for 560 nm geometric mean wavelength (Ta2O5: 560/(4*n_Ta2O5), SiO2: 560/(4*n_SiO2)), then optimize all 24 thicknesses with bounds 20-350 nm. Simulation wavelength grid: 601 points from 350 nm to 1100 nm ensuring coverage of 355 nm, 355-365 nm, 420-700 nm, and 1030-1080 nm bands. Optimize for minimum mean transmittance in 355-365 nm and 1030-1080 nm bands, minimum transmittance at 355 nm, and maximum mean transmittance in 420-700 nm band. Use gradient-based thickness optimizer with 1000 iterations maximum. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 8 alternating Ta2O5/SiO2 pairs (16 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Iteration_26 failed compilation due to target band grid overlap error. This route explicitly defines 601-point wavelength grid from 350-1100 nm to guarantee all target bands fall within simulation domain. Reduced to 24 layers to test whether lower complexity improves convergence while maintaining dual-stopband performance."
+}

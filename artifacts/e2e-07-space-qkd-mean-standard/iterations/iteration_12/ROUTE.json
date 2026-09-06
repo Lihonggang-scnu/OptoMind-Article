@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 alternating DBR with relaxed regularization and shifted seed distribution",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with individual layer thickness optimization can simultaneously achieve high transmittance in 1530-1565 nm and high reflectance in 400-700 nm, and reducing gradient regularization pressure while shifting the seed distribution upward will break the binary thickness clamping pattern and enable smoother thickness modulation across the stack.",
+  "design_principle": "Recalled from thin-film interference theory: alternating high-index (HfO2) and low-index (SiO2) layers create a distributed Bragg reflector. Quarter-wave optical thickness at a center wavelength produces maximum reflectance at that wavelength. For dual-band operation, the stack must be tuned so the stopband covers 400-700 nm while the 1530-1565 nm band falls in a transmission window. Starting with high-index at the air interface is a standard DBR convention I recall for external incidence.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 film layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "Individual layer thicknesses for all 24 layers",
+    "Regularization penalty coefficient (reduced 25% from prior)",
+    "Initial thickness seed distribution mean (shifted +5nm from lower bound)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain tightest_margin above zero for physical validity"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer limit)",
+    "Individual layer thicknesses should remain in depositable range (approximately 50-400 nm per layer)",
+    "Alternating sequence is fixed and must be preserved"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Distributed Bragg Reflectors use alternating high/low index layers to create wavelength-selective reflection bands",
+    "Recalled: Quarter-wave optical thickness (n*d = lambda/4) at center wavelength maximizes reflectance at that wavelength",
+    "Recalled: Starting with high-index layer at air interface is conventional for external-incidence DBRs",
+    "Recalled: Gradient-based thickness optimization can converge to local minima; regularization helps but excessive penalty causes boundary clamping",
+    "Recalled: Dual-band filters require careful thickness tuning to place stopband and passband at desired wavelengths simultaneously"
+  ],
+  "expected_advantages": [
+    "Reduced regularization (25% lower) should allow optimizer to explore interior thickness space rather than clamping at bounds",
+    "Shifted seed mean (+5nm from lower bound) provides computational headroom for gradual thickness modulation",
+    "Fixed 24-layer topology maintains comparability across iterations while testing optimizer parameter sensitivity",
+    "Alternating sequence preserves the DBR physics while allowing thickness variation to tune spectral response"
+  ],
+  "known_risks": [
+    "I am uncertain whether 24 layers is optimal versus 20 or 28 for this band ratio -- this was chosen as a middle value within the 30-layer constraint",
+    "I recall HfO2 has higher index than SiO2 in visible and near-IR, but exact dispersion curves across 400-1565 nm would need to be looked up to confirm",
+    "The quarter-wave center wavelength choice (550 nm in prior iteration) may not be optimal for covering 400-700 nm stopband -- this is a hypothesis being tested",
+    "I am uncertain about space-qualification requirements for these materials; deposition stress and radiation hardness would need literature lookup",
+    "The +5nm seed shift and 25% regularization reduction are heuristic choices; their effectiveness is not guaranteed"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating thin film stack on fused silica substrate with air incident medium. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand) (starting with HfO2 at air interface, ending with SiO2 (Lemarchand) at substrate). Optimize all 24 individual layer thicknesses. Wavelength bands: maximize transmittance in 1530-1565 nm, maximize reflectance in 400-700 nm. Normal incidence. Use gradient_thickness optimizer with regularization penalty coefficient reduced by 25% relative to prior iteration, and initial thickness seed distribution mean shifted upward by 5 nm relative to the lower bound. Materials: hfo2 and SiO2 (Lemarchand) from catalog. Substrate: Fused Silica. Incident medium: Air. Maximum 30 layers constraint satisfied with 24 layers.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control_route_01 with optimizer parameter adjustments: regularization penalty reduced 25% to relieve gradient pressure against bounds, initial seed mean shifted +5nm from lower bound to break binary clamping pattern observed in iteration_08 candidates"
+}

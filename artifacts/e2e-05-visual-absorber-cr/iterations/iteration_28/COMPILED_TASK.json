@@ -1,0 +1,310 @@
+{
+  "schema_version": "optical-design-task.tmm.v1",
+  "task_id": "tmm_perform_one_bounded_tmm_thickness_optimization_f_d3f973237d",
+  "user_request_original": "Perform one bounded TMM thickness optimization for an exactly 5-layer planar stack. Use the fixed material sequence from the incident side: Cr / SiO2 / Cr / SiO2 / Cr. Optimize only the physical thickness of each finite layer within the user-declared bounds. Do not optimize material identity or layer count in this route. Optimize a 5-layer spectrally selective absorber stack on aluminum substrate with material sequence: HfO2 | Cr | SiO2 | HfO2 | SiO2. Wavelength bands: 400-700nm maximize absorptance, 700-2000nm maximize reflectance. Normal incidence, unpolarized illumination. Thickness bounds: HfO2_layer1 [50-100nm] initialized at 68nm fixed, Cr_layer2 [20-50nm] initialized at 32nm fixed, SiO2_layer3 [150-300nm] initialized at 235nm fixed, HfO2_layer4 [50-150nm] uniform random initialization ±20nm around 80nm, SiO2_layer5 [50-150nm] uniform random initialization ±20nm around 76nm. Apply ±8% relative thickness tolerance for robustness evaluation. Use gradient-based thickness optimizer with stochastic restart capability. Maximum 20 layers constraint satisfied. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "normalized_request_english": "Bounded thickness optimization for a 5-layer planar stack (HfO2/Cr/SiO2/HfO2/SiO2) on an aluminum substrate. Optimize physical thicknesses of layers 4 and 5 within [50, 150] nm; fix layers 1-3 at 68, 32, and 235 nm respectively. Maximize mean absorptance and minimize mean reflectance in 400-700 nm; maximize mean reflectance and minimize mean absorptance in 700-2000 nm at normal incidence, unpolarized light. Apply ±8% relative thickness tolerance.",
+  "experiments": [
+    {
+      "experiment_id": "opt_5layer_sel_abs_al",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "sel_abs_5layer",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": "hfo2",
+                "thickness_nm": 68.0,
+                "coherence": "coherent",
+                "optimizable": false,
+                "label": "layer_1"
+              },
+              {
+                "material": "cr",
+                "thickness_nm": 32.0,
+                "coherence": "coherent",
+                "optimizable": false,
+                "label": "layer_2"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 235.0,
+                "coherence": "coherent",
+                "optimizable": false,
+                "label": "layer_3"
+              },
+              {
+                "material": "hfo2",
+                "thickness_nm": 80.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 50.0,
+                "max_thickness_nm": 150.0,
+                "label": "layer_4"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 76.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 50.0,
+                "max_thickness_nm": 150.0,
+                "label": "layer_5"
+              }
+            ],
+            "exit": {
+              "material": "al"
+            }
+          },
+          "spectrum": {
+            "start_nm": 400.0,
+            "stop_nm": 2000.0,
+            "points": 501
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0
+            ],
+            "polarizations": [
+              "unpolarized"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "A",
+            "target": 0.0,
+            "wavelength_min_nm": 400.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "absorb_high_400_700"
+          },
+          {
+            "observable": "R",
+            "target": 0.0,
+            "wavelength_min_nm": 400.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "refl_low_400_700"
+          },
+          {
+            "observable": "R",
+            "target": 0.0,
+            "wavelength_min_nm": 700.0,
+            "wavelength_max_nm": 2000.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "refl_high_700_2000"
+          },
+          {
+            "observable": "A",
+            "target": 0.0,
+            "wavelength_min_nm": 700.0,
+            "wavelength_max_nm": 2000.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "absorb_low_700_2000"
+          }
+        ],
+        "optimizer": {
+          "method": "adam_lbfgs",
+          "max_steps": 60,
+          "learning_rate": 0.05,
+          "starts": 3,
+          "seed": 42,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": 1.0
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "absorb_high_400_700",
+          "metric": "mean_absorption",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              400.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "refl_low_400_700",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              400.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "refl_high_700_2000",
+          "metric": "mean_reflectance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              700.0,
+              2000.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "absorb_low_700_2000",
+          "metric": "mean_absorption",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              700.0,
+              2000.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_absorption_400_700nm",
+          "metric": "mean_absorption",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              400.0,
+              700.0
+            ]
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_reflectance_700_2000nm",
+          "metric": "mean_reflectance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              700.0,
+              2000.0
+            ]
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "thickness_opt",
+        "spectral_selective"
+      ]
+    }
+  ],
+  "verification": {
+    "require_spectral_convergence": true,
+    "require_independent_solver": true,
+    "check_passivity": true,
+    "check_energy_conservation": true,
+    "forbid_material_extrapolation": true
+  },
+  "portfolio": {
+    "maximum_candidates": 8,
+    "include_best_target_score": true,
+    "include_most_robust": true,
+    "include_simplest_fabrication": true,
+    "include_structurally_distinctive": true,
+    "include_pareto_front": true
+  },
+  "uncertainty": {
+    "thickness_sigma_nm": 1.0,
+    "thickness_error_model": "relative_uniform",
+    "thickness_relative_fraction": 0.08,
+    "thickness_samples": 16,
+    "angle_perturbation_deg": 0.0,
+    "material_dataset_policy": "evaluate_all_eligible",
+    "maximum_material_scenarios": 8,
+    "random_seed": 42
+  },
+  "budget": {
+    "wall_time_seconds": 900.0,
+    "maximum_forward_evaluations": 20000,
+    "maximum_optimizer_runs": 2,
+    "maximum_qwen_calls": 2,
+    "maximum_qwen_input_tokens": 12000,
+    "maximum_qwen_output_tokens": 2000,
+    "maximum_qwen_cost_cny": 2.0
+  },
+  "benchmark_id": null,
+  "metadata": {
+    "compiler": "QwenTMMTaskCompiler",
+    "compiler_schema": "tmm-task-compilation.v1",
+    "compiler_model": "qwen3.7-flash",
+    "performance_targets_are_soft": true,
+    "diversity_required": false,
+    "target_threshold_corrections": [],
+    "scoring_standard_target_alignments": [],
+    "illumination_corrections": [],
+    "substrate_corrections": [],
+    "solver_corrections": [],
+    "objective_synchronization": [
+      "opt_5layer_sel_abs_al: synchronized 4 simple objectives from executable targets"
+    ],
+    "objective_freeze": [
+      "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_absorption_400_700nm + mean_reflectance_700_2000nm)",
+      "opt_5layer_sel_abs_al: attached the 2 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+    ],
+    "objective_gate": [],
+    "objective_signature": "b5debcad2bbd88ad",
+    "uncertainty_normalization": []
+  }
+}

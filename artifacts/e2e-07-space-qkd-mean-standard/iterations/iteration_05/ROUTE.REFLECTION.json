@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected a monotonic rise in best_target_score as thicknesses converge toward quarter-wave targets. Actual trajectory deviated in the opposite direction: score fell from 0.846018 (round 1) to 0.783265 (round 2), a magnitude of -0.062753. Tightest margin measured 0.433533, and valid_candidates remained at 9. The results contradict the expected convergence trend.",
+  "deviation_mechanism": "The regression stems from optimizer-induced boundary saturation that clips the available degrees of freedom. In the recorded best candidate record, layer 0 is pinned at exactly 64.0 nm and layer 2 at exactly 75.625 nm, indicating contact with discrete thickness bounds. When outer layers cannot adjust further due to these hard constraints, the transfer matrix product loses phase flexibility. Additional TMM evaluations simply rotate the reflection vector within a rigid subspace, breaking optimal constructive/destructive interference alignment and pushing the match score downward. This is a classic gradient-vanishing effect in constrained thin-film design.",
+  "continue_recommended": true,
+  "continue_rationale": "Only two rounds have executed, which is insufficient to declare physical infeasibility. The documented 0.0627 score regression is driven by geometric constraint clipping (boundary pinning at 64.0 nm and 75.625 nm) rather than intrinsic material opacity or index limits. Re-expanding the feasible region and perturbing initialization will test whether the optical system genuinely caps out at 0.78 or if superior solutions lie beyond the current thickness walls.",
+  "insight_for_next": "Apply bounded perturbation restart for the next execution: widen global thickness bounds by ±20%, anchor the central core layers using the current best configuration, and initialize outer layers with random offsets drawn from N(0, 8 nm). Run 3 consecutive cycles with a reduced learning rate (step size halved) to allow gradual boundary engagement without immediate clipping.",
+  "insight_grounding": "Boundary pinning is verifiable in the optimized candidate record showing 64.0 nm at layer 0 and 75.625 nm at layer 2—both terminate at exact floating-point steps, confirming hard-bound interaction. Score progression from 0.8460181004990265 to 0.7832648719417825 confirms divergence away from the theoretical optimum, well exceeding the reference epsilon of 0.0001, proving the stagnation is structural rather than numerical noise.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T19:26:32.567060+00:00",
+  "attestation_sha256": "d3013f28583e055425dfa5e76c66562c4574c87d27c5a703f009b776d8567c1f",
+  "observed_metrics": {
+    "best_target_score": 0.7832648719417825,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4335327048066211
+  },
+  "reflection_available": true
+}

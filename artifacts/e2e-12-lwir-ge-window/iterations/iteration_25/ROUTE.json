@@ -1,0 +1,56 @@
+{
+  "route_id": "control_route_01",
+  "title": "Selective cavity-layer tuning in 16-layer ZnSe/ZnS dual-band IR filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "In a 16-layer alternating ZnSe/ZnS stack optimized for dual-band IR performance, the phase condition at the LWIR/MWIR band boundary is dominated by a small subset of layers (specifically positions 2, 3, and 9 in the stack sequence), and tuning only these layers while freezing the others can improve target_score without requiring full-stack re-optimization.",
+  "design_principle": "Recalled thin-film physics: quarter-wave stacks produce stopbands centered at wavelengths where optical thickness equals λ/4. For dual-band filters, layers near the air interface and near the substrate interface contribute differently to passband ripple and stopband edge sharpness. Selective tuning of cavity-defining layers can shift stopband position while preserving overall transmission characteristics. This is a standard design pattern in IR filter optimization, recalled from general thin-film coating knowledge.",
+  "proposed_materials": [
+    "zns",
+    "ZnSe (Querry)",
+    "Ge (Icenogle)"
+  ],
+  "proposed_topology": "Air | ZnSe(1104.02nm) | ZnS(898.78nm) | ZnSe(t2) | ZnS(t3) | ZnSe(1016.12nm) | ZnS(1146.33nm) | ZnSe(872.85nm) | ZnS(1157.60nm) | ZnSe(1064.90nm) | ZnS(t9) | ZnSe(1043.48nm) | ZnS(1179.42nm) | ZnSe(920.86nm) | ZnS(1113.98nm) | ZnSe(850.27nm) | ZnS(1201.78nm) | Ge substrate",
+  "design_variables": [
+    "Layer 2 thickness (ZnSe): bounded 1445-1525 nm, seeded at 1485.15 nm",
+    "Layer 3 thickness (ZnS): bounded 1445-1500 nm, seeded at 1624.70 nm but clamped to 1500 nm maximum",
+    "Layer 9 thickness (ZnS): bounded 1327-1407 nm, seeded at 1367.32 nm"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain physically valid candidates (no absorption violations, thickness bounds respected)",
+    "Improve best_target_score relative to iteration_21 baseline of 0.352"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 16",
+    "Maximum individual layer thickness clamped to 1500 nm for manufacturability",
+    "Only 3 layers tunable to reduce optimization complexity and maintain stack stability",
+    "All thicknesses must remain positive and within solver bounds"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stack stopband center wavelength scales with optical thickness (n × d) of alternating layers",
+    "Recalled: In dual-band IR filters, layers near interfaces contribute more to passband matching while interior layers dominate stopband characteristics",
+    "Recalled: ZnSe has higher refractive index than ZnS in the 3-11 μm range, making ZnSe/ZnS pairs suitable for moderate-contrast IR stacks",
+    "Recalled: Ge substrate has high refractive index (~4.0 in LWIR), requiring impedance-matching layers at the substrate interface",
+    "Recalled: Limiting tunable variables in optimization can improve convergence when the initial stack is already near a local optimum"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality (3 variables vs 16) should converge faster and avoid overfitting",
+    "Freezing well-performing layers preserves the broad spectral response achieved in iteration_21",
+    "Targeted tuning of cavity layers may improve band-edge phase coherence without destabilizing the stack",
+    "1500 nm thickness clamp improves manufacturability compared to previous iterations with layers exceeding 2000 nm"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive indices of ZnS and ZnSe at 3000-11000 nm are recalled approximations; actual dispersion data from registry will determine true optical thickness",
+    "Uncertainty: The choice of layers 2, 3, 9 as the critical tuning set is based on recalled design heuristics, not verified for this specific stack; other layer combinations might be more influential",
+    "Risk: Layer 3 seed value (1624.70 nm) exceeds the 1500 nm clamp; the optimizer must start from the clamped value (1500 nm) rather than the seed, which may reduce improvement potential",
+    "Risk: Freezing 13 layers may prevent the optimizer from finding better global configurations if the frozen layers are suboptimal",
+    "Uncertainty: Whether znse resolves correctly in the material registry is not verified; if it fails, the route cannot execute",
+    "Recalled knowledge limitation: The optimal layer sequence (which material first) is assumed from standard high-index-first convention, but the reverse sequence might perform better for this specific band combination"
+  ],
+  "execution_request_english": "Optimize a 16-layer planar multilayer stack on Ge (Icenogle) substrate with air incidence. Stack sequence from air: ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS. Seed thicknesses from iteration_21 candidate gradi__765c82311956: [1104.02, 898.78, 1485.15, 1624.70, 1016.12, 1146.33, 872.85, 1157.60, 1064.90, 1367.32, 1043.48, 1179.42, 920.86, 1113.98, 850.27, 1201.78] nm. Freeze layers 0, 1, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15 to their seed values. Only layers 2, 3, and 9 are tunable. Apply bounds: layer 2 in [1445, 1525] nm, layer 3 in [1445, 1500] nm (clamped from seed 1624.70), layer 9 in [1327, 1407] nm. Apply ±40 nm random initialization perturbation to layers 2, 3, 9 around their seed values (with layer 3 clamped to 1500 nm if seed exceeds bound). Optimize for high transmittance in 8000-11000 nm band and low transmittance in 3000-5000 nm band at normal incidence. Use coherent TMM solver across 3000-11000 nm wavelength range. Maximum total layers: 16. Materials: zns, ZnSe (Querry), Ge (Icenogle).",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control axis with selective layer tuning based on feedback directive: seed from iteration_21 best candidate, clamp max thickness to 1500 nm, freeze 13 layers, tune only layers 2, 3, 9 with ±40 nm perturbation"
+}

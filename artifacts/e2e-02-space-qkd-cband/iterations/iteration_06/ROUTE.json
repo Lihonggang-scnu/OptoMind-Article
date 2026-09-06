@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Deterministic linear chirp initialization across discovered thickness extremes",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses with a deterministic linear chirp spanning 60-159 nm (the extremes discovered in route_02) will enable the optimizer to converge faster and achieve higher target scores compared to stochastic perturbation around 100 nm, because the initial state already occupies the productive thickness configuration space.",
+  "design_principle": "Linear optical thickness gradient across the stack creates progressively shifting Bragg conditions that broaden the high-reflection band in the visible while maintaining transmission windows in the NIR telecom band.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "30 finite layers, alternating HfO2/SiO2 starting with HfO2 at air interface: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica",
+  "design_variables": [
+    "All 30 layer thicknesses (nm), initialized with linear chirp from 60 nm to 159 nm"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1530-1565 nm band",
+    "Maximize reflectance in 400-700 nm band",
+    "Minimize reflectance in 1530-1565 nm band",
+    "Minimize transmittance in 400-700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 30 (within 30-layer constraint)",
+    "Thickness range 60-159 nm is within typical deposition control capability",
+    "Alternating binary material system simplifies process control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81",
+    "s2-chunk:CorpusId:195545021:s2chunk:195545021:58866:61075:02c786ba5b6885f8"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for laterally uniform linear isotropic layered media",
+    "Chirped multilayer theory for broadband reflection: varying optical thickness shifts local Bragg condition across the stack",
+    "Prior iteration route_02 discovered productive thickness range 60-159 nm through optimization"
+  ],
+  "expected_advantages": [
+    "Deterministic initialization reduces optimizer search space",
+    "Linear chirp provides smooth spectral transition",
+    "Directly leverages empirical thickness extremes from route_02"
+  ],
+  "known_risks": [
+    "Linear chirp may not be optimal profile shape",
+    "May still require significant optimization iterations",
+    "Performance may plateau near route_02 best score if chirp profile is suboptimal"
+  ],
+  "execution_request_english": "Optimize a 30-layer alternating HfO2/SiO2 multilayer coating on fused silica substrate with air incidence. Layer sequence: HfO2(1), SiO2(2), HfO2(3), SiO2(4), HfO2(5), SiO2(6), HfO2(7), SiO2(8), HfO2(9), SiO2(10), HfO2(11), SiO2(12), HfO2(13), SiO2(14), HfO2(15), SiO2(16), HfO2(17), SiO2(18), HfO2(19), SiO2(20), HfO2(21), SiO2(22), HfO2(23), SiO2(24), HfO2(25), SiO2(26), HfO2(27), SiO2(28), HfO2(29), SiO2(30). Initialize all 30 thicknesses with deterministic linear chirp: layer 1 = 60 nm, layer 30 = 159 nm, intermediate layers linearly interpolated. All thicknesses are optimizable variables with bounds [40 nm, 180 nm]. Optimize for maximum transmittance in 1530-1565 nm band and maximum reflectance in 400-700 nm band. Use gradient-based thickness optimizer. Evaluate at normal incidence (0 degrees), unpolarized or both TE/TM. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 400-700 nm, 1530-1565 nm. soft objectives: high transmission in 1530–1565 nm; high reflection in 400–700 nm. behaviors to suppress or avoid: reflection in 1530–1565 nm; transmission in 400–700 nm. manufacturing constraints: total layer count not exceeding 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive to switch from stochastic 100 nm initialization to deterministic linear chirp spanning 60-159 nm thickness extremes discovered in route_02. This targets the exact productive configuration space identified in prior iteration."
+}

@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "13-layer HfO2-SiO2-Cr selective absorber on Al with relaxed bounds and seeded initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Relaxing dielectric thickness bounds by 15% and initializing from the iteration_10 best thickness vector will enable the optimizer to escape local minima and improve the dual-band spectral selectivity score.",
+  "design_principle": "Thin metal layers (Cr) embedded in dielectric stacks create absorption resonances through interference; quarter-wave dielectric pairs provide broadband reflectance in the NIR. Adjusting thicknesses shifts resonance positions and bandwidths.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)",
+    "Cr (Rakic-LD)",
+    "Al (Rakic-LD)"
+  ],
+  "proposed_topology": "air | hfo2 | sio2 | cr | hfo2 | sio2 | cr | hfo2 | sio2 | cr | hfo2 | sio2 | hfo2 | sio2 | al",
+  "design_variables": [
+    "individual layer thicknesses for all 13 film layers",
+    "thickness bounds relaxed by 15% from prior iteration"
+  ],
+  "soft_objectives": [
+    "maximize mean absorptance in 400-700 nm",
+    "maximize mean reflectance in 700-2000 nm",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 13 film layers plus Al substrate",
+    "Cr layers typically 10-20 nm for partial transmission",
+    "dielectric layers 50-300 nm range for visible-NIR interference"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Metal-dielectric stacks create spectrally selective absorption through interference-enhanced field confinement in thin metal layers",
+    "Recalled knowledge: HfO2 (high index) and SiO2 (low index) form quarter-wave pairs for broadband NIR reflectance",
+    "Recalled knowledge: Cr extinction coefficient peaks in visible, enabling absorption there while remaining partially transparent for interference effects",
+    "Recalled knowledge: Al substrate provides high baseline reflectance in NIR, enhancing the high-reflectance band objective"
+  ],
+  "expected_advantages": [
+    "Seeding from iteration_10 best candidate (target_score 0.6506) starts optimization near a known high-performance region",
+    "15% bound relaxation allows exploration beyond previous local constraints without losing physical plausibility",
+    "13-layer topology balances design freedom with manufacturing feasibility under the 20-layer limit"
+  ],
+  "known_risks": [
+    "Uncertain whether Cr layer positions in the sequence are optimal; literature might suggest different metal placement patterns",
+    "Uncertain exact n/k dispersion data for Cr in the registry; measured values may differ from recalled expectations",
+    "Uncertain whether 15% bound relaxation is sufficient; may need further expansion if optimizer stalls",
+    "Recalled quarter-wave thickness estimates may not match actual optimal values due to dispersion and absorption effects"
+  ],
+  "execution_request_english": "Optimize a 13-layer thin-film stack on aluminum substrate for spectrally selective absorption. Stack sequence from air side: hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), then Al (Rakic-LD) substrate. Initialize thicknesses using the iteration_10 best candidate vector: [123.34, 168.22, 10.99, 124.58, 66.98, 108.29, 110.57, 54.71, 76.87, 128.36, 69.57, 139.84, 98.00] nm. Set thickness bounds to [42.5, 345] nm for all layers (15% relaxation from prior 50-300 nm bounds). Optimize at normal incidence, unpolarized light. Score candidates by mean absorptance in 400-700 nm band and mean reflectance in 700-2000 nm band, aggregated as dual-band target. Use gradient-based thickness optimization. Total film layers: 13. Substrate: Al (Rakic-LD). Incident medium: air.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation per feedback directives: relax dielectric thickness bounds by 15% and initialize from iteration_10 best thickness vector to re-exploit high-performance cluster"
+}

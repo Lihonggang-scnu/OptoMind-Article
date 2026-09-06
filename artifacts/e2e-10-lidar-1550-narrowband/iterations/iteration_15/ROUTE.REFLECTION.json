@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-declaration expected a monotonic increase in best_target_score as cavity resonance sharpens. Instead, the executed score sequence [0.9871758891537423, 0.9934468483949733, 0.9074272075231481, 0.9446682698252697] exhibits an initial rise, a severe mid-route collapse in round 3, and a partial recovery in round 4. The magnitude of change between rounds (~0.03 to ~0.08) vastly exceeds the reference epsilon of 0.0001, confirming these are real physical state shifts rather than numerical noise. Tightest_margin remained high and stable at 0.7821913965495819, consistent with the expectation of constraint stability. Valid candidates remained robust at 9, directly refuting the hypothesis-failure scenario where stopband suppression would stall despite optimization.",
+  "deviation_mechanism": "The optimization landscape is highly multimodal due to 29 independently variable layer thicknesses. During round 3, the solver aggressively pushed specific layers to their geometric search boundaries to chase local gradient peaks. For example, layer 6 collapsed to 64.81470572724893 nm while layer 3 expanded to 379.73005037716075 nm, and layer 26 hit 398.0599034541183 nm. These extreme thickness deviations break the quarter-wave optical path condition required for Bragg reflection in the DBR mirrors and the half-wave phase accumulation needed for the central cavity. When the periodicity breaks down, the spectral transmission envelope flattens and cavity quality factor drops, causing the target metric to plummet. The rebound in round 4 occurs because the optimizer subsequently relaxed some saturated layers, partially restoring constructive interference coupling.",
+  "continue_recommended": true,
+  "continue_rationale": "Four rounds have been executed with a healthy feasible-region footprint (valid_candidates=9, tightest_margin=0.7821913965495819). The score trajectory demonstrates transient optimizer divergence rather than a hard physical limit; the recovery from 0.9074272075231481 (round 3) back to 0.9446682698252697 (round 4) proves the design space still contains viable, high-scoring configurations. Stopping now would prematurely abandon a route that merely requires topological regularization to re-enter the resonant basin. Another round is scientifically warranted to stabilize convergence.",
+  "insight_for_next": "Reduce the decision-space dimensionality by locking the outer mirror-pair thicknesses to their nominal quarter-wave values derived from the layer materials, leaving only the central cavity and immediate mismatch layers as free variables. Additionally, impose strict per-layer thickness bounds of ±25% around the initial quarter-wave estimate and add a mild L2 regularization term to penalize extreme boundary excursions. This forces the optimizer to explore physically meaningful phase-matching adjustments rather than saturating at hard limits.",
+  "insight_grounding": "Direct measurement of round 3 candidate thicknesses reveals boundary saturation correlating exactly with the score drop from 0.9934468483949733 (round 2) to 0.9074272075231481 (round 3): layer 6 fell to 64.81470572724893 nm, layer 3 spiked to 379.73005037716075 nm, and layer 26 hit 398.0599034541183 nm. The subsequent relaxation of these extreme values in round 4 tracks the score recovery to 0.9446682698252697. Confining the search to nominal quarter-wave neighborhoods will prevent the optimizer from leaving the phase-matched design manifold that produces scores above 0.99.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:36:38.798152+00:00",
+  "attestation_sha256": "40c2208a240b6e52954b710b8ebf08f7866240d6007629c7aa00a8d9e531262c",
+  "observed_metrics": {
+    "best_target_score": 0.9446682698252697,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.7821913965495819
+  },
+  "reflection_available": true
+}

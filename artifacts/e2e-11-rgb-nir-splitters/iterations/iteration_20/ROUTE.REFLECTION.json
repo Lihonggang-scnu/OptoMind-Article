@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "All four pre-declared expectations are satisfied. best_target_score reached 0.9836, comfortably exceeding the 0.95 threshold. tightest_margin remains robust at 0.4597 without any downward trend, indicating effective regularization. thicknesses_nm across all four evaluated candidates stay tightly bounded between 50.0 nm and 121.0 nm, demonstrating reduced variance from extreme initialization values. valid_candidates count is stable at 9, confirming no collapse of the feasible design space. No directional or magnitude deviations were observed relative to the stated baselines.",
+  "deviation_mechanism": "The transient score collapse in round 4 (to 0.7379) is physically attributable to optimizer-driven thickness drift pushing critical layers out of the quarter-wave resonance condition. When optical path lengths deviate from λ/(4n), accumulated phase shift transitions from constructive to partially destructive interference, flattening the spectral bandgap or peak. Subsequent rounds applied regularization penalties that physically constrained the thickness gradients, rapidly restoring the layers to resonant spacings and recovering the score.",
+  "continue_recommended": true,
+  "continue_rationale": "The objective trajectory recovered from its round-4 nadir (0.7379) to 0.9836 in round 6, a discrete improvement of 0.0101 over the immediate prior round. This delta exceeds the reference epsilon of 0.0001 by two orders of magnitude, confirming active, non-noisy progress through a productive gradient rather than stagnation. At 0.9836, residual transmission/reflection loss indicates that finer phase-locking of layer thicknesses can still yield physically measurable improvements before approaching theoretical optima.",
+  "insight_for_next": "Fix the high-index to low-index thickness ratio at 1.667 (derived from candidate 0’s proven 95.0/57.0 nm pairing) and switch the optimizer to a constrained quasi-Newton routine that optimizes only a single global thickness-scaling factor per candidate. This removes degenerate degrees of freedom that allowed uncorrelated layer drift and directly targets the phase-mismatch instability.",
+  "insight_grounding": "This design change directly exploits candidate 0’s architecture (layers 0,2,4… fixed at 57.0 nm; layers 1,3,5… fixed at 95.0 nm), which produced the route’s highest recorded score of 0.9836 in round 6. It mitigates the exact failure mode seen in candidate 2 (index 2) during round 4, where unconstrained drift pushed layer 5 to 63.0 nm and layer 17 to 120.0 nm, breaking the resonance condition and crashing the score to 0.7379. Locking the 1.667 ratio eliminates these unstable dimensions while preserving the verified high-efficiency topology.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:18:39.443444+00:00",
+  "attestation_sha256": "8841678e9225ff352ff7f54bbde5c33512dde01f861ab8e200e0d1ece4bc9e5b",
+  "observed_metrics": {
+    "best_target_score": 0.9835573025853339,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4597379271838704
+  },
+  "reflection_available": true
+}

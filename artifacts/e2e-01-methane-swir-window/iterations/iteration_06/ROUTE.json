@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "Deterministic Chirp Seed with Localized Jitter (20L)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A deterministic linear chirp initialization (+6 nm per pair from 210 nm baseline) combined with localized thickness jitter on layers exceeding 320 nm will disrupt Fabry-Pérot resonance traps and improve dual-band spectral separation compared to random or fixed periodicity initialization.",
+  "design_principle": "Transfer matrix method with gradient-based thickness optimization; deterministic chirp provides symmetric exploration baseline; localized jitter probes adjacent spectral windows without destabilizing the entire stack.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "All 20 layer thicknesses (nm)",
+    "Optimizer step size and convergence tolerance"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1000-1700 nm",
+    "Maximize mean reflectance in 300-450 nm",
+    "Maintain total thickness under 3 micrometers"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 20 is within 30-layer constraint",
+    "Thickness jitter bounds (+/- 20 nm) represent realistic deposition uniformity tolerance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for isotropic layered media",
+    "Chirped multilayer stacks for broadband spectral control",
+    "Gradient-based optimization with regularization for multi-objective thin-film design"
+  ],
+  "expected_advantages": [
+    "Deterministic initialization reduces optimizer dependence on random seed",
+    "Localized jitter targets thick layers that may cause unwanted resonances",
+    "20 layers balances performance and fabrication complexity"
+  ],
+  "known_risks": [
+    "Chirp rate may be suboptimal for the specific dual-band separation",
+    "Jitter may destabilize convergence if too aggressive",
+    "Local minima may still trap optimization"
+  ],
+  "execution_request_english": "Optimize a 20-layer alternating HfO2/SiO2 stack on fused silica substrate (air incidence, normal angle, unpolarized). Initialize Candidate 0 with deterministic chirp: layer pair 1 starts at 210 nm HfO2 / 210 nm SiO2, each subsequent pair increases by +6 nm per layer (216, 222, 228... nm). Initialize Candidates 1-2 with thicknesses [249.65, 350.11, 251.32, 341.94, 263.56, 305.48, 237.20, 300.50, 250.62, 313.34, 225.55, 306.75, 280.14, 321.35, 250.84, 284.06, 264.64, 324.85, 279.96, 88.92] nm, then apply +/- 20 nm uniform random jitter only to individual layers exceeding 320 nm thickness. Optimize all 20 thicknesses using gradient-based optimizer with bounds [50 nm, 500 nm]. Evaluate mean transmittance in 1000-1700 nm and mean reflectance in 300-450 nm. Total layer count fixed at 20. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Per feedback directives: reinitialize Candidate 0 with deterministic chirped seed (+6 nm per pair from 210 nm baseline) instead of fixed periodicity; apply localized +/- 20 nm jitter to layers exceeding 320 nm in Candidates 1-2 to disrupt Fabry-Pérot traps. Execution request made standalone by embedding explicit thickness values."
+}

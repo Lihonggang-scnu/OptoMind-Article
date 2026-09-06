@@ -1,0 +1,53 @@
+{
+  "route_id": "control_route_01",
+  "title": "Fabry-Perot Narrowband Transmission Filter for 1550 nm LiDAR",
+  "route_kind": "custom_layered_stack",
+  "scientific_hypothesis": "A symmetric Fabry-Perot cavity with quarter-wave Bragg mirrors surrounding a half-wave defect layer will achieve peak transmittance at 1550 nm while creating stopbands at 1400-1500 nm and 1600-1700 nm, with performance improving as mirror pair count increases up to the 30-layer constraint.",
+  "design_principle": "Recalled thin-film optics: alternating high/low index layers at quarter-wave optical thickness create a photonic bandgap. Inserting a half-wave defect layer in the center creates a transmission resonance within the stopband. The number of mirror pairs controls stopband width and depth; the defect layer thickness controls the resonance wavelength.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | (Ta2O5/SiO2)_7 | Ta2O5 | (SiO2/Ta2O5)_7 | Fused Silica substrate - 29 layers total: 14 mirror pairs plus 1 defect layer, starting with high-index layer from air side",
+  "design_variables": [
+    "individual layer thicknesses for all 29 layers",
+    "defect layer thickness specifically tuned for 1550 nm resonance"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥ 0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 to stay under 30-layer limit",
+    "quarter-wave layers should be near 100-300 nm thickness range at 1550 nm for practical deposition",
+    "symmetric design reduces stress imbalance"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stack reflectance increases with number of layer pairs, approximately R = ((nH/nL)^(2N) - 1) / ((nH/nL)^(2N) + 1) for N pairs",
+    "Recalled: Fabry-Perot transmission peak occurs when defect layer optical thickness equals integer multiples of half-wavelength",
+    "Recalled: Stopband width scales with refractive index contrast ratio nH/nL",
+    "Recalled: Ta2O5 has higher refractive index (~2.1-2.2) than SiO2 (~1.44-1.45) at 1550 nm, providing good contrast for Bragg mirrors",
+    "Recalled: Symmetric mirror structure around defect layer produces cleaner transmission profile than asymmetric designs"
+  ],
+  "expected_advantages": [
+    "High peak transmittance achievable with sufficient mirror pairs",
+    "Well-defined stopbands on both sides of 1550 nm",
+    "Symmetric design simplifies optimization and reduces sensitivity to thickness errors",
+    "All 29 layers can be individually tuned during optimization rounds"
+  ],
+  "known_risks": [
+    "Ta2O5 refractive index value at 1550 nm is recalled as approximately 2.1-2.2 but exact value uncertain - registry dataset will provide measured data",
+    "SiO2 refractive index recalled as ~1.44-1.45 at 1550 nm but exact value uncertain - registry dataset will provide measured data",
+    "7 mirror pairs per side may not provide sufficient stopband depth for 1400-1500 nm and 1600-1700 nm suppression - may need to verify if 29 layers is enough",
+    "Angle of incidence not specified in request - assuming normal incidence (0 degrees) but LiDAR receivers may have finite field of view",
+    "Polarization not specified - design assumes unpolarized or normal incidence where polarization splitting is minimal",
+    "Exact passband width around 1550 nm not defined - optimization will naturally determine bandwidth based on mirror pair count",
+    "Material absorption in Ta2O5 at 1550 nm not accounted for in recalled knowledge - extinction coefficient data from registry will determine if this matters"
+  ],
+  "execution_request_english": "Design a planar multilayer dielectric filter for 1550 nm LiDAR receiver. Incident medium is Air. Substrate is Fused Silica. Use exactly 29 layers with materials Ta2O5 (Gao) and SiO2 (Lemarchand). Stack structure: Air | (Ta2O5 (Gao)/SiO2 (Lemarchand))_7 | Ta2O5 (Gao) | (SiO2 (Lemarchand)/Ta2O5 (Gao))_7 | Fused Silica. Optimize all 29 layer thicknesses to maximize transmittance at 1550 nm while minimizing transmittance in 1400-1500 nm and 1600-1700 nm bands. Wavelength bands for evaluation: 1400-1500 nm (suppression), 1550 nm (transmission peak), 1600-1700 nm (suppression). Normal incidence assumed. Total layer count fixed at 29. Materials: Ta2O5 (Gao) (high index), SiO2 (Lemarchand) (low index).",
+  "priority": 1,
+  "parent_route_id": null,
+  "revision_reason": null
+}

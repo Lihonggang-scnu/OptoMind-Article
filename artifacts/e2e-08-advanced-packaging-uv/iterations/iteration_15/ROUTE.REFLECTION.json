@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected best_target_score to rise across rounds; observed score declined sharply from 0.927478 (round 1) to 0.847304 (round 2) to 0.626270 (round 3). Expected tightest_margin to remain positive; observed value is 0.374332, which is consistent. Expected valid_candidates to remain stable; observed value is 9, indicating a significant contraction in feasible population.",
+  "deviation_mechanism": "The optical degradation stems from thickness initialization bias. Visible-light broadband AR design requires precise phase accumulation (typically near lambda/4 or chirped profiles). Recorded thickness vectors show heavy concentration in the 90–140 nm range, creating a semi-quarter-wave resonance for ~400–550 nm wavelengths. As the optimizer perturbed these layers in subsequent rounds, phase errors accumulated constructively for reflection and destructively for transmission in the target 420–700 nm band. Since tightest_margin remains positive (0.374332), geometric bounds are not violated; the score drop is purely an interference misalignment effect where the search drifted into an anti-transmission valley rather than a true local minimum.",
+  "continue_recommended": true,
+  "continue_rationale": "Three rounds have executed, showing a steep downward trajectory (drop of ~0.301) rather than stagnation. Valid candidates have contracted to 9, signaling over-constrained exploration. The decline does not indicate physical infeasibility or a marginal-gains plateau; it indicates a divergent search trajectory confined to a narrow thickness basin. Continuing with expanded initialization and bound relaxation per the pre-declared protocol will test recovery of high-transmittance states.",
+  "insight_for_next": "Reinitialize the population using a bimodal thickness distribution spanning 20–60 nm and 150–300 nm to sample both thin-film interference orders and thicker propagation phases. Apply the declared stop-condition heuristic to relax thickness bounds by +5 nm on both sides to restore valid_candidate throughput above 10% of the population.",
+  "insight_grounding": "The score sequence [0.927478, 0.847304, 0.626270] confirms progressive divergence from optimal transmittance states. Valid candidates collapsed to 9, directly triggering the pre-defined relaxation rule. Recorded thickness vectors show heavy concentration between 93.8 nm and 143.8 nm, which constrained the optimizer to a single interference regime that cannot sustain broadband performance under perturbation. Expanding the initialization range directly addresses this identified localization trap.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:58:32.354596+00:00",
+  "attestation_sha256": "3a24f148b80bb1df21c59a34847cb1f56caec02a14d5cecb15504a0c07697d4a",
+  "observed_metrics": {
+    "best_target_score": 0.6262700207484284,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.374331979480994
+  },
+  "reflection_available": true
+}

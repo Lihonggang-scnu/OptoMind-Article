@@ -1,0 +1,47 @@
+{
+  "route_id": "control_route_01",
+  "title": "Localized Thickness Refinement Sweep Around Best 24-Layer HfO2/SiO2 Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The current best 24-layer thickness configuration (target_score 0.6626) is not at a strict local maximum; controlled Gaussian perturbations with ±3nm standard deviation will discover thickness vectors yielding target_score > 0.6626 within 3-5 refinement rounds.",
+  "design_principle": "Thin-film interference is highly sensitive to optical path length (n×d). Small thickness changes (~3nm) in high-index layers (HfO2, n≈2.0 at 1000nm) shift phase by ~0.02 radians at 1000nm, enough to tune constructive/destructive interference without collapsing the broadband response. This recalled rule of thumb suggests the optimizer can climb out of shallow local optima through fine-grained search.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer alternating stack: air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | fused_silica_substrate",
+  "design_variables": [
+    "individual layer thicknesses (24 variables), perturbed from previous best candidate with Gaussian noise σ=3.0nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1000-1700nm band",
+    "maximize mean reflectance in 300-450nm band",
+    "maintain physical validity (positive thicknesses, no absorption violations)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 24 (within 30-layer limit)",
+    "individual thicknesses should remain within ±15nm of previous best to maintain manufacturability",
+    "no layer thinner than 30nm to avoid pinhole defects"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: quarter-wave stacks centered at geometric mean wavelength provide broadband reflection; this design inverts that for dual-band transmission/reflection",
+    "Recalled knowledge: HfO2 (n≈2.0) and SiO2 (n≈1.45) index contrast at 1000nm enables strong interference with moderate layer count",
+    "Recalled knowledge: gradient-based thickness optimizers benefit from warm-start initialization near known good solutions",
+    "Recalled knowledge: ±3nm perturbation is small enough to preserve spectral shape but large enough to escape shallow local optima in typical thin-film landscapes"
+  ],
+  "expected_advantages": [
+    "Faster convergence than random re-initialization since starting point is already validated",
+    "Lower risk of discovering physically invalid candidates since perturbations are bounded",
+    "Directly tests whether the previous best was truly optimal or merely the best found so far"
+  ],
+  "known_risks": [
+    "Uncertain whether 3nm standard deviation is optimal - may be too small to escape local optima or too large to preserve broadband response; would need empirical tuning to settle",
+    "Uncertain whether 24 layers is the optimal count for this dual-band requirement - 20 or 28 layers might perform better, but this route fixes topology to isolate thickness effects",
+    "Recalled HfO2 and SiO2 refractive indices are approximate; actual dispersion curves from the material registry will determine exact performance",
+    "No polarization or angle specification in original request - assumed normal incidence, unpolarized; if actual use case differs, performance may degrade"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on fused_silica_substrate with air incidence. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand) (24 layers total, alternating starting with HfO2). Initialize thicknesses from previous best candidate: [100.35, 61.14, 113.29, 53.06, 100.21, 58.53, 111.25, 56.26, 128.36, 64.04, 125.76, 57.87, 117.51, 67.26, 132.97, 67.79, 146.85, 71.85, 148.21, 65.68, 144.07, 72.37, 52.83, 62.61] nm. Apply Gaussian perturbations with standard deviation 3.0nm to each thickness independently per iteration. Wavelength bands: 300-450nm (maximize reflectance), 1000-1700nm (maximize transmittance). Incidence: normal (0 degrees), unpolarized. Total layer count fixed at 24. Materials: hfo2 and SiO2 (Lemarchand) only. Optimization method: gradient_thickness with warm-start from provided vector.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation round implementing localized refinement sweep per feedback directives: replaced stochastic initialization with Gaussian perturbation (σ=3.0nm) around previous best candidate thickness vector to probe immediate neighborhood for improvement."
+}

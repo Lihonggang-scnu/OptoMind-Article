@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Asymmetric Initialization with Thickness-Ratio Penalty for Boundary Stability",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing low-index SiO2 layers at 55 nm and high-index Ta2O5 layers at 105 nm, combined with a thickness-ratio penalty limiting adjacent layer differences to 3:1, will prevent low-index layers from collapsing to the 20 nm lower bound and produce smoother spectral evolution toward higher target scores.",
+  "design_principle": "Asymmetric quarter-wave deviation initialization prevents optimization from driving all low-index layers to minimum bounds; ratio penalty enforces gradual thickness transitions that stabilize interference conditions across the dual-stopband spectrum.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "all 36 layer thicknesses bounded 20-350 nm",
+    "optimizer step size and ratio penalty weight"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "36 layers within fabrication capability",
+    "thickness range 20-350 nm respects deposition limits",
+    "ratio penalty may improve thickness uniformity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Modified quarter-wavelength optimization principle from evidence showing non-quarter-wave thicknesses improve broadband performance",
+    "Needle optimization experience indicating non-uniform thickness distributions enable multi-wavelength targets"
+  ],
+  "expected_advantages": [
+    "Prevents low-index layer collapse observed in iterations 10 and 13",
+    "Ratio penalty reduces extreme thickness jumps that cause spectral instability",
+    "Asymmetric initialization provides better starting point for gradient-based optimization"
+  ],
+  "known_risks": [
+    "Ratio penalty may constrain optimizer from finding global optimum",
+    "Asymmetric initialization may not suit dual-stopband requirement if stopbands need different optical thicknesses"
+  ],
+  "execution_request_english": "Optimize a 36-layer alternating Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 deg incidence, unpolarized. Stack topology: Air | Ta2O5(105nm init) | SiO2(55nm init) | Ta2O5(105nm init) | SiO2(55nm init) | ... repeated 18 times | Fused Silica. All layer thicknesses bounded 20-350 nm. Apply gradient_thickness optimizer with thickness-ratio penalty: adjacent layer thickness ratio must not exceed 3:1. Objectives: maximize mean transmittance 420-700 nm, minimize mean transmittance 355-365 nm, minimize mean transmittance 1030-1080 nm, minimize transmittance at 355 nm. Spectral grid: 300-1200 nm with sufficient resolution to resolve 355 nm single-point target. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Directly implements feedback directive: asymmetric initialization (55 nm SiO2, 105 nm Ta2O5) prevents low-index collapse; 3:1 thickness-ratio penalty suppresses extreme boundary-pushing behavior observed in iterations 10 and 13."
+}

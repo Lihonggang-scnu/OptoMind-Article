@@ -1,0 +1,45 @@
+{
+  "route_id": "route_03",
+  "title": "Quasi-Periodic Dual-Band λ/4 Initialization with Reduced Step-Size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses from quarter-wave optical thicknesses at both 360 nm and 1050 nm center wavelengths, rather than uniform or block seeding, establishes a physically coherent phase-matching baseline that reduces early-cycle optimizer overshoot and improves convergence toward the dual-stopband target.",
+  "design_principle": "Modified Quarter-Wavelength Optimization: Start with λ/4 optical thickness layers for high-reflection bands at both stopband centers, then vary optical thickness through optimization to smooth spectral characteristics and broaden suppression bands.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | (Ta2O5 | SiO2) × 18 | Fused Silica substrate; exactly 36 finite layers with alternating high-low index sequence starting with Ta2O5",
+  "design_variables": [
+    "all 36 layer thicknesses"
+  ],
+  "soft_objectives": [
+    "minimize average transmittance in 355-365 nm",
+    "minimize average transmittance in 1030-1080 nm",
+    "maximize average transmittance in 420-700 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "layer thickness range 20-350 nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectance bands at multiple center wavelengths",
+    "Transfer-matrix method for multilayer interference"
+  ],
+  "expected_advantages": [
+    "Better initial phase matching reduces optimizer iterations needed",
+    "Reduced step-size prevents early-cycle overshoot into local minima",
+    "Dual-band initialization addresses both stopbands simultaneously"
+  ],
+  "known_risks": [
+    "May still converge to local optimum if step-size too conservative",
+    "Quarter-wave initialization may bias toward narrow stopbands"
+  ],
+  "execution_request_english": "Optimize a 36-layer Ta2O5/SiO2 multilayer filter on fused silica substrate at 0 deg incidence, unpolarized light. Initialize all 36 layer thicknesses from quarter-wave optical thicknesses computed at 360 nm and 1050 nm center wavelengths in alternating sequence. Use gradient-based optimizer with step-size scaling factor reduced by 50% compared to standard. Layer thickness bounds: 20-350 nm. Materials: Ta2O5 (high index), SiO2 (low index). Optimize all 36 thicknesses to minimize average transmittance in 355-365 nm and 1030-1080 nm bands while maximizing average transmittance in 420-700 nm band. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive to discard uniform/block seedings and initialize with quasi-periodic λ/4 scaffold at target center wavelengths (360 nm and 1050 nm), with 50% reduced step-size scaling to suppress early-cycle overshoot."
+}

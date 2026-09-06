@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "Local thickness refinement of 8-layer ZnSe/ZnS stack with ±1.5 nm bounded optimizer",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The iteration-14 optimum represents a local maximum in the thickness landscape; restricting optimization to ±1.5 nm variations around this point will allow the TMM solver to converge to the true discrete optimum without triggering quantization-induced score regression observed in prior rounds.",
+  "design_principle": "Bounded local optimization preserves the verified interference structure while fine-tuning layer thicknesses within manufacturing-tolerable ranges. Small perturbations avoid large phase jumps that destabilize the spectral response.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (8 finite layers, alternating sequence starting with ZnSe)",
+  "design_variables": [
+    "Layer thicknesses (8 variables, bounded ±1.5 nm from iteration-14 candidate 1 values)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain smooth spectral transitions between bands"
+  ],
+  "manufacturing_considerations": [
+    "±1.5 nm thickness tolerance represents tight but achievable deposition control",
+    "8-layer count well below 16-layer maximum constraint",
+    "ZnSe and ZnS both compatible with thermal evaporation processes per evidence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:253920409:s2chunk:253920409:14121:16260:85ad0582554fb615",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for dichroic filter design",
+    "Local optimization convergence theory for smooth parameter landscapes",
+    "TMM interference phase sensitivity to sub-wavelength thickness variations"
+  ],
+  "expected_advantages": [
+    "Avoids quantization jumps that caused score regression in iteration 14",
+    "Faster convergence due to reduced search space",
+    "Manufacturing-relevant tolerance bounds"
+  ],
+  "known_risks": [
+    "Local optimum may be suboptimal compared to global search",
+    "±1.5 nm bounds may be too restrictive if iteration-14 candidate is far from true optimum",
+    "Material dispersion data uncertainty in LWIR range"
+  ],
+  "execution_request_english": "Optimize an 8-layer planar dielectric stack on Ge substrate with Air incidence. Layer sequence: ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS (8 finite layers). Initialize thicknesses to [428.0013015883522, 72.27243184429491, 70.76705602667704, 51.57959322779923, 675.7509695845441, 72.33216138542882, 50.63714990161528, 547.4184886886561] nm. Apply bounded local optimizer (coordinate descent or truncated Newton) with thickness bounds ±1.5 nm from initialization values. Wavelength bands: 8000-11000 nm (high transmittance target), 3000-5000 nm (low transmittance target). Normal incidence, unpolarized light. Total layer count: 8. Material registry resolves ZnSe, ZnS, Ge optical constants. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Following feedback directive: initialize from iteration-14 candidate 1 exact thicknesses, switch to bounded local optimizer with ±1.5 nm variations to avoid quantization jumps that caused score regression from 0.2009 to 0.1983"
+}

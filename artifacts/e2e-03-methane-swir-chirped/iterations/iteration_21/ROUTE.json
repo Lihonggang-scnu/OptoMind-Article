@@ -1,0 +1,49 @@
+{
+  "route_id": "route_02",
+  "title": "28-Layer Parametric Quadratic Chirp with Bounded Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A parametric quadratic chirp model (t_i = t_base + k·i + c·i²) with derivative clipping can achieve target scores ≥0.85 while maintaining physical chirp consistency and reducing optimization degrees of freedom from 28 to 3 parameters.",
+  "design_principle": "Quadratic chirp provides monotonic thickness progression matching physical deposition constraints while enabling broadband UV reflection through progressive optical path variation across the stack depth.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "t_base (base thickness in nm)",
+    "k (linear chirp coefficient in nm/layer)",
+    "c (quadratic chirp coefficient in nm/layer²)"
+  ],
+  "soft_objectives": [
+    "Maximize reflectance in 300-450 nm band",
+    "Maximize transmittance in 1000-1700 nm band",
+    "Maintain smooth monotonic thickness progression"
+  ],
+  "manufacturing_considerations": [
+    "28 layers within 30-layer maximum constraint",
+    "Parametric model reduces deposition control complexity compared to independent optimization",
+    "Quadratic profile compatible with standard deposition monitoring systems"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Chirped distributed Bragg reflector theory for broadband reflection"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality from 28 to 3 parameters",
+    "Physical chirp consistency enforced by model structure",
+    "Manufacturing-friendly smooth thickness profile"
+  ],
+  "known_risks": [
+    "Parametric constraint may limit achievable performance compared to independent optimization",
+    "Quadratic model may not capture optimal non-monotonic thickness distribution"
+  ],
+  "execution_request_english": "Optimize a 28-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate under normal incidence. Layer sequence: HfO2-SiO2-HfO2-SiO2-... (28 layers total, starting with HfO2 at air interface). Use parametric quadratic chirp model: thickness_i = t_base + k*i + c*i² where i is layer index (0-27). Optimize parameters t_base, k, c with bounds t_base∈[30,150] nm, k∈[-5,5] nm/layer, c∈[-0.5,0.5] nm/layer². Apply derivative clipping to ensure thickness_i ∈ [20,250] nm for all layers. Evaluate spectral performance across 300-1700 nm with dual-band objectives: maximize mean reflectance 300-450 nm, maximize mean transmittance 1000-1700 nm. Use gradient-based optimizer with 1000 iterations maximum. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: Maximum total layer count of 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Addresses feedback directive to enforce physical chirp consistency by switching from per-layer independent optimization to bounded parametric chirp model with quadratic profile"
+}

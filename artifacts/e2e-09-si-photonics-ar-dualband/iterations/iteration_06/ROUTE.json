@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "12-Layer Dual-Band AR with Tightened Perturbation Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Halving the thickness perturbation range from ±150 nm to ±75 nm will enable finer local gradient descent around the previous best configuration (target_score 0.9828), potentially recovering the remaining 0.0172 headroom without escaping to already-tested stack fingerprints.",
+  "design_principle": "Local refinement of multilayer thicknesses using transfer matrix method with reduced search space to converge on local optima near the previous best candidate.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "12 finite layers alternating Ta2O5/SiO2 starting with Ta2O5 at air interface, terminating into semi-infinite silicon substrate",
+  "design_variables": [
+    "12 layer thicknesses (20-400 nm bounds)",
+    "perturbation initialization ±75 nm around previous best"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance across 1260-1360 nm band",
+    "minimize mean reflectance across 1530-1565 nm band",
+    "maximize transmittance into silicon substrate"
+  ],
+  "manufacturing_considerations": [
+    "maximum 12 layers",
+    "individual layer thickness between 20 nm and 400 nm",
+    "materials restricted to Ta2O5 and SiO2"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:59459145:s2chunk:59459145:4566:6953:cac151c6a433ebc4"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference optimization",
+    "Local gradient descent benefits from reduced perturbation bounds near known optima"
+  ],
+  "expected_advantages": [
+    "Finer thickness resolution may capture local minima missed by broader search",
+    "Avoids re-exploring already-tested stack fingerprints from previous iteration",
+    "Maintains proven 12-layer topology with demonstrated 0.9828 baseline"
+  ],
+  "known_risks": [
+    "May converge to same local optimum without improvement if previous configuration was already at local minimum",
+    "Tighter bounds reduce exploration diversity"
+  ],
+  "execution_request_english": "Optimize a 12-layer Ta2O5/SiO2 anti-reflection coating on silicon substrate for dual-band operation. Layer sequence: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2 (12 finite layers). Air incidence at 0 degrees, unpolarized light. Wavelength bands: 1260-1360 nm and 1530-1565 nm. Initialize thickness optimization with perturbation bounds of ±75 nm around the previous best candidate thicknesses [283.0, 282.0, 210.0, 307.0, 273.0, 296.0, 255.0, 295.0, 314.0, 283.0, 81.0, 83.0] nm, respecting hard bounds of 20-400 nm per layer. Use gradient-based thickness optimizer. Report best_target_score, valid_candidates count, tightest_margin, and final optimized thicknesses_nm. Minimize joint mean reflectance across both wavelength bands. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Halved initialization/perturbation range from ±150 nm to ±75 nm per feedback directive to force local gradient descent mode rather than broad exploration. This targets the 0.0172 remaining headroom from previous best_target_score of 0.9828."
+}

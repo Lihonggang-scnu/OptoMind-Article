@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Bi-Periodic Quarter-Wave Seeded 36-Layer Stack with Plus or Minus 15 nm Perturbation and 40 nm Adjacency Constraint",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A bi-periodic initialization consisting of 4 quarter-wave periods centered at 360 nm followed by 4 quarter-wave periods centered at 1050 nm, with thickness optimization bounded to plus or minus 15 nm from initial values and adjacent layer thickness differences constrained to less than or equal to 40 nm, will preserve local phase coherence in each stopband region while enabling global band-shaping, yielding target scores greater than or equal to 0.90 and improved convergence stability compared to unconstrained 36-layer optimizations.",
+  "design_principle": "Bi-periodic quarter-wave stacking with bounded perturbation preserves the physical mechanism of each stopband (UV rejection from first 16 layers, NIR rejection from last 16 layers, with 4 transition layers) while the adjacency constraint prevents thickness discontinuities that cause numerical instability.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "36 finite layers total: alternating Ta2O5 and SiO2 starting with Ta2O5 on fused silica substrate. Layers 1-16 form 4 periods optimized for 360 nm center (quarter-wave optical thickness), layers 17-20 form transition region, layers 21-36 form 4 periods optimized for 1050 nm center. Air incidence, fused silica substrate.",
+  "design_variables": [
+    "layer thicknesses (36 variables, bounded to plus or minus 15 nm from quarter-wave initialization, adjacent difference less than or equal to 40 nm)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance in 420-700 nm",
+    "minimize average transmittance in 355-365 nm",
+    "minimize average transmittance in 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "individual layer thickness 20-350 nm",
+    "adjacent layer thickness difference less than or equal to 40 nm for deposition uniformity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:245822325:s2chunk:245822325:9655:11670:c26022c37015a7c0"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Bi-periodic structure enables dual-stopband without cascaded filters",
+    "Bounded perturbation preserves phase coherence while allowing optimization"
+  ],
+  "expected_advantages": [
+    "Improved convergence stability from adjacency constraint",
+    "Physical interpretability from bi-periodic initialization",
+    "Dual-stopband capability from separated period sections"
+  ],
+  "known_risks": [
+    "Transition region may cause passband ripple",
+    "Plus or minus 15 nm bound may limit global optimization freedom",
+    "36 layers may still exhibit numerical convergence issues"
+  ],
+  "execution_request_english": "Design a 36-layer planar dielectric filter on fused silica substrate with air incidence at 0 degrees, unpolarized light. Materials: alternating Ta2O5 (high index) and SiO2 (low index), starting with Ta2O5 as layer 1. Initialize thicknesses using bi-periodic quarter-wave template: layers 1-16 as 4 periods with quarter-wave optical thickness at 360 nm center wavelength (Ta2O5 approximately 41 nm, SiO2 approximately 61 nm), layers 17-20 as transition region with interpolated thicknesses, layers 21-36 as 4 periods with quarter-wave optical thickness at 1050 nm center wavelength (Ta2O5 approximately 120 nm, SiO2 approximately 178 nm). Optimize all 36 layer thicknesses with bounds: each thickness must remain within plus or minus 15 nm of its initialized value, and the absolute difference between any two adjacent layer thicknesses must not exceed 40 nm. All thicknesses must also satisfy the global 20-350 nm manufacturing range. Objectives: maximize mean transmittance across 420-700 nm, minimize mean transmittance across 355-365 nm, minimize mean transmittance across 1030-1080 nm, minimize transmittance at 355 nm. Use gradient-based thickness optimizer with the stated bounds. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive for bi-periodic template with 4 periods at 360 nm plus 4 periods at 1050 nm, plus or minus 15 nm perturbation cap, and 40 nm adjacent-layer difference constraint to address numerical convergence issues and score regression observed in iterations 2, 3, 5, and 6."
+}

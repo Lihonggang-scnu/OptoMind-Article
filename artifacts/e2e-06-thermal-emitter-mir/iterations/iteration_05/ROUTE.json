@@ -1,0 +1,45 @@
+{
+  "route_id": "route_01",
+  "title": "Quarter-Wave Initialized 12-Layer Stack with Localized Perturbation Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses near quarter-wave optical thickness for the 8-13 μm band center (~10.5 μm) and applying small-step localized perturbation will converge to higher target scores than the previous broad-range gradient search, as fine-scale interference tuning becomes more effective once candidates enter the valid regime.",
+  "design_principle": "Quarter-wave stack provides physically motivated starting point; localized perturbation exploits interference fine-tuning without escaping the valid basin identified in iteration_01.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2] x6 | Si substrate (12 finite layers total, alternating sequence fixed)",
+  "design_variables": [
+    "layer thicknesses (12 variables, initialized 250-550 nm range)"
+  ],
+  "soft_objectives": [
+    "maximize emissivity 8000-13000 nm",
+    "minimize emissivity 3000-5000 nm",
+    "maintain robustness"
+  ],
+  "manufacturing_considerations": [
+    "12 layers within 24-layer limit",
+    "thickness range 250-550 nm compatible with deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for Bragg reflector/emitter design",
+    "Localized optimization converges faster near valid basin"
+  ],
+  "expected_advantages": [
+    "Faster convergence than broad gradient search",
+    "Better exploitation of interference effects identified in iteration_01",
+    "Avoids re-testing excluded 12L fingerprints"
+  ],
+  "known_risks": [
+    "May converge to local optimum near initialization",
+    "Quarter-wave assumption may not be optimal for dual-band selectivity"
+  ],
+  "execution_request_english": "Optimize a 12-layer HfO2/SiO2 multilayer stack on silicon substrate with air incidence. Layer sequence: alternating HfO2/SiO2 starting with HfO2 (6 pairs, 12 finite layers). Initialize all layer thicknesses uniformly distributed between 250-550 nm. Use localized perturbation optimizer with reduced step size (learning rate 0.01-0.05) for fine-scale thickness tuning. Target: maximize absorptance/emissivity in 8000-13000 nm band, minimize emissivity in 3000-5000 nm band. Normal incidence, unpolarized or average of TE/TM. Evaluate candidates via TMM. Do not reproduce thickness arrays matching excluded fingerprints: 5730cdc3d0a12ddf, d672da543a029796, 5dcb880065e6b552, 6f233010bd58d5ec, 3e3543b14e3f2172, d69f71359c410182, 5df8a77d62a82442, 90d74c952ccb7c62. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Iteration_01 achieved 0.8903 target score with 12L candidates; feedback directive specifies quarter-wave initialization (250-550 nm) and localized perturbation strategy to exploit fine-scale interference tuning. This route implements that exact change while avoiding previously tested stack fingerprints."
+}

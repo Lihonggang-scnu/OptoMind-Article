@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Expanded-Bound Thickness Optimization for 30-Layer HfO2/SiO2 Dual-Band Coating",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Wider thickness initialization bounds (60-130 nm vs 80-95 nm) with reduced robustness penalty will discover thickness distributions that better separate the visible reflection band from the NIR transmission band in a fixed 30-layer alternating stack.",
+  "design_principle": "Dielectric mirror stacks work through constructive interference of reflections at each interface. For dual-band behavior, layer thicknesses must be tuned so that visible wavelengths experience high reflectance (near quarter-wave condition at visible center) while NIR wavelengths experience low reflectance (away from quarter-wave condition at NIR). Alternating high/low index materials create the necessary index contrast.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica Substrate (30 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 30 layers",
+    "thickness initialization bounds expanded to 60-130 nm",
+    "optimizer perturbation amplitude",
+    "robustness penalty coefficient reduced by 50%"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1530-1565 nm band",
+    "maximize mean reflectance in 400-700 nm band",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 30",
+    "thicknesses should remain within physically deposible range (60-130 nm per layer)",
+    "alternating sequence preserved for manufacturability"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave optical thickness (n*d = lambda/4) creates maximum reflectance at design wavelength for alternating high/low index stacks",
+    "HfO2 has higher refractive index than SiO2 in both visible and NIR bands, providing index contrast for interference effects",
+    "Dual-band coatings require thickness distributions that satisfy different optical thickness conditions for different wavelength bands",
+    "Gradient-based thickness optimization can escape local minima with sufficient perturbation amplitude and search space bounds"
+  ],
+  "expected_advantages": [
+    "Wider bounds allow discovery of non-uniform thickness patterns that narrow bounds would miss",
+    "Reduced regularization penalty lets the optimizer prioritize target score over robustness during exploration",
+    "Increased perturbation helps escape the uniform-thickness local basin observed in iteration 12"
+  ],
+  "known_risks": [
+    "I recall HfO2 index is roughly 2.0-2.1 in visible and ~1.9 in NIR, SiO2 is ~1.46-1.48, but exact dispersion curves come from the material catalog datasets, not my memory",
+    "I am uncertain whether 30 layers is sufficient for both high visible reflectance and high NIR transmission simultaneously - this may require more layers or different material pairs",
+    "The optimal starting layer material (HfO2 vs SiO2 first) is not certain from memory; this route fixes HfO2-first based on standard high-index-first mirror convention",
+    "Reduced robustness penalty may produce designs sensitive to thickness variation; this tradeoff would need experimental validation",
+    "What would settle these uncertainties: measured n/k dispersion data from the catalog, comparison with alternative material pairs, robustness testing with thickness perturbation analysis"
+  ],
+  "execution_request_english": "Optimize a 30-layer alternating dielectric coating on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), repeating 15 times (30 layers total, starting with HfO2). Optimize all 30 layer thicknesses with initialization bounds 60-130 nm per layer. Use gradient_thickness optimizer with perturbation amplitude increased from previous iteration and robustness penalty coefficient reduced by 50%. Maximize mean transmittance in 1530-1565 nm band and mean reflectance in 400-700 nm band. Normal incidence, unpolarized light. Total layer count fixed at 30. Materials: hfo2 and SiO2 (Lemarchand) from catalog.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Expanded thickness bounds from 80-95 nm to 60-130 nm, reduced robustness penalty by 50%, increased optimizer perturbation amplitude to escape local basin observed in iteration 12 where best_target_score dropped to 0.532"
+}

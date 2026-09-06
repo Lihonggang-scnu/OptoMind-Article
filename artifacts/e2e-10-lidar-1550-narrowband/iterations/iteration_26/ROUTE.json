@@ -1,0 +1,51 @@
+{
+  "route_id": "route_03",
+  "title": "Symmetry-Constrained Chirped Defect Cavity with Gradient Penalty (21 Layers)",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A 21-layer symmetric defect-cavity filter with bounded ±8% chirp envelope, frozen outermost 4 layers for impedance matching, and gradient penalty >15% will recover the 0.9831 score while improving convergence stability compared to unconstrained optimization.",
+  "design_principle": "Quarter-wave DBR mirrors (Ta2O5/SiO2) with half-wave defect cavity at 1550 nm, chirped thickness initialization within ±8% of nominal, hard symmetry constraints on layers 1-4 and 18-21, optimizer restricted to central 13 layers (5-17), penalty term for adjacent layer thickness gradients exceeding 15%.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 (cavity) | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (21 finite layers: 10 DBR pairs + 1 cavity)",
+  "design_variables": [
+    "thicknesses of layers 5-17 (13 optimizable layers)",
+    "thickness bounds: nominal ±8% for chirped layers, frozen for layers 1-4 and 18-21"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band",
+    "maintain thickness gradient <15% between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 21 (within 30-layer constraint)",
+    "frozen outer layers simplify deposition monitoring",
+    "gradient penalty reduces risk of thickness discontinuities"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter theory: (HL)^N D(LH)^N structure creates transmission peak at defect mode wavelength",
+    "Quarter-wave optical thickness n*d = lambda0/4 for DBR, half-wave n*d = lambda0/2 for cavity",
+    "Symmetry constraints preserve input/output impedance matching"
+  ],
+  "expected_advantages": [
+    "Frozen outer layers stabilize convergence by preserving boundary conditions",
+    "Gradient penalty prevents optimizer from creating physically unrealistic thickness jumps",
+    "±8% chirp envelope provides exploration space while maintaining manufacturability"
+  ],
+  "known_risks": [
+    "Over-constraining optimizer may prevent escape from local optimum",
+    "Gradient penalty may conflict with spectral objectives if optimal solution requires sharp transitions"
+  ],
+  "execution_request_english": "Design a 21-layer Ta2O5/SiO2 defect-cavity bandpass filter on fused silica substrate for 1550 nm LiDAR. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5 (cavity), SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5. Initialize layers 1-4 and 18-21 to quarter-wave nominal thicknesses at 1550 nm (Ta2O5: 185 nm, SiO2: 267 nm) and freeze these 8 layers during optimization. Initialize central 13 layers (5-17) with quarter-wave/half-wave nominal values plus bounded chirp perturbation within ±8%. Cavity layer (layer 11) nominal half-wave thickness 534 nm with bounds 400-650 nm. Optimize layers 5-17 using gradient-based thickness optimizer with penalty term for adjacent layer thickness gradients exceeding 15%. Evaluate transmittance at normal incidence, unpolarized, across 1400-1700 nm. Target: maximize transmittance at 1550 nm, suppress 1400-1500 nm and 1600-1700 nm bands. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directives: ±8% chirp envelope, frozen outermost 4 layers per side for impedance matching, optimizer restricted to central 13 layers, gradient penalty >15%. Differs from prior 21L routes by adding explicit symmetry constraints and gradient regularization to address score regression observed in iterations 20 and 24."
+}

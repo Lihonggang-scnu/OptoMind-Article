@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "Defect-cavity narrowband filter with adjusted cavity thickness initialization",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A half-wave optical cavity defect layer embedded in quarter-wave Bragg mirror stacks will produce a narrow transmission peak at 1550 nm with transmittance ≥ 0.95, while the mirror stacks suppress transmittance in 1400-1500 nm and 1600-1700 nm bands.",
+  "design_principle": "Recalled thin-film physics: quarter-wave high/low index pairs create high reflectance stopbands; inserting a half-wave defect breaks the periodicity and creates a resonant transmission mode within the stopband. The cavity thickness determines the resonant wavelength.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | Fused Silica substrate (29 coating layers total, layer 15 is the cavity defect)",
+  "design_variables": [
+    "individual layer thicknesses for all 29 layers",
+    "cavity layer (layer 15) thickness initialization bounds set to 210-275 nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550 nm (target ≥ 0.95)",
+    "minimize mean transmittance in 1400-1500 nm band",
+    "minimize mean transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (under 30-layer limit)",
+    "thickness bounds 50-400 nm per layer for deposition feasibility",
+    "smoothness penalty relaxation threshold increased to 75 nm to allow adjacent layer phase flexibility"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled design practice: defect-cavity filters use Bragg mirrors with a central half-wave defect to create narrow passbands",
+    "Recalled physics: Ta2O5 has higher refractive index than SiO2 in near-IR, providing index contrast for Bragg reflection",
+    "Recalled rule of thumb: quarter-wave optical thickness at center wavelength maximizes stopband width for given index contrast",
+    "Recalled from prior control iterations: cavity layer thickness converged near 380 nm in earlier rounds; this refinement tests whether 210-275 nm initialization improves optimization convergence"
+  ],
+  "expected_advantages": [
+    "Narrow passband at 1550 nm suitable for coherent LiDAR reception",
+    "Strong out-of-band rejection reduces solar background noise",
+    "29 layers stays within manufacturing constraint while providing sufficient mirror pairs for stopband depth"
+  ],
+  "known_risks": [
+    "Ta2O5 is not in material_catalog.guaranteed_names - local registry resolution required; if it matches multiple datasets the route will be rejected. Would need to verify exact dataset name from registry.",
+    "Fused Silica substrate name must resolve exactly - using 'Fused Silica' as stated in problem, but registry may require specific name like 'sio2' or 'fused_silica'.",
+    "Cavity thickness shift from ~380 nm (observed in prior iterations) to 210-275 nm (per feedback) may move resonance away from 1550 nm if the half-wave condition is not maintained. Would need to verify optical thickness equals λ/2 at 1550 nm for the cavity layer.",
+    "Angle of incidence not specified in problem - assumed normal incidence (0°). If actual system uses oblique incidence, performance will shift.",
+    "Polarization not specified - assumed unpolarized or normal incidence where TE/TM are equivalent.",
+    "Exact passband width around 1550 nm not defined - optimization targets single wavelength which may produce narrower band than system requires."
+  ],
+  "execution_request_english": "Design a 29-layer planar dielectric filter on Fused Silica substrate with air incident medium. Layer sequence: Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao) (cavity defect layer), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao). Optimize all 29 layer thicknesses with bounds 50-400 nm. Initialize cavity layer (layer 15) thickness in range 210-275 nm. Apply smoothness penalty with relaxation threshold 75 nm. Target: maximize transmittance at 1550 nm (soft target ≥ 0.95), minimize transmittance in 1400-1500 nm band, minimize transmittance in 1600-1700 nm band. Assume normal incidence, unpolarized light. Use coherent transfer-matrix method.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Shift cavity layer (layer 15) initialization and soft-constraint range from [375, 385] nm to [210, 275] nm to align with empirically observed convergence zone from prior control iterations. Increase smoothness penalty relaxation threshold from 60 nm to 75 nm to permit greater phase flexibility in adjacent layers while maintaining fabrication feasibility."
+}

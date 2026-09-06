@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score expected to increase monotonically but actually oscillated: 0.7070309359300883 (R1) → 0.9290055570935433 (R2) → 0.7869334398881506 (R3) → 0.9053194015915756 (R4), showing a net positive trend but failing to sustain convergence. valid_candidates stayed at 8, consistent with the expectation of ~9. tightest_margin is 0.6325915820054343, consistent with the expectation of non-decreasing stability. thicknesses_nm did not form two distinct clusters; instead, R1 started uniformly at 100.0 nm, R2/R3 expanded to ~89–136 nm with isolated ~35.8 nm layers, and R4 showed extreme dispersion (27.3–161.5 nm) with four layers collapsing below 36 nm.",
+  "deviation_mechanism": "The optimizer treats all 36 layers as fully coupled variables in a highly multimodal landscape. As layers diverge, some shrink toward sub-30 nm depths where optical path length becomes numerically insensitive (phase accumulation ≈ 0), creating flat plateaus that induce stochastic weight shifts rather than directed descent. This 'thin-layer degeneracy' allows compensatory errors—optimizing transmission for Stopband A inadvertently widens absorption in Stopband B—manifesting as the 0.142-point score oscillation. Without architectural priors forcing semi-autonomous subsystems, the solver cannot independently satisfy dual-quarter-wave conditions, preventing bimodal thickness clustering.",
+  "continue_recommended": true,
+  "continue_rationale": "Four rounds have executed with an active score trajectory (R4 improved by +0.118385961703425 over R3). The deviation from monotonicity is driven by exploratory jumps rather than marginal exhaustion (reference epsilon 0.0001 is orders of magnitude smaller than observed swings). Physical parameters remain unclustered and valid_candidates is steady at 8, indicating the search space is still productive and further targeted confinement can resolve the coupling-induced oscillation.",
+  "insight_for_next": "Enforce a hard minimum thickness constraint of 35.0 nm across all layers to block entry into the phase-insensitive <30 nm regime. Implement a two-stage initialization: fix odd-indexed layers near λ₁/4n (target center wavelength 1) and even-indexed layers near λ₂/4n (target center wavelength 2), effectively decoupling the gradient descent into two independent optimization clusters before allowing full cross-talk.",
+  "insight_grounding": "Round 4, layer 7 (28.097557751858922 nm) and layer 8 (27.313081494244887 nm) crossed into the numerically degenerate zone, directly preceding the score regression from 0.9290055570935433 (R2 peak) to 0.7869334398881506 (R3 trough). valid_candidates remains at 8 throughout, proving boundaries are not saturated and the oscillation stems purely from unguided parameter coupling rather than feasibility collapse.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T23:07:33.581604+00:00",
+  "attestation_sha256": "c8ddaed3e0a79480fa9cb1d8d52ef8cc088da6fb2411486dd6f633b2c8c4cb82",
+  "observed_metrics": {
+    "best_target_score": 0.9053194015915756,
+    "valid_candidates": 8,
+    "run_status": "completed",
+    "tightest_margin": 0.6325915820054343
+  },
+  "reflection_available": true
+}

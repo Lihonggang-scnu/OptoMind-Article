@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "26-Layer Chirped Stack with Explicit Thickness Clamping",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "A 26-layer alternating HfO2/SiO2 chirped stack with thicknesses clamped to [20nm, 250nm] and reduced chirp frequency will produce physically valid candidates while maintaining dual-band spectral performance, addressing the material_data failure from iteration_13.",
+  "design_principle": "Quadratic chirp with explicit bounds prevents numerical overflow in TMM while preserving broadband UV reflection through controlled phase accumulation across the stack.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "26 layers total, alternating HfO2/SiO2 starting with HfO2 at air interface, ending with SiO2 at substrate. Exact sequence: H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L-H-L (13 pairs).",
+  "design_variables": [
+    "26 layer thicknesses with quadratic chirp initialization, clamped to [20nm, 250nm]"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1000-1700 nm band",
+    "Maximize mean reflectance in 300-450 nm band",
+    "Maintain valid candidate count > 0"
+  ],
+  "manufacturing_considerations": [
+    "All thicknesses within [20nm, 250nm] feasible for e-beam or ion-assisted deposition",
+    "26 layers within 30-layer maximum constraint",
+    "Alternating sequence simplifies deposition monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for planar multilayer interference",
+    "Chirped DBR principle for broadband reflection"
+  ],
+  "expected_advantages": [
+    "Explicit thickness bounds prevent material_data failures",
+    "Reduced chirp rate prevents rapid phase drift",
+    "26 layers provides sufficient degrees of freedom for dual-band optimization"
+  ],
+  "known_risks": [
+    "Thickness clamping may limit optimization freedom",
+    "Chirped designs sensitive to deposition errors",
+    "May not achieve iteration_02 best score of 0.7972"
+  ],
+  "execution_request_english": "Design a 26-layer planar dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating HfO2 (high index) and SiO2 (low index), starting with HfO2 at air interface, ending with SiO2 at substrate (13 H-L pairs total). Initialize thicknesses using quadratic chirp profile with base period centered at 375 nm for UV reflection band, then apply gradient-based thickness optimization. Enforce hard bounds: all layer thicknesses must be clamped to [20 nm, 250 nm] immediately after initialization and maintained throughout optimization. Evaluate at normal incidence, unpolarized light. Spectral bands: maximize reflectance in 300-450 nm, maximize transmittance in 1000-1700 nm. Use coherent TMM. Report thicknesses_nm, best_target_score, valid_candidates, tightest_margin, run_status. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: Maximum total layer count of 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Iteration_13 produced 0 valid candidates due to material_data failure. This route adds explicit [20nm, 250nm] thickness clamping per feedback directives, reduces chirp frequency modulation rate by half, and adds finite-value guard checks to prevent silent abort."
+}

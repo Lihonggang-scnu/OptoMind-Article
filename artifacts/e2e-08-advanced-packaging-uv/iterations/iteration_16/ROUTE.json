@@ -1,0 +1,55 @@
+{
+  "route_id": "control_route_01",
+  "title": "Dual-band rejection filter with visible passband using Ta2O5/SiO2 periodic stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 36-layer alternating Ta2O5/SiO2 stack with individually optimized thicknesses can simultaneously suppress transmittance at 355-365 nm and 1030-1080 nm while maintaining high transmittance at 420-700 nm, with the stopband positions determined by layer optical thickness rather than a single quarter-wave condition.",
+  "design_principle": "Recalled knowledge: Bragg mirrors create stopbands where layer optical thicknesses satisfy quarter-wave conditions. Multiple stopbands can be achieved by varying layer thicknesses across the stack rather than using uniform quarter-wave layers. The high index contrast between Ta2O5 (n~2.1) and SiO2 (n~1.46) provides strong reflection per pair. Stopband center wavelength scales with optical thickness, so thinner layers push stopbands to shorter wavelengths and thicker layers to longer wavelengths.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica substrate (36 film layers total, alternating starting with Ta2O5)",
+  "design_variables": [
+    "individual layer thicknesses for all 36 layers",
+    "each thickness bounded between 20-350 nm per manufacturing constraint, with relaxation to 15-355 nm for optimization headroom as per feedback directives"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance in 420-700 nm band",
+    "minimize average transmittance in 355-365 nm band",
+    "minimize average transmittance in 1030-1080 nm band",
+    "minimize transmittance at 355 nm specifically"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers as specified",
+    "layer thickness range 20-350 nm per specification, relaxed to 15-355 nm for optimization",
+    "air incidence at 0 degrees",
+    "unpolarized illumination",
+    "fused silica substrate"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave Bragg stacks produce stopbands centered at wavelength where optical thickness equals lambda/4",
+    "Recalled knowledge: Stopband width increases with index contrast between high and low index materials",
+    "Recalled knowledge: Multiple stopbands require non-uniform layer thicknesses or multiple periodicities within one stack",
+    "Recalled knowledge: Ta2O5 has higher refractive index than SiO2 in visible and near-UV, providing good index contrast for reflection",
+    "Recalled knowledge: Fused silica substrate has low absorption in UV-visible-NIR range and is standard for optical filters"
+  ],
+  "expected_advantages": [
+    "36 layers provides sufficient degrees of freedom to shape multiple stopbands",
+    "Alternating high-low structure is manufacturable with standard deposition processes",
+    "Individual thickness optimization allows tuning stopband positions independently",
+    "High index contrast between Ta2O5 and SiO2 should provide strong rejection per layer pair"
+  ],
+  "known_risks": [
+    "Ta2O5 material name may not resolve in local registry - if rejected, would need to use an alternative high-index material from guaranteed_names such as tio2 or hfo2, but this deviates from user specification",
+    "Recalled index values for Ta2O5 and SiO2 at 355 nm and 1064 nm are uncertain - actual dispersion data from registry will determine actual performance",
+    "Dual-band rejection with single passband is challenging; may require more than 36 layers for deep suppression at both stopbands",
+    "Thickness bounds (20-350 nm) may limit ability to tune stopband positions precisely - relaxation to 15-355 nm helps but may still constrain design",
+    "Prior iteration failures indicate target band simulation grid overlap issues - must ensure wavelength bands are within solver grid range",
+    "No literature consulted on dual-band mirror design tradeoffs; this route tests whether prior knowledge alone can produce viable design"
+  ],
+  "execution_request_english": "Design a planar multilayer dielectric filter with air incidence at 0 degrees, unpolarized illumination, on fused silica substrate. Use exactly 36 film layers in alternating sequence: Ta2O5 (Gao), SiO2 (Gao), Ta2O5 (Gao), SiO2 (Gao), repeating 18 times (starting with Ta2O5 (Gao) adjacent to air, ending with SiO2 (Gao) adjacent to substrate). Optimize all 36 individual layer thicknesses with bounds 15-355 nm. Target bands: minimize average transmittance at 355-365 nm, minimize average transmittance at 1030-1080 nm, minimize transmittance at 355 nm, maximize average transmittance at 420-700 nm. Simulation wavelength grid must span 350-1100 nm to ensure all target bands overlap the grid. Materials: Ta2O5 (Gao) (high index) and SiO2 (Gao) (low index). Substrate: fused silica. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Repair prior compilation failures by ensuring wavelength bands overlap simulation grid (350-1100 nm), relaxing thickness bounds to 15-355 nm per feedback directives, and explicitly stating all 36 layers in topology rather than using ellipsis notation"
+}

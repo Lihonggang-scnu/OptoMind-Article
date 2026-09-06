@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "12-Layer Random Initialization with Relaxed [10,400]nm Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Random thickness initialization across expanded bounds [10,400]nm will escape local optima that trapped quarter-wave initialized designs, enabling discovery of non-intuitive thickness combinations that better separate dual stopbands from the visible passband.",
+  "design_principle": "Uniform random sampling across relaxed thickness window followed by gradient-based refinement, building on iteration 27's successful 12-layer topology but with diversified starting points.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "12-layer alternating stack: Air|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Fused Silica substrate",
+  "design_variables": [
+    "12 continuous layer thicknesses in [10,400]nm range"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700nm",
+    "minimize average transmittance 355-365nm",
+    "minimize average transmittance 1030-1080nm",
+    "minimize transmittance at 355nm single wavelength"
+  ],
+  "manufacturing_considerations": [
+    "12 layers within 36-layer maximum",
+    "thickness bounds [10,400]nm exceed nominal [20,350]nm for exploration phase",
+    "Ta2O5/SiO2 material pair compatible with standard deposition"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:245822325:s2chunk:245822325:9655:11670:c26022c37015a7c0"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Non-quarter-wave optimization for broadband performance"
+  ],
+  "expected_advantages": [
+    "Escapes local optima from deterministic initialization",
+    "Relaxed bounds allow thicker resonant layers for NIR stopband",
+    "Builds on proven 12-layer topology from iteration 27"
+  ],
+  "known_risks": [
+    "Random initialization may produce invalid candidates requiring more iterations",
+    "Thinner layers below 20nm may challenge fabrication repeatability",
+    "Wider search space may slow convergence"
+  ],
+  "execution_request_english": "Execute TMM optimization for 12-layer Ta2O5/SiO2 alternating stack on fused silica substrate at 0 deg incidence unpolarized. Layer sequence: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2 (12 finite layers). Thickness bounds: [10,400]nm for all layers. Initialize with uniform random sampling across bounds. Optimize to maximize average transmittance in 420-700nm band while minimizing average transmittance in 355-365nm and 1030-1080nm bands and minimizing transmittance at 355nm. Simulation grid: 300-1200nm with 1nm resolution. Use gradient_thickness optimizer with 4 independent runs from different random seeds. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Directly implements feedback directive to relax bounds to [10,400]nm and replace quarter-wave initialization with random sampling. Addresses iteration 22 and 29 compilation failures by ensuring bounds compliance and grid coverage."
+}

@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "Expanded 24-Layer Stack with Quarter-Wave Seeded Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Adding two additional layer pairs (24 total layers vs. prior 22) provides sufficient degrees of freedom to sharpen the visible-band reflectance edge while maintaining NIR transmittance, potentially exceeding the 0.9251 score ceiling observed in iteration_07.",
+  "design_principle": "Quarter-wave baseline initialization at 550nm center wavelength with expanded thickness bounds (±25nm) allows the optimizer to discover non-quarter-wave solutions that better separate the 450-650nm reflectance band from the 700-1000nm transmittance band.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating TiO2/SiO2 stack starting with TiO2 on fused silica substrate, terminating with SiO2 outer layer",
+  "design_variables": [
+    "all 24 layer thicknesses",
+    "optimizer learning rate",
+    "thickness bound width"
+  ],
+  "soft_objectives": [
+    "maximize mean reflectance 450-650nm",
+    "maximize mean transmittance 700-1000nm",
+    "minimize spectral crosstalk between bands"
+  ],
+  "manufacturing_considerations": [
+    "24 layers approaches upper manufacturing limit",
+    "quarter-wave seed improves deposition reproducibility",
+    "SiO2 termination layer protects underlying high-index layers"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:225908385:s2chunk:225908385:5683:7374:0f58693a1a83d6f5"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Quarter-wave stack stopband theory",
+    "Layer count vs. reflectance bandwidth relationship"
+  ],
+  "expected_advantages": [
+    "Additional layer pairs increase stopband width",
+    "More thickness variables enable finer spectral shaping",
+    "Approaches manufacturing limit to extract maximum performance"
+  ],
+  "known_risks": [
+    "Increased layer count may reduce robustness to thickness errors",
+    "Optimization may converge to local minima with 48 thickness variables",
+    "Diminishing returns beyond 22 layers"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on fused silica substrate at 45° incidence using TiO2 (high index) and SiO2 (low index) in alternating sequence starting with TiO2. Initialize all layer thicknesses at quarter-wave optical thickness for 550nm center wavelength (approximately 57nm TiO2, 96nm SiO2). Apply gradient-based thickness optimization with bounds of ±25nm around initial values. Maximize a composite objective: mean reflectance over 450-650nm band plus mean transmittance over 700-1000nm band, with equal weighting. Incident medium is air. Evaluate both s and p polarization states and report unpolarized average performance. Total layer count is exactly 24 finite layers. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Prior 22-layer variants (12 fingerprints) exhausted; expanding to 24 layers tests whether additional degrees of freedom can exceed the 0.9251 score ceiling from iteration_07."
+}

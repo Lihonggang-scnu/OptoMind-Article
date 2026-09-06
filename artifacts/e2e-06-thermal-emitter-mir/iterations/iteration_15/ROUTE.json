@@ -1,0 +1,45 @@
+{
+  "route_id": "route_01",
+  "title": "12-Layer Stack with Perturbed Initialization and Outer Layer Clamping",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Optimization stagnation in rounds 2-3 caused performance regression; re-initializing thicknesses near 440 nm with controlled perturbation and clamping outer layers will recover impedance matching and improve target score.",
+  "design_principle": "Impedance matching at air-film and film-substrate interfaces via outer layer thickness control, combined with stochastic initialization to escape local minima.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "12 finite layers: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2",
+  "design_variables": [
+    "thicknesses_nm"
+  ],
+  "soft_objectives": [
+    "Maximize absorptance in 8000-13000 nm",
+    "Minimize absorptance in 3000-5000 nm"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count <= 24",
+    "Thickness bounds 200-2000 nm",
+    "Outer layers (indices 0, 1, 10, 11) clamped to tighter bounds"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method",
+    "Kirchhoff's Law of Thermal Radiation"
+  ],
+  "expected_advantages": [
+    "Recovering impedance matching",
+    "Escaping local minima via perturbed initialization"
+  ],
+  "known_risks": [
+    "Optimization may converge to local minima similar to prior rounds",
+    "Tighter bounds may restrict global optimum search"
+  ],
+  "execution_request_english": "Optimize the thicknesses of a 12-layer planar stack consisting of alternating HfO2 and SiO2 layers on a Silicon substrate with Air incidence at 0 degrees. Target high absorptance in 8000-13000 nm and low absorptance in 3000-5000 nm. Initialize thicknesses at 440 nm +/- 20 nm random perturbation. Enforce tighter thickness bounds on outer layers (indices 0, 1, 10, 11) to preserve entrance/exit interface impedance matching. Use Adam optimizer with reduced learning rate to dampen oscillatory thickness drift. Evaluate absorptance via Transfer Matrix Method. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Adjusting optimization parameters per feedback directive to recover performance lost in iterations 2-3."
+}

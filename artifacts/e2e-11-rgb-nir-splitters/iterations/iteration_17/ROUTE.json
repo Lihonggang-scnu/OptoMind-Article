@@ -1,0 +1,47 @@
+{
+  "route_id": "route_03",
+  "title": "Constrained Quasi-Periodic 22-Layer Stack with Half-Period Clamping",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Score regression in rounds 3-4 resulted from optimization drifting into destructive interference regions; constraining thickness deviations to ±25 nm from nearest half-period multiples will maintain constructive interference while allowing fine-tuning.",
+  "design_principle": "Quarter-wave baseline at 550 nm center wavelength with tight initialization perturbation (±5 nm) and hard optimization bounds that clamp any layer exceeding ±25 nm from its nearest λ/2n optical thickness multiple, preventing catastrophic phase mismatch.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "22 finite layers: TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2 on fused silica substrate, air incident medium",
+  "design_variables": [
+    "layer thicknesses with half-period clamping constraint"
+  ],
+  "soft_objectives": [
+    "maximize mean reflectance 450-650 nm",
+    "maximize mean transmittance 700-1000 nm",
+    "minimize band crosstalk"
+  ],
+  "manufacturing_considerations": [
+    "22 layers within 24-layer maximum",
+    "quarter-wave thicknesses are fabrication-friendly",
+    "half-period clamping maintains depositable thickness ranges"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack provides high-reflection baseline at design wavelength",
+    "Half-period optical thickness multiples maintain interference phase relationships"
+  ],
+  "expected_advantages": [
+    "Prevents optimization from wandering into destructive interference regions",
+    "Maintains physical intuition while allowing local refinement",
+    "Should recover round-2 performance level of 0.925"
+  ],
+  "known_risks": [
+    "May limit exploration of superior non-quarter-wave solutions",
+    "Clamping could create local minima if optimal solution requires larger deviations"
+  ],
+  "execution_request_english": "Optimize a 22-layer TiO2/SiO2 dielectric stack on fused silica substrate at 45 degrees incidence. Initialize all TiO2 layers at 57 nm and all SiO2 layers at 96 nm (quarter-wave at 550 nm). Apply random perturbation of ±5 nm to initial thicknesses. During gradient optimization, enforce hard constraint: if any layer thickness deviates more than 25 nm from its nearest half-period multiple (TiO2: 57, 171, 285 nm; SiO2: 96, 288, 480 nm), clamp to nearest valid value and restart optimization step. Maximize weighted objective: 0.5 × mean_reflectance(450-650nm) + 0.5 × mean_transmittance(700-1000nm). Report best_target_score, valid_candidates, tightest_margin, and final thicknesses_nm. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Round 4 score dropped to 0.6747 from round 2 peak of 0.9251. Feedback directive specifies constrained quasi-periodic initialization with half-period clamping to prevent destructive interference. This route implements that exact mechanism with 22 layers matching prior topology but different initialization and constraint strategy."
+}

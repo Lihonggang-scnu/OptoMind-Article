@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "12-Layer QW-Seeded Stack with Expanded Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 12-layer configuration achieved peak performance (0.7448) because it provides sufficient degrees of freedom for dual-band spectral shaping without excessive local minima. Resetting initialization to quarter-wave optical thickness at 1350 nm with ±25% bounds will recover and potentially exceed prior best performance by anchoring the optimizer near a physically meaningful starting point.",
+  "design_principle": "Quarter-wave optical thickness initialization at central SWIR wavelength (1350 nm) provides constructive interference baseline for transmission band while allowing optimization to develop UV reflection stopband through thickness deviations.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (12 finite layers, alternating HfO2-first)",
+  "design_variables": [
+    "layer_thicknesses_nm (12 variables, bounded ±25% from QW medians)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance in 1000-1700 nm",
+    "maximize reflectance in 300-450 nm",
+    "maintain smooth spectral transition between bands"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 12 <= 30 constraint satisfied",
+    "thickness bounds [130-217] nm for HfO2, [175-291] nm for SiO2 based on ±25% of QW at 1350 nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for plane-wave propagation through isotropic layered media",
+    "Quarter-wave stack theory for constructive/destructive interference positioning"
+  ],
+  "expected_advantages": [
+    "Returns to best-performing layer count from prior iterations",
+    "QW initialization reduces optimizer search space and avoids poor local minima",
+    "Expanded bounds restore optical path tuning capacity per feedback directive"
+  ],
+  "known_risks": [
+    "May converge to same local optimum as round 2 if bounds too restrictive",
+    "12 layers may limit UV reflection bandwidth compared to higher layer counts"
+  ],
+  "execution_request_english": "Optimize a 12-layer alternating HfO2/SiO2 stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (12 finite layers total). Initialize thicknesses at quarter-wave optical thickness at 1350 nm reference wavelength: HfO2 = 173 nm, SiO2 = 233 nm. Apply thickness bounds: HfO2 [130, 217] nm, SiO2 [175, 291] nm (±25% of QW medians). Optimize all 12 layer thicknesses using gradient-based optimizer. Spectral evaluation: 300-450 nm (target high reflectance), 1000-1700 nm (target high transmittance). Normal incidence, unpolarized illumination. Maximize weighted spectral performance across both bands. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Returns to 12L count (best prior performance 0.7448) with expanded ±25% bounds and QW-seeded initialization per feedback directive to restore optical path tuning capacity and anchor optimizer near physically meaningful starting point."
+}

@@ -1,0 +1,48 @@
+{
+  "route_id": "control_route_01",
+  "title": "Local Thickness Refinement around Best 24-Layer Candidate",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness variations to ±5 nm around the previous best 24-layer solution will reveal if the design sits on a sharp local optimum, potentially improving the target score slightly without altering the material sequence or layer count.",
+  "design_principle": "Dielectric multilayer performance is highly sensitive to optical thickness (nd). Small perturbations around a known good solution can correct phase errors at band edges. Local gradient descent within tight bounds avoids escaping the current basin of attraction while resolving fine-scale interference effects.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer stack on sio2 substrate: Layer 1 (hfo2), Layer 2 (sio2), Layer 3 (hfo2), Layer 4 (sio2), Layer 5 (hfo2), Layer 6 (sio2), Layer 7 (hfo2), Layer 8 (sio2), Layer 9 (hfo2), Layer 10 (sio2), Layer 11 (hfo2), Layer 12 (sio2), Layer 13 (hfo2), Layer 14 (sio2), Layer 15 (hfo2), Layer 16 (sio2), Layer 17 (hfo2), Layer 18 (sio2), Layer 19 (hfo2), Layer 20 (sio2), Layer 21 (hfo2), Layer 22 (sio2), Layer 23 (hfo2), Layer 24 (sio2).",
+  "design_variables": [
+    "Individual layer thicknesses_nm, constrained to ±5 nm of baseline values",
+    "Optimization step size (lower learning rate for fine tuning)"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1000-1700 nm band",
+    "Maximize reflectance in 300-450 nm band",
+    "Maintain physical validity (non-negative thicknesses)"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer limit)",
+    "Thickness tolerance sensitivity tested via ±5 nm bound",
+    "Standard dielectric deposition materials (hfo2, sio2)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Interference filter band edges shift linearly with optical thickness changes.",
+    "Recalled knowledge: Local optimization converges faster when initialized near a known good solution.",
+    "Recalled knowledge: HfO2 provides high index contrast against SiO2 for SWIR/UV coatings.",
+    "Recalled knowledge: Fused silica (sio2) is transparent in both UV and SWIR bands."
+  ],
+  "expected_advantages": [
+    "Refines band-edge steepness without increasing complexity",
+    "Tests robustness of the previous solution to small manufacturing variations",
+    "Potentially recovers marginal score gains missed by global search"
+  ],
+  "known_risks": [
+    "Uncertainty whether alternating hfo2/sio2 sequence is optimal compared to customized sequences; this route assumes alternation based on standard DBR practice.",
+    "Uncertainty in exact refractive index dispersion of hfo2 and sio2 in UV vs SWIR; relies on registry data.",
+    "Risk that ±5 nm bounds are too tight to escape a shallow local minimum if the previous solution was not near the global optimum.",
+    "Incidence angle assumed 0 degrees; angular performance not optimized."
+  ],
+  "execution_request_english": "Optimize the thicknesses of a 24-layer planar dielectric stack on a fused silica (SiO2 (Lemarchand)) substrate under normal incidence (0 degrees). The stack consists of alternating hfo2 and SiO2 (Lemarchand) layers, starting with hfo2 at the air interface. Initialize optimization centered on the following baseline thicknesses (in nm): [27.54, 70.92, 34.46, 91.06, 65.04, 45.49, 28.24, 43.42, 35.80, 62.08, 38.47, 58.55, 39.65, 63.53, 38.83, 63.46, 59.17, 79.08, 52.79, 63.83, 40.63, 73.63, 38.89, 37.52]. Constrain each layer's thickness search space to ±5 nm from its baseline value. Use a gradient-based optimizer with reduced learning rate to prioritize fine-scale convergence. Objective: Maximize transmission in 1000-1700 nm and reflection in 300-450 nm. Material names must resolve to hfo2 and SiO2 (Lemarchand) from the catalog.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control arm per feedback directive: localized refinement round constraining thickness bounds to ±5 nm around best candidate from previous iteration."
+}

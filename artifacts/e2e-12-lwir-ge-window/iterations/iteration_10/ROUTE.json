@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "8-layer quarter-wave stack with MWIR-centered initialization and bounded thickness",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Increasing layer count from 6 to 8 while initializing thicknesses at quarter-wave optical thickness centered at 3800nm (MWIR stopband center) will improve the dichroic figure of merit by strengthening the MWIR reflection band without compromising LWIR transmission, provided individual layer thicknesses remain below 1200nm to avoid phase overshoot.",
+  "design_principle": "Quarter-wave stack (HL)^4 where H=ZnSe (higher index ~2.8), L=ZnS (lower index ~2.3), optical thickness λ0/4 at λ0=3800nm centers the stopband in the MWIR suppression region. Physical thickness d = λ0/(4n) gives approximately 340nm for ZnSe and 410nm for ZnS at 3800nm.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (8 finite layers, 4 high-low pairs)",
+  "design_variables": [
+    "Layer thicknesses (8 variables, bounded 50-1200nm)",
+    "Initial values set to quarter-wave estimates at 3800nm"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 8000-11000nm band",
+    "Minimize average transmittance in 3000-5000nm band",
+    "Maintain total layer count ≤16"
+  ],
+  "manufacturing_considerations": [
+    "8 layers within 16-layer budget",
+    "Individual layer thickness bounded to 1200nm for deposition uniformity",
+    "ZnS and ZnSe both compatible with thermal evaporation per evidence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:253920409:s2chunk:253920409:14121:16260:85ad0582554fb615"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for dichroic filter design",
+    "Transfer matrix method for multilayer interference"
+  ],
+  "expected_advantages": [
+    "Stronger MWIR stopband with 4 pairs vs 3 pairs",
+    "Quarter-wave initialization closer to optimal solution than uniform 1000nm",
+    "Thickness bound prevents optimizer from exploring non-physical regions"
+  ],
+  "known_risks": [
+    "May still not achieve sufficient LWIR transmission if stopband extends too far",
+    "8 layers may be insufficient for sharp spectral transition between MWIR and LWIR bands"
+  ],
+  "execution_request_english": "Optimize an 8-layer ZnS/ZnSe multilayer stack on Ge substrate with air incidence. Stack sequence: ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS|ZnSe|ZnS (8 finite layers). Initialize thicknesses at quarter-wave optical thickness for λ0=3800nm: ZnSe layers at 340nm, ZnS layers at 410nm. Bound all thicknesses between 50nm and 1200nm. Optimize for high transmittance in 8000-11000nm band and low transmittance in 3000-5000nm band at normal incidence. Use gradient-based thickness optimizer with maximum 500 iterations. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Increased layer count from 6 to 8, replaced uniform 1000nm initialization with quarter-wave estimates at 3800nm, added 1200nm upper bound per feedback directives"
+}

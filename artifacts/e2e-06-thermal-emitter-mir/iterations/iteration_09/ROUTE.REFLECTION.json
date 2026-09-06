@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score shows significant volatility (0.8022 → 0.9027 → 0.7772), deviating from the expected stability under the quarter-wave hypothesis and the monotonic decrease expected under quadratic penalty dominance. valid_candidates is 9, consistent with the expectation of remaining >5 under reasonable bounds. tightest_margin is 0.3122, consistent with the expectation of not falling drastically. thicknesses_nm exhibit active dispersion across all recorded candidates (low-index layers ranging ~1294.0–1306.3 nm, high-index layers ~1791.7–1808.1 nm), contradicting the expectation of static clustering near initial quarter-wave values and confirming active structural perturbation.",
+  "deviation_mechanism": "The observed oscillation stems from the dynamic interplay between intrinsic photonic performance and the imposed quadratic regularization. Initial perturbations successfully sampled off-quarter-wave configurations that boosted the raw target score to 0.9027. However, the explicit quadratic penalty term penalizes the resulting asymmetry/thickness deviation, creating a steep regularization gradient that pulls the optimizer back toward the constrained quarter-wave manifold, driving the score down to 0.7772. This competition prevents simple monotonic convergence, manifesting as the observed volatile trajectory rather than a flat or steadily decreasing curve.",
+  "continue_recommended": true,
+  "continue_rationale": "With 3 rounds executed, the route has demonstrated active exploration with valid_candidates at 9 and a robust tightest_margin at 0.3122, far above the 0.2 safety threshold triggering boundary relaxation. Score changes of +0.1005 and -0.1255 between rounds overwhelmingly exceed the 1e-3 stagnation reference, confirming the design space has not plateaued. Continuing is scientifically necessary to determine whether the penalty-driven retreat converges to a stable Pareto-optimal trade-off or if the regularization strength requires tuning to allow the optimizer to settle into the high-performance basin identified in Round 1.",
+  "insight_for_next": "Reduce the quadratic penalty weight from 0.05 to 0.02 to alleviate the excessive regularization pull observed in Round 2, and simultaneously shrink the thickness perturbation bounds from ±0.5% to ±0.2% to tightly confine the search within the newly mapped viable thickness neighborhoods.",
+  "insight_grounding": "Candidate thickness measurements show Round 2 low-index layers spanning 1294.49 nm (Layer 0) to 1306.31 nm (Layer 8) and high-index layers spanning 1791.74 nm to 1808.11 nm (Layer 7 and Layer 2), establishing a precise operational envelope for narrower ±0.2% initialization. The sharp target score decline from 0.902658 (Round 1) to 0.777192 (Round 2) coupled with a maintained tightest_margin of 0.312206 empirically demonstrates that the 0.05 penalty coefficient currently dominates the gradient flow, artificially collapsing valid structural adaptations. Lowering the coefficient directly mitigates this documented suppression mechanism.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:55:14.198937+00:00",
+  "attestation_sha256": "460a6afcf2e8ec5ef445f7095739c5cfb020cd4181eb142a5f1c5ee8a0c98264",
+  "observed_metrics": {
+    "best_target_score": 0.7771924477469789,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.3122060379906151
+  },
+  "reflection_available": true
+}

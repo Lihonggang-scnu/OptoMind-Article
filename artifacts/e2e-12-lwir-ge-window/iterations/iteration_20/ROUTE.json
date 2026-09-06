@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Constrained boundary sweep with locked central cavity (8 fixed + 8 variable)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The central 8 layers (indices 4–11) from iteration_15 form a stable cavity resonance that should be preserved; performance gains remain in the outer boundary pairs where impedance matching to air and Ge substrate can be re-optimized without disturbing core modes.",
+  "design_principle": "Fix layers 4–11 at iteration_15 best candidate thicknesses [411.0, 966.0, 878.0, 1273.0, 500.0, 465.0, 454.0, 403.0] nm; allow layers 0–3 and 12–15 to vary within ±40 nm of their round-4 values [1130.0, 874.0, 481.0, 227.0] and [275.0, 938.0, 733.0, 1257.0] nm respectively, using gradient-based thickness optimization.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "16-layer alternating stack: ZnSe(0)|ZnS(1)|ZnSe(2)|ZnS(3)|ZnSe(4)|ZnS(5)|ZnSe(6)|ZnS(7)|ZnSe(8)|ZnS(9)|ZnSe(10)|ZnS(11)|ZnSe(12)|ZnS(13)|ZnSe(14)|ZnS(15)|Ge_substrate, air incidence",
+  "design_variables": [
+    "thicknesses_nm for layers 0-3 and 12-15 (8 variables total); layers 4-11 fixed"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain or improve best_target_score relative to 0.3391 baseline"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count = 16 (within constraint)",
+    "±40 nm perturbation bounds represent realistic deposition tolerance for boundary layers",
+    "Central layers locked to reduce optimization complexity and preserve verified resonance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "Interference-based dichroic filter design with quarter-wave stack principles",
+    "Boundary layer impedance matching dominates incidence-side and substrate-side reflection losses"
+  ],
+  "expected_advantages": [
+    "Preserves verified cavity resonance from prior rounds",
+    "Focused optimization reduces search space and avoids destabilizing core modes",
+    "May reveal whether boundary layers or core layers limit further improvement"
+  ],
+  "known_risks": [
+    "If boundary layers are not the limiting factor, score may stagnate near 0.3391",
+    "±40 nm bounds may be too restrictive if larger adjustments are needed for impedance matching"
+  ],
+  "execution_request_english": "Optimize a 16-layer ZnSe/ZnS alternating stack on Ge substrate with air incidence. Initialize layers 0-3 at [1130.0, 874.0, 481.0, 227.0] nm and layers 12-15 at [275.0, 938.0, 733.0, 1257.0] nm; fix layers 4-11 at [411.0, 966.0, 878.0, 1273.0, 500.0, 465.0, 454.0, 403.0] nm. Allow optimization of layers 0-3 and 12-15 only, with thickness bounds of ±40 nm from initialization values. Use gradient_thickness optimizer. Evaluate mean transmittance in 8000-11000 nm (maximize) and 3000-5000 nm (minimize) at normal incidence, unpolarized. Registry-resolve ZnS, ZnSe, Ge optical constants. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Directly implements feedback directive from iteration_15 insight_appendage: lock central 8 layers to preserve cavity resonance, perturb outer boundary pairs ±40 nm to re-exploit impedance mismatches without disturbing stable core modes."
+}

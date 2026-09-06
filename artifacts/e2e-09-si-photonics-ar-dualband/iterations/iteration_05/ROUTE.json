@@ -1,0 +1,47 @@
+{
+  "route_id": "route_01",
+  "title": "Asymmetric Initialization 10-Layer Refinement",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Breaking thickness initialization symmetry with alternating quarter-wave estimates will escape local optima that uniform 200nm seeding encountered, enabling the optimizer to access the remaining 0.0025 score headroom identified in iteration 1.",
+  "design_principle": "Transfer matrix thickness optimization with asymmetric seed profiles reduces optimizer stagnation near convergence boundaries by providing gradient diversity across the dual-band objective landscape.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Silicon substrate (10 finite layers, 5 high-low pairs)",
+  "design_variables": [
+    "layer thicknesses (10 variables, bounds 20-400 nm)"
+  ],
+  "soft_objectives": [
+    "minimize average reflectance in 1260-1360 nm band",
+    "minimize average reflectance in 1530-1565 nm band",
+    "maximize transmittance into silicon substrate"
+  ],
+  "manufacturing_considerations": [
+    "maximum 12 layers constraint satisfied",
+    "individual layer thickness between 20 nm and 400 nm",
+    "materials restricted to Ta2O5 and SiO2"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:85444779:s2chunk:85444779:12499:14753:a3ae379b5a33f693"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference optimization",
+    "Asymmetric initialization breaks gradient symmetry in non-convex thickness space"
+  ],
+  "expected_advantages": [
+    "Escapes local optima from uniform initialization",
+    "Enables sub-nm refinement with reduced step-size",
+    "Maintains 10-layer manufacturing simplicity"
+  ],
+  "known_risks": [
+    "May converge to different local optimum with similar score",
+    "Asymmetric seeds could increase optimization iterations"
+  ],
+  "execution_request_english": "Optimize a 10-layer Ta2O5/SiO2 anti-reflection coating on silicon substrate. Stack sequence: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si. Wavelength bands: 1260-1360 nm and 1530-1565 nm. Incidence: 0 deg, unpolarized. Thickness bounds: 20-400 nm per layer. Initialize thicknesses with alternating quarter-wave estimates at 1310 nm and 1547.5 nm center wavelengths (not uniform 200 nm). Use gradient-based thickness optimizer with step-size parameter reduced by 50% compared to iteration 1 baseline. Minimize weighted average reflectance across both bands. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive to break initialization symmetry by replacing uniform 200nm seeds with randomized asymmetric quarter-wave profiles and reducing optimizer step-size by 50% for sub-nm refinement near score=1.0"
+}

@@ -1,0 +1,47 @@
+{
+  "route_id": "route_01",
+  "title": "Local gradient refinement from Round 1 best candidate with ±5% perturbation seed",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The Round 1 best candidate (target_score 0.9531504284001773) resides near a local optimum; sub-nanometer thickness adjustments within ±5% of each layer can further improve the dual-band spectral figure of merit by probing local curvature.",
+  "design_principle": "Gradient-based local optimization with bounded step size (0.5 nm) to refine thicknesses without escaping the current basin of attraction.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica Substrate"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "30 layer thicknesses initialized from Round 1 best candidate with ±5% multiplicative perturbation"
+  ],
+  "soft_objectives": [
+    "maximize transmission in 1530-1565 nm",
+    "maximize reflection in 400-700 nm",
+    "minimize reflection in 1530-1565 nm",
+    "minimize transmission in 400-700 nm"
+  ],
+  "manufacturing_considerations": [
+    "thickness precision within 0.5 nm steps",
+    "total layer count 30 within specification"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Needle synthesis optimization allows sub-quarter-wave thickness refinement for complex spectral targets",
+    "Gradient-based local search can escape shallow local optima with proper step size control"
+  ],
+  "expected_advantages": [
+    "Directly builds on Round 1 success",
+    "Minimal computational overhead",
+    "Tests whether current solution is at true local maximum"
+  ],
+  "known_risks": [
+    "May converge to same local optimum if basin is flat",
+    "Step size limit may slow convergence if curvature is shallow"
+  ],
+  "execution_request_english": "Optimize a 30-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate with air incidence. Initialize layer thicknesses from the Round 1 best candidate thicknesses [59.0, 95.0, 64.0, 91.0, 100.0, 131.0, 57.0, 98.0, 96.0, 91.0, 61.0, 90.0, 56.0, 77.0, 55.0, 71.0, 51.0, 86.0, 99.0, 93.0, 78.0, 127.0, 77.0, 71.0, 42.0, 52.0, 73.0, 87.0, 49.0, 115.0] nm with ±5% multiplicative perturbation applied to each layer. Use gradient-based thickness optimizer with maximum step size 0.5 nm per iteration. Evaluate spectral performance across 400-700 nm (target: high reflection) and 1530-1565 nm (target: high transmission). Total layer count fixed at 30. Materials: HfO2 (high index), SiO2 (low index), fused silica substrate. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 400-700 nm, 1530-1565 nm. soft objectives: high transmission in 1530–1565 nm; high reflection in 400–700 nm. behaviors to suppress or avoid: reflection in 1530–1565 nm; transmission in 400–700 nm. manufacturing constraints: total layer count not exceeding 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Round 2 refinement per feedback directive: implement local refinement initialization from Round 1 best candidate with ±5% perturbation seed and gradient optimizer with 0.5 nm step limit to probe immediate curvature around current peak."
+}

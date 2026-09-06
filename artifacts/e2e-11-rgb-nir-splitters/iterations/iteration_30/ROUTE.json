@@ -1,0 +1,54 @@
+{
+  "route_id": "route_01",
+  "title": "Anchored ±8 nm Refinement with [70,130] nm Thickness Window and History-Seeded Population",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness mutation amplitude to ±8 nm while anchoring 40% of the optimization population to the iteration-25 best candidate (score 0.9827530417757153) will prevent the large destructive parameter jumps that caused score regressions in rounds 3, 4, and 8, while the [70,130] nm thickness window improves manufacturability without sacrificing the dual-band spectral performance.",
+  "design_principle": "Local refinement around a verified high-performing design with bounded mutation amplitude prevents optimization from escaping the basin of attraction of the global optimum, while thickness window constraints ensure fabrication feasibility.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating TiO2/SiO2 stack on fused silica substrate, starting with TiO2 at the incident medium interface and ending with SiO2 at the substrate interface",
+  "design_variables": [
+    "24 layer thicknesses (12 TiO2 + 12 SiO2)",
+    "optimization step size bounded to ±8 nm per iteration",
+    "40% population seeded from iteration-25 best candidate"
+  ],
+  "soft_objectives": [
+    "Maximize reflectance in 450-650 nm band",
+    "Maximize transmittance in 700-1000 nm band",
+    "Minimize crosstalk (transmittance in 450-650 nm, reflectance in 700-1000 nm)",
+    "Maintain all layer thicknesses within [70, 130] nm window"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 24 layers per user constraint",
+    "Thickness window [70, 130] nm ensures deposition controllability",
+    "Alternating high/low index sequence compatible with standard ion-assisted deposition"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack initialization provides physically motivated starting point for local optimization",
+    "Needle optimization with bounded step size prevents destructive parameter jumps",
+    "Tolerance analysis during design phase verifies robustness before fabrication"
+  ],
+  "expected_advantages": [
+    "Prevents score regression by limiting mutation amplitude",
+    "Anchors optimization near verified optimum (0.9828 from round 7)",
+    "Thickness window improves fabrication yield",
+    "Maintains 24-layer constraint while exploring local neighborhood"
+  ],
+  "known_risks": [
+    "Thickness window [70, 130] nm may exclude optimal thin layers from iteration-25 design (which had layers as thin as 31.7 nm)",
+    "Local optimization may converge to local optimum if initial seed is not in basin of global optimum",
+    "45° incidence introduces polarization splitting not present at normal incidence"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on fused silica substrate at 45° incidence using TiO2 (high index) and SiO2 (low index) in alternating sequence. Layer 1 (incident side) is TiO2, layer 24 (substrate side) is SiO2. Initialize 40% of the optimization population with the exact thickness sequence from iteration 25 best candidate: [31.71, 83.18, 96.27, 118.44, 47.59, 92.97, 82.44, 107.21, 60.11, 97.03, 70.18, 111.24, 55.68, 105.93, 54.09, 83.96, 40.44, 75.39, 48.57, 96.17, 58.55, 96.31, 36.29, 151.03] nm. For remaining 60% of population, initialize with random thicknesses clipped to [70, 130] nm window. During gradient-based optimization, constrain thickness mutation amplitude to ±8 nm per iteration. Evaluate performance at 45° incidence for unpolarized light (average of s and p polarization). Score based on: high reflectance in 450-650 nm band, high transmittance in 700-1000 nm band, suppressed transmittance in 450-650 nm band, suppressed reflectance in 700-1000 nm band. Maximum layer count: 24. Report best_target_score, valid_candidates, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive from iteration 28 analysis: (1) constrains thickness mutation to ±8 nm to prevent destructive jumps that caused score regression in rounds 3, 4, 8, (2) anchors 40% of population to iteration-25 best candidate (score 0.9827530417757153) to maintain proximity to verified optimum, (3) applies [70, 130] nm thickness window for manufacturability while allowing historical seed to preserve proven thin-layer features"
+}

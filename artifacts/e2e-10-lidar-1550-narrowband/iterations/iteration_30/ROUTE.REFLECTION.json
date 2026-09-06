@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score deviates strongly from the expectation of rising or stable convergence. Instead, it oscillates widely: peaking at 0.9934468483949733 in Round 2, dropping to 0.8335103605318478 in Round 5, and sitting at 0.8866627413719529 in Round 7 (a net decline of ~0.107 from the peak). tightest_margin at 0.7149464609405983 remains consistent with expectations (no significant degradation). thicknesses_nm for layers 1-9 and 21-29 are fully consistent, preserving the alternating 185.0/267.0 nm quarter-wave stack. thicknesses_nm for layers 10-20 deviate sharply from the convergence expectation; rather than stabilizing within 3-5 rounds, they drift chaotically across candidates, failing to settle into any single configuration.",
+  "deviation_mechanism": "The cavity functions as a Fabry-Pérot resonator whose peak response depends on precise optical path lengths (OPL = n×d). Candidate index 0 demonstrates that a uniform 250.0 nm spacing across layers 10-20 establishes a clean fundamental longitudinal mode aligned with the design wavelength, yielding the route's highest score. When the optimizer subsequently removed constraints, it pushed individual layer thicknesses to extremes (e.g., 61.66 nm to 388.43 nm), drastically altering OPL per layer. This shifts phase-matching conditions, forcing the solver to toggle between disparate resonant modes that lie outside the target spectral band. The resulting objective landscape becomes highly multimodal and ill-conditioned, causing the optimizer to jump between local optima without gradient continuity, which manifests as the observed >0.16 absolute score oscillations across rounds.",
+  "continue_recommended": true,
+  "continue_rationale": "Route remains physically executable and scientifically open. Outer mirror stacks successfully maintained quarter-wave impedance matching without degradation. Cavity layers exhibit uncontrolled parameter drift rather than physical saturation, and the score history shows active exploration (max 0.9934 in R2, min 0.8335 in R5) rather than convergence-to-numerical-noise near the reference epsilon (0.0001). Another round is necessary to stabilize cavity resonance using constrained initialization and bounded optimization dynamics.",
+  "insight_for_next": "Re-initialize cavity layers (indices 9-19) strictly around the QWOT baseline of 250.0 nm with hard bounds of ±10% (225-275 nm) for the next optimization pass. Switch the cavity optimizer to a bounded L-BFGS method with a line-search backtracking step-size limit of 0.05 to prevent runaway thickness updates, while maintaining the fixed outer mirror constraint.",
+  "insight_grounding": "Baseline validity is confirmed by Candidate index 0, where identical 250.0 nm values across layers 10-20 correlate with the route’s highest historical score of 0.9934468483949733 in Round 2. Divergence is quantified by Candidate index 1 (layer 11 at 75.23584021047446 nm, layer 12 at 374.63801150879556 nm, layer 19 at 192.45062190928496 nm), Candidate index 2 (layer 20 at 388.4301459916309 nm), and Candidate index 3 (layer 11 at 61.66099862327542 nm). These excursions directly coincide with score drops below 0.90 (Round 3: 0.9074272075231481, Round 5: 0.8335103605318478), confirming that unconstrained thickness drift destabilizes the cavity resonance rather than exploring a viable solution space.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:32:31.940274+00:00",
+  "attestation_sha256": "1ae77bae95e8535391b35106cbaa7230da95ea66b38a6c62e49af1c1c2ed2d1e",
+  "observed_metrics": {
+    "best_target_score": 0.8866627413719529,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.7149464609405983
+  },
+  "reflection_available": true
+}

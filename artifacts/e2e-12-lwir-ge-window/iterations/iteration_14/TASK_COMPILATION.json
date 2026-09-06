@@ -1,0 +1,312 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 1,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_optimize_an_8_layer_planar_dielectric_stack_on_g_1a0e242078",
+    "user_request_original": "Optimize an 8-layer planar dielectric stack on Ge substrate with air incidence. Layer sequence: ZnSe(1), ZnS(2), ZnSe(3), ZnS(4), ZnSe(5), ZnS(6), ZnSe(7), ZnS(8). Initialize thicknesses at [488.26, 271.41, 291.87, 67.46, 694.45, 52.53, 57.93, 76.49] nm. Apply thickness bounds: Layers 1-4 and 6-8: 50-1500nm; Layer 5: 674-714nm. Optimize for high transmittance in 8000-11000nm band and low transmittance in 3000-5000nm band at normal incidence, unpolarized light. Use gradient-based thickness optimizer with 100 iterations maximum. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+    "normalized_request_english": "Optimize the thicknesses of an eight-layer ZnSe and ZnS dielectric stack deposited on a germanium substrate to maximize transmittance in the 8000-11000 nm window and minimize transmittance in the 3000-5000 nm window at normal incidence with unpolarized light, subject to the provided layer-specific thickness bounds and initialized starting values.",
+    "experiments": [
+      {
+        "experiment_id": "opt_8layer_zns_znse_ge_midir",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "ZnSe_ZnS_8layer_on_Ge",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "znse",
+                  "thickness_nm": 488.26,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_1"
+                },
+                {
+                  "material": "zns",
+                  "thickness_nm": 271.41,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_2"
+                },
+                {
+                  "material": "znse",
+                  "thickness_nm": 291.87,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_3"
+                },
+                {
+                  "material": "zns",
+                  "thickness_nm": 67.46,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_4"
+                },
+                {
+                  "material": "znse",
+                  "thickness_nm": 694.45,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 674,
+                  "max_thickness_nm": 714,
+                  "label": "layer_5"
+                },
+                {
+                  "material": "zns",
+                  "thickness_nm": 52.53,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_6"
+                },
+                {
+                  "material": "znse",
+                  "thickness_nm": 57.93,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_7"
+                },
+                {
+                  "material": "zns",
+                  "thickness_nm": 76.49,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50,
+                  "max_thickness_nm": 1500,
+                  "label": "layer_8"
+                }
+              ],
+              "exit": {
+                "material": "ge"
+              }
+            },
+            "spectrum": {
+              "start_nm": 3000.0,
+              "stop_nm": 11000.0,
+              "points": 801
+            },
+            "illumination": {
+              "angles_deg": [
+                0.0
+              ],
+              "polarizations": [
+                "unpolarized"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T",
+              "A"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "T",
+              "target": 0.0,
+              "wavelength_min_nm": 8000.0,
+              "wavelength_max_nm": 11000.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "high_passband_T"
+            },
+            {
+              "observable": "T",
+              "target": 0.0,
+              "wavelength_min_nm": 3000.0,
+              "wavelength_max_nm": 5000.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "low_stopband_T"
+            }
+          ],
+          "optimizer": {
+            "method": "adam",
+            "max_steps": 100,
+            "learning_rate": 0.05,
+            "starts": 3,
+            "seed": 42,
+            "early_stop_patience": 15,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 100.0,
+            "quantization_nm": 1.0
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "high_passband_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.0,
+            "region": {
+              "wavelength_nm": [
+                8000.0,
+                11000.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "low_stopband_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.0,
+            "region": {
+              "wavelength_nm": [
+                3000.0,
+                5000.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_8000_11000nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                8000.0,
+                11000.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_3000_5000nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                3000.0,
+                5000.0
+              ]
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "mid_ir_filter",
+          "transmittance_optimization",
+          "dielectric_stack"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 1.0,
+      "thickness_error_model": "absolute_normal",
+      "thickness_relative_fraction": 0.0,
+      "thickness_samples": 16,
+      "angle_perturbation_deg": 0.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [],
+      "scoring_standard_target_alignments": [
+        "opt_8layer_zns_znse_ge_midir: target high_passband_T pushed T the wrong way for the frozen standard, which ranks mean_transmittance as minimize over 8000.0-11000.0nm; rewrote at_least 1.0 as at_most 0.0"
+      ],
+      "illumination_corrections": [],
+      "substrate_corrections": [],
+      "solver_corrections": [],
+      "objective_synchronization": [
+        "opt_8layer_zns_znse_ge_midir: synchronized 2 simple objectives from executable targets"
+      ],
+      "objective_freeze": [
+        "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_transmittance_8000_11000nm - mean_transmittance_3000_5000nm)",
+        "opt_8layer_zns_znse_ge_midir: attached the 2 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+      ],
+      "objective_gate": [],
+      "objective_signature": "78de5d4100fbb63b",
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "Fixed eight-layer ZnSe/ZnS stack on Ge compiled per explicit sequence, initial thicknesses, and hard bounds. Optimizes transmittance in the specified mid-IR passband and stopband under normal-incidence unpolarized illumination using a gradient-based solver. Registry resolves ZnSe and ZnS optical constants without user-supplied coefficients.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 3418,
+      "completion_tokens": 7097,
+      "total_tokens": 10515
+    }
+  ],
+  "raw_response_sha256": [
+    "8a49cc4c8d81fecd2d71cf26476e1fcbd1b0dbf8523d3b51f25398a93e70c914"
+  ],
+  "rejected_draft": ""
+}

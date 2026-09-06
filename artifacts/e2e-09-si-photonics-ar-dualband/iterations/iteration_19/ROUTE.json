@@ -1,0 +1,46 @@
+{
+  "route_id": "route_01",
+  "title": "Inner-Layer Fine-Tuning with Frozen Boundaries",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 0.0006 headroom to perfect score is controlled primarily by phase matching in inner layers (positions 2, 6, 7); freezing outer layers (0, 1, 8, 9) and restricting inner perturbations to ±2 nm around iteration_15 optimum will converge faster to local optimum without destabilizing boundary conditions.",
+  "design_principle": "Local quasi-Newton refinement around proven high-performing parameters with constrained search space to avoid regression observed in iteration_11.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Silicon substrate (10 finite layers, alternating high-low starting with Ta2O5)",
+  "design_variables": [
+    "layer_2_thickness_nm",
+    "layer_6_thickness_nm",
+    "layer_7_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize best_target_score above 0.9994",
+    "maintain robustness_score above 0.98"
+  ],
+  "manufacturing_considerations": [
+    "±2 nm tolerance on optimized layers represents tight but achievable process control",
+    "frozen outer layers reduce total variable count for faster convergence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b"
+  ],
+  "theory_basis": [
+    "Transfer matrix method sensitivity analysis shows inner layers dominate phase matching for dual-band AR",
+    "Local optimizer convergence improves with reduced parameter space when near optimum"
+  ],
+  "expected_advantages": [
+    "Faster convergence than full 10-parameter optimization",
+    "Avoids regression seen in iteration_11 by stabilizing boundaries",
+    "Directly tests feedback directive mechanism"
+  ],
+  "known_risks": [
+    "May miss global optimum if frozen outer layers are suboptimal",
+    "±2 nm constraint may be too restrictive if optimum lies outside this range"
+  ],
+  "execution_request_english": "Optimize a 10-layer alternating Ta2O5/SiO2 anti-reflection stack on silicon substrate. Initialize all layers with thicknesses from iteration_15 best candidate: [41.05, 124.86, 186.61, 196.64, 77.45, 105.93, 142.41, 256.06, 117.42, 35.56] nm. Freeze layers 0, 1, 8, 9 at these values. Optimize only layers 2, 6, 7 with bounds [thickness_initial - 2 nm, thickness_initial + 2 nm]. Minimize mean reflectance over 1260-1360 nm and 1530-1565 nm bands at 0 deg unpolarized incidence. Use gradient_thickness optimizer with learning rate 0.01. Report best_target_score, robustness_score, and final thicknesses. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive to fine-tune inner phase-critical layers while freezing outer boundaries, based on iteration_15's 0.9994 score and 0.0006 remaining headroom."
+}

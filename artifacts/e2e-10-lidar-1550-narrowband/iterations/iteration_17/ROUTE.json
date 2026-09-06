@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "20-Layer Asymmetric FP with Decoupled Optimization Domains",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Freezing the first 8 layers at Round 4 optimized thicknesses preserves the baseline resonance condition while allowing layers 9-20 to refine the asymmetric cavity response; widened perturbation bounds on the rear half enable escape from local minima that constrained previous symmetric-bound optimizations.",
+  "design_principle": "Domain-decoupled gradient optimization: front mirror layers (1-8) frozen to maintain established stopband characteristics, rear mirror and cavity layers (9-20) optimized with ±20 nm bounds and layer-index-dependent learning rates to refine transmission peak without destabilizing the resonance.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20 finite layers with alternating Ta2O5/SiO2 sequence starting with Ta2O5 at air interface, terminating with SiO2 at substrate interface. Exact sequence: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2.",
+  "design_variables": [
+    "thicknesses of layers 9-20 (12 variables)",
+    "thicknesses of layers 1-8 frozen at Round 4 values"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize mean transmittance in 1400-1500 nm band",
+    "minimize mean transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer limit)",
+    "frozen front layers reduce deposition complexity for half the stack",
+    "±20 nm tolerance on rear layers remains fabricable with quartz crystal monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter principle: (HL)^N D(LH)^N structure creates transmission peak at defect resonance",
+    "Gradient-based thickness optimization with bounded perturbations",
+    "Asymmetric cavity positioning for dual stopband optimization"
+  ],
+  "expected_advantages": [
+    "Preserves Round 4 resonance stability while enabling further refinement",
+    "Wider bounds on rear layers allow larger search steps toward global optimum",
+    "Reduced variable count (12 vs 20) improves optimizer convergence efficiency"
+  ],
+  "known_risks": [
+    "Frozen front layers may prevent discovery of superior front-mirror configurations",
+    "Asymmetric bounds may bias solution toward rear-mirror-dominated designs",
+    "Layer coupling effects may cause frozen layers to become suboptimal as rear layers change"
+  ],
+  "execution_request_english": "Design a 20-layer planar dielectric filter on fused silica substrate with air incidence. Materials: alternating Ta2O5 (high index) and SiO2 (low index), starting with Ta2O5 at air interface and ending with SiO2 at substrate. Wavelength bands: passband at 1550 nm (target high transmittance), stopbands at 1400-1500 nm and 1600-1700 nm (target low transmittance). Initialize layers 1-8 thicknesses to Round 4 optimized values: [158.50, 268.40, 158.30, 268.20, 158.10, 268.00, 157.90, 267.90] nm and freeze these during optimization. Initialize layers 9-20 to Round 4 values: [147.80, 257.70, 147.60, 257.50, 148.00, 258.00, 148.00, 258.00, 148.00, 258.00, 148.00, 270.81] nm with optimization bounds ±20 nm. Apply gradient-based thickness optimization with layer-index-dependent learning rates: even-indexed layers (SiO2) use 0.5x learning rate relative to odd-indexed layers (Ta2O5). Optimize for maximum transmittance at 1550 nm while minimizing mean transmittance in both stopbands. Total layer count fixed at 20. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements insight appendage recommendation: decouple optimization domains by freezing layers 1-8 at Round 4 thicknesses, widen bounds to ±20 nm for layers 9-20, apply differentiated learning rates to even/odd layers. Addresses Round 3-4 score degradation from overly constrained bounds."
+}

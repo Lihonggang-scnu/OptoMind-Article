@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "6-Layer Odd-Quarter-Wave Perturbed Initialization with Enhanced Step-Size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 0.0012 performance ceiling in prior 6-layer optimizations stems from sampling-bound local minima rather than structural limits; structured odd-quarter-wave initialization with ±15nm alternating perturbations in the 200-300nm thickness band, coupled with increased optimizer step-size, will escape shallow minima and improve best_target_score.",
+  "design_principle": "Odd-quarter-wave thickness sequences create asymmetric interference conditions that broaden dual-band transmission windows; deliberate perturbations on alternating layers break symmetry to access previously unexplored regions of the thickness parameter space.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Silicon substrate (6 finite layers, alternating high-low sequence starting with Ta2O5)",
+  "design_variables": [
+    "layer thicknesses (6 variables, bounds 20-400 nm)",
+    "optimizer step-size multiplier"
+  ],
+  "soft_objectives": [
+    "minimize average reflectance in 1260-1360 nm band",
+    "minimize average reflectance in 1530-1565 nm band",
+    "maximize transmittance into silicon substrate"
+  ],
+  "manufacturing_considerations": [
+    "maximum 12 layers (using 6)",
+    "individual layer thickness between 20 nm and 400 nm",
+    "materials restricted to Ta2O5 and SiO2",
+    "thickness tolerance sensitivity analysis recommended post-optimization"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:286238942:s2chunk:286238942:6235:8100:94a4dbdef7de53ac"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Quarter-wave stack theory modified for dual-band operation"
+  ],
+  "expected_advantages": [
+    "Structured initialization avoids random search inefficiency",
+    "Alternating perturbations target observed variance band (200-300nm)",
+    "Increased step-size enables escape from shallow local minima"
+  ],
+  "known_risks": [
+    "May converge to similar local optimum if structural limit is genuine",
+    "Larger step-size may overshoot narrow optima",
+    "6-layer degrees of freedom may be fundamentally insufficient for dual-band"
+  ],
+  "execution_request_english": "Optimize a 6-layer anti-reflection coating on silicon substrate with air incidence at 0 degrees, unpolarized light. Stack sequence: Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 (6 finite layers). Wavelength bands: 1260-1360 nm and 1530-1565 nm. Initialize thicknesses using odd-quarter-wave sequence centered at 250 nm optical thickness, apply ±15 nm perturbation on alternating layers (layers 1, 3, 5: +15 nm; layers 2, 4, 6: -15 nm). Use gradient-based thickness optimizer with step-size multiplier increased to 2.0x baseline. Thickness bounds: 20-400 nm per layer. Objective: minimize weighted average reflectance across both bands, report transmittance into silicon. Exclude previously tested thickness fingerprints: 730f5e44ee20783a, dd540b50edff0d0f, 3171e6f7a12074fe, 8e5fabfdc1c26c60, 3eb0b207ce0785d0, 072959648a8bb226, 26c3ff311537571b, 7a30d797ac6e6808, 63c19962355fa149, 8ddf6036747aaf5f, 4ce1ec7e3b0f4657, 2cb54722fc9896cc. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Feedback directive: Replace current initialization with structured odd-quarter-wave sequence perturbed by ±15 nm on alternating layers, targeting 200-300 nm thickness band where existing solutions show highest variance. Couple with temporary step-size multiplier increase to force transitions over shallow local minima."
+}

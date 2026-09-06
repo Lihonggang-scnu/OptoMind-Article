@@ -1,0 +1,51 @@
+{
+  "route_id": "route_04",
+  "title": "Constrained 4-Layer with Fixed Adhesion Layer and Localized Search",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Layer 2 (Cr) serves primarily as an adhesion/interface layer with negligible sensitivity to the spectral objective function; fixing it at 32.0 nm and narrowing the search bounds for layers 3-4 around the round 3 optimum (235.05 nm, 148.74 nm) with ±8% perturbation will allow the optimizer to resolve finer spectral features and recover toward the round 1 peak score of 0.6209.",
+  "design_principle": "Reduce optimization degrees of freedom by fixing insensitive layers, concentrate search budget on thickness variables that demonstrably affect the objective (layers 3-4 dielectric interference layers).",
+  "proposed_materials": [
+    "SiO2",
+    "Cr",
+    "HfO2",
+    "Al"
+  ],
+  "proposed_topology": "Air | SiO2 (layer 1, variable) | Cr (layer 2, fixed 32.0 nm) | HfO2 (layer 3, variable) | SiO2 (layer 4, variable) | Al substrate. Total finite layers: 4.",
+  "design_variables": [
+    "layer_1_thickness_nm",
+    "layer_3_thickness_nm",
+    "layer_4_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize mean absorptance in 400-700 nm band",
+    "maximize mean reflectance in 700-2000 nm band",
+    "minimize mean reflectance in 400-700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count = 4 (well under 20-layer limit)",
+    "Cr layer fixed at 32.0 nm for adhesion reliability",
+    "dielectric layers within typical sputtering thickness range 50-300 nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance locus method for metal-dielectric multilayer optimization",
+    "Fixed insensitive layer strategy to reduce search space dimensionality"
+  ],
+  "expected_advantages": [
+    "Focused search on sensitive variables improves convergence",
+    "Reduced risk of optimizer wasting budget on insensitive layer 2",
+    "Localized search around known good region may recover round 1 performance"
+  ],
+  "known_risks": [
+    "Fixing layer 2 may prevent discovery of better global optimum if Cr thickness does affect objective",
+    "Narrow bounds may trap optimizer in local optimum if round 3 values are suboptimal"
+  ],
+  "execution_request_english": "Optimize a 4-layer spectrally selective absorber stack on aluminum substrate. Layer sequence from air side: SiO2 (variable thickness, bounds 50-150 nm), Cr (fixed thickness 32.0 nm, not optimized), HfO2 (variable thickness, bounds 216-254 nm centered on 235.05 nm with ±8% perturbation), SiO2 (variable thickness, bounds 137-161 nm centered on 148.74 nm with ±8% perturbation). Substrate: Aluminum (opaque). Illumination: normal incidence, unpolarized. Wavelength bands: 400-700 nm target high absorptance (low reflectance), 700-2000 nm target high reflectance. Objective: maximize weighted combination of mean absorptance in 400-700 nm and mean reflectance in 700-2000 nm. Use gradient-based thickness optimizer with 500 iterations. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Implements feedback directive: fixed layer 2 at 32.0 nm (empirically insensitive), narrowed layers 3-4 initialization bounds to ±8% around round 3 optimum (235.05 nm, 148.74 nm) to refine local search and recover toward round 1 score of 0.6209."
+}

@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer alternating HfO2/SiO2 DBR with full thickness optimization for dual-band spectral separation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "An alternating high-low index stack with all 24 layer thicknesses as independent variables can achieve a target score above 0.90 by creating a broad reflection band in 400-700 nm while remaining transparent at 1530-1565 nm.",
+  "design_principle": "Quarter-wave optical thickness at the stopband center wavelength creates constructive interference for reflection. With HfO2 (higher index) and SiO2 (lower index) alternating, the reflection band width scales with the index contrast ratio. At wavelengths much longer than the quarter-wave design wavelength, the stack becomes increasingly transparent because optical thicknesses become sub-quarter-wave.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (24 layers total, starting with HfO2 at air interface)",
+  "design_variables": [
+    "Individual thickness of each of the 24 layers, bounded between 40 nm and 140 nm per layer"
+  ],
+  "soft_objectives": [
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maintain smooth spectral response without sharp resonances in passband"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer limit)",
+    "Thickness bounds chosen to be within typical physical vapor deposition capability",
+    "Alternating sequence simplifies process control compared to arbitrary sequences"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stack reflection bandwidth scales approximately as (4/pi)*arcsin((nH-nL)/(nH+nL)) where nH and nL are high and low indices",
+    "Recalled: HfO2 refractive index is approximately 1.9-2.1 in visible band, SiO2 is approximately 1.45-1.47",
+    "Recalled: At wavelengths 2-3x the quarter-wave design wavelength, DBR stacks transition from high reflection to high transmission",
+    "Recalled: Starting with high-index layer at air interface can improve reflection band edge steepness",
+    "Recalled: Individual layer thickness optimization allows bandwidth widening beyond what uniform quarter-wave stacks achieve"
+  ],
+  "expected_advantages": [
+    "Full thickness freedom allows the optimizer to find non-uniform thickness profiles that widen the reflection band",
+    "Fixed alternating topology reduces search space complexity compared to sequence optimization",
+    "24 layers provides sufficient optical thickness for high reflection while staying under 30-layer constraint",
+    "Gradient-based optimization should converge faster than with sequence variables"
+  ],
+  "known_risks": [
+    "Uncertain: Exact refractive index dispersion of HfO2 and SiO2 at both bands - the local registry data will determine actual performance",
+    "Uncertain: Whether 24 layers is optimal vs. fewer layers with better thickness profiles - this route does not test layer count variation",
+    "Uncertain: Whether starting with HfO2 vs. SiO2 at air interface matters significantly - this route fixes HfO2 first",
+    "Uncertain: The 40-140 nm thickness bounds may be too narrow or too wide; optimal thicknesses could lie outside this range",
+    "Risk: If index contrast is lower than recalled, reflection band may be too narrow to cover full 400-700 nm"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar multilayer stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand) (24 layers total, HfO2 at air interface). All 24 layer thicknesses are optimization variables with bounds 40 nm to 140 nm per layer. Use coherent smatrix solver. Optimize for two mean objectives: maximize reflectance in 400-700 nm wavelength band, maximize transmittance in 1530-1565 nm wavelength band. Normal incidence. Use gradient_thickness optimizer with learning rate 0.01. Run up to 500 iterations or until convergence criteria met.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control arm with refined thickness bounds based on prior iteration results showing optimal thicknesses clustered around 50-120 nm range"
+}

@@ -1,0 +1,48 @@
+{
+  "route_id": "control_route_01",
+  "title": "30-layer HfO2/SiO2 thickness optimization with reduced step size for round 2",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing the gradient optimizer step size by 40% in round 2 will improve convergence stability and allow finer thickness adjustments, leading to higher best_target_score without reducing valid_candidates count.",
+  "design_principle": "Quarter-wave stack physics: alternating high/low index layers create constructive interference for reflection at design wavelengths. By deviating from strict quarter-wave thicknesses, the stack can be tuned to reflect one band while transmitting another. Gradient descent on thickness space should find local optima if step size matches the curvature of the objective landscape.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica substrate (30 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 30 layers",
+    "optimizer step size reduced by 40% from round 1"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1530-1565 nm band",
+    "maximize mean reflectance in 400-700 nm band",
+    "maintain physical validity of all candidates"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 30",
+    "thickness values should remain in manufacturable range (approximately 50-300 nm per layer)",
+    "alternating high/low index sequence preserved for space-qualification simplicity"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: HfO2 has higher refractive index (~2.0-2.1) than SiO2 (~1.45-1.46) in the visible-NIR range, making them a standard high/low pair for dielectric stacks",
+    "Recalled knowledge: Quarter-wave optical thickness (QWOT) at center wavelength creates maximum reflectance bandwidth; deviating from QWOT can create transmission windows",
+    "Recalled knowledge: Gradient-based thickness optimization can escape local minima if step size is appropriately tuned to the objective landscape curvature",
+    "Recalled knowledge: 30 layers is a practical upper limit for space-qualified coatings due to stress accumulation and deposition time"
+  ],
+  "expected_advantages": [
+    "Reduced step size should prevent oscillatory divergence observed in round 1",
+    "Finer gradient tracking may capture narrower optima in thickness space",
+    "Maintaining the same topology allows clean comparison of step-size effect alone"
+  ],
+  "known_risks": [
+    "I am uncertain whether 40% reduction is optimal -- this is a heuristic choice based on general optimization practice, not a measured value. Literature on coating optimization step-size tuning would clarify this.",
+    "I do not have exact n/k dispersion data for hfo2 and sio2 at 400-1565 nm; the registry provides measured data but I cannot verify completeness.",
+    "I am uncertain whether the alternating sequence starting with HfO2 is optimal versus starting with SiO2; this route does not test that axis.",
+    "Space environmental durability (radiation, thermal cycling) is not modeled; this route optimizes only optical performance."
+  ],
+  "execution_request_english": "Optimize a 30-layer planar dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2 (Lemarchand), HfO2, SiO2 (Lemarchand), alternating, starting with HfO2 at the air side, ending with SiO2 (Lemarchand) at the substrate side (30 layers total). Materials: hfo2 and SiO2 (Lemarchand) from the material catalog. Wavelength bands: 400-700 nm (maximize reflectance) and 1530-1565 nm (maximize transmittance). Design variables: individual thickness for each of the 30 layers. Optimization: gradient_thickness optimizer with step size reduced by 40% from round 1 baseline. Manufacturing constraint: total layer count exactly 30. Incidence angle: 0 degrees (normal incidence, assumed from problem context). Polarization: unpolarized or both TE/TM averaged. Continue from round 1 best candidate thicknesses as initial point.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Per feedback directives: reduce global optimizer step size by 40% for round 2 to address excessively aggressive moves in round 1 that risked oscillatory divergence. This preserves the scientific axis (thickness optimization of fixed 30-layer HfO2/SiO2 stack) while improving convergence behavior."
+}

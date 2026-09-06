@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "HfO2/SiO2 with Quarter-Wave Initialized Phase-Aligned Optimization at 21 Layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing all alternating-index layers as exact quarter-wave optical thickness at the passband midpoint (267.5 nm) and applying a phase-alignment penalty during early optimization stages will improve constructive interference in the UV passband while maintaining visible/NIR blocking, yielding higher target scores than the unseeded 15-layer defect cavity approach.",
+  "design_principle": "Physics-guided initialization: construct alternating HfO2/SiO2 pairs as λ/4 layers at 267.5 nm using estimated effective indices (n_HfO2≈2.1, n_SiO2≈1.5 at 267 nm), then apply bounded differential evolution with augmented penalty term for optical path length deviations before allowing free thickness variation.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused silica substrate"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused silica (21 finite layers total, alternating high/low index starting with HfO2)",
+  "design_variables": [
+    "Layer thicknesses (21 variables, initialized to quarter-wave values at 267.5 nm)",
+    "Optimization algorithm: differential evolution with phase-alignment penalty in early generations"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 255-280 nm",
+    "Minimize transmittance in 300-700 nm",
+    "Minimize transmittance in 700-1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "21 layers within 30-layer limit",
+    "No metal layers",
+    "Conventional evaporatable/sputterable dielectrics",
+    "Quarter-wave initialization may improve thickness reproducibility"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflectivity mirrors",
+    "Phase alignment for constructive interference in passband",
+    "Feedback directive from iteration_01 insight_appendage"
+  ],
+  "expected_advantages": [
+    "Better convergence than random initialization",
+    "Improved UV passband transmission through phase coherence",
+    "Maintained visible/NIR blocking from increased layer count vs 15-layer baseline"
+  ],
+  "known_risks": [
+    "HfO2 absorption may increase below 280 nm",
+    "Quarter-wave initialization may trap optimizer in local minimum",
+    "21 layers may still be insufficient for broad visible/NIR blocking"
+  ],
+  "execution_request_english": "Design and optimize a 21-layer planar multilayer filter on fused silica substrate with air incidence. Stack sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused silica. Initialize all layer thicknesses as quarter-wave optical thickness at 267.5 nm wavelength (t_HfO2 = 267.5/(4*2.1) ≈ 31.8 nm, t_SiO2 = 267.5/(4*1.5) ≈ 44.6 nm). Optimize using bounded differential evolution with penalty term proportional to deviation from quarter-wave optical path lengths during first 50 generations, then allow free thickness variation. Wavelength bands: maximize transmittance 255-280 nm, suppress transmittance 300-700 nm and 700-1100 nm. No metal layers. Total layer count exactly 21. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: High transmittance in 255–280 nm. behaviors to suppress or avoid: Transmittance in 300–700 nm; Transmittance in 700–1100 nm. manufacturing constraints: Maximum 30 layers; No metal layers; Only conventional depositable inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive from iteration_01: replace unseeded initialization with physics-guided quarter-wave seed at 267.5 nm band midpoint, add phase-alignment penalty during early optimization, increase layer count from 15 to 21 to explore additional blocking capability."
+}

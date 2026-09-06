@@ -1,0 +1,50 @@
+{
+  "route_id": "route_02",
+  "title": "Round-2-Best Reinitialization with Controlled Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reinitializing the optimization population around the round-2 best candidate geometry (target_score 0.9968) with ±4% Gaussian noise and hard 15 nm per-iteration displacement cap will preserve proximity to the high-performing basin while preventing the large thickness swings that caused score regression in rounds 4 and 6.",
+  "design_principle": "Local refinement around verified high-performing geometry with bounded step sizes to maintain optimizer momentum near the peak without overshooting into lower-performing regions.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si (12 finite layers, alternating high-low index starting with Ta2O5)",
+  "design_variables": [
+    "all 12 layer thicknesses",
+    "optimizer learning rate decay factor",
+    "perturbation bounds"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance in 1260-1360 nm band",
+    "minimize mean reflectance in 1530-1565 nm band",
+    "maximize transmittance into Si substrate",
+    "maintain target_score >= 0.995"
+  ],
+  "manufacturing_considerations": [
+    "individual layer thickness between 20 nm and 400 nm",
+    "maximum 12 layers",
+    "thickness tolerance sensitivity analysis at ±4%"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:16728883:s2chunk:16728883:1:2273:337d365dcb220097"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference optimization",
+    "Gradient-based thickness refinement with bounded step sizes prevents overshooting local optima"
+  ],
+  "expected_advantages": [
+    "Preserves proximity to verified high-performing geometry from round 2",
+    "Controlled perturbation prevents large swings that caused regression",
+    "Reduced learning-rate decay maintains optimizer momentum near peak"
+  ],
+  "known_risks": [
+    "May converge to same local optimum without improvement",
+    "Restricted step size may slow convergence if broader exploration needed"
+  ],
+  "execution_request_english": "Optimize a 12-layer alternating Ta2O5/SiO2 antireflection stack on semi-infinite Si substrate at 0 degree incidence with unpolarized illumination. Initialize all 12 layer thicknesses using round-2-best candidate geometry: [308.36, 233.62, 240.00, 350.28, 257.79, 234.77, 244.33, 332.63, 275.66, 250.70, 115.73, 40.52] nm. Apply ±4% Gaussian noise to create initial population. Use gradient-based thickness optimizer with hard per-iteration displacement cap of 15 nm per layer. Reduce adaptive learning-rate decay factor to 0.5x nominal to preserve momentum. Optimize for minimum mean reflectance across both wavelength bands (1260-1360 nm and 1530-1565 nm) with equal weighting. Enforce thickness bounds 20-400 nm per layer. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Directly implements feedback directive to reinitialize around round-2 candidate 2 geometry with ±4% Gaussian noise, 15 nm displacement cap, and reduced learning-rate decay to address score regression observed in rounds 4 and 6."
+}

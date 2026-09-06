@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Tightened Perturbation with Reduced Step-Size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness initialization to ±3% Gaussian perturbation around the round 2 candidate 3 median profile (mean ~278.5 nm) with 25% reduced optimizer step-size will enable finer phase-matching resolution, potentially closing the remaining 0.0032 headroom to target score 1.0 without triggering boundary reflections from wide asymmetric spreads.",
+  "design_principle": "Modified quarter-wave thickness tuning with bounded gradient-based optimization; small perturbations around a proven baseline allow local refinement without escaping the basin of attraction of the high-performing solution.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si (12 finite layers, 6 high-index + 6 low-index alternating sequence starting with Ta2O5)",
+  "design_variables": [
+    "layer thicknesses (12 variables, bounded 20-400 nm)"
+  ],
+  "soft_objectives": [
+    "maximize joint mean transmittance across 1260-1360 nm and 1530-1565 nm bands",
+    "maintain robustness score above 0.90",
+    "minimize thickness variance from baseline profile"
+  ],
+  "manufacturing_considerations": [
+    "all layers within 20-400 nm bounds",
+    "12-layer maximum respected",
+    "Ta2O5 and SiO2 only"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:286238942:s2chunk:286238942:6235:8100:94a4dbdef7de53ac"
+  ],
+  "theory_basis": [
+    "Transfer matrix method thickness optimization for multi-band AR coatings",
+    "Gradient-based local refinement around proven baseline reduces risk of escaping high-performance basin"
+  ],
+  "expected_advantages": [
+    "Finer phase-matching resolution from reduced step-size",
+    "Lower risk of boundary-triggered reflections from constrained perturbation",
+    "Potential to close remaining 0.0032 headroom"
+  ],
+  "known_risks": [
+    "May converge to local optimum if baseline is not in global basin",
+    "±3% perturbation may be too restrictive to explore new thickness combinations"
+  ],
+  "execution_request_english": "Optimize a 12-layer dielectric anti-reflection coating on silicon substrate with air incidence at 0 degrees, unpolarized light. Materials: alternating Ta2O5 (high-index) and SiO2 (low-index), starting with Ta2O5 adjacent to air, ending with SiO2 adjacent to silicon substrate. Wavelength bands: 1260-1360 nm and 1530-1565 nm, equal weighting. Initialize thicknesses using the round 2 candidate 3 median profile [278.37, 280.71, 225.29, 319.00, 272.38, 278.42, 236.68, 306.82, 314.54, 282.11, 84.20, 74.18] nm with ±3% Gaussian perturbation applied to each layer. Use gradient-based thickness optimizer with step-size multiplier reduced by 25% compared to previous iteration. Thickness bounds: 20-400 nm per layer. Objective: maximize joint mean transmittance across both bands. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implemented feedback directive: constrained initialization to ±3% Gaussian perturbation around round 2 candidate 3 median profile, reduced optimizer step-size by 25% for finer phase-matching resolution. This differs from iteration_06 which used wider asymmetric spread initialization."
+}

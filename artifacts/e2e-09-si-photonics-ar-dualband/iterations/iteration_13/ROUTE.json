@@ -1,0 +1,55 @@
+{
+  "route_id": "control_route_01",
+  "title": "Dual-Band AR Coating Optimization via Thickness Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Applying a controlled isotropic perturbation to the thicknesses of a previously high-scoring 8-layer stack will enable the gradient optimizer to find a solution with lower dual-band reflectance than the unperturbed seed, indicating the prior solution was trapped in a local minimum.",
+  "design_principle": "Thin-film interference depends critically on optical path length. Multi-band optimization landscapes are non-convex with many local minima. Small geometric perturbations can shift the starting point enough to converge to a different, potentially better, basin of attraction without changing the material topology.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)",
+    "si"
+  ],
+  "proposed_topology": "Air | SiO2 (Layer 1) | Ta2O5 (Layer 2) | SiO2 (Layer 3) | Ta2O5 (Layer 4) | SiO2 (Layer 5) | Ta2O5 (Layer 6) | SiO2 (Layer 7) | Ta2O5 (Layer 8) | Si (Substrate)",
+  "design_variables": [
+    "layer_1_thickness_nm",
+    "layer_2_thickness_nm",
+    "layer_3_thickness_nm",
+    "layer_4_thickness_nm",
+    "layer_5_thickness_nm",
+    "layer_6_thickness_nm",
+    "layer_7_thickness_nm",
+    "layer_8_thickness_nm"
+  ],
+  "soft_objectives": [
+    "Minimize mean reflectance in 1260-1360 nm band",
+    "Minimize mean reflectance in 1530-1565 nm band",
+    "Maximize mean transmittance into Si substrate across both bands"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 8 (within 12-layer limit)",
+    "Individual layer thickness constrained to 20-400 nm",
+    "Materials restricted to Ta2O5 and SiO2"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Fresnel reflection at normal incidence depends on the impedance mismatch between adjacent layers.",
+    "Recalled knowledge: Quarter-wave stacks provide high reflectance; anti-reflection requires deviating from quarter-wave conditions or using graded index profiles.",
+    "Recalled knowledge: Gradient-based optimizers in thin-film design often converge to local minima dependent on the initial seed thicknesses.",
+    "Recalled knowledge: Silicon has a high refractive index (~3.5) in the near-infrared, requiring careful impedance matching from air (n=1)."
+  ],
+  "expected_advantages": [
+    "Retains the high performance of the previous best candidate while exploring nearby solutions.",
+    "Fixed topology simplifies manufacturing compared to varying layer counts.",
+    "Dual-band optimization reduces component complexity compared to separate coatings."
+  ],
+  "known_risks": [
+    "Material name 'ta2o5' is not in the guaranteed_names list; local registry resolution may fail if the exact dataset key differs.",
+    "The exact material sequence of the prior best candidate is not explicitly recorded in the provided history; I am assuming an alternating SiO2/Ta2O5 sequence which may differ from the seed.",
+    "Perturbation magnitude (±25 nm) is chosen from recall; it may be too large (violating constraints) or too small (failing to escape the minimum).",
+    "Refractive index dispersion of Ta2O5 and SiO2 is treated as measured data; any uncertainty in the dataset's wavelength coverage near 1260-1565 nm is not checked here."
+  ],
+  "execution_request_english": "Optimize an 8-layer planar dielectric stack on a semi-infinite Silicon substrate. Incident medium is Air. Illumination is normal incidence (0 deg), unpolarized. Wavelength bands are 1260-1360 nm and 1530-1565 nm. Materials are SiO2 (Lemarchand) and Ta2O5 (Gao). Stack sequence from Air to Si: SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao), SiO2 (Lemarchand), Ta2O5 (Gao). Initialize layer thicknesses to [185.61, 59.80, 57.89, 140.33, 216.18, 117.31, 31.71, 33.20] nm. Apply a random isotropic perturbation of ±25 nm to each layer thickness before optimization, ensuring final thicknesses remain within 20-400 nm. Use a gradient-based thickness optimizer to minimize the average reflectance across both bands simultaneously. Report best_target_score, valid_candidates, tightest_margin, run_status, and thicknesses_nm.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control arm per refinement chain instruction, incorporating perturbation strategy to escape local minima."
+}

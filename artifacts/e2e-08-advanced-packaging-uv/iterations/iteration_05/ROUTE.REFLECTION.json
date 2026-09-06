@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "All four pre-declared observations are consistent with execution results. The best_target_score rose from 0.782935 (Round 1) to 0.899586 (Round 2), confirming expected gains as UV stopband optimization intensifies. The tightest_margin remained positive at 0.469669, verifying that thickness adjustments stayed within the 20-350 nm fabrication window. The valid_candidates count of 9 is stable and sufficient for continued sampling. The expected transmittance trade-off (deeper UV blocking at the cost of passband flatness) aligns with standard thin-film physics for this filter class, though explicit transmittance curves were not outputted this round.",
+  "deviation_mechanism": "There is no adverse deviation; the strong score improvement (Δ≈0.1167) is driven by the optimizer successfully breaking free from the strict quarter-wave (QW) approximation. Initial candidates used rigid 42.0 nm / 61.0 nm alternations. In Round 2, thicknesses expanded asymmetrically (e.g., Candidate 2, 8th value reached 147.45 nm vs. 9th value at 43.13 nm). This asymmetry increases the optical thickness mismatch required to widen the photonic bandgap into the UV while maintaining high-phase-shift accumulation. The positive margin confirms these expanded layers do not violate physical or geometric limits, enabling the solver to find higher-fidelity solutions.",
+  "continue_recommended": true,
+  "continue_rationale": "Route is actively converging with a massive score gain of 0.11665 between rounds, far surpassing the 1e-3 stagnation limit. The tightest margin is comfortably positive (0.469669), meaning design variables are not yet clipped by bounds. With only 2 rounds executed and valid candidates present, stopping now would halt a physically productive search. Continuing is required to test convergence stability and explore whether further optimization yields linear gains or plateaus.",
+  "insight_for_next": "Shift the quarter-wave initialization center wavelength from 360 nm to 350 nm to force tighter spectral anchoring in the UV transition zone, and halve the optimizer's line-search damping coefficient. Additionally, enforce a symmetric thickness perturbation bound of ±15 nm around the initial QW values for the first 5 iterations to smooth out the aggressive oscillations currently seen in late-layer indices, then release the bounds fully.",
+  "insight_grounding": "The current search exhibits high-frequency thickness oscillations indicative of unchecked step sizes: Candidate 3 shows a swing from 103.7436 nm (8th value) down to 36.8357 nm (9th value) and back up to 49.9034 nm (10th value). Candidate 2 similarly expands isolated layers to 147.4534 nm and 159.4059 nm while keeping neighbors near 43 nm. Damping the solver and shifting the QW anchor to 350 nm directly addresses these unstable gradients, which are currently propelling the score from 0.782935 to 0.899586 but risk divergence if left uncontrolled.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:24:33.125291+00:00",
+  "attestation_sha256": "d19f9b2b6f76c3305b12304787cdef159af9e799fdf6449052d2333cee4d54a9",
+  "observed_metrics": {
+    "best_target_score": 0.8995857518038861,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4696693536859926
+  },
+  "reflection_available": true
+}

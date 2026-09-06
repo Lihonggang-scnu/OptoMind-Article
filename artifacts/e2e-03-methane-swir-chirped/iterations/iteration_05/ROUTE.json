@@ -1,0 +1,46 @@
+{
+  "route_id": "route_01",
+  "title": "Fine Phase-Tuning of 20-Layer Alternating Stack with Tightened Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 20-layer alternating HfO2/SiO2 topology discovered in round 1 is near-optimal, but thickness values require fine phase-tuning within ±8 nm of emergent peaks/troughs to lock onto resonant optical path lengths without disrupting the established alternating pattern.",
+  "design_principle": "Reduce optimizer mutation step size and tighten thickness bounds around the best-performing candidate from round 1 to transition from coarse period-discovery to fine phase-tuning, allowing the solver to refine optical path lengths while preserving the verified alternating topology.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | (HfO2 | SiO2) × 10 | Fused Silica substrate - exactly 20 finite layers in alternating sequence",
+  "design_variables": [
+    "20 layer thicknesses with bounds centered on round-1 best candidate values, ±8 nm tolerance"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1000-1700 nm band",
+    "Maximize reflectance in 300-450 nm band",
+    "Maintain physically valid candidates"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 20 (within 30-layer constraint)",
+    "Thickness bounds tightened to ±8 nm for deposition control feasibility"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for planar multilayer optimization",
+    "Quarter-wave stack building block principle with non-quarter-wave fine-tuning"
+  ],
+  "expected_advantages": [
+    "Faster convergence to local optimum",
+    "Preserves verified 20-layer alternating topology",
+    "Reduced search space improves optimization efficiency"
+  ],
+  "known_risks": [
+    "May be trapped in local optimum if initial bounds are too restrictive",
+    "±8 nm tolerance may not capture global optimum if emergent pattern is suboptimal"
+  ],
+  "execution_request_english": "Optimize a 20-layer alternating HfO2/SiO2 multilayer stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (20 finite layers total). Initialize thicknesses at [110, 56, 117, 58, 122, 61, 130, 58, 149, 59, 154, 65, 132, 113, 115, 131, 121, 111, 59, 58] nm based on round-1 best candidate. Set optimization bounds to ±8 nm around each initial value. Use gradient-based thickness optimizer with reduced mutation step size. Evaluate spectral performance at normal incidence across 300-450 nm (maximize reflectance) and 1000-1700 nm (maximize transmittance). Apply ±5% relative thickness tolerance for robustness analysis. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: Maximum total layer count of 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Refinement of route_01 per feedback directive: tightened thickness bounds to ±8 nm around emergent peaks/troughs from round-1 best candidate, reduced mutation step size for fine phase-tuning while preserving verified 20-layer alternating topology"
+}

@@ -1,0 +1,52 @@
+{
+  "route_id": "route_01",
+  "title": "Locked Outer Mirrors with Fixed Cavity - Reduced DOF Optimization",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Locking outermost DBR mirror pairs to exact quarter-wave optical thicknesses while fixing the central cavity at λ/2 will reduce search space dimensionality and accelerate phase alignment, improving convergence toward the 0.95 transmittance target without sacrificing stopband suppression.",
+  "design_principle": "Fabry-Perot interferometer with quarter-wave DBR mirrors (HL)^N D(LH)^N structure. Outer 3 pairs per side fixed at QWOT, inner 2 pairs per side + cavity optimizable. Cavity initialized to exactly 360.0 nm (Ta2O5 half-wave at 1550 nm).",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers)",
+  "design_variables": [
+    "thicknesses of layers 7-10 and 12-15 (8 optimizable layers)",
+    "cavity layer 11 fixed at 360.0 nm",
+    "layers 1-6 and 16-21 fixed at QWOT"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm toward 0.95",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total 21 layers within 30-layer constraint",
+    "Fixed outer layers simplify deposition monitoring",
+    "Quarter-wave thicknesses are fabrication-friendly"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave DBR theory: nH*dH = nL*dL = λ0/4 for maximum reflectance bandwidth",
+    "Defect cavity theory: half-wave defect layer creates transmission resonance within stopband",
+    "Phase matching: fixed outer mirrors provide stable boundary conditions for cavity resonance"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality (8 vs 21 variables) accelerates convergence",
+    "Fixed QWOT outer mirrors guarantee minimum stopband performance",
+    "Fixed cavity ensures resonance condition at launch"
+  ],
+  "known_risks": [
+    "Reduced DOF may limit ability to fine-tune passband shape",
+    "Fixed cavity thickness may not be optimal if material indices differ from assumed values",
+    "May not achieve full 0.95 transmittance if mirror reflectance insufficient"
+  ],
+  "execution_request_english": "Design a 21-layer Fabry-Perot bandpass filter on Fused Silica substrate with Air incident medium using Ta2O5 and SiO2. Layer sequence: Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2 (layers 1-6 fixed QWOT) | Ta2O5/SiO2/Ta2O5/SiO2 (layers 7-10 optimizable) | Ta2O5 cavity (layer 11 fixed at 360.0 nm) | SiO2/Ta2O5/SiO2/Ta2O2 (layers 12-15 optimizable) | SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5 (layers 16-21 fixed QWOT). Initialize fixed QWOT layers: Ta2O5 at 184.5 nm, SiO2 at 267.2 nm (quarter-wave at 1550 nm). Optimize layers 7-10 and 12-15 with bounds 50-450 nm. Evaluate transmittance spectrum from 1400-1700 nm. Target: maximize T at 1550 nm, suppress T in 1400-1500 nm and 1600-1700 nm bands. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Following feedback directive: lock outermost mirror pairs to fixed QWOT, fix cavity at 360.0 nm, restrict optimizer to inner 15 layers (actually 8 optimizable + 1 fixed cavity + 12 fixed outer = 21 total). Reduces search dimensionality from 21 to 8 variables while preserving Fabry-Perot principle from route_01."
+}

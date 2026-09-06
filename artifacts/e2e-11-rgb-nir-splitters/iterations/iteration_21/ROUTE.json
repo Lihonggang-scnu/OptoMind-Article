@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "Staged Outer-to-Inner Layer Optimization with Quarter-Wave Seed",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Optimizing outermost 6 layers first, then progressively including inner layers, will stabilize band-edge transitions and prevent the oscillatory collapse observed in iterations 3-5 where full-stack simultaneous optimization caused score regression from 0.9251 to 0.67-0.73 range.",
+  "design_principle": "Sequential optimization reduces configuration space complexity; outer layers dominate edge-band behavior while inner layers control stopband center. Staging prevents gradient interference between spectral regions.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "22-layer alternating stack: Air|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|Fused Silica substrate",
+  "design_variables": [
+    "layer thicknesses (optimized in 3 stages: outermost 6, then middle 8, then inner 8)"
+  ],
+  "soft_objectives": [
+    "maximize mean reflectance 450-650nm",
+    "maximize mean transmittance 700-1000nm",
+    "minimize spectral crosstalk"
+  ],
+  "manufacturing_considerations": [
+    "22 layers within 24-layer maximum",
+    "quarter-wave initialization at 550nm center wavelength",
+    "thickness bounds 30-250nm per layer"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack initialization provides physically motivated starting point for local optimization",
+    "Outer layers have stronger influence on band-edge transition sharpness"
+  ],
+  "expected_advantages": [
+    "Prevents oscillatory collapse seen in prior full-stack optimization",
+    "Better control over visible-NIR transition region",
+    "More stable convergence path"
+  ],
+  "known_risks": [
+    "Staged optimization may converge to local optimum different from simultaneous optimization",
+    "Additional computational rounds required for staging"
+  ],
+  "execution_request_english": "Design a 22-layer alternating TiO2/SiO2 dielectric stack on fused silica substrate at 45 degrees incidence. Initialize all layers at quarter-wave optical thickness centered at 550nm (TiO2 approximately 57nm, SiO2 approximately 96nm based on typical indices). Set thickness bounds 30-250nm for all layers. Execute staged gradient optimization: first optimize only outermost 6 layers (layers 1-3 and 20-22) while holding inner 16 layers fixed at quarter-wave values; second stage optimize layers 1-10 and 13-22 holding layers 11-12 fixed; final stage optimize all 22 layers. Target observable: maximize weighted sum of mean reflectance in 450-650nm band and mean transmittance in 700-1000nm band. Incident medium is air. Evaluate both s and p polarization states and report unpolarized average. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Addresses oscillatory collapse from iterations 3-5 by implementing staged outer-to-inner optimization per feedback directive. Changes from prior route_03: adds explicit 3-stage optimization sequence instead of single-stage full-stack optimization."
+}

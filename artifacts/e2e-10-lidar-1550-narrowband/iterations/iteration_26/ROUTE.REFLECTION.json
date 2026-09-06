@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-execution declaration anticipated a 'different convergence trajectory' compared to periodic routes. The actual trajectory is highly non-monotonic and volatile rather than steadily divergent: score_history ascends to 0.983063 (round 3), collapses to 0.843079 (round 4) and 0.707236 (round 5), then recovers to 0.905686 (round 6). tightest_margin measures 0.6165019867312198. The explicit failure condition (plateauing below periodic baselines or persistent passband splitting) is not yet evidenced, as the score rebounds substantially from the 0.707 trough, indicating active optimization dynamics rather than hypothesis refutation.",
+  "deviation_mechanism": "Chirped dielectric stacks rely on controlled, sequential phase accumulation across impedance steps to maintain broadband reflection. When the optimizer displaces central layers far from the quarter-wave target (~267 nm) without gradient regularization, the local optical path lengths overshoot phase-match tolerances, causing destructive interference that narrows or splits the effective stopband. During rounds 4-5, mid-stack layers expanded beyond ~407-414 nm, breaking the continuous coupling condition required for the target wavelength range. The partial recovery in round 6 confirms that the design space contains valid chirped solutions, but unconstrained thickness stepping routinely triggers transient phase-collapse events.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 6 rounds with demonstrably active search behavior. The score sequence [0.969353, 0.969258, 0.983063, 0.843079, 0.707236, 0.905686] shows large swings (+0.198 gain from round 5 to 6) that vastly exceed the reference epsilon of 1e-4, ruling out numerical stagnation. The predefined stop condition (improvement <1e-3 over two consecutive rounds) is unmet. The current best score of 0.905686 establishes a viable baseline that warrants constrained refinement to mitigate the observed volatility.",
+  "insight_for_next": "Enforce a maximum adjacent-layer thickness delta constraint of <= 40 nm and apply a monotonic progression penalty to the chirp sweep region (layers 5-16). This restricts the optimizer from generating abrupt optical path jumps that trigger phase mismatch, guiding it toward smoother impedance gradients that preserve bandgap integrity.",
+  "insight_grounding": "The provided candidate list shows that the 2nd and 4th optimized candidates expanded their critical transition layers (indices 9 and 10) to 414.50870401074457 nm and 407.9425061268665 nm respectively. These extreme deviations coincide temporally with the severe score degradation recorded in rounds 4 and 5 (0.843079303166125 and 0.7072366782448362). The subsequent return to 0.9056868538549775 in round 6, with those same layers held at comparable but slightly adjusted widths alongside compensating neighbor shifts, empirically links unconstrained mid-stack expansion to performance collapse and validates bounding the step size as the corrective measure.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:17:30.913696+00:00",
+  "attestation_sha256": "182442f7c567cbaa29e14a423ff97b565595dbc88064535a491084141849f49f",
+  "observed_metrics": {
+    "best_target_score": 0.9056868538549775,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.6165019867312198
+  },
+  "reflection_available": true
+}

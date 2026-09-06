@@ -1,0 +1,51 @@
+{
+  "route_id": "route_04",
+  "title": "Stochastic Restart 5-Layer with Localized Random Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The 5-layer stack has converged top-layer thicknesses (indices 0-2 near 68nm, 32nm, 235nm) but exhibits high geometric variance in bottom dielectric layers. Localized stochastic restart with ±20nm uniform random initialization on bottom layers (indices 3-4) while fixing top layers should escape local optima and improve target score beyond 0.5922.",
+  "design_principle": "Preserve converged top-layer interference conditions while re-exploring bottom-layer parameter space through bounded random initialization. This follows admittance locus method principle where bottom layers primarily control IR reflectance stopband position.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Cr"
+  ],
+  "proposed_topology": "exactly 5 finite layers from the incident side: Cr / SiO2 / Cr / SiO2 / Cr",
+  "design_variables": [
+    "Physical thickness of Cr layer 1",
+    "Physical thickness of SiO2 layer 2",
+    "Physical thickness of Cr layer 3",
+    "Physical thickness of SiO2 layer 4",
+    "Physical thickness of Cr layer 5"
+  ],
+  "soft_objectives": [
+    "maximize mean absorptance 400-700nm",
+    "maximize mean reflectance 700-2000nm",
+    "maintain robustness to ±8% thickness variation"
+  ],
+  "manufacturing_considerations": [
+    "5 layers within 20-layer limit",
+    "Cr layer thickness bounded 20-50nm for adhesion and absorption balance",
+    "±8% fabrication tolerance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:54195912:s2chunk:54195912:15:2288:c51697a59ee92847"
+  ],
+  "theory_basis": [
+    "Admittance locus method for metal-dielectric multilayer optimization",
+    "Two-layer selective absorber-reflector tandem principle"
+  ],
+  "expected_advantages": [
+    "Escapes local optimum identified in iterations 14-19",
+    "Preserves physically validated top-layer configuration",
+    "Focused exploration reduces search dimensionality"
+  ],
+  "known_risks": [
+    "May not improve beyond 0.6209 historical best if 4-layer topology is fundamentally superior",
+    "Random initialization may require more optimization iterations to converge"
+  ],
+  "execution_request_english": "Perform one bounded TMM thickness optimization for an exactly 5-layer planar stack. Use the fixed material sequence from the incident side: Cr / SiO2 / Cr / SiO2 / Cr. Optimize only the physical thickness of each finite layer within the user-declared bounds. Do not optimize material identity or layer count in this route. Optimize a 5-layer spectrally selective absorber stack on aluminum substrate with material sequence: HfO2 | Cr | SiO2 | HfO2 | SiO2. Wavelength bands: 400-700nm maximize absorptance, 700-2000nm maximize reflectance. Normal incidence, unpolarized illumination. Thickness bounds: HfO2_layer1 [50-100nm] initialized at 68nm fixed, Cr_layer2 [20-50nm] initialized at 32nm fixed, SiO2_layer3 [150-300nm] initialized at 235nm fixed, HfO2_layer4 [50-150nm] uniform random initialization ±20nm around 80nm, SiO2_layer5 [50-150nm] uniform random initialization ±20nm around 76nm. Apply ±8% relative thickness tolerance for robustness evaluation. Use gradient-based thickness optimizer with stochastic restart capability. Maximum 20 layers constraint satisfied. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Implements feedback directive for stochastic restart with localized random initialization on bottom dielectric layers (indices 3-4) while retaining converged top-layer seeds. Changes from iteration_23: fixes top 3 layers at converged values, adds random initialization bounds on bottom 2 layers."
+}

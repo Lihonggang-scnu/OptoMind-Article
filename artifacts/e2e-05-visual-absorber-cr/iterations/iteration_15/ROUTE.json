@@ -1,0 +1,47 @@
+{
+  "route_id": "route_01",
+  "title": "Constrained Layers 4-6 Refinement with Anchored Search",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining layers 4 and 6 to ±8 nm around round-1 optimal values (100 nm and 240 nm respectively) will anchor the search to the highest-scoring geometry while allowing adjacent DBR layers to fine-tune the infrared reflection bandwidth, preventing search drift that caused the round-2 score regression.",
+  "design_principle": "Admittance locus method for metal-dielectric multilayer optimization with bounded thickness variables to maintain proximity to proven high-performing configuration while exploring local improvements.",
+  "proposed_materials": [
+    "Cr",
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Cr (69 nm) | HfO2 (188 nm) | SiO2 (218 nm) | HfO2 (229 nm) | SiO2 (100 nm, constrained ±8 nm) | HfO2 (67 nm) | SiO2 (240 nm, constrained ±8 nm) | HfO2 (184 nm) | SiO2 (151 nm) | HfO2 (135 nm) | SiO2 (226 nm) | HfO2 (195 nm) | SiO2 (232 nm) | HfO2 (199 nm) | SiO2 (222 nm) | HfO2 (78 nm) | SiO2 (119 nm) | Al substrate. Total 17 finite layers.",
+  "design_variables": [
+    "thicknesses of layers 1-3, 5, 7-16 (14 free variables)",
+    "layers 4 and 6 constrained to ±8 nm around 100 nm and 240 nm"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700 nm",
+    "maximize reflectance in 700-2000 nm",
+    "maintain robustness score above 0.33"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 17 within 20-layer limit",
+    "constrained layers reduce fabrication tolerance sensitivity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:54195912:s2chunk:54195912:15:2288:c51697a59ee92847"
+  ],
+  "theory_basis": [
+    "Admittance locus method tracks optical admittance during layer-by-layer deposition enabling reflectance spectrum prediction",
+    "Metal-dielectric structures achieve high broad absorption in visible and near-infrared with cutoff wavelength control"
+  ],
+  "expected_advantages": [
+    "Prevents search drift from round-1 optimum",
+    "Maintains proven high-scoring geometry for critical layers",
+    "Allows fine-tuning of IR reflection bandwidth through adjacent layers"
+  ],
+  "known_risks": [
+    "Over-constraint may limit search space too severely",
+    "May not escape local optimum if round-1 configuration is suboptimal"
+  ],
+  "execution_request_english": "Optimize a 17-layer spectrally selective absorber stack on Al substrate with air incidence. Stack sequence: Cr | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2. Initialize from round-1 best candidate thicknesses: [69, 188, 218, 229, 100, 67, 240, 184, 151, 135, 226, 195, 232, 199, 222, 78, 119] nm. Constrain layer 4 (SiO2) to 92-108 nm and layer 6 (SiO2) to 232-248 nm. Optimize remaining 14 layer thicknesses with bounds 50-300 nm using gradient_thickness optimizer with reduced step-size. Evaluate absorptance in 400-700 nm and reflectance in 700-2000 nm at normal incidence unpolarized. Score both spectral bands equally. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Following feedback directive to constrain initialization variance and reduce optimizer step-size bounds for layers 4 and 6 to ±8 nm around round-1 optimal values (100 nm and 240 nm). This anchors search to highest-scoring geometry while preserving DOF in adjacent DBR layers to fine-tune IR reflection bandwidth, addressing the -0.0007 score regression observed in iteration_06."
+}

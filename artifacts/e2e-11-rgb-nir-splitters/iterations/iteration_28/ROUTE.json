@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Physics-Informed Lambda/4n Initialization with Relaxed 35nm Minimum Thickness",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses at lambda/(4n) scaled to both band centers (550nm for visible, 850nm for NIR) rather than uniform random or single-wavelength quarter-wave will anchor phase alignment from the start, reducing optimizer search distance and preventing local minima associated with interference-sensitive thin layers.",
+  "design_principle": "Quarter-wave baseline initialization at dual band centers, then gradient refinement with relaxed minimum thickness bound to prevent layer collapse during optimization.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "24-layer alternating stack: TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2 on fused silica substrate, terminated with SiO2",
+  "design_variables": [
+    "all 24 layer thicknesses",
+    "initialization centered on lambda/(4n) at 550nm and 850nm"
+  ],
+  "soft_objectives": [
+    "maximize reflectance 450-650nm",
+    "maximize transmittance 700-1000nm",
+    "minimize crosstalk between bands",
+    "maintain robustness score above 0.6"
+  ],
+  "manufacturing_considerations": [
+    "minimum thickness 35nm relaxed from 30nm to prevent collapse",
+    "maximum 24 layers preserved",
+    "TiO2 high-index ~2.47, SiO2 low-index ~1.46"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack provides physically motivated starting point for local optimization",
+    "Dual-band center initialization anchors phase for both target bands simultaneously"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to better initialization",
+    "Reduced risk of thin-layer collapse",
+    "Better phase alignment for both bands from start"
+  ],
+  "known_risks": [
+    "Dual-band initialization may create conflicting phase requirements",
+    "May not outperform single-band quarter-wave if one band dominates merit function"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating TiO2/SiO2 dielectric stack on fused silica substrate at 45-degree incidence. Initialize layer thicknesses using physics-informed lambda/(4n) scaling: for TiO2 layers use n~2.47, for SiO2 layers use n~1.46, with design wavelengths centered at 550nm (visible band center) and 850nm (NIR band center). Set minimum thickness bound to 35nm (relaxed from 30nm), maximum bound to 200nm. Use gradient-based thickness optimizer with soft objectives: maximize reflectance in 450-650nm band, maximize transmittance in 700-1000nm band, minimize crosstalk (suppress transmittance in 450-650nm and reflectance in 700-1000nm). Evaluate unpolarized or both s- and p-polarization states. Output best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array for all candidates. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive: relax minimum thickness bound by +5nm (30nm to 35nm) and replace uniform random initialization with physics-informed lambda/(4n) scaling centered on both spectral bands to anchor phase alignment from optimization start."
+}

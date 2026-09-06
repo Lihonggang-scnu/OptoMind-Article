@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected improvement in minimum reflectance across 400-700 nm was partially realized but non-monotonic: score rose sharply from 0.733 (Round 1) to 0.940 (Round 2), then regressed to 0.763 (Round 3). The net trajectory is upward versus baseline, but direction is volatile rather than convergent. Tightest margin stayed positive as expected (actual: 0.432). Valid candidates count remained robust at 9, consistent with route_01 comparability expectations. The conditional clause regarding ripples/score limits was not triggered; the system explored high-performance regions before drifting, indicating successful initial gradient navigation followed by instability.",
+  "deviation_mechanism": "The oscillation (Δ+0.207, Δ-0.177) stems from phase-sensitivity in high-order thin-film interference. Layers reaching ~100-125 nm (e.g., layer 10: 124.964 nm, layer 7: 103.146 nm) place these stacks near half-wave multiples for visible wavelengths. In this regime, the derivative of reflectance with respect to thickness becomes extremely steep (high dR/dt). The optimizer's step size inadvertently crossed multiple interference fringes between rounds, pushing the stack from a constructive interference peak (Round 2) into a destructive region (Round 3). This creates a rugged, multi-modal landscape that destabilizes single-parameter sweeps without adaptive damping or gradient clipping.",
+  "continue_recommended": true,
+  "continue_rationale": "Only three rounds have executed with highly non-stagnant dynamics (variance > 0.02 across the sequence). Valid candidates remain healthy (9), and tightest margin is comfortably positive (0.432). The evidence does not indicate physical infeasibility or exhausted search space; instead, it signals unresolved optimization instability. Continuing is scientifically beneficial to dampen fringe-jumping, lock onto the Round 2 neighborhood, and determine whether 0.94 represents a reproducible global optimum or an artifact of transient parameter alignment.",
+  "insight_for_next": "Implement a bounded step-size limiter capping inter-round thickness deltas to ≤15 nm per layer, and apply a low-pass spatial filter to adjacent layer thicknesses (enforcing smoother chirp gradients). Re-initialize the next round using the Round 2 parameter set as a prior to stabilize convergence near the verified peak, while adding a penalty term for thickness ratios deviating >1.5x between neighboring layers to suppress high-Q cavity formation.",
+  "insight_grounding": "The performance collapse from 0.940 (Round 2) to 0.763 (Round 3) maps directly to the extreme thickness allocations in the latest candidate array, specifically layer 10 expanding to 124.964 nm and layer 6 reaching 98.173 nm (observed in candidate row 0). At λ≈550 nm with n≈1.5-2.0, these values approach 0.3-0.4λ optical thickness, placing them in regions where sub-wavelength perturbations flip interference conditions. Stabilizing these specific layers via delta-clipping and ratio-smoothing addresses the measured divergence source.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T10:59:25.971052+00:00",
+  "attestation_sha256": "264c67bd3f9fcb9a70f03f8062c5a572fecd805b4d6106322322049e593f4c99",
+  "observed_metrics": {
+    "best_target_score": 0.7632009788653711,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.43167216075146997
+  },
+  "reflection_available": true
+}

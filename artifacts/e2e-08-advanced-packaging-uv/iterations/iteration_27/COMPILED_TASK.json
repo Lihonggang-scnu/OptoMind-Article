@@ -1,0 +1,401 @@
+{
+  "schema_version": "optical-design-task.tmm.v1",
+  "task_id": "tmm_design_a_36_layer_planar_dielectric_filter_on_fu_6412391853",
+  "user_request_original": "Design a 36-layer planar dielectric filter on fused silica substrate with air incidence at 0 degrees unpolarized illumination. Stack topology: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | ... alternating for 18 pairs (36 finite layers total) | Fused Silica. Materials: Ta2O5 (high index) and SiO2 (low index). Optimize all 36 layer thicknesses as continuous variables bounded in [15, 355] nm. Implement hard projection operator that clamps any optimizer-proposed thickness to this range before TMM evaluation. Add matrix condition number diagnostic: if cond(M) > 1e10 during TMM solve, halt scoring and return warning. Objectives: maximize mean transmittance in 420-700nm band, minimize mean transmittance at 355nm single wavelength, minimize mean transmittance in 355-365nm band, minimize mean transmittance in 1030-1080nm band. Spectral grid: 1nm spacing from 350-1100nm. Initialize with quarter-wave thicknesses at 355nm (Ta2O5: ~62nm, SiO2: ~95nm) with 10% random perturbation. Use gradient-based thickness optimizer with 500 iterations maximum. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "normalized_request_english": "Design a 12-layer alternating Ta2O5/SiO2 dielectric filter on fused silica, illuminated at 0 degrees unpolarized. Optimize all 12 layer thicknesses continuously within [20, 350] nm. Maximize mean transmittance in 420-700 nm. Minimize mean transmittance at 355 nm, in 355-365 nm, and in 1030-1080 nm. Sweep 350-1100 nm at 1 nm spacing.",
+  "experiments": [
+    {
+      "experiment_id": "ta2o5_sio2_filter_opt",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "ta2o5_sio2_12layer",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_1"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_2"
+              },
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_3"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_4"
+              },
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_5"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_6"
+              },
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_7"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_8"
+              },
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_9"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_10"
+              },
+              {
+                "material": "ta2o5",
+                "thickness_nm": 45.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_11"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 60.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 350.0,
+                "label": "layer_12"
+              }
+            ],
+            "exit": {
+              "material": "sio2",
+              "constant_k": 0.0
+            }
+          },
+          "spectrum": {
+            "start_nm": 350.0,
+            "stop_nm": 1100.0,
+            "points": 751
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0
+            ],
+            "polarizations": [
+              "unpolarized"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "T",
+            "target": 0.0,
+            "wavelength_min_nm": 420.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "tgt_band_pass"
+          },
+          {
+            "observable": "T",
+            "target": 1.0,
+            "wavelength_min_nm": 355.0,
+            "wavelength_max_nm": 355.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "tgt_355nm"
+          },
+          {
+            "observable": "T",
+            "target": 1.0,
+            "wavelength_min_nm": 355.0,
+            "wavelength_max_nm": 365.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "tgt_355_365nm"
+          },
+          {
+            "observable": "T",
+            "target": 1.0,
+            "wavelength_min_nm": 1030.0,
+            "wavelength_max_nm": 1080.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "tgt_1030_1080nm"
+          }
+        ],
+        "optimizer": {
+          "method": "adam_lbfgs",
+          "max_steps": 500,
+          "learning_rate": 0.05,
+          "starts": 3,
+          "seed": 42,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": 1.0
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "tgt_band_pass",
+          "metric": "mean_transmittance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              420.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "tgt_355nm",
+          "metric": "mean_transmittance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 1.0,
+          "region": {
+            "wavelength_nm": [
+              355.0,
+              355.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "tgt_355_365nm",
+          "metric": "mean_transmittance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 1.0,
+          "region": {
+            "wavelength_nm": [
+              355.0,
+              365.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "tgt_1030_1080nm",
+          "metric": "mean_transmittance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 1.0,
+          "region": {
+            "wavelength_nm": [
+              1030.0,
+              1080.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_transmittance_355_365nm",
+          "metric": "mean_transmittance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              355.0,
+              365.0
+            ]
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_transmittance_1030_1080nm",
+          "metric": "mean_transmittance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              1030.0,
+              1080.0
+            ]
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_transmittance_420_700nm",
+          "metric": "mean_transmittance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              420.0,
+              700.0
+            ]
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "dielectric_filter",
+        "transmittance_opt",
+        "12_layer"
+      ]
+    }
+  ],
+  "verification": {
+    "require_spectral_convergence": true,
+    "require_independent_solver": true,
+    "check_passivity": true,
+    "check_energy_conservation": true,
+    "forbid_material_extrapolation": true
+  },
+  "portfolio": {
+    "maximum_candidates": 8,
+    "include_best_target_score": true,
+    "include_most_robust": true,
+    "include_simplest_fabrication": true,
+    "include_structurally_distinctive": true,
+    "include_pareto_front": true
+  },
+  "uncertainty": {
+    "thickness_sigma_nm": 1.0,
+    "thickness_error_model": "absolute_normal",
+    "thickness_relative_fraction": 0.0,
+    "thickness_samples": 16,
+    "angle_perturbation_deg": 0.0,
+    "material_dataset_policy": "evaluate_all_eligible",
+    "maximum_material_scenarios": 8,
+    "random_seed": 42
+  },
+  "budget": {
+    "wall_time_seconds": 900.0,
+    "maximum_forward_evaluations": 20000,
+    "maximum_optimizer_runs": 2,
+    "maximum_qwen_calls": 2,
+    "maximum_qwen_input_tokens": 12000,
+    "maximum_qwen_output_tokens": 2000,
+    "maximum_qwen_cost_cny": 2.0
+  },
+  "benchmark_id": null,
+  "metadata": {
+    "compiler": "QwenTMMTaskCompiler",
+    "compiler_schema": "tmm-task-compilation.v1",
+    "compiler_model": "qwen3.7-flash",
+    "performance_targets_are_soft": true,
+    "diversity_required": false,
+    "target_threshold_corrections": [],
+    "scoring_standard_target_alignments": [
+      "ta2o5_sio2_filter_opt: target tgt_355nm pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 355.0-355.0nm; rewrote at_most 0.0 as at_least 1.0",
+      "ta2o5_sio2_filter_opt: target tgt_355_365nm pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 355.0-365.0nm; rewrote at_most 0.0 as at_least 1.0",
+      "ta2o5_sio2_filter_opt: target tgt_1030_1080nm pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 1030.0-1080.0nm; rewrote at_most 0.0 as at_least 1.0"
+    ],
+    "illumination_corrections": [],
+    "substrate_corrections": [
+      "ta2o5_sio2_filter_opt: explicit fused-silica substrate uses local sio2 dispersion instead of a constant index"
+    ],
+    "solver_corrections": [],
+    "objective_synchronization": [
+      "ta2o5_sio2_filter_opt: synchronized 4 simple objectives from executable targets"
+    ],
+    "objective_freeze": [
+      "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_transmittance_420_700nm - mean_transmittance_355_365nm - mean_transmittance_1030_1080nm)",
+      "ta2o5_sio2_filter_opt: attached the 3 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+    ],
+    "objective_gate": [],
+    "objective_signature": "2b308e6557d9e1d5",
+    "uncertainty_normalization": []
+  }
+}

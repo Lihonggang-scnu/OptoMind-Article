@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "16-layer ZnSe/ZnS alternating stack optimized for LWIR passband with MWIR suppression",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "An alternating ZnSe/ZnS multilayer stack with thicknesses tuned away from simple quarter-wave values can achieve higher transmission in 8000-11000 nm while maintaining lower transmission in 3000-5000 nm, compared to a naive quarter-wave design centered at 9500 nm.",
+  "design_principle": "Recalled thin-film interference theory: alternating layers of different refractive indices create wavelength-dependent constructive/destructive interference. Quarter-wave optical thickness at a target wavelength produces high reflection at that wavelength; deviating from quarter-wave can shift reflection bands and create transmission windows. The refractive index contrast between ZnSe (higher n, approximately 2.4-2.5 in IR) and ZnS (lower n, approximately 2.2-2.3 in IR) provides sufficient contrast for interference effects, though modest compared to visible-range material pairs.",
+  "proposed_materials": [
+    "zns",
+    "ZnSe (Querry)"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (16 layers total, starting with ZnSe at air interface)",
+  "design_variables": [
+    "Individual thickness of each of the 16 layers, bounded 500-1500 nm per layer"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain physically realizable thickness values within manufacturing bounds"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 16 (maximum allowed)",
+    "Individual layer thicknesses should remain within 500-1500 nm range for LWIR optical thickness appropriateness",
+    "ZnSe and ZnS are both depositable by thermal evaporation or sputtering, but stress matching between layers should be verified in fabrication"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness equals wavelength divided by (4 × refractive index)",
+    "Recalled: Alternating high/low index layers create periodic reflection bands at fundamental and harmonic wavelengths",
+    "Recalled: ZnSe has higher refractive index than ZnS in the infrared range",
+    "Recalled: Ge substrate has high refractive index (~4.0 in IR), requiring impedance matching at the film-substrate interface",
+    "Recalled: Bandpass behavior in multilayers can be achieved by breaking periodicity or tuning layer thicknesses away from simple quarter-wave values"
+  ],
+  "expected_advantages": [
+    "16 layers provides sufficient degrees of freedom for dual-band optimization",
+    "Starting with ZnSe (higher index) at air interface may improve impedance matching",
+    "Alternating structure is manufacturable with standard IR coating processes",
+    "Thickness bounds (500-1500 nm) are appropriate for LWIR quarter-wave optical thickness"
+  ],
+  "known_risks": [
+    "ZnSe is not in the guaranteed_names list - local registry resolution may fail and send this route back for repair. If znse does not resolve, I would need to use only zns or find an alternative high-index IR material from guaranteed_names.",
+    "My recalled refractive index values for ZnSe and ZnS in the 3-11 μm range are approximate; actual dispersion data from the registry may differ significantly.",
+    "The modest index contrast between ZnSe and ZnS (both around 2.2-2.5) may limit achievable reflection band depth compared to higher-contrast pairs.",
+    "I am uncertain whether 16 layers is sufficient to achieve strong MWIR suppression while maintaining LWIR transmission - this is a hypothesis to be tested, not a known result.",
+    "Thermal stress and adhesion between ZnSe and ZnS layers on Ge substrate is not characterized in my knowledge; fabrication feasibility would need verification.",
+    "The previous iteration failed with material_data error - I do not know the root cause from memory alone and am relying on the feedback directive to relax thickness bounds and retry."
+  ],
+  "execution_request_english": "Design a 16-layer planar multilayer dielectric film on a Ge substrate with air incidence. Layer sequence from air to substrate: ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS (16 layers total, alternating starting with ZnSe (Querry)). Optimize individual layer thicknesses with bounds 500-1500 nm per layer. Target: maximize transmittance in 8000-11000 nm wavelength band, minimize transmittance in 3000-5000 nm wavelength band. Normal incidence, unpolarized light. Use coherent thin-film calculation. Materials: zns and ZnSe (Querry) (resolve from registry), substrate: Ge.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation from iteration_04 which failed with material_data error. Reinitializing with explicit 16-layer topology, relaxed thickness bounds appropriate for LWIR (500-1500 nm instead of previous failed configuration), and clear alternating sequence to ensure at least one physically valid candidate passes validation."
+}

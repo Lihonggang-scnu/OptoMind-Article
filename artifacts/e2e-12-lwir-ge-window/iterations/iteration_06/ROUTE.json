@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Local exploitation around best 16-layer candidate with bounded perturbations",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fine-scale phase alignment around the iteration_02 best geometry (gradient_thickness__01, score 0.3133) will improve target score by resolving local interference conditions without overshooting into distant minima caused by macroscopic thickness jumps.",
+  "design_principle": "Targeted local exploitation: initialize 15 candidates by applying bounded Gaussian perturbations (sigma=plus-or-minus 45 nm, clamped 200-1300 nm) to the best candidate's layer array from iteration_02, then run constrained local optimizer (SLSQP) for 30 iterations.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | Ge substrate (16 finite layers, alternating starting with ZnS)",
+  "design_variables": [
+    "Layer thicknesses (16 variables, bounded 200-1300 nm)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain total layer count less than or equal to 16"
+  ],
+  "manufacturing_considerations": [
+    "Thickness bounds 200-1300 nm ensure depositability",
+    "Alternating sequence simplifies process control",
+    "Local refinement reduces risk of large thickness deviations"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "TMM interference optimization for dichroic filters",
+    "Local gradient-based refinement for phase alignment"
+  ],
+  "expected_advantages": [
+    "Faster convergence than global search",
+    "Preserves successful interference structure from iteration_02",
+    "Reduced optimizer step size prevents overshooting"
+  ],
+  "known_risks": [
+    "May converge to local optimum if best candidate is not near global optimum",
+    "Perturbation bounds may be too restrictive if optimal thicknesses lie outside 200-1300 nm range"
+  ],
+  "execution_request_english": "Optimize a 16-layer alternating ZnS/ZnSe stack on Ge substrate with air incidence. Initialize 15 candidates by applying Gaussian perturbations (mean=iteration_02 candidate gradient_thickness__01 thicknesses, sigma=45 nm, clamped to 200-1300 nm per layer) to the best candidate from prior iteration. Run SLSQP optimizer for 30 iterations with thickness bounds 200-1300 nm. Evaluate mean transmittance in 8000-11000 nm (maximize) and 3000-5000 nm (minimize) at normal incidence, unpolarized. Total layer count fixed at 16. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Shift from global random initialization to targeted local exploitation around iteration_02 best geometry per feedback directive. Applies bounded Gaussian perturbations to candidate gradient_thickness__01 thickness array with SLSQP local optimizer for fine-scale phase alignment."
+}

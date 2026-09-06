@@ -1,0 +1,44 @@
+{
+  "route_id": "control_route_01",
+  "title": "Constrained Local Refinement of 24-Layer Dichroic",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Limiting individual layer thickness to 150 nm and reducing optimization step size will maintain high target scores while improving robustness against manufacturing thickness errors.",
+  "design_principle": "Recalled knowledge suggests that extremely thick layers in dielectric stacks can increase sensitivity to deposition rate fluctuations and internal stress; constraining thickness may force the optimizer to find more distributed phase corrections.",
+  "proposed_materials": [
+    "TiO2 (Siefke)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "24-layer alternating stack on fused silica substrate, starting with tio2, ending with sio2, terminated by air.",
+  "design_variables": [
+    "individual layer thicknesses (nm)"
+  ],
+  "soft_objectives": [
+    "maximize target score",
+    "maximize robustness score",
+    "minimize deviation from 150 nm thickness cap"
+  ],
+  "manufacturing_considerations": [
+    "maximum 24 layers",
+    "individual layer thickness <= 150 nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Dichroic filters often use quarter-wave stacks modified for band edge placement.",
+    "Recalled knowledge: Thickness constraints reduce deposition error sensitivity.",
+    "Recalled knowledge: Local refinement from a high-performing seed converges faster than global search."
+  ],
+  "expected_advantages": [
+    "Reduced sensitivity to thickness errors",
+    "Potentially lower internal stress",
+    "Faster convergence due to localized search"
+  ],
+  "known_risks": [
+    "Uncertainty if 150 nm cap limits achievable spectral performance compared to unconstrained design.",
+    "Uncertainty about exact dispersion data for tio2/sio2 in registry.",
+    "Uncertainty about polarization splitting at 45 degrees affecting unpolarized target score."
+  ],
+  "execution_request_english": "Optimize a 24-layer planar stack on fused silica using TiO2 (Siefke) and SiO2 (Gao). Incident angle 45 degrees. Wavelength bands 450-650 nm (high reflectance) and 700-1000 nm (high transmittance). Initialize thicknesses based on prior best candidate: [51.0, 57.0, 99.0, 102.0, 68.0, 78.0, 74.0, 113.0, 71.0, 73.0, 83.0, 96.0, 57.0, 58.0, 173.0, 55.0, 54.0, 57.0, 181.0, 58.0, 62.0, 74.0, 55.0, 64.0]. Constrain each layer thickness <= 150 nm during optimization. Optimizer perturbation scale 0.5 nm. Material order: alternating TiO2 (Siefke) and SiO2 (Gao) starting with TiO2 (Siefke) on substrate.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Feedback directive: constrain thickness and reduce step size to improve robustness."
+}

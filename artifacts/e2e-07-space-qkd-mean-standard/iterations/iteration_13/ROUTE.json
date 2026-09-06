@@ -1,0 +1,43 @@
+{
+  "route_id": "control_route_01",
+  "title": "Control Axis: Regularized 24-Layer HfO2/SiO2 Thickness Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack, with thicknesses optimized under inter-layer variance regularization, can simultaneously achieve high transmittance in 1530-1565 nm and high reflectance in 400-700 nm on fused silica.",
+  "design_principle": "Recalled knowledge: Alternating high/low index layers create a photonic stopband centered at the quarter-wave wavelength. By centering the stopband in the visible (approx 550 nm), the IR band (1550 nm) falls in a transmission harmonic. Regularization prevents non-manufacturable thickness oscillations.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24 layers total. Sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica Substrate.",
+  "design_variables": [
+    "24 individual layer thicknesses (nm)",
+    "Inter-layer thickness variance regularization coefficient"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layers must not exceed 30",
+    "Adjacent layer thickness differences should be minimized via regularization"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks reflect strongly at design wavelength lambda0 where optical thickness nd = lambda0/4",
+    "Recalled knowledge: Higher index contrast (HfO2/SiO2) yields wider stopbands than lower contrast pairs",
+    "Recalled knowledge: Regularization in optimization prevents non-manufacturable thickness oscillations between adjacent layers"
+  ],
+  "expected_advantages": [
+    "Improved robustness compared to unregularized optimization",
+    "Faster convergence by initializing near a known high-performing manifold"
+  ],
+  "known_risks": [
+    "Recalled HfO2 absorption in visible range may limit reflectance if extinction coefficient k > 0 (values read from registry)",
+    "Stress in 24-layer stack may cause delamination (not modeled in TMM)",
+    "Exact refractive index dispersion values are measured data from registry, not assumed constants"
+  ],
+  "execution_request_english": "Optimize a 24-layer stack on Fused Silica substrate with Air incident. Materials: hfo2, SiO2 (Lemarchand). Sequence: [hfo2, SiO2 (Lemarchand)] repeated 12 times. Initialize thicknesses using the following array (nm): [65.0, 65.0, 65.0, 65.4, 105.0, 65.0, 65.0, 65.0, 65.0, 65.0, 65.0, 105.0, 66.2, 105.0, 105.0, 105.0, 65.0, 105.0, 105.0, 65.0, 65.0, 65.0, 65.0, 86.0] with Gaussian perturbation (std dev 10 nm). Bounds: center +/- 20 nm. Objective: Maximize mean T (1530-1565 nm) and mean R (400-700 nm). Apply inter-layer thickness variance regularization with coefficient increased by 15% relative to prior round. Normal incidence. Unpolarized.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control axis with refined initialization and regularization based on prior round performance."
+}

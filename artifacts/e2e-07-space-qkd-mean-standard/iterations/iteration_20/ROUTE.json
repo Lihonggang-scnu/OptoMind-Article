@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "Local Basin Refinement with Round-3 Seed and Reduced Mutation Amplitude",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "The Round 4 score regression (0.7731→0.7611) indicates the optimizer escaped the local optimum basin due to excessive mutation amplitude. Constraining mutations to ±2.5% of the Round 3 optimal thickness vector should recover and potentially exceed the Round 3 peak by fine-tuning within the verified local curvature basin.",
+  "design_principle": "Use the Round 3 optimal thickness vector [250.6, 306.5, 256.0, 300.9, 269.6, 278.7, 239.9, 252.1, 238.387, 334.157, 200.0, 272.928, 192.949, 242.657, 338.575, 246.850, 246.143, 284.074, 228.257, 247.132, 167.188] nm as seed geometry. Apply gradient-based thickness optimization with mutation bounds limited to ±2.5% of seed values to prevent phase-mismatch excursions while allowing fine-tuning of non-critical layers.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "21-layer defect-cavity stack: (HfO2/SiO2) alternating mirror layers with central HfO2 defect layer at position 10 (index 10, 0-based). Exact sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2(defect)|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2 on fused silica substrate, air incident medium.",
+  "design_variables": [
+    "All 21 layer thicknesses with ±2.5% mutation bounds from Round 3 seed"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1530-1565 nm band",
+    "Maximize reflectance in 400-700 nm band",
+    "Improve best_target_score relative to Round 3 peak (0.7731)"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 21 (within 30-layer constraint)",
+    "All thicknesses within fabrication-tolerable range (100-400 nm)",
+    "HfO2/SiO2 material pair compatible with spaceborne deposition processes"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:8315:10343:b445a14bce44b9a2",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Fabry-Perot cavity resonance theory for narrow bandpass filtering",
+    "Gradient-based local optimization within bounded parameter space",
+    "Defect-layer optical thickness controls resonance wavelength"
+  ],
+  "expected_advantages": [
+    "Faster convergence to local optimum due to reduced search space",
+    "Recovery of Round 3 peak performance or improvement",
+    "Reduced risk of phase-mismatch excursions that caused Round 4 regression"
+  ],
+  "known_risks": [
+    "Local optimum may still be below global optimum",
+    "±2.5% bounds may be too restrictive if Round 3 seed was not at true local optimum",
+    "May not address underlying cause of dual-band trade-off limitation"
+  ],
+  "execution_request_english": "Optimize a 21-layer HfO2/SiO2 defect-cavity stack on fused silica substrate with air incident medium. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2(defect)|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2. Initialize thicknesses to Round 3 optimal vector [250.6, 306.5, 256.0, 300.9, 269.6, 278.7, 239.9, 252.1, 238.387, 334.157, 200.0, 272.928, 192.949, 242.657, 338.575, 246.850, 246.143, 284.074, 228.257, 247.132, 167.188] nm. Apply gradient_thickness optimizer with mutation amplitude bounded to ±2.5% of seed values. Evaluate at normal incidence across 400-700 nm (reflectance target) and 1530-1565 nm (transmittance target) wavelength bands. Score candidates by dual-band objective function weighting both bands equally. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Maximum 30 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Round 4 score regression (0.7731→0.7611) suggests optimizer escaped local optimum basin. Feedback directive specifies re-initialization with Round 3 seed and ±2.5% mutation bounds to confine search within verified local curvature."
+}

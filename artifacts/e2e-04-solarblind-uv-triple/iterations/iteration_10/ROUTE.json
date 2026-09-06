@@ -1,0 +1,51 @@
+{
+  "route_id": "route_03",
+  "title": "Smoothed chirped HfO2/SiO2 stack with inter-layer continuity constraint",
+  "route_kind": "chirped_stack",
+  "scientific_hypothesis": "Adding a Laplacian smoothing penalty and maximum inter-layer thickness delta constraint (≤20 nm) to the chirped Bragg stack optimization will suppress optical-path discontinuities observed in route_03, enabling better broadband phase matching across the 300-1100 nm blocking band while maintaining 255-280 nm passband transmission.",
+  "design_principle": "Chirped quarter-wave stack with monotonic thickness variation to broaden the stopband, but with explicit continuity constraints to prevent the 42-50 nm jumps that degraded performance in the prior iteration.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused silica substrate"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Fused silica (11 finite layers, alternating high/low index starting with high)",
+  "design_variables": [
+    "Layer thicknesses (11 variables)",
+    "Inter-layer thickness delta constraint (optimization parameter)"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 255-280 nm",
+    "Minimize transmittance in 300-700 nm",
+    "Minimize transmittance in 700-1100 nm",
+    "Minimize inter-layer thickness discontinuity"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 20 nm thickness change between adjacent layers for deposition uniformity",
+    "Total 11 layers within 30-layer budget",
+    "HfO2 evaporation may produce uneven surfaces per evidence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341",
+    "s2-chunk:CorpusId:247131178:s2chunk:247131178:22929:25296:b57bea6c60c39b08"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Chirped Bragg reflector theory for broadband stopbands",
+    "Laplacian smoothing for thickness continuity"
+  ],
+  "expected_advantages": [
+    "Smoother optical path reduces scattering losses",
+    "Better phase matching across wide blocking band",
+    "More manufacturable thickness profile"
+  ],
+  "known_risks": [
+    "HfO2 surface unevenness during evaporation",
+    "Smoothing constraint may limit optimal thickness combinations",
+    "11-layer topology previously tested with different thickness fingerprints"
+  ],
+  "execution_request_english": "Optimize an 11-layer chirped Bragg stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2 (alternating high/low starting with high). Wavelength bands: maximize transmittance at 255-280 nm, minimize transmittance at 300-700 nm and 700-1100 nm. Apply optimization with Laplacian smoothing penalty on thicknesses and enforce maximum inter-layer thickness delta of 20 nm during initialization. Thickness bounds: 20-120 nm per layer. Use gradient-based optimizer with smoothness regularization. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: High transmittance in 255–280 nm. behaviors to suppress or avoid: Transmittance in 300–700 nm; Transmittance in 700–1100 nm. manufacturing constraints: Maximum 30 layers; No metal layers; Only conventional depositable inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Direct response to iteration_03 feedback: prior route showed 42-50 nm inter-layer thickness jumps causing optical-path discontinuities. This route adds explicit smoothing constraint while preserving the 11-layer chirped topology scientific principle."
+}

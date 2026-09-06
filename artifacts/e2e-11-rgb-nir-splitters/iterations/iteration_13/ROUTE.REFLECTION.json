@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score expected >0.970 for a viable layered structure, but measured 0.6747, representing a significant lower deviation of approximately 0.30 magnitude. valid_candidates expected >8, measured 9, which aligns with expectations. robustness_score was declared as an expected observation but was absent from the reported metrics, so evaluation focuses on the primary reflectance objective and candidate feasibility.",
+  "deviation_mechanism": "The score trajectory drops sharply from round 2 (0.9251) to round 3 (0.6864), indicating the optimizer disrupted the constructive interference required for the stopband. Instead of maintaining a quasi-periodic Bragg sequence, the thickness search allowed layers to diverge into non-resonant regimes. This breaks the alternating high/low impedance stacking ratio, shifting the effective optical center wavelength out of the target window and transmitting rather than reflecting the design band, which heavily penalizes the target score under constraint violation penalties.",
+  "continue_recommended": true,
+  "continue_rationale": "Four rounds have executed and the score has settled near 0.675, but the trajectory proves the architecture is not fundamentally broken; round 2 achieved 0.9251, confirming the material system and layer count can support high performance when initialized properly. The recent plateau represents an escaped basin of attraction rather than physical saturation. Repairing the initialization to anchor near the quarter-wave periodicity will allow the optimizer to climb back onto the high-reflectance manifold.",
+  "insight_for_next": "Switch to a constrained quasi-periodic initialization strategy: set base thicknesses to nominal λ/4 optical thicknesses for the central design wavelength and restrict random perturbation to ±5 nm across all layers, allowing the optimizer to fine-tune phase matching rather than searching blind. Additionally, apply a hard bound clamp during optimization steps that triggers a restart if any layer thickness deviates beyond ±25 nm from its nearest half-period multiple, preventing catastrophic interference breakdown.",
+  "insight_grounding": "The interference collapse is directly observable in round 4 candidate 3, where layer 2 sits at 100.69 nm adjacent to layer 3 at 59.49 nm, destroying periodic impedance contrast. Similarly, layer 14 at 122.96 nm neighbors layer 15 at 33.85 nm, creating extreme optical path mismatches. In contrast, round 1 candidate 1 exhibits more stable sequencing (layer 2: 138.68 nm, layer 4: 107.53 nm, layer 6: 53.44 nm) and correlates with earlier higher scores, demonstrating that preserving near-quarter-wave spacing sustains the stopband physics.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:43:42.050842+00:00",
+  "attestation_sha256": "02fc93261f42830ffbc69c11eb7093d4b2ff02369859b31be081eaefc2f9628a",
+  "observed_metrics": {
+    "best_target_score": 0.6746638433738227,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.3925564064899819
+  },
+  "reflection_available": true
+}

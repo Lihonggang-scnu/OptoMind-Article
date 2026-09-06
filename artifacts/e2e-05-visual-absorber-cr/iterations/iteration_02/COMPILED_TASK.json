@@ -1,0 +1,296 @@
+{
+  "schema_version": "optical-design-task.tmm.v1",
+  "task_id": "tmm_design_a_planar_multilayer_stack_with_air_incide_ec0bbe2afc",
+  "user_request_original": "Design a planar multilayer stack with air incidence on an aluminum substrate. Stack sequence from air to substrate: two HfO2/SiO2 (Lemarchand) pairs as top mirror, one chromium layer as cavity defect, two HfO2/SiO2 (Lemarchand) pairs as bottom mirror, terminating at aluminum substrate. Total layer count is 9 (4 dielectric pairs + 1 Cr (Rakic-LD) + Al (Rakic-LD) substrate not counted as film layer). Optimize the thickness of the chromium layer and all dielectric layer thicknesses independently to create a resonant cavity. Wavelength range 400-2000 nm. Target: maximize absorptance in 400-700 nm through cavity resonance, maximize reflectance in 700-2000 nm. Normal incidence, unpolarized light.",
+  "normalized_request_english": "Design a 9-layer HfO2/SiO2/Cr/HfO2/SiO2 cavity-on-Al stack (air incidence) over 400–2000 nm at normal unpolarized incidence. Optimize all 9 layer thicknesses to maximize mean absorptance in 400–700 nm and maximize mean reflectance in 700–2000 nm.",
+  "experiments": [
+    {
+      "experiment_id": "hfosio2_cr_cavity_opt",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "cavity_on_al",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": "hfo2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_1"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_2"
+              },
+              {
+                "material": "hfo2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_3"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_4"
+              },
+              {
+                "material": "cr",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 20.0,
+                "max_thickness_nm": 300.0,
+                "label": "layer_5"
+              },
+              {
+                "material": "hfo2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_6"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_7"
+              },
+              {
+                "material": "hfo2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_8"
+              },
+              {
+                "material": "sio2",
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 30.0,
+                "max_thickness_nm": 250.0,
+                "label": "layer_9"
+              }
+            ],
+            "exit": {
+              "material": "al"
+            }
+          },
+          "spectrum": {
+            "start_nm": 400.0,
+            "stop_nm": 2000.0,
+            "points": 1601
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0
+            ],
+            "polarizations": [
+              "unpolarized"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "A",
+            "target": 0.0,
+            "wavelength_min_nm": 400.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "max_abs_400_700"
+          },
+          {
+            "observable": "R",
+            "target": 0.0,
+            "wavelength_min_nm": 700.0,
+            "wavelength_max_nm": 2000.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "unpolarized",
+            "constraint": "at_least",
+            "aggregation": "mean",
+            "name": "max_ref_700_2000"
+          }
+        ],
+        "optimizer": {
+          "method": "adam_lbfgs",
+          "max_steps": 60,
+          "learning_rate": 0.05,
+          "starts": 3,
+          "seed": 42,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": 1.0
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "max_abs_400_700",
+          "metric": "mean_absorption",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              400.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "max_ref_700_2000",
+          "metric": "mean_reflectance",
+          "sense": "maximize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              700.0,
+              2000.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "unpolarized"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_absorption_400_700nm",
+          "metric": "mean_absorption",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              400.0,
+              700.0
+            ]
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_reflectance_700_2000nm",
+          "metric": "mean_reflectance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              700.0,
+              2000.0
+            ]
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "cavity_design",
+        "broadband_filter"
+      ]
+    }
+  ],
+  "verification": {
+    "require_spectral_convergence": true,
+    "require_independent_solver": true,
+    "check_passivity": true,
+    "check_energy_conservation": true,
+    "forbid_material_extrapolation": true
+  },
+  "portfolio": {
+    "maximum_candidates": 8,
+    "include_best_target_score": true,
+    "include_most_robust": true,
+    "include_simplest_fabrication": true,
+    "include_structurally_distinctive": true,
+    "include_pareto_front": true
+  },
+  "uncertainty": {
+    "thickness_sigma_nm": 1.0,
+    "thickness_error_model": "absolute_normal",
+    "thickness_relative_fraction": 0.0,
+    "thickness_samples": 16,
+    "angle_perturbation_deg": 0.0,
+    "material_dataset_policy": "evaluate_all_eligible",
+    "maximum_material_scenarios": 8,
+    "random_seed": 42
+  },
+  "budget": {
+    "wall_time_seconds": 900.0,
+    "maximum_forward_evaluations": 20000,
+    "maximum_optimizer_runs": 2,
+    "maximum_qwen_calls": 2,
+    "maximum_qwen_input_tokens": 12000,
+    "maximum_qwen_output_tokens": 2000,
+    "maximum_qwen_cost_cny": 2.0
+  },
+  "benchmark_id": null,
+  "metadata": {
+    "compiler": "QwenTMMTaskCompiler",
+    "compiler_schema": "tmm-task-compilation.v1",
+    "compiler_model": "qwen3.7-flash",
+    "performance_targets_are_soft": true,
+    "diversity_required": false,
+    "target_threshold_corrections": [],
+    "scoring_standard_target_alignments": [],
+    "illumination_corrections": [],
+    "substrate_corrections": [],
+    "solver_corrections": [],
+    "objective_synchronization": [
+      "hfosio2_cr_cavity_opt: synchronized 2 simple objectives from executable targets"
+    ],
+    "objective_freeze": [
+      "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_absorption_400_700nm + mean_reflectance_700_2000nm)",
+      "hfosio2_cr_cavity_opt: attached the 2 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+    ],
+    "objective_gate": [],
+    "objective_signature": "423748225b0186db",
+    "uncertainty_normalization": []
+  }
+}

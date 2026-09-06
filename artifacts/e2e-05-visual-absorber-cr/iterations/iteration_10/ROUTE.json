@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Thin-Cr Interference Absorber with Fixed 14-Layer Topology",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A Cr layer constrained to 5-30 nm thickness, positioned early in a dielectric stack on Al substrate, will enable visible-band absorption through metallic loss while dielectric interference maintains high near-IR reflection.",
+  "design_principle": "Thin semi-transparent metal layers absorb via their extinction coefficient while allowing sufficient transmission for dielectric interference to shape the spectral response. Quarter-wave dielectric pairs create constructive interference for reflection in the IR band.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)",
+    "Cr (Rakic-LD)",
+    "Al (Rakic-LD)"
+  ],
+  "proposed_topology": "air | hfo2 | sio2 | cr | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | al",
+  "design_variables": [
+    "all_14_layer_thicknesses_nm",
+    "cr_layer_index_2_initialization_bounds_5_to_30_nm",
+    "cr_layer_mutation_variance_2x_first_5_iterations"
+  ],
+  "soft_objectives": [
+    "maximize_mean_absorptance_400_to_700_nm",
+    "maximize_mean_reflectance_700_to_2000_nm",
+    "minimize_total_layer_count_under_20"
+  ],
+  "manufacturing_considerations": [
+    "total_layer_count_fixed_at_14_under_20_limit",
+    "cr_thickness_must_remain_depositable_5_to_30_nm_range",
+    "dielectric_thicknesses_should_remain_practical_50_to_300_nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: thin metal films (10-50 nm) exhibit partial transmission enabling interference effects while contributing absorption through k",
+    "Recalled: quarter-wave optical thickness (n*d = lambda/4) creates high-reflection bands in dielectric stacks",
+    "Recalled: placing absorbing layer near the front of stack maximizes interaction with incident field before reflection",
+    "Recalled: Al substrate provides high baseline IR reflection that dielectric stack can enhance"
+  ],
+  "expected_advantages": [
+    "Cr thickness constraint forces exploration of semi-transparent regime rather than opaque blocking",
+    "Increased mutation variance on Cr layer accelerates escape from local optima",
+    "Fixed topology isolates thickness tuning as the only variable axis"
+  ],
+  "known_risks": [
+    "Uncertain whether 5-30 nm Cr provides sufficient absorption for visible band - may need lookup of Cr extinction coefficient spectrum",
+    "Uncertain optimal position of Cr layer in stack - index 2 is a hypothesis from recalled absorber designs",
+    "Quarter-wave estimates for dielectrics may not align with dual-band objective - actual optimal thickness may deviate significantly",
+    "No literature validation that this specific material combination achieves the stated spectral split"
+  ],
+  "execution_request_english": "Optimize a 14-layer planar multilayer stack with sequence: air incident, then hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), on Al (Rakic-LD) substrate. All 14 layer thicknesses are tunable variables. Initialize Cr (Rakic-LD) layer (index 2) thickness with uniform random draws in 5-30 nm range. Initialize all dielectric layers near quarter-wave estimates (50-300 nm range). Apply 2x step-size multiplier or increased mutation variance to Cr (Rakic-LD) layer during first 5 optimization iterations. Illumination: normal incidence, unpolarized, wavelength range 400-2000 nm. Objectives: maximize mean absorptance in 400-700 nm band, maximize mean reflectance in 700-2000 nm band. Total layer count fixed at 14. Use coherent transfer matrix method solver.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Round 2 initialization modification: Cr layer constrained to 5-30 nm with enhanced mutation to escape high-absorption plateau"
+}

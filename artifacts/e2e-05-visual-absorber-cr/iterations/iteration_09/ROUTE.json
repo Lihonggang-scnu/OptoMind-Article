@@ -1,0 +1,51 @@
+{
+  "route_id": "route_04",
+  "title": "Quarter-Wave Initialized 4-Layer AR-Cr Stack",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness initialization bounds to ±15% of quarter-wave optical thickness (QWOT) at 550 nm will reduce optimizer search space waste and improve convergence toward higher target scores compared to the unconstrained 350-499 nm range observed in route_04.",
+  "design_principle": "Admittance locus method with quarter-wave initialization: each dielectric layer thickness initialized near λ/4n at the center of the visible absorption band (550 nm) to establish constructive/destructive interference conditions that minimize visible reflectance while the Cr layer provides IR reflectance.",
+  "proposed_materials": [
+    "SiO2",
+    "Cr",
+    "HfO2",
+    "Al"
+  ],
+  "proposed_topology": "Air | SiO2 (layer 1) | Cr (layer 2) | HfO2 (layer 3) | SiO2 (layer 4) | Al substrate. Total finite layers: 4.",
+  "design_variables": [
+    "SiO2_layer1_thickness_nm",
+    "Cr_layer2_thickness_nm",
+    "HfO2_layer3_thickness_nm",
+    "SiO2_layer4_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize mean absorptance in 400-700 nm",
+    "minimize mean reflectance in 400-700 nm",
+    "maximize mean reflectance in 700-2000 nm"
+  ],
+  "manufacturing_considerations": [
+    "4 layers within 20-layer limit",
+    "Cr thickness should remain thin (<100 nm) for partial transparency in visible",
+    "dielectric layers near QWOT for manufacturability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness principle: QWOT = λ_center / (4 × n), where λ_center = 550 nm for visible band",
+    "Admittance locus tracking for layer-by-layer reflectance prediction"
+  ],
+  "expected_advantages": [
+    "Reduced optimizer iteration count due to tighter initialization bounds",
+    "Layer 4 thickness constrained to ~94 nm ±15% instead of 350-499 nm wasted range",
+    "Direct funneling into high-transmission neighborhood"
+  ],
+  "known_risks": [
+    "QWOT initialization may be too restrictive if optimal solution lies outside ±15% bounds",
+    "4-layer topology may have limited design freedom compared to previous iteration"
+  ],
+  "execution_request_english": "Optimize a 4-layer spectrally selective absorber stack on aluminum substrate with air incidence. Stack sequence: SiO2 | Cr | HfO2 | SiO2 | Al. Wavelength bands: 400-700 nm (maximize absorptance, minimize reflectance), 700-2000 nm (maximize reflectance). Initialize layer thicknesses at quarter-wave optical thickness centered on 550 nm with ±15% bounds: SiO2 layer 1 at 94.2 nm ±15%, Cr layer 2 at 30 nm ±50% (absorbing layer), HfO2 layer 3 at 68.75 nm ±15%, SiO2 layer 4 at 94.2 nm ±15%. Use gradient-based thickness optimizer. Normal incidence, unpolarized illumination. Total layer count: 4 finite layers. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_04",
+  "revision_reason": "Applied feedback directive to constrain initialization bounds for layers 2-4 to ±15% of QWOT at 550 nm. Previous route_04 showed layer 4 fluctuating between 350-499 nm representing wasted phase space. This refinement funnels optimizer into high-transmission neighborhood with tighter bounds."
+}

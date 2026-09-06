@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expectation that tightest_margin would remain stable is confirmed (actual: 0.06565250332502082, indicating no edge-constraint violations). The expectation regarding MWIR suppression cannot be verified numerically here as spectral transmission curves were not reported. Regarding best_target_score, the hypothesis anticipated monotonic scaling between route_01 and route_02; instead, the internal trajectory is highly oscillatory. The score ranges from a low of 0.16789950715444776 to a high of 0.3069766250130574 across six rounds, showing no consistent directional trend toward a singular optimum or a plateau.",
+  "deviation_mechanism": "The 12-layer stack functions as a multi-path interferometer in the MWIR band. Small physical thickness changes shift the phase accumulation per layer, causing constructive or destructive interference conditions to toggle across the 3000–5000 nm window. When the optimizer adjusts a layer from ~940 nm to ~1370 nm (as seen across the candidate pool), the optical path difference changes by >0.4 wavelengths at 3500 nm. This crosses adjacent interference fringes, abruptly shifting the system into a physically distinct local minimum with a drastically different aggregate error metric. The oscillatory score trajectory is the deterministic signature of the solver hopping between resonance regimes rather than converging smoothly.",
+  "continue_recommended": true,
+  "continue_rationale": "Six rounds have executed with run_status completed and valid_candidates remaining robust at 9 (far above the exhaustion threshold of 3). tightest_margin is stable at 0.06565250332502082, confirming topological feasibility. The score sequence [0.25664379075299687, 0.2960755219135837, 0.16789950715444776, 0.3069766250130574, 0.3033089475399845, 0.16990825384708846] varies by orders of magnitude greater than the reference epsilon (0.0001), proving the system is not numerically saturated or marginalized. Continued exploration will yield scientific value by either isolating a preferred interference regime or validating whether a structural reset can bypass the current multi-modal trap.",
+  "insight_for_next": "Replace the current near-uniform thickness initialization (~750 nm per layer) with a linear geometric progression spanning 350 nm to 950 nm across the 12 layers. Simultaneously constrain the optimizer's maximum single-step displacement to ±80 nm per cycle. This will anchor the macroscopic phase slope of the stack and force the solver to resolve finer interference features rather than leaping across adjacent spectral resonances.",
+  "insight_grounding": "The current volatility maps directly to measurable thickness dispersion in the provided candidate pool: candidate 2 (observed_metrics index 1) layer 3 is 939.1324994420594 nm while layer 5 is 1365.86672128863 nm; candidate 3 (index 2) layer 5 is 644.3743150680957 nm while layer 7 is 1469.8796548692176 nm. These specific offsets create >0.4 wave optical path discrepancies at 3500 nm, which directly correlate with the sharp objective jumps between score_history[2]=0.16789950715444776 and score_history[3]=0.3069766250130574. A linear gradient initialization reduces individual layer outliers, stabilizing the phase accumulation baseline before the optimizer refines thicknesses.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:17:40.482250+00:00",
+  "attestation_sha256": "9d7cada13156677213dc9122c2b5d541df2f742d97faceeab7eb5ee539f81ed2",
+  "observed_metrics": {
+    "best_target_score": 0.16990825384708846,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.06565250332502082
+  },
+  "reflection_available": true
+}

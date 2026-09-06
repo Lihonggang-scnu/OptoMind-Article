@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "- best_target_score: Expected to rise alongside increasing 420-700 nm average transmittance. Observed score fell from 0.9274780922215423 in round 1 to 0.5453540801223259 in round 6. Direction: Lower. Magnitude: -0.3821240120992164 over 6 rounds.\n- tightest_margin: Expected to remain positive if thicknesses stay within bounds. Observed 0.34169752263764386. Direction: Consistent.\n- Transmittance/Suppression trade-off: Expected passband superiority with weaker 355-365 nm suppression. Valid candidates contracted to 9, indicating the combined spectral constraints are actively filtering designs as transmittance optimizations intensify.\n- valid_candidates stability: Expected stable initialization. Observed 9, showing notable contraction in feasible space relative to typical full-population runs.",
+  "deviation_mechanism": "The optimizer is pushing layer thicknesses toward a resonant alternating-stack configuration (high-index layers ~130-160 nm, low-index layers ~70-100 nm) to maximize constructive interference in the 420-700 nm passband. This geometric progression increases peak transmission but simultaneously narrows the photonic stopbands, causing diffraction sidelobes to overlap the 355-365 nm rejection window. As the stack approaches exact quarter-wave optical thicknesses for central wavelengths, spectral energy leaks into the short-wavelength band, violating suppression constraints and reducing valid candidates. The composite score decreases because the objective function temporarily penalizes the loss of edge rejection while the solver prioritizes passband intensity, before potential phase-alignment recovery in subsequent iterations.",
+  "continue_recommended": true,
+  "continue_rationale": "Six executed rounds demonstrate active parameter space traversal rather than stagnation. The best_target_score shifted from 0.7689567109761544 in round 5 to 0.5453540801223259 in round 6, a movement of ~0.224 units that vastly exceeds the 0.0001 reference epsilon for numerical noise. The tightest_margin remains securely positive at 0.34169752263764386, confirming thickness bounds are not exhausted and the search space remains open. With 9 valid candidates persisting and clear geometric evolution, another round retains scientific utility to explore adjacent resonant phases and reconcile passband/transmission trade-offs.",
+  "insight_for_next": "Reinitialize round 7 with asymmetric thickness offsets: add +8 nm to all odd-indexed layers (0, 2, 4...) and subtract 8 nm from even-indexed layers (1, 3, 5...) relative to their current optimized values. Concurrently halve the optimizer step size to 0.5x to dampen overshoot into forbidden spectral regions while allowing fine-grained phase adjustment across the 420-700 nm band.",
+  "insight_grounding": "Candidate 2 maintains a rigid alternating thickness signature (layer 0: 97.51074614484766 nm, layer 1: 134.93741670898817 nm; layer 2: 92.06036430171685 nm, layer 3: 134.41606125150525 nm) that locks the optical path difference into a narrow Fabry-Pérot resonance. Candidate 3 exhibits less structured thicknesses (e.g., layer 6: 25.525949212485855 nm, layer 7: 25.626947234824 nm, layer 10: 95.8525648489604 nm) but yielded a degraded score of 0.8160175110710759 in round 4, confirming that strict symmetry optimization sacrifices spectral control. Applying a ±8 nm perturbation directly targets the phase accumulation responsible for the observed valid_candidate contraction.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T22:53:47.814866+00:00",
+  "attestation_sha256": "0f6a62688d5831c2acda17dcd61cc7ebd06341cfbb9fa958d467010934d94ebd",
+  "observed_metrics": {
+    "best_target_score": 0.5453540801223259,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.34169752263764386
+  },
+  "reflection_available": true
+}

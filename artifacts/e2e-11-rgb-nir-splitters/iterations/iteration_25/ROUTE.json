@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "Reduced Step-Size Optimization with Expanded Thickness Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing the optimizer thickness update scale factor by 50% while increasing upper thickness bounds by 45 nm will prevent overshoot into destructive interference regimes and allow deeper layers to expand optical path length toward full constructive reinforcement, improving target score beyond 0.9829.",
+  "design_principle": "Gradient-based thickness optimization with constrained perturbation magnitude prevents large jumps that degrade spectral performance; expanded bounds eliminate artificial clipping on thick layers.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "24-layer alternating TiO2/SiO2 stack on fused silica substrate, starting with TiO2 at air interface",
+  "design_variables": [
+    "24 layer thicknesses (TiO2 and SiO2 alternating)"
+  ],
+  "soft_objectives": [
+    "Maximize reflectance in 450-650 nm",
+    "Maximize transmittance in 700-1000 nm",
+    "Minimize crosstalk between bands",
+    "Maintain robustness to thickness variations"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 24 layers constraint preserved",
+    "Thickness bounds expanded to allow deeper optical path"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed",
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5"
+  ],
+  "theory_basis": [
+    "Quarter-wave baseline initialization provides physically motivated starting point for local optimization",
+    "Needle optimization iteratively adjusts thin layers to minimize merit function for multi-wavelength targets"
+  ],
+  "expected_advantages": [
+    "Smaller step size prevents destructive interference overshoot",
+    "Expanded bounds allow full constructive reinforcement in deep layers",
+    "Should improve upon iteration_05 best score of 0.9829"
+  ],
+  "known_risks": [
+    "Smaller step size may require more iterations to converge",
+    "Expanded bounds may increase search space complexity"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating TiO2/SiO2 dielectric stack on fused silica substrate at 45 degrees incidence. Initialize thicknesses from iteration_05 best candidate: [45.47, 66.26, 100.01, 115.66, 54.39, 104.87, 69.43, 114.90, 69.98, 102.33, 64.45, 116.99, 56.99, 108.17, 51.15, 83.29, 45.85, 81.30, 51.66, 104.20, 56.85, 92.37, 39.98, 156.38] nm. Apply gradient thickness optimization with step size reduced by 50% relative to previous round. Set upper thickness bound to 200 nm (45 nm increase from 155 nm baseline). Evaluate unpolarized plane wave illumination across 450-650 nm (high reflectance target) and 700-1000 nm (high transmittance target). Score candidates by weighted spectral performance with crosstalk minimization. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Per feedback directives: reduce optimizer thickness update scale factor by 50% to constrain perturbation within ±12% of resonance bandwidth, and increase upper thickness bound by 45 nm to eliminate artificial clipping on deepest layers."
+}

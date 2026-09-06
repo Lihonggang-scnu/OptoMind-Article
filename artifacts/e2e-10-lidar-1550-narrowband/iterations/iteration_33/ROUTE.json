@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "29-layer Ta2O5/SiO2 defect-cavity DBR with cavity-thickness optimization",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A 29-layer alternating Ta2O5/SiO2 stack with a central 11-layer cavity region, when optimized with cavity thicknesses constrained to ±10% around the quarter-wave baseline, will produce a transmission peak at 1550 nm exceeding 0.95 while maintaining suppressed transmittance in the 1400-1500 nm and 1600-1700 nm stopbands.",
+  "design_principle": "Distributed Bragg reflectors use alternating high/low refractive index layers at quarter-wave optical thickness to create high-reflectance stopbands. Introducing a defect cavity (layers deviating from quarter-wave condition) in the center creates a allowed transmission state within the stopband. The cavity optical thickness determines the resonance wavelength and bandwidth.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "29 layers total: layers 0-8 are fixed mirror (Ta2O5/SiO2 alternating, starting with Ta2O5), layers 9-19 are optimizable cavity region (Ta2O5/SiO2 alternating), layers 20-28 are fixed mirror (Ta2O5/SiO2 alternating, ending with Ta2O5). Substrate is Fused Silica, incident medium is Air.",
+  "design_variables": [
+    "thicknesses of layers 9-19 (11 cavity layers)",
+    "optimization bounded to 225-275 nm per cavity layer"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1550 nm passband",
+    "minimize mean transmittance in 1400-1500 nm stopband",
+    "minimize mean transmittance in 1600-1700 nm stopband"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (under 30-layer limit)",
+    "cavity thickness bounds 225-275 nm represent ±10% from 250 nm baseline for manufacturability",
+    "outer mirror layers fixed to reduce optimization complexity and improve convergence"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness (QWOT) = λ₀/(4n) where λ₀ is center wavelength and n is refractive index",
+    "Recalled: Ta2O5 refractive index at 1550 nm is approximately 2.1-2.2, SiO2 is approximately 1.44-1.45",
+    "Recalled: QWOT for Ta2O5 at 1550 nm ≈ 1550/(4×2.15) ≈ 180 nm, for SiO2 ≈ 1550/(4×1.45) ≈ 268 nm",
+    "Recalled: Defect cavity transmission resonance occurs when cavity optical thickness equals half-wave or multiple thereof",
+    "Recalled: L-BFGS with bounded constraints and line-search backtracking prevents thickness runaway in gradient-based thin-film optimization"
+  ],
+  "expected_advantages": [
+    "Fixing outer mirrors reduces design variable count from 29 to 11, improving optimization convergence",
+    "Cavity-focused tuning isolates the resonance mechanism from mirror stopband formation",
+    "±10% bounds around QWOT baseline maintain manufacturability while allowing resonance tuning",
+    "L-BFGS with step-size limit provides stable gradient-based refinement"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact Ta2O5 refractive index at 1550 nm - recalled as ~2.1-2.2 but actual dataset value may differ; this affects QWOT calculation",
+    "Uncertainty: Whether 'ta2o5' resolves to exactly one dataset in the material registry - if multiple stoichiometries exist, route may need repair",
+    "Uncertainty: Whether 11 cavity layers provide sufficient degrees of freedom for the required stopband suppression - may need wider cavity or more layers",
+    "Uncertainty: L-BFGS convergence behavior with 11 variables and tight bounds - may stall at local optimum",
+    "What would settle these: Look up exact n(λ) data for Ta2O5 at 1550 nm from the material registry; verify registry resolution for 'ta2o5' name"
+  ],
+  "execution_request_english": "Design a 29-layer planar dielectric filter stack on Fused Silica substrate with Air incident medium. Materials are Ta2O5 (Gao) (high index) and SiO2 (Lemarchand) (low index). Layer sequence from incident side: layer 0 Ta2O5 (Gao), layer 1 SiO2 (Lemarchand), layer 2 Ta2O5 (Gao), layer 3 SiO2 (Lemarchand), layer 4 Ta2O5 (Gao), layer 5 SiO2 (Lemarchand), layer 6 Ta2O5 (Gao), layer 7 SiO2 (Lemarchand), layer 8 Ta2O5 (Gao), layer 9 SiO2 (Lemarchand), layer 10 Ta2O5 (Gao), layer 11 SiO2 (Lemarchand), layer 12 Ta2O5 (Gao), layer 13 SiO2 (Lemarchand), layer 14 Ta2O5 (Gao), layer 15 SiO2 (Lemarchand), layer 16 Ta2O5 (Gao), layer 17 SiO2 (Lemarchand), layer 18 Ta2O5 (Gao), layer 19 SiO2 (Lemarchand), layer 20 Ta2O5 (Gao), layer 21 SiO2 (Lemarchand), layer 22 Ta2O5 (Gao), layer 23 SiO2 (Lemarchand), layer 24 Ta2O5 (Gao), layer 25 SiO2 (Lemarchand), layer 26 Ta2O5 (Gao), layer 27 SiO2 (Lemarchand), layer 28 Ta2O5 (Gao). Layers 0-8 and 20-28 are fixed mirror layers: Ta2O5 (Gao) layers at 185 nm, SiO2 (Lemarchand) layers at 267 nm. Layers 9-19 (11 cavity layers) are optimizable with bounds 225-275 nm. Optimize for maximum mean transmittance at 1550 nm (single wavelength), minimum mean transmittance at 1400-1500 nm band, minimum mean transmittance at 1600-1700 nm band. Use coherent transfer-matrix method solver at normal incidence. Optimizer: bounded L-BFGS with line-search backtracking, step-size limit 0.05. Total layers: 29.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refinement per feedback directives: re-initialized cavity layers 9-19 around QWOT baseline of 250 nm with hard bounds ±10% (225-275 nm), switched to bounded L-BFGS optimizer with line-search backtracking step-size limit 0.05, maintained fixed outer mirror constraint for layers 0-8 and 20-28"
+}

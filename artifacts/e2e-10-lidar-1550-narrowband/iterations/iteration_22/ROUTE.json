@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "Cavity Re-initialization with Tight Bounds - Recovery from Optimizer Drift",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The score regression from round 3 to round 5 resulted from optimizer drift in the cavity region away from the resonance condition established in rounds 1-2. Re-initializing layers 7-11 to their round-1 baseline thickness values and applying strict ±10 nm box constraints will recover the high-transmittance resonance while allowing fine spectral shaping.",
+  "design_principle": "Fabry-Perot bandpass filter with frozen outer DBR mirrors and tightly constrained cavity optimization. The cavity layers (7-11) form the resonant transmission peak, while outer layers (1-6 and 12-21) provide stopband reflection.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "21 layers total: Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5 on Fused Silica substrate",
+  "design_variables": [
+    "layer_7_thickness_nm (±10 nm from baseline)",
+    "layer_8_thickness_nm (±10 nm from baseline)",
+    "layer_9_thickness_nm (±10 nm from baseline)",
+    "layer_10_thickness_nm (±10 nm from baseline)",
+    "layer_11_thickness_nm (±10 nm from baseline)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total 21 layers within 30-layer constraint",
+    "±10 nm tolerance on cavity layers enables practical deposition monitoring",
+    "Outer mirrors frozen to reduce fabrication complexity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter theory: cavity layers create transmission resonance within DBR stopband",
+    "Quarter-wave optical thickness principle for DBR mirrors"
+  ],
+  "expected_advantages": [
+    "Prevents optimizer from wandering away from verified resonance condition",
+    "Maintains high peak transmittance while allowing spectral fine-tuning",
+    "Reduces search space to focus on cavity refinement only"
+  ],
+  "known_risks": [
+    "Tight bounds may prevent discovery of better cavity configurations",
+    "Round-1 baseline may not be optimal starting point",
+    "Frozen outer mirrors may limit overall performance ceiling"
+  ],
+  "execution_request_english": "Optimize a 21-layer Ta2O5/SiO2 Fabry-Perot bandpass filter on fused silica substrate with air incidence. Layer sequence: Ta2O5(1)/SiO2(2)/Ta2O5(3)/SiO2(4)/Ta2O5(5)/SiO2(6)/Ta2O5(7)/SiO2(8)/Ta2O5(9)/SiO2(10)/Ta2O5(11)/SiO2(12)/Ta2O5(13)/SiO2(14)/Ta2O5(15)/SiO2(16)/Ta2O5(17)/SiO2(18)/Ta2O5(19)/SiO2(20)/Ta2O5(21). Initialize layers 1-6 and 12-21 to frozen values from iteration_10 best candidate. Initialize layers 7-11 to baseline values [187.13, 192.43, 217.30, 235.01, 223.53] nm with optimization bounds ±10 nm from these values. Evaluate coherent TMM transmittance at 1550 nm (target maximize) and 1400-1500 nm, 1600-1700 nm bands (target minimize). Normal incidence, unpolarized light. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Score regression from 0.9757 to 0.7682 indicates optimizer drift in cavity region. Re-initializing to round-1 baseline with tight bounds tests whether the previous high-performing resonance condition can be recovered and stabilized."
+}

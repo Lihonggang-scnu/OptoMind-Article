@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Relaxed Mirror Constraints with Fixed Defect Half-Wave Resonance",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Decoupling mirror layer thickness optimization from the defect resonance condition will allow the optimizer to find mirror profiles that better suppress visible band transmission while maintaining telecom band resonance, improving the dual-band objective score beyond 0.7006.",
+  "design_principle": "Maintain half-wave optical thickness at defect layer (index 10) for 1550 nm resonance while allowing all 20 mirror layers to vary freely within expanded bounds. This separates the resonance condition from mirror stopband optimization.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "21 layers total: (HfO2/SiO2)x5 | HfO2_defect | (SiO2/HfO2)x5 on Fused Silica substrate, air incidence. Layer 10 (defect) fixed at half-wave optical thickness for 1550 nm.",
+  "design_variables": [
+    "thicknesses_nm for layers 0-9 and 11-20",
+    "layer_10_thickness_nm bounded to 380-400 nm"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1530-1565 nm band",
+    "Maximize reflectance in 400-700 nm band",
+    "Minimize total thickness variation across mirror layers"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 30 layers (21 used)",
+    "Thickness bounds 210-340 nm for mirror layers ensure fabricability",
+    "Defect layer tolerance ±10 nm around 390 nm target"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:8315:10343:b445a14bce44b9a2",
+    "s2-chunk:CorpusId:118205225:s2chunk:118205225:3952:5816:b979decdcfc5ff45",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557"
+  ],
+  "theory_basis": [
+    "Fabry-Perot cavity resonance condition requires half-wave optical thickness at target wavelength",
+    "Mirror stopband width and depth depend on individual layer optical thicknesses, not necessarily quarter-wave"
+  ],
+  "expected_advantages": [
+    "Mirror layers can optimize for visible band reflection independently of telecom resonance",
+    "Fixed defect layer preserves resonance physics while allowing mirror adaptation",
+    "L-BFGS-B with thickness variation penalty encourages smooth, fabricable profiles"
+  ],
+  "known_risks": [
+    "Relaxing quarter-wave constraints may reduce mirror stopband effectiveness in visible band",
+    "Optimizer may converge to local minima with poor dual-band balance",
+    "Total thickness may exceed practical fabrication limits without penalty"
+  ],
+  "execution_request_english": "Optimize a 21-layer HfO2/SiO2 defect-cavity stack on Fused Silica substrate with air incidence. Layer sequence: HfO2(0), SiO2(1), HfO2(2), SiO2(3), HfO2(4), SiO2(5), HfO2(6), SiO2(7), HfO2(8), SiO2(9), HfO2_defect(10), SiO2(11), HfO2(12), SiO2(13), HfO2(14), SiO2(15), HfO2(16), SiO2(17), HfO2(18), SiO2(19), HfO2(20). Wavelength bands: 1530-1565 nm (maximize transmittance), 400-700 nm (maximize reflectance). Bounds: layers 0-9 and 11-20 thickness 210-340 nm, layer 10 thickness 380-400 nm. Use L-BFGS-B optimizer with soft penalty on total thickness variation (target total thickness ~5500 nm, penalty weight 0.01). Initialize from uniform distribution within bounds. Evaluate at normal incidence, unpolarized light. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Maximum 30 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Following feedback directive to decouple mirror dispersion from defect resonance by relaxing quarter-wave constraints on mirror layers while preserving half-wave defect condition at layer 10."
+}

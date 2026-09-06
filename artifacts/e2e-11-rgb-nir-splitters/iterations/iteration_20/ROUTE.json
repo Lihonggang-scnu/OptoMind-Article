@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer TiO2/SiO2 alternating dichroic stack with quarter-wave regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "An alternating TiO2/SiO2 stack with 24 layers, initialized near quarter-wave optical thickness at approximately 550 nm and optimized with thickness regularization, will produce high reflectance in 450-650 nm and high transmittance in 700-1000 nm at 45 degree incidence.",
+  "design_principle": "Quarter-wave dielectric stacks produce high reflectance bands centered at the design wavelength. The reflectance band width scales with the index contrast ratio. By choosing a quarter-wave center near the visible band edge, the high-reflectance band can cover 450-650 nm while allowing transmission beyond 700 nm. At 45 degree incidence, the effective optical thickness decreases by cos(theta) in the film, requiring thickness compensation.",
+  "proposed_materials": [
+    "TiO2 (Siefke)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "24 layers alternating TiO2/SiO2 starting with TiO2 on fused silica substrate: TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2",
+  "design_variables": [
+    "individual layer thicknesses (24 variables)",
+    "optimizer step-size multiplier (reduced by 30% from baseline)",
+    "regularization penalty weight for quarter-wave deviation"
+  ],
+  "soft_objectives": [
+    "maximize reflectance in 450-650 nm band",
+    "maximize transmittance in 700-1000 nm band",
+    "minimize thickness deviation from quarter-wave reference beyond 12%"
+  ],
+  "manufacturing_considerations": [
+    "maximum 24 layers as specified",
+    "thickness values should remain within practical deposition ranges (30-200 nm)",
+    "regularization encourages manufacturable thicknesses near conventional quarter-wave values"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave stacks produce reflectance bands centered at lambda_0 where optical thickness equals lambda_0/4",
+    "Reflectance band width increases with index contrast between high and low index materials",
+    "At oblique incidence, effective optical path length scales with cos(theta) inside the film",
+    "TiO2 (n~2.4) and SiO2 (n~1.45) provide sufficient index contrast for visible-band high reflectance",
+    "Gradient optimization with regularization can refine quarter-wave initial designs while avoiding local minima"
+  ],
+  "expected_advantages": [
+    "Alternating high-low sequence is a proven starting point for dichroic designs",
+    "Quarter-wave regularization keeps thicknesses in manufacturable range",
+    "Reduced step-size prevents overshooting optimal thickness configurations",
+    "24 layers provides sufficient degrees of freedom for band shaping"
+  ],
+  "known_risks": [
+    "Recalled index values for TiO2 and SiO2 may differ from the actual catalog datasets at specific wavelengths",
+    "The exact quarter-wave center wavelength (550 nm chosen) may not be optimal; literature or parameter sweep would confirm",
+    "45 degree incidence polarization splitting (s vs p) is not explicitly optimized; unpolarized average is assumed",
+    "Regularization weight is a heuristic choice; optimal value would require tuning study",
+    "Band edge steepness between 650-700 nm gap may require more than 24 layers for ideal performance"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric coating on fused silica substrate using alternating TiO2 (Siefke) and SiO2 (Gao) layers (TiO2 (Siefke) first, then SiO2 (Gao), repeated 12 times). Incident angle is 45 degrees. Wavelength bands: maximize reflectance in 450-650 nm, maximize transmittance in 700-1000 nm. Initialize layer thicknesses near quarter-wave optical thickness at 550 nm (TiO2 (Siefke) ~57 nm, SiO2 (Gao) ~95 nm adjusted for 45 degree incidence). Apply gradient-based thickness optimization with step-size multiplier reduced by 30% from default. Add soft regularization penalty for thickness deviations exceeding 12% from quarter-wave reference. Maximum 24 layers. Materials: TiO2 (Siefke) and SiO2 (Gao) from catalog. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Applied feedback directive: reduced optimizer step-size multiplier by 30% to curb aggressive thickness jumps, introduced soft regularization penalty discouraging deviations >12% from quarter-wave optical thickness to anchor primary resonance centers and keep iterations within high-performance basin."
+}

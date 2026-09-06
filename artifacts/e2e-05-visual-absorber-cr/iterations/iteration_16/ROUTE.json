@@ -1,0 +1,58 @@
+{
+  "route_id": "route_02",
+  "title": "Tightened Bounds Reduced Step-Size Refinement",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining HfO2 thickness upper bounds to 250 nm and initializing thicker layers (indices 4-7) at 180-220 nm will reduce interference-phase oscillations that caused physics_violation and solver_disagreement in iteration 11, while maintaining sufficient optical path difference for spectral selectivity.",
+  "design_principle": "Admittance locus method with bounded thickness optimization; reduced step-size dampens oscillations while preserving quarter-wave interference physics at visible-NIR transition.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Cr",
+    "Al"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | Cr | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Al substrate; exactly 9 finite layers",
+  "design_variables": [
+    "layer_1_HfO2_thickness_nm",
+    "layer_2_SiO2_thickness_nm",
+    "layer_3_Cr_thickness_nm",
+    "layer_4_HfO2_thickness_nm",
+    "layer_5_SiO2_thickness_nm",
+    "layer_6_HfO2_thickness_nm",
+    "layer_7_SiO2_thickness_nm",
+    "layer_8_HfO2_thickness_nm",
+    "layer_9_SiO2_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700 nm",
+    "maximize reflectance in 700-2000 nm",
+    "minimize reflectance in 400-700 nm"
+  ],
+  "manufacturing_considerations": [
+    "total layer count exactly 9 layers within 20-layer limit",
+    "HfO2 thickness capped at 250 nm for deposition uniformity",
+    "reduced optimizer step-size for convergence stability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance Locus Method for metal-dielectric multilayer optimization",
+    "Five-step optimization workflow for optical thin films",
+    "DMD interference design principle for spectral selectivity"
+  ],
+  "expected_advantages": [
+    "Reduced physics_violation frequency due to tighter bounds",
+    "Improved solver agreement with reduced step-size",
+    "Maintained spectral selectivity with constrained optical path"
+  ],
+  "known_risks": [
+    "Over-constraint may limit achievable target_score",
+    "Reduced step-size may require more optimization iterations"
+  ],
+  "execution_request_english": "Optimize a 9-layer planar multilayer stack on aluminum substrate with air incidence. Layer sequence: HfO2 | SiO2 | Cr | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2. Wavelength range 400-2000 nm with dual-band objectives: maximize absorptance in 400-700 nm, maximize reflectance in 700-2000 nm. Thickness bounds: layers 1-3 and 9 at [25, 250] nm initialized at 100 nm; layers 4-7 (thicker dielectric layers) at [180, 220] nm initialized at 200 nm; layer 8 (HfO2) at [25, 250] nm initialized at 150 nm. Chromium layer (layer 3) bounded at [5, 50] nm initialized at 20 nm. Use gradient_thickness optimizer with reduced step-size schedule (initial step 0.5 nm, minimum step 0.01 nm). Total layer count fixed at 9. Evaluate target_score, robustness_score, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Applied feedback directives: shifted initialization ranges for layers 4-7 downward to 180-220 nm, capped HfO2 upper bounds at 250 nm, reduced optimizer step-size to dampen interference-phase oscillations observed in iteration 11 physics_violation and solver_disagreement failures."
+}

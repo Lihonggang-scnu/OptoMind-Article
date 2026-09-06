@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "Refined Defect-Cavity Bandpass Filter with Smoothness Regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing the central defect layer to a half-wave optical thickness (approx. 375-385 nm physical thickness for Ta2O5) within a 29-layer quarter-wave stack will concentrate the transmission resonance at 1550 nm, and applying smoothness regularization will maintain manufacturability without significantly reducing peak transmittance.",
+  "design_principle": "A Fabry-Perot cavity formed by a half-wave defect layer between two quarter-wave mirror stacks creates a narrow transmission peak. The mirror stacks provide high reflectivity in the stopbands, while the defect layer dictates the resonance wavelength. Smoothing thickness gradients reduces sensitivity to deposition errors.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "29 layers total. Air incident. Stack sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5. Substrate: Fused Silica (SiO2). Layer 15 (central Ta2O5) is the defect layer.",
+  "design_variables": [
+    "Physical thickness of all 29 layers (nm)",
+    "Initialization bounds for layer 15 (central defect) restricted to 375-385 nm",
+    "Learning rate schedule (cosine-annealing)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1550-1550 nm band",
+    "Minimize mean transmittance in 1400-1500 nm band",
+    "Minimize mean transmittance in 1600-1700 nm band",
+    "Minimize absolute difference between adjacent layer thicknesses (smoothness)"
+  ],
+  "manufacturing_considerations": [
+    "Smoothness regularization penalizes inter-layer thickness differences exceeding 60 nm",
+    "Total layer count fixed at 29 (within 30-layer limit)",
+    "Material resolution risk for ta2o5 (not in guaranteed_names list)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled physics: Quarter-wave stacks (HL)^N create high reflectivity bands centered at the design wavelength.",
+    "Recalled physics: Introducing a half-wave defect layer (2H or H 2H H) within the stack creates a transmission passband.",
+    "Recalled heuristic: Smooth thickness variations reduce stress and deposition error sensitivity in physical vapor deposition.",
+    "Recalled rule of thumb: Ta2O5 refractive index is approx 2.1 at 1550 nm, making 375-385 nm approx lambda/2n."
+  ],
+  "expected_advantages": [
+    "Higher peak transmittance at 1550 nm due to precise defect tuning.",
+    "Improved robustness to manufacturing variations due to smoothness constraints.",
+    "Maintained stopband rejection due to fixed quarter-wave mirror structure."
+  ],
+  "known_risks": [
+    "ta2o5 is not in material_catalog.guaranteed_names; local registry resolution may fail or select an unintended dataset.",
+    "Exact refractive index of ta2o5 at 1550 nm is recalled as approx 2.1 but may vary by deposition process.",
+    "Smoothness regularization may constrain the optimizer from finding the global optimum thickness profile.",
+    "29-layer stack may approach stress limits on fused silica substrate not modeled here."
+  ],
+  "execution_request_english": "Optimize a 29-layer planar multilayer stack on a Fused Silica (SiO2 (Lemarchand)) substrate with Air incident medium. Materials are Ta2O5 (Gao) (High index) and SiO2 (Lemarchand) (Low index). Stack sequence: Alternating Ta2O5 (Gao) and SiO2 (Lemarchand), starting with Ta2O5 (Gao) at the air interface, ending with Ta2O5 (Gao) at the substrate interface. Layer 15 (central Ta2O5 (Gao)) is the defect layer. Design variables: Physical thickness of all 29 layers. Initialization: All layers initialized to quarter-wave optical thickness at 1550 nm, except Layer 15 which is initialized uniformly random between 375 nm and 385 nm. Optimizer: Gradient-based thickness optimization with cosine-annealing learning rate scheduler capped at 5e-4. Regularization: Add a penalty term to the loss function proportional to the sum of max(0, |thickness_i - thickness_{i+1}| - 60 nm) for all adjacent pairs. Objectives: Maximize mean transmittance at 1550 nm (single wavelength), minimize mean transmittance in 1400-1500 nm band, minimize mean transmittance in 1600-1700 nm band. Constraint: Total layers = 29. Materials resolved by name: Ta2O5 (Gao), SiO2 (Lemarchand).",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control arm incorporating feedback directives: defect layer initialization re-centering, cosine-annealing scheduler, and smoothness regularization."
+}

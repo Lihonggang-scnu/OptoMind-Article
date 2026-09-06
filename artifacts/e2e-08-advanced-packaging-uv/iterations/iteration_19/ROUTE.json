@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Bimodal Thickness Initialization with Relaxed Bounds for Dual-Stopband Filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A bimodal thickness distribution spanning 20-60 nm and 150-300 nm will sample both thin-film interference orders and thicker propagation phases, improving optimizer convergence and recovering the iteration_02 performance level of 0.9275 target score.",
+  "design_principle": "Feedback directive specifies bimodal reinitialization to restore valid_candidate throughput above 10% of population while relaxing thickness bounds by +5 nm on both sides to address numerical convergence failures.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "36-layer alternating stack: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica substrate",
+  "design_variables": [
+    "layer thicknesses (36 variables, bounds 15-355 nm)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "individual layer thickness 15-355 nm (relaxed from 20-350 nm by +5 nm)",
+    "Ta2O5/SiO2 material pair compatible with plasma ion-assisted deposition"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack optimization principle from evidence showing smoothed spectral characteristics require varying optical thickness away from quarter-wavelength values",
+    "Multi-wavelength high-reflectance designs benefit from non-quarter-wave optical thicknesses optimized via needle technique"
+  ],
+  "expected_advantages": [
+    "Relaxed bounds restore valid candidate throughput above 10%",
+    "Bimodal initialization samples diverse interference orders",
+    "May recover iteration_02 performance level of 0.9275"
+  ],
+  "known_risks": [
+    "Extreme bimodal distribution may create numerical instability",
+    "Score regression may continue if underlying optimization landscape changed"
+  ],
+  "execution_request_english": "Optimize a 36-layer alternating Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 degree incidence with unpolarized light. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2 (18 Ta2O5 layers, 18 SiO2 layers). All layer thicknesses bounded between 15 nm and 355 nm. Initialize optimization population with bimodal distribution: 50% of layers sampled from 20-60 nm range, 50% from 150-300 nm range. Optimize to maximize average transmittance in 420-700 nm passband while minimizing average transmittance in 355-365 nm stopband, 1030-1080 nm stopband, and at 355 nm single wavelength. Use gradient-based thickness optimizer with step-size constraints. Report best target score, valid candidate count, tightest margin, and thickness arrays for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Following feedback directive to reinitialize with bimodal thickness distribution and relax bounds by +5 nm on both sides to restore valid_candidate throughput above 10% of population after score regression from 0.9275 to 0.6263."
+}

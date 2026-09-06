@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "16-layer ZnSe/ZnS alternating stack on Ge for LWIR pass / MWIR block",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "An alternating high/low index stack with optical thicknesses tuned between MWIR and LWIR quarter-wave values can simultaneously transmit 8000-11000 nm while suppressing 3000-5000 nm, without exceeding 16 layers.",
+  "design_principle": "Quarter-wave stacks create high-reflectance bands centered at the design wavelength. By choosing optical thicknesses intermediate between MWIR and LWIR quarter-wave values, the stack's stopband can be positioned to block MWIR while allowing LWIR transmission. Index contrast between ZnSe and ZnS provides the necessary reflectance per interface.",
+  "proposed_materials": [
+    "zns",
+    "ZnSe (Querry)",
+    "Ge (Icenogle)"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (16 layers total, alternating starting with ZnSe)",
+  "design_variables": [
+    "Individual thickness of each of the 16 layers (t1 through t16), each tunable independently within 400-1200 nm bounds"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain smooth spectral response without sharp resonances that could drift with manufacturing variation"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 16 (within the 16-layer maximum constraint)",
+    "All thicknesses kept above 400 nm to ensure manufacturability with standard deposition tools",
+    "Alternating sequence simplifies process control compared to arbitrary material ordering"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness equals wavelength divided by (4 × refractive index). For ZnS (n≈2.3) at 4000 nm, QWOT ≈ 435 nm; at 9500 nm, QWOT ≈ 1033 nm.",
+    "Recalled: ZnSe has slightly higher index than ZnS in the infrared (n≈2.45 vs n≈2.3), providing moderate index contrast for reflectance.",
+    "Recalled: Alternating high/low index stacks produce stopbands centered near the quarter-wave design wavelength, with bandwidth scaling with index contrast.",
+    "Recalled: Ge substrate has high index (n≈4.0 in IR) and requires careful matching to reduce substrate reflection losses.",
+    "Recalled: 16 layers provides 8 interfaces of each material type, which should be sufficient for meaningful MWIR suppression if thicknesses are well-tuned."
+  ],
+  "expected_advantages": [
+    "Alternating sequence provides regular, predictable optical behavior that is easier to optimize than arbitrary sequences",
+    "Thickness bounds (400-1200 nm) bracket the quarter-wave values for both MWIR and LWIR bands, allowing the optimizer to find intermediate solutions",
+    "Fixed topology reduces search space complexity, allowing deeper exploration of thickness combinations"
+  ],
+  "known_risks": [
+    "Uncertainty in actual n/k values for ZnS, ZnSe, and Ge at 3000-11000 nm -- recalled indices are approximate and may differ from measured catalog data.",
+    "ZnSe and Ge are not in guaranteed_names; local registry resolution may fail if multiple datasets match these names.",
+    "Absorption in ZnSe or ZnSe at LWIR wavelengths could reduce transmittance below theoretical predictions -- extinction coefficients were not recalled.",
+    "The 400-1200 nm thickness range assumes quarter-wave behavior dominates; if the optimal solution requires non-quarter-wave thicknesses outside this range, this route will not find it.",
+    "No angle or polarization specified in the original request -- assumed normal incidence, unpolarized light. If actual use case differs, performance may degrade."
+  ],
+  "execution_request_english": "Optimize a 16-layer planar dielectric stack on a Ge (Icenogle) substrate with air incidence. Layer sequence: ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS (16 layers total, alternating starting with ZnSe (Querry) at the air side). Each layer thickness is an independent optimization variable with bounds 400-1200 nm. Target: maximize transmittance in 8000-11000 nm wavelength band while minimizing transmittance in 3000-5000 nm band. Assume normal incidence, unpolarized light. Use coherent transfer matrix method across the full 3000-11000 nm spectrum. Materials zns, ZnSe (Querry), and Ge (Icenogle) must be resolved from the local material registry.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Adjusted layer thickness bounds from the previous 1000-10000 nm range to 400-1200 nm based on quarter-wave optical thickness calculations for the target bands. The previous bounds were too wide, causing the optimizer to explore macroscopic stack modes that do not contribute to the dual-band spectral shaping. This revision focuses the search on physically meaningful thickness ranges centered around MWIR and LWIR quarter-wave values."
+}

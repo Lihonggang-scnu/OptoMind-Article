@@ -1,0 +1,47 @@
+{
+  "route_id": "route_03",
+  "title": "Boundary-Only Optimization with Frozen Cavity",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The dual-band performance bottleneck in the 10-layer stack resides primarily in the boundary reflection coefficients at the air-coating and coating-substrate interfaces, while the intermediate layers (2-7) have already converged to a near-optimal optical cavity configuration.",
+  "design_principle": "Freeze intermediate layer thicknesses to preserve established cavity resonance, apply high-resolution local optimization only to boundary layers (0, 1, 8, 9) to refine impedance matching and edge reflection control without disrupting the core interference structure.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica (10 finite layers total, alternating HfO2/SiO2 starting with HfO2)",
+  "design_variables": [
+    "thicknesses of layers 0, 1, 8, 9 (optimizable)",
+    "thicknesses of layers 2-7 (frozen to baseline values)"
+  ],
+  "soft_objectives": [
+    "maximize transmission in 1000-1700 nm",
+    "maximize reflection in 300-450 nm",
+    "maintain total layer count <= 30"
+  ],
+  "manufacturing_considerations": [
+    "10 layers well within 30-layer constraint",
+    "boundary layer optimization may improve tolerance sensitivity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for plane-wave propagation through layered media",
+    "Boundary reflection coefficients dominate edge effects in finite periodic stacks"
+  ],
+  "expected_advantages": [
+    "Focused optimization reduces search space dimensionality",
+    "Preserves proven cavity configuration while refining edge matching",
+    "May improve best_target_score without increasing layer count"
+  ],
+  "known_risks": [
+    "Freezing layers may prevent discovery of better global configurations",
+    "Boundary-only optimization may have limited impact if cavity itself is suboptimal"
+  ],
+  "execution_request_english": "Execute TMM optimization for a 10-layer planar dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (10 finite layers). Initialize layers 2-7 (indices 2,3,4,5,6,7) with frozen thicknesses: [303.15683496802154, 190.12149108544455, 271.5951377488474, 356.06080490914735, 302.68512880416245, 274.1270493753939] nm. Initialize layers 0, 1, 8, 9 at baseline values [342.5104321845845, 188.48902492944148, 247.59229465748604, 114.12305148362653] nm but allow optimization. Use gradient-based local optimizer with high resolution (tolerance 1e-6) on the 4 optimizable boundary layers only. Evaluate transmittance in 1000-1700 nm band and reflectance in 300-450 nm band at normal incidence, unpolarized. Objective: maximize weighted sum of mean transmittance (1000-1700 nm) and mean reflectance (300-450 nm). Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Follows feedback directive to freeze intermediate layers (2-7) and optimize boundary layers only, preserving the established optical cavity while refining edge reflection coefficients. Execution request made fully standalone."
+}

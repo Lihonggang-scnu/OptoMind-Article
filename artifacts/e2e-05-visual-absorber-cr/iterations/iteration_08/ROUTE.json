@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Reduced 9-Layer Cr-Dielectric Stack with QWOT Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing layer count from 11 to 9 while enforcing QWOT-based Cr initialization and 300 nm thickness bounds will improve optimizer convergence by reducing search space dimensionality, potentially achieving comparable or better spectral selectivity with simpler manufacturable structure.",
+  "design_principle": "Fewer interference degrees of freedom with better-initialized absorbing layers may converge faster and avoid local minima that trapped the 11-layer optimization.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Cr"
+  ],
+  "proposed_topology": "Air | Cr | HfO2 | SiO2 | Cr | HfO2 | SiO2 | Cr | HfO2 | Al substrate (9 finite layers total: 3 Cr, 3 HfO2, 3 SiO2)",
+  "design_variables": [
+    "all 9 layer thicknesses with 300 nm upper bound",
+    "Cr layers initialized at QWOT for 550 nm central wavelength"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700 nm",
+    "maximize reflectance in 700-2000 nm",
+    "minimize total layer count"
+  ],
+  "manufacturing_considerations": [
+    "9 layers easier to deposit than 11",
+    "300 nm bound prevents excessively thick layers",
+    "QWOT initialization provides physically meaningful starting point"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance locus method for metal-dielectric multilayers",
+    "QWOT initialization reduces optimizer search space",
+    "Fewer layers may improve convergence if physics supports simpler interference"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced dimensionality",
+    "Better initialization avoids poor local minima",
+    "More manufacturable with fewer deposition steps"
+  ],
+  "known_risks": [
+    "May lack sufficient interference degrees of freedom for target spectral shape",
+    "9-layer topology may be fundamentally limited compared to 11-layer"
+  ],
+  "execution_request_english": "Optimize a 9-layer planar multilayer stack on aluminum substrate with air incidence. Layer sequence: Cr | HfO2 | SiO2 | Cr | HfO2 | SiO2 | Cr | HfO2 | SiO2 (9 finite layers). All layer thicknesses bounded 10-300 nm. Initialize Cr layers at quarter-wave optical thickness for 550 nm central wavelength using Cr refractive index at that wavelength. Initialize dielectric layers at 80-120 nm. Use gradient-based thickness optimizer with gradient clipping for first 50 steps. Evaluate absorptance in 400-700 nm band and reflectance in 700-2000 nm band at normal incidence, unpolarized light. Total layer count fixed at 9. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Reduced from 11 to 9 layers per feedback to test if simpler topology with better initialization outperforms previous 11-layer results; avoids all tested 11L fingerprints from route_03"
+}

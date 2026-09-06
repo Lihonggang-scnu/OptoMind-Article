@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score deviates negatively from the expectation of steady gain; actual score is 0.8747356754253351, which is 0.0658 lower than the historical peak of 0.9405175915275809 recorded in Round 1. The deviation direction is lower with moderate magnitude. tightest_margin aligns with expectations at 0.45089237567571594 (positive). valid_candidates aligns with expectations, dropping to 9. While band-specific transmittance balance cannot be fully verified from aggregate metrics, the overall score trajectory indicates active optimization rather than the expected smooth convergence.",
+  "deviation_mechanism": "The Round 1 uniform thickness (all 50.0 nm) inadvertently acted as a coarse broadband filter, satisfying interference conditions for both stopbands and yielding the peak score. Subsequent stochastic thickness perturbations disrupted the required quarter-wave phase matching. For example, in the latest sampled candidate, Layer 18 jumps to 101.84 nm while Layer 17 sits at 49.36 nm. This abrupt optical path length discontinuity scatters energy into passbands, degrading dual-band suppression. The optimizer is trapped in a high-dimensional parameter space where feasible interference-matching configurations are statistically rare, explaining the low valid_candidate count and volatile score history.",
+  "continue_recommended": true,
+  "continue_rationale": "Five rounds have executed. The score history [0.9405, 0.7545, 0.4837, 0.7187, 0.8747] demonstrates active recovery, with gains of ~0.1560 between Rounds 3→4 and 4→5, far exceeding the reference epsilon of 0.0001. The tightest_margin remains robustly positive at 0.4509, confirming thickness bounds are respected. The route is not numerically stagnant, and the observed physical mechanism (phase mismatch from unstructured initialization) can be directly corrected in the next iteration.",
+  "insight_for_next": "Replace unstructured random initialization with a deterministic alternating quarter-wave stack targeting the target wavelengths λ₁=360 nm and λ₂=1055 nm. Initialize layer thicknesses using d = λ/(4n) (e.g., ~60 nm and ~176 nm for n≈1.5), then constrain candidate generation to sample only ±8 nm Gaussian noise around these base values. This anchors the search near the theoretical interference condition, drastically reducing the invalid ratio and allowing the optimizer to focus on fine-tuning admittance matching rather than discovering feasible geometries.",
+  "insight_grounding": "The collapse from Round 1 (score: 0.9405175915275809) to the minimum at Round 3 (score: 0.4837295887944716) directly correlates with the introduction of unbounded thickness variations. The latest valid candidates exhibit severe optical impedance mismatches, most notably Layer 18 at 101.84 nm sandwiched between Layers 17 (49.36 nm) and 19 (98.33 nm). This structural irregularity breaks coherent reflection summation. Imposing quasi-periodic initialization with tight ±8 nm tolerances specifically targets this failure mode by preserving phase continuity while permitting necessary refinement.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T22:16:45.643252+00:00",
+  "attestation_sha256": "d4bbf7366b6c88bc934a6cbb2c75293245bb11f943804b64da5f07ea74ef53ff",
+  "observed_metrics": {
+    "best_target_score": 0.8747356754253351,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.45089237567571594
+  },
+  "reflection_available": true
+}

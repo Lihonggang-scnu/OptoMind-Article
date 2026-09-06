@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "25-Layer Defect Cavity with Adjacent-Layer Delta Constraint (<=40 nm)",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Constraining adjacent-layer thickness differences to <=40 nm will prevent abrupt optical impedance jumps that cause phase mismatch, enabling smoother chirp progression and recovering target scores above 0.95 while maintaining 25-layer manufacturability.",
+  "design_principle": "Defective DBR bandpass filter with quarter-wave DBR mirrors surrounding half-wave defect cavity, with smooth thickness progression enforced through bounded adjacent-layer deltas in the chirp sweep region (layers 5-16).",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | (Ta2O5/SiO2)_5 | Ta2O5 (defect cavity) | (SiO2/Ta2O5)_5 | Fused Silica - exactly 21 finite coating layers total (10 pairs + 1 defect)",
+  "design_variables": [
+    "layer thicknesses (21 independent variables)",
+    "chirp progression in layers 5-16"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target >= 0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers <= 30 satisfied with 21 layers",
+    "adjacent-layer thickness delta <= 40 nm constraint for deposition smoothness",
+    "quarter-wave initialization at 1550 nm for baseline"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR structure (HL)^N D(LH)^N creates transmission peak at defect mode wavelength",
+    "Smooth impedance gradients reduce scattering losses and maintain bandgap integrity"
+  ],
+  "expected_advantages": [
+    "Smoother thickness progression reduces phase mismatch",
+    "25-layer count balances performance with manufacturability",
+    "Delta constraint prevents optimizer from generating abrupt jumps"
+  ],
+  "known_risks": [
+    "Delta constraint may limit optimizer search space",
+    "21 layers may be insufficient for deep sideband suppression compared to 27-layer best"
+  ],
+  "execution_request_english": "Design a 21-layer Ta2O5/SiO2 defect-cavity bandpass filter on fused silica substrate for 1550 nm LiDAR receiver. Stack sequence: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 (defect cavity) | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | Fused Silica. Initialize all high-index layers to 185 nm and low-index layers to 267 nm (quarter-wave at 1550 nm), except defect cavity at 534 nm (half-wave). Optimize all 21 layer thicknesses with bounds 50-400 nm for DBR layers and 400-650 nm for defect cavity. Enforce adjacent-layer thickness difference constraint: |d[i+1] - d[i]| <= 40 nm for layers 5 through 16. Evaluate at normal incidence, unpolarized. Target: maximize mean transmittance in 1550+/-5 nm band, minimize mean transmittance in 1400-1500 nm and 1600-1700 nm bands. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implementing feedback directive to enforce adjacent-layer delta <= 40 nm and monotonic progression in chirp region (layers 5-16) to prevent abrupt optical path jumps causing phase mismatch. Returning to 21-layer count to test whether constraint alone recovers performance without increasing layer count."
+}

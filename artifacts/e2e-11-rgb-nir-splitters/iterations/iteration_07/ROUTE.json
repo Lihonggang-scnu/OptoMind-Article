@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "Constrained 22-Layer Asymmetric Stack with Gradient Regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining initial thickness perturbations to ±25% of the 120nm quarter-wave baseline while applying smoothness regularization on adjacent layer thickness deltas will improve optimizer convergence stability and increase the best_target_score beyond 0.8691 by preventing extreme optical path discontinuities that trap the search in local minima.",
+  "design_principle": "Quarter-wave baseline initialization with bounded asymmetric perturbations and thickness gradient smoothing to preserve edge-sharpening asymmetry while maintaining impedance continuity across the stack.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "22 finite layers: alternating TiO2/SiO2 starting with TiO2 on substrate, terminating with SiO2. Exact sequence: TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2",
+  "design_variables": [
+    "22 layer thicknesses with bounds 90-150nm for initialization, expanded to 30-250nm for optimization"
+  ],
+  "soft_objectives": [
+    "maximize mean reflectance in 450-650nm band",
+    "maximize mean transmittance in 700-1000nm band",
+    "minimize spectral crosstalk between bands",
+    "maximize tightest_margin for robustness"
+  ],
+  "manufacturing_considerations": [
+    "22 layers within 24-layer maximum constraint",
+    "thickness bounds prevent extreme deposition challenges",
+    "gradient regularization reduces sensitivity to layer-to-layer thickness errors"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack initialization provides physically motivated starting point for local optimization",
+    "Thickness gradient smoothing reduces standing wave field intensity peaks that cause fabrication sensitivity"
+  ],
+  "expected_advantages": [
+    "Improved convergence stability compared to unconstrained 22-layer optimization",
+    "Higher best_target_score than route_03's 0.8691",
+    "Better tightest_margin indicating improved robustness"
+  ],
+  "known_risks": [
+    "Constrained initialization may limit exploration of superior non-quarter-wave configurations",
+    "Gradient penalty may suppress beneficial asymmetry needed for sharp band edges"
+  ],
+  "execution_request_english": "Optimize a 22-layer TiO2/SiO2 dielectric stack on fused silica substrate at 45 degrees incidence. Layer sequence: TiO2|SiO2 alternating, starting with TiO2 adjacent to substrate, terminating with SiO2. Initialize all thicknesses at 120nm with random perturbations bounded to ±25% (90-150nm range). Apply soft penalty on absolute thickness difference between adjacent layers during gradient-based optimization. Wavelength bands: 450-650nm (target high reflectance), 700-1000nm (target high transmittance). Optimize all 22 thicknesses with bounds 30-250nm. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implemented feedback directives: constrained asymmetric seed perturbations to ±25% of 120nm baseline and added soft penalty on thickness gradient between adjacent layers to stabilize spectral margin during early optimization epochs."
+}

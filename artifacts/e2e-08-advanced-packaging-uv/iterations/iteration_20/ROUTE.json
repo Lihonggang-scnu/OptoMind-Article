@@ -1,0 +1,47 @@
+{
+  "route_id": "control_route_01",
+  "title": "Alternating Ta2O5/SiO2 Quarter-Wave Based Filter Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 36-layer alternating high-low index stack, initialized with thicknesses approximating quarter-wave optical thickness at 600 nm (center of passband), will converge to a solution with high passband transmittance and dual stopband suppression better than a uniform thickness initialization.",
+  "design_principle": "Recalled thin-film physics: Alternating high/low index layers create constructive interference for reflection (low transmission) at design wavelengths. Quarter-wave optical thickness (QWOT) at the center of the passband typically creates a high-transmission region flanked by stopbands. Tuning thicknesses away from QWOT can shift stopbands to specific UV and NIR targets while maintaining visible transmission.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Substrate(SiO2)",
+  "design_variables": [
+    "layer_thicknesses"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 420-700 nm",
+    "Minimize average transmittance in 355-365 nm",
+    "Minimize average transmittance in 1030-1080 nm",
+    "Keep individual layer thickness between 20-350 nm"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 36",
+    "Thickness bounds 20-350 nm per layer",
+    "Material resolution risk for ta2o5"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Ta2O5 (n~2.1-2.2) and SiO2 (n~1.46) are a standard high/low index pair for visible/UV filters.",
+    "Recalled knowledge: Quarter-wave stacks centered at λ0 create high reflectivity stopbands near λ0 and harmonics. Centering at 600 nm (passband center) should naturally suppress UV and NIR relative to visible.",
+    "Recalled knowledge: Uniform thickness initialization often leads to symmetric degeneracy in gradient-based optimizers; alternating QWOT initialization breaks symmetry."
+  ],
+  "expected_advantages": [
+    "Better convergence than uniform initialization due to physically motivated starting point.",
+    "Explicit control over stopband placement via layer thickness tuning.",
+    "Adheres to user material constraints (Ta2O5/SiO2)."
+  ],
+  "known_risks": [
+    "Material 'ta2o5' is not in the provided guaranteed_names list; resolution may fail despite user requirement.",
+    "Substrate 'fused_silica' is not in guaranteed_names; using 'sio2' for substrate material dataset to ensure resolution, assuming it matches fused silica.",
+    "Quarter-wave center at 600 nm may not perfectly align stopbands at 355 nm and 1050 nm without significant thickness deviation.",
+    "36 layers may be insufficient for deep suppression in two widely separated stopbands while maintaining high visible transmission."
+  ],
+  "execution_request_english": "Optimize a 36-layer planar dielectric stack on a SiO2 (Gao) substrate (representing fused silica) with Air incidence. Materials must alternate between Ta2O5 (Gao) and SiO2 (Gao), starting with Ta2O5 (Gao) at the air interface. Define 36 independent thickness variables, one per layer, bounded between 20 nm and 350 nm. Simulate transmittance from 350 nm to 1100 nm with sufficient resolution to cover 355-365 nm, 420-700 nm, and 1030-1080 nm bands. Objective: Maximize average transmittance in 420-700 nm, minimize average transmittance in 355-365 nm, and minimize average transmittance in 1030-1080 nm. Initialize optimization with layer thicknesses approximating quarter-wave optical thickness at 600 nm (Ta2O5 (Gao) ~100 nm, SiO2 (Gao) ~220 nm) to break symmetry. Incidence angle 0 deg, unpolarized light.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control axis with refined initialization strategy to break optimizer degeneracy as per feedback directives."
+}

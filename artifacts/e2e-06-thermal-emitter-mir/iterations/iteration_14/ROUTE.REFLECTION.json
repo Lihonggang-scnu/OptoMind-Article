@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score is consistent: it rose from 0.8022 (round 1) to 0.9136 (round 4), matching the expectation of rising/stable trends. valid_candidates is consistent: 6 matches the expected ≥5. tightest_margin is consistent: 0.427 is stable and well above the 0.1 boundary, indicating no systematic drift toward constraint edges. thicknesses_nm deviates: the expectation of incremental, localized changes is violated. Comparing the third and fourth recorded arrays (rounds 2 and 3), layer shifts reach magnitudes of up to ~10.7% (e.g., candidate 2, layer 2: 1187.73 nm → 1060.71 nm), indicating wholesale restructuring rather than fine-grained tuning.",
+  "deviation_mechanism": "The TMM objective function exhibits highly non-smooth, oscillatory gradients due to thin-film interference fringes. Small thickness perturbations often land on adjacent fringes without improving coupling or transmission, yielding flat or negative local gradients. To escape these quasi-stationary points, the optimizer adopts larger displacement steps to bridge barrier regions between resonance peaks. This results in discrete, multi-percent thickness reassignments rather than the expected monotonic refinement, as the search algorithm prioritizes crossing local minima over gradual gradient following.",
+  "continue_recommended": true,
+  "continue_rationale": "The route shows active, high-magnitude scientific progress. The score advanced from 0.7771924477469789 to 0.913629714632322 between rounds 3 and 4, a gain of 0.1364, which is orders of magnitude above the 1e-3 exhaustion threshold and confirms genuine convergence rather than numerical noise (reference epsilon 0.0001). Search health indicators remain robust: valid_candidates=6 and tightest_margin=0.4271104629411231 provide ample safety headroom. Stopping now would discard a trajectory that is still materially improving.",
+  "insight_for_next": "Reduce the thickness perturbation bounds from ±0.2% to ±0.15% and increase the quadratic penalty weight from 0.02 to 0.025. This combination forces the optimizer into a finer exploration regime, suppressing the observed large jumps and enforcing the expected localized search behavior while preserving stability via the currently healthy margin (0.427).",
+  "insight_grounding": "Directly grounded in the recorded thickness arrays: candidate index 3, layer 0 shifted from 1173.9614720072118 nm (round 2) to 1248.6450670539075 nm (round 3) [+6.4%], and candidate index 2, layer 2 shifted from 1187.7281353373187 nm to 1060.711877776308 nm [-10.7%]. These deviations exceed the nominal ±0.2% perturbation scale, explaining why the localized-search hypothesis failed. Coupled with the score volatility [0.8022 → 0.9027 → 0.7772 → 0.9136], the evidence indicates the optimizer needs stronger regularization to lock onto the winning fringe configurations seen in round 4.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T18:08:35.099339+00:00",
+  "attestation_sha256": "6b919083807a37f907d0f55eb71673d5c6b347c6122604c65f26d7ad6bfc2b16",
+  "observed_metrics": {
+    "best_target_score": 0.913629714632322,
+    "valid_candidates": 6,
+    "run_status": "completed",
+    "tightest_margin": 0.4271104629411231
+  },
+  "reflection_available": true
+}

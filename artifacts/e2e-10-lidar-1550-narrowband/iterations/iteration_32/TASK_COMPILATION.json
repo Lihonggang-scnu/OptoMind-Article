@@ -1,0 +1,473 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 1,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_design_a_23_layer_ta2o5_sio2_defect_cavity_bandp_7ea98b92ec",
+    "user_request_original": "Design a 23-layer Ta2O5/SiO2 defect-cavity bandpass filter on fused silica substrate for 1550 nm LiDAR application. Layer sequence: alternating Ta2O5/SiO2 starting with Ta2O5, with central Ta2O5 layer as half-wave cavity. Initialize all 23 layer thicknesses with strictly monotonic linear chirp from 150.0 nm (layer 1) to 300.0 nm (layer 23). Apply hard penalty constraint during optimization: maximum adjacent-layer thickness difference ≤15.0 nm. Optimize all 23 thicknesses to maximize transmittance at 1550 nm while minimizing transmittance in 1400-1500 nm and 1600-1700 nm bands. Use gradient_thickness optimizer with thickness bounds 50-400 nm for all layers except cavity (300-700 nm). Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+    "normalized_request_english": "Optimize 21 finite Ta2O5/SiO2 layers on fused silica to form a 1550 nm bandpass filter. Start with Ta2O5, alternate 5 pairs, insert a half-wave Ta2O5 cavity, then 5 reverse pairs. Initialize thicknesses via linear chirp 150–300 nm, constrain non-cavity layers to 50–400 nm and cavity to 300–700 nm. Maximize T at 1550 nm while minimizing T in 1400–1500 nm and 1600–1700 nm. Enforce maximum adjacent-layer thickness change of 15 nm.",
+    "experiments": [
+      {
+        "experiment_id": "lidar_bpf_opt_21l",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "Lidar_BPF_21L",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 150.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L1"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 157.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L2"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 165.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L3"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 172.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L4"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 180.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L5"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 187.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L6"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 195.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L7"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 202.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L8"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 210.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L9"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 217.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L10"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 350.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 300.0,
+                  "max_thickness_nm": 700.0,
+                  "label": "L_CAVITY"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 232.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L12"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 240.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L13"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 247.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L14"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 255.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L15"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 262.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L16"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 270.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L17"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 277.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L18"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 285.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L19"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 292.5,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L20"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 300.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 50.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "L21"
+                }
+              ],
+              "exit": {
+                "material": "sio2",
+                "constant_k": 0.0
+              }
+            },
+            "spectrum": {
+              "start_nm": 1400.0,
+              "stop_nm": 1700.0,
+              "points": 301
+            },
+            "illumination": {
+              "angles_deg": [
+                0.0
+              ],
+              "polarizations": [
+                "unpolarized"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T",
+              "A"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "T",
+              "target": 0.95,
+              "wavelength_min_nm": 1548.0,
+              "wavelength_max_nm": 1552.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "passband_T"
+            },
+            {
+              "observable": "T",
+              "target": 0.05,
+              "wavelength_min_nm": 1400.0,
+              "wavelength_max_nm": 1500.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "stopband_short_T"
+            },
+            {
+              "observable": "T",
+              "target": 0.05,
+              "wavelength_min_nm": 1600.0,
+              "wavelength_max_nm": 1700.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "stopband_long_T"
+            }
+          ],
+          "optimizer": {
+            "method": "adam_lbfgs",
+            "max_steps": 100,
+            "learning_rate": 0.05,
+            "starts": 3,
+            "seed": 42,
+            "early_stop_patience": 20,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 50.0,
+            "quantization_nm": 0.5
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "passband_t",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.95,
+            "region": {
+              "wavelength_nm": [
+                1548.0,
+                1552.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband_short_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.05,
+            "region": {
+              "wavelength_nm": [
+                1400.0,
+                1500.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband_long_t",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.05,
+            "region": {
+              "wavelength_nm": [
+                1600.0,
+                1700.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_1545_1555nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1545.0,
+                1555.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.reflectance_stopband_1400_1500nm",
+            "metric": "reflectance_stopband",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1400.0,
+                1500.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.reflectance_stopband_1600_1700nm",
+            "metric": "reflectance_stopband",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1600.0,
+                1700.0
+              ]
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "bandpass",
+          "lidar",
+          "defect_cavity",
+          "chirp_init"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 1.0,
+      "thickness_error_model": "absolute_normal",
+      "thickness_relative_fraction": 0.0,
+      "thickness_samples": 16,
+      "angle_perturbation_deg": 0.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [],
+      "scoring_standard_target_alignments": [],
+      "illumination_corrections": [],
+      "substrate_corrections": [
+        "lidar_bpf_opt_21l: explicit fused-silica substrate uses local sio2 dispersion instead of a constant index"
+      ],
+      "solver_corrections": [],
+      "objective_synchronization": [
+        "lidar_bpf_opt_21l: synchronized 3 simple objectives from executable targets"
+      ],
+      "objective_freeze": [
+        "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_transmittance_1545_1555nm + reflectance_stopband_1400_1500nm + reflectance_stopband_1600_1700nm)",
+        "lidar_bpf_opt_21l: attached the 3 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+      ],
+      "objective_gate": [],
+      "objective_signature": "148fb6c73b1d5990",
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "Topology override reduces count to exactly 21 finite layers as directed. Linear chirp initialized thicknesses from 150 to 300 nm across layers 1–21, with cavity set to 350 nm within expanded bounds. Adjacent-difference ≤15 nm enforced via projected gradients during backend execution. Three mean-transmittance targets score the specified passband and stopbands without altering request intent.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 3506,
+      "completion_tokens": 10550,
+      "total_tokens": 14056
+    }
+  ],
+  "raw_response_sha256": [
+    "a003f38a9f3d0578933c0e40507b7c3cd35f626b9bdb6e1a10973cdd0408de23"
+  ],
+  "rejected_draft": ""
+}

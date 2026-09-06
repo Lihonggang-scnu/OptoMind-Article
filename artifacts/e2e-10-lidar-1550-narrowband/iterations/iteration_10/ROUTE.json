@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "Symmetry-Constrained Cavity Block Optimization with Bilateral Coupling",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Enforcing strict bilateral symmetry on the central cavity block (layers 6-14) will reduce the effective degrees of freedom while preserving the resonant transmission physics, enabling faster convergence to the true resonance optimum and eliminating the asymmetric thickness excursions observed in iteration_05.",
+  "design_principle": "Fabry-Perot interferometer with symmetric defect cavity: outer DBR mirrors provide broadband reflection, central cavity layers create resonant transmission peak at 1550 nm. Symmetry constraint reduces optimization complexity while maintaining physical resonance conditions.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (21 layers total: 5 outer mirror pairs + 1 cavity pair + 5 inner mirror pairs, with layers 6-14 constrained as symmetric conjugates)",
+  "design_variables": [
+    "layers_0-5 thicknesses (outer mirror)",
+    "layers_6-10 thicknesses (cavity block, with layers_11-14 as symmetric conjugates)",
+    "layers_15-20 thicknesses (inner mirror)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30 (21 used)",
+    "symmetry constraint may simplify deposition monitoring",
+    "quarter-wave initial thicknesses provide fabrication-friendly starting point"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter theory: (HL)^N D(LH)^N structure creates transmission peak at defect resonance",
+    "Quarter-wave optical thickness n*d = lambda0/4 for DBR mirrors",
+    "Half-wave cavity optical thickness n*d = lambda0/2 for resonance"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality accelerates convergence",
+    "Symmetry eliminates unphysical asymmetric solutions",
+    "Preserves resonance physics from successful iteration_05 design"
+  ],
+  "known_risks": [
+    "Symmetry constraint may prevent discovery of superior asymmetric solutions",
+    "May limit sideband suppression if asymmetry is physically beneficial"
+  ],
+  "execution_request_english": "Optimize a 21-layer Ta2O5/SiO2 Fabry-Perot bandpass filter on Fused Silica substrate for 1550 nm LiDAR application. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5. Enforce strict bilateral symmetry constraint: layer_6 thickness = layer_14 thickness, layer_7 = layer_13, layer_8 = layer_12, layer_9 = layer_11, layer_10 is the center cavity layer (self-symmetric). Initialize outer mirror layers (0-5, 15-20) at quarter-wave thicknesses (Ta2O5: 184.5 nm, SiO2: 267.2 nm). Initialize cavity block layers (6-14) at 225 nm mean thickness. Optimization bounds: 50-450 nm for all layers. Perturbation amplitude: ±10 nm around initialization. Evaluate transmittance spectrum at normal incidence, unpolarized light. Score: maximize transmittance at 1550 nm (weight 1.0), minimize average transmittance in 1400-1500 nm band (weight 0.5), minimize average transmittance in 1600-1700 nm band (weight 0.5). Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Iteration_05 achieved 0.9745 score but showed asymmetric cavity thickness excursions. Feedback directive specifies enforcing bilateral symmetry on layers 6-14 to eliminate chaotic excursions and accelerate convergence to true resonance optimum."
+}

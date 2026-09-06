@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected observations stated that best_target_score would show different convergence behavior than a symmetric route if asymmetry helps, and that tightest_margin should improve in the challenging stopband. The observed score_history [0.9227203917815648, 0.7961270195875917, 0.019643078049391395, 0.44064920303447486, 0.7424605278742971, 0.4927280172052918, 0.9211285870424771, 0.6737747515220259, 0.9587901821820587] confirms non-monotonic, volatile convergence consistent with asymmetric parameter landscapes. tightest_margin reached 0.5418712787924265, validating stopband improvement. The 'if hypothesis fails' contingency is contradicted, as the final score exceeds all prior round maxima.",
+  "deviation_mechanism": "Asymmetric layer sequencing lifts mode degeneracy in the filter stack, reducing interference fringes within the passband but creating sharper objective-function gradients at the stopband edges. This physical mechanism allows tighter margins (0.5418712787924265) but amplifies sensitivity to thickness perturbations. When optimizer steps overshot the steep transition regions (e.g., causing score_history index 2 to drop to 0.019643078049391395), the system temporarily fell into invalid/high-loss regimes; subsequent corrective steps realigned the phase thicknesses, recovering to the new peak at 0.9587901821820587 in round 9.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 9 rounds without meeting the documented stop condition (<1e-3 improvement over historical best for two consecutive rounds). Round 9 delivered a +0.2850154306600328 gain over round 8 (0.6737747515220259 -> 0.9587901821820587), demonstrating active, non-noisy convergence far beyond the reference_epsilon of 0.0001. The physical hypothesis remains unexhausted and actively yields higher rejection.",
+  "insight_for_next": "Initialize the next round by anchoring the central stack (thickness indices 5 through 14) to the optimized values that produced the round-9 peak, and restrict perturbation radii for outer bands (indices 0-4 and 15-19) to ±4 nm. This constrains steps to remain within the linear response zone of the steep stopband gradients while preserving asymmetry-driven mode splitting.",
+  "insight_grounding": "Volatility is quantified in score_history index 2 (0.019643078049391395) contrasting with index 8 (0.9587901821820587). Physical viability is confirmed by candidate_thicknesses_nm element 0, where the critical mid-stack layers maintain quarter-wave scaling: index 10=167.57763587023945 nm, index 11=185.63560107042434 nm, and index 12=208.72875704224106 nm. These measured values prove the architecture satisfies thickness budget constraints; the instability originates purely from unconstrained outer-layer search steps crossing gradient thresholds.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:45:15.898933+00:00",
+  "attestation_sha256": "c2a8c12d9139ff42caa497c93e0ee46e8cae444b3bb4769ecd57f4d379279ee3",
+  "observed_metrics": {
+    "best_target_score": 0.9587901821820587,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.5418712787924265
+  },
+  "reflection_available": true
+}

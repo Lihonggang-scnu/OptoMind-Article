@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "Conservative Defect-Cavity Filter with 6 DBR Pairs per Side (25 Layers)",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A symmetric defective DBR structure with 6 quarter-wave pairs on each side of a half-wave defect cavity will produce a transmission peak at 1550 nm with sufficient sideband suppression in 1400-1500 nm and 1600-1700 nm bands, while maintaining total layer count well under the 30-layer manufacturing constraint.",
+  "design_principle": "Structure as (HL)^6 D (LH)^6 where H=Ta2O5 (high index), L=SiO2 (low index), D=SiO2 defect layer. Quarter-wave optical thickness for mirrors (n*d = 1550/4 nm), half-wave optical thickness for defect cavity (n*d = 1550/2 nm). Symmetric structure ensures impedance matching to substrate.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | [Ta2O5 QW | SiO2 QW] x6 | SiO2 HW | [Ta2O5 QW | SiO2 QW] x6 | Fused Silica substrate. Total finite layers: 25 (12 mirror pairs + 1 defect). QW = quarter-wave at 1550 nm, HW = half-wave at 1550 nm.",
+  "design_variables": [
+    "individual layer thicknesses around quarter-wave and half-wave baseline values"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band",
+    "maintain total layers ≤ 30"
+  ],
+  "manufacturing_considerations": [
+    "25 layers provides margin under 30-layer constraint",
+    "quarter-wave baseline simplifies thickness monitoring during deposition",
+    "symmetric structure reduces sensitivity to deposition sequence errors"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:237322138:s2chunk:237322138:10936:13204:a3cb809ee6dc2b5d"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter theory: (HL)^N D (LH)^N structure creates transmission resonance at defect mode wavelength",
+    "Quarter-wave stack theory: alternating high/low index layers with optical thickness lambda/4 produce high reflectance stopband",
+    "Half-wave defect cavity theory: optical thickness lambda/2 creates transmission peak within stopband"
+  ],
+  "expected_advantages": [
+    "Deterministic quarter-wave initialization guarantees compilation success",
+    "25 layers leaves 5-layer margin for potential optimization adjustments",
+    "Symmetric structure provides better impedance matching than asymmetric designs",
+    "Well-understood physics enables predictable spectral behavior"
+  ],
+  "known_risks": [
+    "6 DBR pairs may provide insufficient stopband suppression compared to 7 pairs",
+    "Quarter-wave baseline may not achieve optimal transmittance without further optimization",
+    "Defect mode bandwidth may be too narrow or too wide depending on mirror reflectivity"
+  ],
+  "execution_request_english": "Design and optimize a defective DBR bandpass filter on Fused Silica substrate with Air incident medium. Structure: 25 finite layers total. Layer sequence from incident to substrate: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, SiO2 (defect), Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2. Initialize all Ta2O5 and SiO2 mirror layers to quarter-wave optical thickness at 1550 nm (physical thickness = 1550 / (4 * refractive_index)). Initialize the 13th layer (defect cavity, SiO2) to half-wave optical thickness at 1550 nm (physical thickness = 1550 / (2 * refractive_index)). Use Ta2O5 and SiO2 material registry entries. Optimize all 25 layer thicknesses to maximize transmittance at 1550 nm while minimizing transmittance in 1400-1500 nm and 1600-1700 nm bands. Total layer count must remain exactly 25. Angle of incidence: 0 degrees (normal incidence). Polarization: unpolarized or both TE and TE evaluated. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Route_03 failed compilation due to layer count mismatch (topology specified 29 layers but experiment contained 26). This refinement replaces the chirped initialization with deterministic quarter-wave baseline and reduces DBR pair count from 7 to 6 per side (25 layers total) to ensure exact topology-to-layer-count matching and guarantee compilation success."
+}

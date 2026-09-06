@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "Tight-bounded local refinement from iteration-19 optimum with variance regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining optimization step size to ≤0.5 nm per layer around the iteration-19 best candidate thickness vector will enable fine-grained settling within the favorable interference basin while damping resonance-induced overshooting that caused score regression in iteration 23.",
+  "design_principle": "Local gradient-based optimization with tight bounds preserves the interference condition achieved at iteration 19 (target_score 0.327) while preventing large thickness excursions that degrade dual-band performance. Variance regularization penalizes total thickness deviation to maintain mechanical stability.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (8 finite layers total, alternating sequence starting with ZnSe)",
+  "design_variables": [
+    "Layer thicknesses (8 variables, ±0.5 nm bounds around seed)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Minimize total thickness variance"
+  ],
+  "manufacturing_considerations": [
+    "8 layers within 16-layer maximum constraint",
+    "±0.5 nm thickness tolerance achievable with modern deposition control",
+    "Alternating ZnSe/ZnS sequence simplifies process monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for coherent multilayer interference",
+    "Quarter-wave stack theory for bandpass/bandstop design",
+    "Gradient-based optimization with bounded variables"
+  ],
+  "expected_advantages": [
+    "Preserves iteration-19's high-scoring interference condition",
+    "Tight bounds prevent optimizer from escaping favorable basin",
+    "Variance regularization reduces resonance overshooting"
+  ],
+  "known_risks": [
+    "Local optimum may limit further improvement beyond 0.327",
+    "Tight bounds may prevent discovery of better global configuration",
+    "Variance regularization may conflict with spectral objectives"
+  ],
+  "execution_request_english": "Optimize an 8-layer planar dielectric stack on Ge substrate with Air incidence under normal-incidence unpolarized illumination. Layer sequence: ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS (8 finite layers). Initialize thicknesses at [429.3362593672488, 71.05139362686491, 69.55218027927222, 50.322318469392705, 674.5855881008958, 71.37520311661459, 49.22708022962166, 548.5304563299314] nm. Constrain each layer thickness to ±0.5 nm around initialization. Optimize for maximum mean transmittance in 8000-11000 nm band and minimum mean transmittance in 3000-5000 nm band. Apply gradient-based optimizer with thickness variance regularization penalty. Evaluate candidates using coherent transfer-matrix formalism. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Directly implements feedback directive: warm-start from iteration-19 best candidate, ≤0.5 nm step bounds, tighter variance regularization to address score regression from 0.327 to 0.198 in iteration 23."
+}

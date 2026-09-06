@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score: Declared expectation was >0.970 for successful bandwidth or <0.960 for hypothesis failure. Actual value is 0.8042460649683986, showing a substantial DOWNWARD deviation (magnitude ~0.156 below the 0.960 threshold), falling into an unmodeled mid-range regime. valid_candidates: Expected >8. Actual is 9, which is CONSISTENT. robustness_score: Not provided in observed_metrics, preventing direct comparison.",
+  "deviation_mechanism": "High-reflectance broadband stacks rely on quarter-wave (QW) optical thickness staggering to accumulate a net π-phase shift per period. For SiO2/TiO2, the physical thickness ratio must satisfy t_low/t_high ≈ n_low/n_high ≈ 1.46/2.30 ≈ 0.63. Analyzing the executed candidate pool reveals systematic violations of this rule: candidate_thicknesses_nm[1] layers 0-1 yield 36.0/102.0 = 0.35; candidate_thicknesses_nm[3] layers 0-1 yield 41.0559269905957/89.23336917223283 = 0.46. These compressed low-index layers short-circuit the optical path difference, collapsing constructive interference outside the central wavelength and narrowing the stopband. The optimizer's continuous relaxation allowed adjacent layers to drift into non-resonant configurations, accumulating phase errors that cap the reflectance integral at ~0.80.",
+  "continue_recommended": true,
+  "continue_rationale": "The route shows active exploration without saturation. Score_history ranges from 0.6746638433738227 to 0.9250813784004182, demonstrating high variance and zero convergence plateau. valid_candidates=9 confirms the spatial bounds remain feasible and populated. The physics of the deviation (improper thickness ratios) indicates the problem is resolvable via constrained initialization, not an inherent topological limit. Continuing with ratio-aware seeding will directly address the measured interference loss.",
+  "insight_for_next": "Re-initialize with a deterministic QW ratio scaffold: fix t_odd/t_even = 0.60 ± 0.05 nm tolerance, anchored to candidate_thicknesses_nm[1] values. Switch optimizer to differential evolution (population size=40, F=0.9, CR=0.85) starting from this scaffold to preserve phase coherence while searching for optimal absolute thickness offsets. Run with strict layer-count locking to prevent accidental topology swaps during mutation.",
+  "insight_grounding": "Justified by the route's peak performance correlation with binned parameters: candidate_thicknesses_nm[1] (layers 0-3: [36.0, 102.0, 80.0, 114.0]) achieved the highest recorded score of 0.9250813784004182 (score_history index 1), whereas candidate_thicknesses_nm[3] (continuous variables, same position: [41.0559269905957, 89.23336917223283, 63.75638204269823, 94.90845137423273]) corresponds to the route's lowest dip of 0.6746638433738227. The stark performance delta between the binned seed and the continuously drifted candidates isolates the thickness-ratio collapse as the primary bottleneck, validating a ratio-enforcement restart.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:31:33.234777+00:00",
+  "attestation_sha256": "757c0c92692f5245f4d658787d1622effed57b743f20682984ff0a6ae52686fa",
+  "observed_metrics": {
+    "best_target_score": 0.8042460649683986,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.36775754536272487
+  },
+  "reflection_available": true
+}

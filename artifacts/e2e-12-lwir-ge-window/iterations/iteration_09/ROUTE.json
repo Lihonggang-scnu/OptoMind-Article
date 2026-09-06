@@ -1,0 +1,44 @@
+{
+  "route_id": "route_02",
+  "title": "Quarter-wave initialized 16-layer stack at LWIR center wavelength",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses at quarter-wave optical thickness centered at 9500 nm (midpoint of 8000-11000 nm passband) will provide a better starting point for gradient-based optimization than uniform or random initialization, leading to higher target scores.",
+  "design_principle": "Quarter-wave stack design with alternating high/low index materials creates constructive interference in transmission band and destructive interference in suppression band. ZnSe (higher index) and ZnS (lower index) form the dichroic pair.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (16 layers total, starting with ZnSe)",
+  "design_variables": [
+    "Layer thicknesses (16 variables)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 16",
+    "Thickness bounds 200-3000 nm to accommodate quarter-wave scaling at LWIR"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack principle for dichroic filters",
+    "LWIR coating design using matrix formalism"
+  ],
+  "expected_advantages": [
+    "Better convergence from physics-informed initialization",
+    "Maintains full 16-layer design space"
+  ],
+  "known_risks": [
+    "May still converge to local optimum",
+    "Quarter-wave at single wavelength may not optimize broadband performance"
+  ],
+  "execution_request_english": "Optimize a 16-layer dielectric stack on Ge substrate with air incidence. Layer sequence: ZnSe/ZnS alternating, starting with ZnSe (16 layers total). Initialize thicknesses at quarter-wave optical thickness centered at 9500 nm (ZnSe: ~620 nm, ZnS: ~750 nm assuming n_ZnSe≈2.4, n_ZnS≈2.2). Thickness bounds: 200-3000 nm per layer. Optimize for maximum mean transmittance in 8000-11000 nm band and minimum mean transmittance in 3000-5000 nm band. Use gradient-based thickness optimizer with multi-start from quarter-wave baseline. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Changed thickness initialization from uniform/random to quarter-wave at LWIR center wavelength (9500 nm) to provide physics-informed starting point. Expanded upper thickness bound from 2500 nm to 3000 nm to accommodate longer wavelength quarter-wave thicknesses."
+}

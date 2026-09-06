@@ -1,0 +1,45 @@
+{
+  "observed_vs_expected": "Expected best_target_score > 0.970 for a viable 20-layer stopband; actual final score is 0.922279470492985, representing a -0.048 deviation from the baseline expectation. The sequence peaked at 0.978347239944368 in round 8 but degraded to 0.922279470492985 by round 10, crossing the pre-declared 0.960 warning threshold and dropping below the 0.950 operational floor. Expected valid_candidates > 8; actual is 9, which is consistent. Thus, the bandwidth/reflection hypothesis partially failed while feasibility constraints held.",
+  "deviation_mechanism": "A 20-period TiO2/SiO2 stack generates a finite-width photonic bandgap. To push peak reflectance past 0.95, the optimizer must compress phase mismatches, which inherently steepens the group delay and narrows the high-reflectance spectral window. Evidence of this occurs in candidate_thicknesses_nm (second array): layer 9 shifted to 44.09094987779399 nm and layer 10 to 50.015019422907685 nm, abandoning the quarter-wave periodicity (~57 nm / ~96 nm) required for broadband constructive interference. This geometric distortion satisfies the instantaneous objective function locally (yielding the 0.978347239944368 peak in round 8) but induces rapid destructive interference outside the immediate design wavelength, causing the subsequent score collapse to 0.922279470492985. The system lacks sufficient interface density to simultaneously suppress both short- and long-wavelength evanescent tails within the fixed ±20 nm tolerance.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 10 rounds and accumulated clear evidence that higher reflectance is physically possible (score_history[7]: 0.978347239944368) but unsustainable at N=20 under the current parameterization. Dropping below 0.950 triggers the pre-defined diagnostic pathway: 20 layers are insufficient for the target stopband width. Continuing with 22 layers expands the interference order, widening the bandgap and reducing phase-sensitivity per layer, which directly addresses the measured deviation. Abandoning the route now would conflate a correctable topological limit with a fundamental material failure.",
+  "insight_for_next": "Transition topology from 20 to 22 layers. Re-initialize all 22 thicknesses to exact quarter-wave values derived from the original central wavelength. Lock the ±20 nm optimization bounds. Deploy a fresh random seed for initial parameter generation to bypass the asymmetric parameter wells identified in rounds 8-10. Keep TiO2/SiO2 refractive indices unchanged.",
+  "insight_grounding": "The recommendation is grounded in three auditable measurements: (1) score_history[7] recorded 0.978347239944368, proving the material system can reach high reflectance; (2) observed_metrics.best_target_score settled at 0.922279470492985, confirming the route breached the pre-declared <0.950 insufficiency threshold after round 8; (3) candidate_thicknesses_nm (second list, index 9: 44.09094987779399 nm; index 10: 50.015019422907685 nm) documents the departure from quarter-wave stacking that mechanically narrows the reflection band, necessitating an additional two periods to restore broadband coverage.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T06:01:06.921617+00:00",
+  "attestation_sha256": "5e460c6a81dfc15fb342ce6525cd9e312e16ea8934d44686be048b5ffa06f453",
+  "observed_metrics": {
+    "best_target_score": 0.922279470492985,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4870938613393244
+  },
+  "reflection_available": true,
+  "disagreement": {
+    "present": true,
+    "llm_recommendation": true,
+    "deterministic_verdict": "stop",
+    "deterministic_readings": {
+      "gate_max_rounds": false,
+      "gate_budget": false,
+      "gate_physics": true,
+      "gate_stagnation": false,
+      "observed_gain": 0.0,
+      "epsilon": 0.0001,
+      "window_scores": [
+        0.978347239944368,
+        0.9575294986953142,
+        0.922279470492985
+      ],
+      "stagnation_is_advisory_only": true
+    },
+    "llm_stop_policy": {
+      "minimum_rounds_required": 4,
+      "rounds_executed": 10,
+      "stop_basis": "",
+      "explicit_no_benefit_stop": false
+    },
+    "resolution": "blocked_by_max_rounds"
+  }
+}

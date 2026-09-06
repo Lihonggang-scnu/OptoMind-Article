@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The observed best_target_score peaked at 0.9830637191058961 in round 3, then exhibited extreme oscillation: 0.843079303166125 (R4), 0.7072366782448362 (R5), 0.9056868538549775 (R6), and 0.7306537821563409 (R7). This trajectory diverges sharply from the expected smooth or distinct convergence; instead of gradual improvement, the route shows high-variance swings (>0.20 score amplitude) consistent with the expected failure mode ('plateau lower or passband splits'). The tightest_margin measured at 0.5586174923983449 does not demonstrate the anticipated improvement over quarter-wave baselines, corroborating the hypothesis breakdown.",
+  "deviation_mechanism": "Aggressive, unstructured thickness modulation creates severe impedance mismatches at layer interfaces. In candidate 4, layer 5 thickness is 215.029 nm while adjacent layer 6 collapses to 81.972 nm (Δ ≈ 133 nm). Such abrupt thickness steps generate strong localized Fresnel reflections that scatter energy out of the intended bandwidth, effectively fracturing the designed passband/stopband into disjoint resonance peaks. The optimizer repeatedly jumps between these scattered resonance states, causing the observed score volatility rather than converging toward a unified coherent stack.",
+  "continue_recommended": true,
+  "continue_rationale": "Seven rounds have executed with valid candidates, but the score history shows no exhaustion—only instability. The route reached a viable optimum at 0.9831 (round 3) before degrading due to uncontrolled thickness perturbations. A score swing of 0.198 between rounds 6 and 7 indicates the search space remains traversable; the issue is algorithmic stepping rather than physical boundary limits. Continuing with bounded initialization will likely recover the stable region demonstrated in round 3.",
+  "insight_for_next": "Initialize all candidates with a strictly monotonic linear chirp ramp (e.g., 150.0 nm to 300.0 nm uniformly distributed across 21 layers) and add a hard penalty constraint limiting maximum adjacent-layer thickness delta to ≤ 15.0 nm during optimization. This forces the solver to explore perturbed chirps rather than collapsing individual layers, preserving constructive interference while allowing fine-tuning.",
+  "insight_grounding": "Candidate 4, layer 5 thickness = 215.02903634495644 nm immediately followed by layer 6 thickness = 81.97238739431592 nm yields an adjacent Δ of ~133 nm. This structural discontinuity correlates directly with the score collapse from round 3's peak of 0.9830637191058961 down to round 7's current 0.7306537821563409. Enforcing Δ ≤ 15.0 nm prevents these impedance-mismatch spikes while retaining the chirp degree of freedom that produced the viable round-3 result.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:32:04.194957+00:00",
+  "attestation_sha256": "17f53db6c0139ee809575555b6eeddda25e1a54597fbe49d6c7feb5fd1ffe494",
+  "observed_metrics": {
+    "best_target_score": 0.7306537821563409,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.5586174923983449
+  },
+  "reflection_available": true
+}

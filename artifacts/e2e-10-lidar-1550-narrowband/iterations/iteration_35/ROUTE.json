@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "CMA-ES Staged-Chirp Defect Cavity (21 Layers)",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "CMA-ES optimizer with covariance matrix adaptation seeded from iteration-32 optimal thicknesses will escape local minima that caused gradient-based optimizer score regression, achieving target_score > 0.95 with staged chirp constraints (±10% initial, ±25% expanded).",
+  "design_principle": "Defective DBR structure (HL)^N D(LH)^N with quarter-wave mirrors and half-wave defect cavity at 1550 nm. CMA-ES population-based search exploits promising basin discovered in iteration 32 while staged chirp prevents premature convergence.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers)",
+  "design_variables": [
+    "all_21_layer_thicknesses_nm"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30 satisfied with 21 layers",
+    "adjacent layer thickness difference constraint for deposition uniformity",
+    "quarter-wave base provides fabrication-friendly starting point"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter theory: (HL)^N D(LH)^N structure creates transmission peak at defect mode wavelength",
+    "Quarter-wave optical thickness n*d = lambda0/4 for mirrors, n*d = lambda0/2 for cavity"
+  ],
+  "expected_advantages": [
+    "CMA-ES avoids gradient-based local minima trapping",
+    "Staged chirp balances exploration and convergence",
+    "21 layers leaves margin for future complexity increase"
+  ],
+  "known_risks": [
+    "CMA-ES may require more function evaluations than gradient methods",
+    "Staged protocol may delay convergence if chirp expansion timing is suboptimal"
+  ],
+  "execution_request_english": "Design a 21-layer Ta2O5/SiO2 defect-cavity bandpass filter on fused silica substrate with air incident medium. Layer sequence: alternating Ta2O5/SiO2 starting with Ta2O5, layer 11 is the defect cavity. Initialize all layers within ±10% of quarter-wave thickness at 1550 nm (Ta2O5 ~185 nm, SiO2 ~267 nm, cavity ~534 nm). Constrain chirp slope to maximum 3% thickness change per interface. Use CMA-ES optimizer with population size 20, seeded with thickness vector [209.8257105224059, 220.79821841120258, 214.56223999475006, 185.44557829172606, 226.69413733242868, 233.2332709326123, 96.19862533257114, 95.2239899876587, 184.9256993446736, 183.53306613797727, 337.39530803995683, 211.76520107676225, 165.31201322409683, 178.26505740914925, 274.47316942425505, 142.75439461585967, 241.4702554145756, 365.64105969518573, 377.85960538578905, 349.3859455073734, 303.5795815352078]. Evaluate transmittance at normal incidence for wavelengths 1400-1700 nm. Optimize for high transmittance at 1550 nm and low transmittance in 1400-1500 nm and 1600-1700 nm bands. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 5 alternating Ta2O5/SiO2 pairs, one cavity layer, and exactly 5 reverse-order pairs (21 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive: switch from gradient-based to CMA-ES optimizer with staged-chirp protocol, seeded from iteration-32 optimal thicknesses to exploit discovered promising basin."
+}

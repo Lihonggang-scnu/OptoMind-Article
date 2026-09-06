@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "Refined defect-cavity with targeted initialization and mirror penalties",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Initializing central defect layers (13-16) to half-wave optical thickness at 1550 nm and tightening their optimizer step size, while penalizing mirror layer deviation from quarter-wave thickness, will improve transmission peak convergence and visible stopband sharpness compared to route_03.",
+  "design_principle": "Distributed Bragg Reflector (DBR) mirrors surrounding a half-wave defect cavity to create a transmission passband within a high-reflection stopband.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "30-layer finite stack. Air incidence. Layers 1-12: Alternating HfO2/SiO2 Bragg Mirror. Layers 13-16: Defect Cavity (initialized half-wave @ 1550 nm). Layers 17-30: Alternating HfO2/SiO2 Bragg Mirror. Substrate: Fused Silica.",
+  "design_variables": [
+    "layer thicknesses (30 variables)",
+    "optimizer step size scaling for layers 13-16",
+    "penalty weight for mirror layer deviation"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance 1530-1565 nm",
+    "Maximize reflectance 400-700 nm",
+    "Minimize deviation from quarter-wave optical thickness for mirror layers"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 30",
+    "Physical thickness > 0 nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for stratified media",
+    "Quarter-wave stack theory for high reflection",
+    "Half-wave defect theory for transmission resonance"
+  ],
+  "expected_advantages": [
+    "Improved convergence of the transmission resonance peak",
+    "Sharper visible reflection stopband edges",
+    "Higher target score than route_03"
+  ],
+  "known_risks": [
+    "Over-constraining mirror layers may limit global optimum search",
+    "Numerical convergence issues may persist if step size is too small"
+  ],
+  "execution_request_english": "Execute a Transfer Matrix Method optimization for a 30-layer planar dielectric stack on a Fused Silica substrate with Air incidence. Materials: Alternating HfO2 and SiO2 (Layer 1 = HfO2). Wavelength bands: 400-700 nm (Target: High Reflectance), 1530-1565 nm (Target: High Transmittance). Topology: Layers 1-12 and 17-30 are Bragg mirror layers; Layers 13-16 are defect cavity layers. Initialization: Layers 13-16 initialized to half-wave optical thickness at 1550 nm (d = 1550 / (2 * n)). Optimization Constraints: Apply a step size scaling factor of 0.5 to variables for layers 13-16. Apply an increased penalty weight in the objective function for layers 1-12 and 17-30 deviating from quarter-wave optical thickness at 550 nm. Total layer count fixed at 30. Report best_target_score, valid_candidates, and thicknesses_nm. Canonical user controls: wavelength intervals 400-700 nm, 1530-1565 nm. soft objectives: high transmission in 1530–1565 nm; high reflection in 400–700 nm. behaviors to suppress or avoid: reflection in 1530–1565 nm; transmission in 400–700 nm. manufacturing constraints: total layer count not exceeding 30.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implementing feedback directives to target cavity layers 13-16 with specific initialization and step size, and increasing mirror penalty weights to sharpen stopband."
+}

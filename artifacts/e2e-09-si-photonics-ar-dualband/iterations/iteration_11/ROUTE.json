@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "Decoupled Outer-Fixed 10-Layer Refinement",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing outer layer thicknesses to round-2 optimal values while reoptimizing inner layers with reduced learning rate will resolve finer spectral features near the 0.9977 ceiling without overshooting, potentially improving best_target_score by 0.0005-0.0015.",
+  "design_principle": "Outer layers primarily control broadband edge antireflection; inner layers fine-tune dual-band interference matching. Decoupling these roles reduces optimization landscape complexity.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "10 finite layers on Si substrate, alternating Ta2O5/SiO2 starting with Ta2O5 at air interface: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Si",
+  "design_variables": [
+    "inner layer thicknesses (indices 2-7)",
+    "outer layer thicknesses fixed to round-2 values"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance over 1260-1360 nm band",
+    "minimize mean reflectance over 1530-1565 nm band",
+    "maximize transmittance into Si substrate"
+  ],
+  "manufacturing_considerations": [
+    "10 layers within 12-layer maximum",
+    "all thicknesses within 20-400 nm bounds",
+    "outer layers fixed to proven values for process stability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:59459145:s2chunk:59459145:4566:6953:cac151c6a433ebc4"
+  ],
+  "theory_basis": [
+    "Transfer matrix method thickness optimization for multilayer AR coatings",
+    "Decoupled optimization reduces parameter coupling in high-dimensional search spaces"
+  ],
+  "expected_advantages": [
+    "Preserves broadband edge performance from round-2",
+    "Focused optimization on inner layers may resolve dual-band interference features",
+    "Reduced learning rate prevents overshooting near performance ceiling"
+  ],
+  "known_risks": [
+    "Fixed outer layers may constrain global optimum",
+    "Inner layer reoptimization may not yield significant improvement if outer layers dominate performance"
+  ],
+  "execution_request_english": "Optimize a 10-layer Ta2O5/SiO2 anti-reflection coating on semi-infinite Si substrate at 0 deg unpolarized incidence. Layer sequence: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2 (air to substrate). Fix outer layer thicknesses to round-2 optimal values: layer 0 (Ta2O5) = 79.09 nm, layer 1 (SiO2) = 105.74 nm, layer 8 (Ta2O5) = 82.51 nm, layer 9 (SiO2) = 99.77 nm. Reinitialize inner layers (indices 2-7) with plus or minus 15 nm uniform stochastic perturbation around round-2 values. Apply gradient_thickness optimizer with Adam algorithm, learning rate reduced by 30 percent from previous round, linear decay schedule. Minimize mean reflectance over wavelength bands 1260-1360 nm and 1530-1565 nm. All layer thicknesses bounded 20-400 nm. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm, and band-averaged reflectance/transmittance spectra. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Implements feedback directive for round 3: decoupled initialization with fixed outer layers (indices 0,1,8,9) to preserve broadband edge antireflection, inner layers (indices 2-7) reinitialized with plus or minus 15 nm perturbation, Adam learning rate reduced 30 percent with linear decay to resolve finer spectral features near 0.9977 ceiling."
+}

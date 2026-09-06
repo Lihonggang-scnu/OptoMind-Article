@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected monotonic improvement in best_target_score, expanded visible reflectance bandwidth, and stable/tighter tightest_margin were not met. Instead, best_target_score degraded from a historical peak of 0.948203811668944 (Round 1) to 0.8614707828301891 (Round 5), a downward deviation of ~0.0867. tightest_margin sits at 0.46431573176443686, indicating transition-region broadening rather than stabilization. While the score recovered partially across the last three rounds (0.7195 → 0.8287 → 0.8615), it remains well below the baseline, contradicting the expectation that chirp convergence would yield immediate gains.",
+  "deviation_mechanism": "The chirp parameterization imposes a continuous thickness gradient that perturbs the optical path length (n·d) required for quarter-wave resonance at the design wavelengths. In the early search iterations, the solver was forced to deviate mid-stack layers beyond resonant tolerance (e.g., layer 5 shifted from 112.0 nm to ~104.66 nm, layer 8 from 89.0 nm to ~80.06 nm). This breaks local Bragg constructive interference, redistributes spectral power into the telecom band as ripple, and widens the filter transition region. The optimizer initially fights the chirp constraint, producing the observed score trough before partially correcting via compensatory thinning/thickening of outer layers.",
+  "continue_recommended": true,
+  "continue_rationale": "Although the current best_target_score (0.8614707828301891) remains below the historical best (0.948203811668944), the three-round upward trajectory demonstrates active adaptation rather than stagnation. The deviation stems from an overly aggressive initial chirp rate that overwhelms the resonance budget, not from physical infeasibility. A calibrated reduction in chirp amplitude and tighter initialization bounds will allow the solver to isolate the true benefit of the gradient hypothesis, preserving scientific utility beyond the current round count.",
+  "insight_for_next": "Reinitialize the chirp profile with a maximum thickness deviation scaled to 25% of the previous iteration’s range, and enforce a hard ±3 nm constraint on any layer shift relative to the Round 1 optimal stack. This preserves quarter-wave optical path matching while permitting the solver to evaluate whether a gentler refractive-index-thickness gradient can widen visible bandwidth without triggering excessive telecom-band ripple.",
+  "insight_grounding": "Grounded in the documented score recovery sequence [0.7195087632995022, 0.8286756112010787, 0.8614707828301891] across the final three rounds, and quantified thickness perturbations in candidate_thicknesses_nm[2][5] = 104.66359734440019 nm (vs 112.0 nm baseline) and candidate_thicknesses_nm[3][7] = 77.08089667624336 nm (vs 89.0 nm baseline). These >7% shifts breach the resonant tolerance window that produced the 0.948203811668944 peak, directly causing the observed 0.0867 score deficit. Constraining deltas to ≤3 nm targets the identified optical-path mismatch.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T20:05:29.854943+00:00",
+  "attestation_sha256": "f33d091d269eae2e5d22334d15642a790bb22d03e15f00e64521bb49236d3653",
+  "observed_metrics": {
+    "best_target_score": 0.8614707828301891,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.46431573176443686
+  },
+  "reflection_available": true
+}

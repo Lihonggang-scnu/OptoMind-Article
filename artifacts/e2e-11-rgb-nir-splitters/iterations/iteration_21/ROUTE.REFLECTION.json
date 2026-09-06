@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score observed at 0.9030414349559927 deviates significantly from the '>0.970 if sufficient' expectation, aligning instead with the '<0.960 if insufficient' hypothesis (direction: lower, magnitude: ~0.057 below the 0.960 threshold). robustness_score was not included in the observed_metrics payload, preventing direct comparison against the '>0.528' expectation. valid_candidates observed at 11 is consistent with the '>8' expectation, confirming the constraint set remains feasible. The score history exhibits high volatility (range 0.6746638433738227 to 0.9250813784004182), failing to converge toward either expected regime.",
+  "deviation_mechanism": "The target score shortfall indicates the active multilayer stack lacks sufficient cumulative optical thickness and refractive index contrast modulation to establish the required photonic bandgap width. In high-dimensional thin-film optimization, adjacent layer thicknesses strongly couple via interference conditions; minor perturbations shift spectral peaks sharply rather than widening the reflection band. The optimizer's trajectory (oscillating between narrowband resonances and partial stopbands) reveals a highly multimodal landscape where the declared period count cannot generate enough phase accumulation cycles to flatten the reflectance spectrum across the target bandwidth window.",
+  "continue_recommended": true,
+  "continue_rationale": "The final best_target_score of 0.9030414349559927 remains strictly below the pre-declared 0.950 efficacy cutoff for the current topology. Six rounds have been executed, and the score history [0.869119511531926, 0.9250813784004182, 0.6863921639754436, 0.6746638433738227, 0.7320951493056587, 0.9030414349559927] demonstrates persistent volatility without crossing the 0.950 barrier. This empirically validates the stop condition that the layer count is insufficient for the bandwidth requirement, triggering the prescribed adjustment to expand the stack rather than abandoning the material system.",
+  "insight_for_next": "Increase the layer count to 22. Implement a seeded initialization strategy: lock the inner core periods to quarter-wave approximations (~57.0 nm and ~96.0 nm alternations) to guarantee a baseline stopband floor, then release full optimization constraints only on the outermost matching layers and newly added periods. Widen thickness bounds from ±15 nm to ±20 nm to allow adaptive period scaling without forcing strict quarter-wave quantization.",
+  "insight_grounding": "The decisive metric is best_target_score dropping to 0.6746638433738227 in round 4 and recovering only to 0.9030414349559927 in round 6, never surpassing the round-2 peak of 0.9250813784004182. Candidate 0 in candidate_thicknesses_nm maintains rigid 57.0 nm / 96.0 nm alternations across the entire stack, illustrating how the optimizer gets trapped in symmetric phase-matching states rather than exploring broadband asymmetries. With 11 valid candidates surviving, the design space is topologically viable but structurally constrained by period count, directly supporting the transition to 22 layers.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:18:37.089896+00:00",
+  "attestation_sha256": "c6248d19a0e160dc2c45e80d3e5b4ee3400ff423a2411f4ad3451cab8d7f4680",
+  "observed_metrics": {
+    "best_target_score": 0.9030414349559927,
+    "valid_candidates": 11,
+    "run_status": "completed",
+    "tightest_margin": 0.4219325046521938
+  },
+  "reflection_available": true
+}

@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Tight Quarter-Wave Initialization with Gradient Constraints",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Confining thickness optimization to ±4 nm around quarter-wave optical targets at 1550 nm, with adjacent-layer gradient penalty |t_i - t_{i+1}| ≤ 12 nm, will prevent rapid phase drift that caused score regression while preserving constructive interference in the passband.",
+  "design_principle": "Quarter-wave DBR with defect cavity structure, initialized at nH*dH = nL*dL = 1550/4 nm optical thickness, with tight bounds to maintain optimizer in constructive-interference basin.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20-layer alternating Ta2O5/SiO2 stack starting with Ta2O5 on air side, terminating with SiO2 on fused silica substrate. Exact sequence: Air|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Fused Silica",
+  "design_variables": [
+    "layer thicknesses with ±4 nm bounds around quarter-wave targets",
+    "lightweight stochastic offsets ≤2 nm"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer constraint)",
+    "tight thickness bounds improve fabrication repeatability",
+    "gradient constraint reduces stress from rapid thickness changes"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness n*d = lambda0/4 creates maximum reflectance in DBR mirrors",
+    "Defect layer with half-wave optical thickness creates transmission peak in stopband"
+  ],
+  "expected_advantages": [
+    "Prevents optimizer from drifting into destructive interference regions",
+    "Maintains proximity to proven quarter-wave design principle",
+    "Gradient constraint reduces fabrication complexity"
+  ],
+  "known_risks": [
+    "Tight bounds may prevent optimizer from finding global optimum",
+    "May not fully recover round 1 performance if quarter-wave initialization is suboptimal"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric filter on fused silica substrate with air incidence. Materials: Ta2O5 (high index) and SiO2 (low index), alternating starting with Ta2O5. Initialize all Ta2O5 layers at quarter-wave optical thickness for 1550 nm (approximately 157 nm physical thickness assuming n≈2.45), all SiO2 layers at quarter-wave optical thickness for 1550 nm (approximately 267 nm assuming n≈1.46). Apply optimization bounds of ±4 nm around these quarter-wave targets. Add hard penalty constraint on adjacent-layer thickness gradients: |t_i - t_{i+1}| ≤ 12 nm for all adjacent pairs. Add lightweight stochastic offsets ≤2 nm to preserve asymmetry. Optimize for maximum transmittance at 1550 nm (single wavelength), minimum mean transmittance across 1400-1500 nm band, minimum mean transmittance across 1600-1700 nm band. Total layer count fixed at 20. Use gradient-based thickness optimizer with these constraints. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct response to feedback directive: initialize with thicknesses locked within ±4 nm of quarter-wave optical targets, add hard penalty on adjacent-layer thickness gradients ≤12 nm, retain lightweight stochastic offsets ≤2 nm to preserve asymmetry hypothesis while keeping optimizer confined to constructive-interference basin."
+}

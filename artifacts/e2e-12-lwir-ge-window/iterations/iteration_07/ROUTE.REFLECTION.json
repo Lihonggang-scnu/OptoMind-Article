@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The best_target_score achieved 0.25664379075299687, consistent with the expectation that expanded layer counts yield monotonic improvement over prior baselines (route_01/route_02). MWIR suppression performance aligns with this positive score shift. However, the expectation regarding '12-layer topology robustness' deviates: observed candidates contain exactly 8 layers, whereas the pre-execution plan referenced 12 layers. The tightest_margin measured at 0.06308684982650598 reflects this structural adjustment. The conditional failure hypothesis did not trigger; the route produced valid improvements rather than stagnating or collapsing.",
+  "deviation_mechanism": "The deviation originates from a topological underspecification in the optimization initialization: the search space collapsed from the hypothesized 12-interface stack to an 8-interface stack. Each removed interface reduces the available optical path differential and limits constructive/destructive interference tuning within the MWIR band (3000-5000 nm). To maintain overall phase accumulation with fewer interfaces, individual layers expand in thickness (e.g., 1580.0 nm and 1458.0 nm in candidate 0), which compresses the achievable tolerance window near dispersion boundaries and yields the observed tightest_margin of 0.06308684982650598. The underlying thin-film physics remains valid, but phase-control bandwidth is materially reduced.",
+  "continue_recommended": true,
+  "continue_rationale": "Only 1 round has been executed, falling strictly below the 2-round minimum required to evaluate convergence or declare physical infeasibility. The route completed successfully with 9 valid candidates and a measurable score of 0.25664379075299687, confirming the engine and optimizer are operational. A single successful iteration provides insufficient statistical power to assess improvement trends against the reference_epsilon of 0.0001 or to determine whether the 8-layer compromise is fundamentally limiting, necessitating continued sampling.",
+  "insight_for_next": "Enforce a strict 12-layer initialization by updating the layer-count constraint to 12 and rescaling thickness bounds proportionally (distributing the current ~9500 nm budget across 12 interfaces to target ~700-800 nm per layer). Freeze the outermost 2 and innermost 2 layers as fixed quarter-wave matching segments at the MWIR edge, then allow the optimizer to adjust only the central 8 layers to maximize spectral nulling depth while respecting fabrication thickness caps.",
+  "insight_grounding": "Traceable to `candidate_thicknesses_nm`: every executed candidate contains exactly 8 thickness values (e.g., candidate 0: [1619.0, 1401.0, 1162.0, 1458.0, 1580.0, 705.0, 558.0, 691.0]), confirming the topological deviation from the planned 12 layers. The summed thickness of candidate 0 is 9534.0 nm, generating a `tightest_margin` of 0.06308684982650598. Removing 33% of the designed interfaces reduces independent phase variables from 12 to 8, directly limiting the optimizer's ability to sculpt the transmission envelope and justifying the explicit 12-layer restoration in the next round.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:10:24.474719+00:00",
+  "attestation_sha256": "ff6ac42325481b2e6f2d845806069312f14e14fc8ef341a2779579a74990accb",
+  "observed_metrics": {
+    "best_target_score": 0.25664379075299687,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.06308684982650598
+  },
+  "reflection_available": true
+}

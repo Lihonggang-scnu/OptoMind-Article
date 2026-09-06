@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Gaussian-Perturbed 100nm Uniform Initialization with Step-Size Control",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reinitializing candidates with tightly bounded Gaussian perturbations (σ=10 nm) centered on the Round 1 uniform 100.0 nm vector, combined with a hard step-size limiter of 15 nm per iteration and inter-layer thickness variance penalty >40 nm, will preserve foundational interference conditions while enabling gradual passband profile refinement without destructive overshoot.",
+  "design_principle": "Maintain the optical impedance foundation from the best-performing uniform initialization while constraining optimization trajectory to prevent convergence into local minima that degrade passband transmission.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "layer thicknesses (36 variables, bounded 20-350 nm)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "layer thickness range 20-350 nm",
+    "inter-layer thickness variance penalty encourages smooth transitions for deposition repeatability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:245822325:s2chunk:245822325:9655:11670:c26022c37015a7c0"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack optimization principles for multi-band filters",
+    "Gradient-based optimization with bounded step-size for thin-film design"
+  ],
+  "expected_advantages": [
+    "Preserves interference foundation from Round 1 best score (0.9275)",
+    "Step-size control prevents destructive thickness changes",
+    "Variance penalty encourages manufacturable smooth transitions"
+  ],
+  "known_risks": [
+    "May converge to similar local minimum as prior iterations if perturbation range is too narrow",
+    "Variance penalty could constrain exploration of high-performing non-smooth solutions"
+  ],
+  "execution_request_english": "Optimize a 36-layer Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 deg incidence, unpolarized light. Layer sequence: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2 (18 pairs, 36 layers total). Initialize all 36 layer thicknesses with Gaussian perturbations (standard deviation 10 nm) centered on 100.0 nm uniform baseline. Apply hard step-size limiter of 15 nm maximum change per iteration. Apply penalty weight for inter-layer thickness variance exceeding 40 nm. Thickness bounds: 20-350 nm per layer. Target bands: maximize transmittance 420-700 nm, minimize transmittance 354-356 nm, minimize transmittance 355-365 nm, minimize transmittance 1030-1080 nm. Use gradient_thickness optimizer with the specified initialization and constraints. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Directly implements insight appendage feedback: Gaussian perturbation (σ=10 nm) around Round 1 uniform 100.0 nm baseline, 15 nm step-size limiter, and >40 nm variance penalty. This differs from prior route_02 iterations which used quarter-wave initialization (iter 11), bimodal initialization (iter 19), or unconstrained gradient optimization (iter 15)."
+}

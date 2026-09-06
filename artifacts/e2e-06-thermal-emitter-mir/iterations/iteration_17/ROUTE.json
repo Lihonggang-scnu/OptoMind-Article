@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "L-BFGS Local Refinement with ±12% Quarter-Wave Initialization (16L)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining thickness initialization to ±12% of quarter-wave optical thickness at 10500 nm center wavelength, combined with L-BFGS local optimization, will refine phase alignment without expanding the thickness envelope and recover or exceed the Round 3 best score of 0.9057.",
+  "design_principle": "Local gradient-based optimization from a physically-motivated starting point avoids random search inefficiency while maintaining proximity to the quarter-wave resonance condition that produced the best prior result.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | (HfO2 | SiO2)_8 | Silicon substrate, 16 finite layers total, alternating sequence fixed",
+  "design_variables": [
+    "layer thicknesses (16 variables, bounded 200-1800 nm)"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 8000-13000 nm band",
+    "minimize absorptance in 3000-5000 nm band",
+    "maintain smooth spectral transitions"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 16 (within 24-layer limit)",
+    "thickness bounds 200-1800 nm compatible with deposition processes"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:284897971:s2chunk:284897971:2899:5008:7a5ec08c6adb0915"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack resonance at center of high-emissivity band",
+    "Kirchhoff's law relating absorptance to emissivity",
+    "Transfer Matrix Method for coherent multilayer optics"
+  ],
+  "expected_advantages": [
+    "Faster convergence than global search",
+    "Maintains proximity to proven high-performing configuration",
+    "Reduced risk of physics violations from extreme thickness values"
+  ],
+  "known_risks": [
+    "May converge to local optimum near initialization",
+    "Limited exploration of thickness space compared to global optimizers"
+  ],
+  "execution_request_english": "Optimize a 16-layer alternating HfO2/SiO2 stack on silicon substrate with air incidence. Initialize all layer thicknesses at quarter-wave optical thickness for 10500 nm center wavelength (HfO2 and SiO2 refractive indices at 10500 nm), then apply ±12% random perturbation to each layer. Use L-BFGS-B optimizer with thickness bounds 200-1800 nm per layer. Evaluate coherent TMM across 3000-13000 nm wavelength range at normal incidence. Objective: maximize weighted absorptance (high weight 8000-13000 nm, low weight 3000-5000 nm). Total layers fixed at 16, alternating HfO2/SiO2 sequence starting with HfO2 at air interface. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive to constrain initialization to ±12% of quarter-wave centers and replace random search with L-BFGS local optimizer for Round 5 refinement."
+}

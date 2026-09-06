@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer TiO2/SiO2 alternating stack with deep-layer thickness bounding and smoothness regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 24-layer alternating high-low index stack with bounded deep-layer thicknesses (layers 13-23 capped at 120 nm initial) and L2 regularization on adjacent thickness differences will achieve higher target scores with better convergence stability than unbounded initialization.",
+  "design_principle": "Recalled knowledge: Quarter-wave stacks create high reflectance bands through constructive interference of reflections at each interface. At 45° incidence, optical thicknesses must account for angle-dependent path length. Deep layers with excessive thickness cause oscillatory phase accumulation in TMM matrices, leading to stiff gradients. Smoothing adjacent layer differences reduces impedance mismatch spikes that trap optimizers in local minima.",
+  "proposed_materials": [
+    "TiO2 (Siefke)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "24-layer alternating stack: TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2/TiO2/SiO2 on fused silica substrate, air incident medium",
+  "design_variables": [
+    "individual layer thicknesses for all 24 layers with layers 13-23 initialization capped at 120 nm",
+    "L2 regularization weight on adjacent layer thickness differences"
+  ],
+  "soft_objectives": [
+    "maximize reflectance in 450-650 nm band",
+    "maximize transmittance in 700-1000 nm band",
+    "minimize spectral crosstalk between bands",
+    "maintain convergence stability during optimization"
+  ],
+  "manufacturing_considerations": [
+    "maximum 24 layers as specified",
+    "all thicknesses must be physically realizable (positive, within solver bounds)",
+    "smooth thickness transitions preferred for deposition uniformity"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Alternating high/low index layers create distributed Bragg reflector behavior with stopband centered near quarter-wave condition",
+    "Recalled knowledge: At oblique incidence (45°), effective optical thickness scales with cos(theta) in each layer",
+    "Recalled knowledge: Excessive layer thickness causes phase wrapping in TMM propagation, creating stiff Jacobian landscapes",
+    "Recalled knowledge: L2 regularization on thickness gradients promotes smoother index profiles and improves optimizer convergence near plateaus",
+    "Recalled knowledge: TiO2 (n~2.4-2.6 visible) and SiO2 (n~1.45-1.47 visible) provide sufficient index contrast for high reflectance with ~12-15 pairs"
+  ],
+  "expected_advantages": [
+    "Bounded deep-layer initialization prevents TMM matrix stiffness from excessive optical path lengths",
+    "Smoothness regularization helps escape local minima in high-score plateau regions",
+    "Maintains the same material system and layer count as prior iterations for fair comparison",
+    "Should show improved best_target_score progression compared to unbounded initialization"
+  ],
+  "known_risks": [
+    "Uncertain whether 120 nm cap is optimal -- may need adjustment based on actual TiO2/SiO2 dispersion at 45°; would settle by testing multiple cap values (100, 120, 140 nm)",
+    "L2 regularization weight is heuristic from recalled optimization practice -- optimal value unknown without empirical tuning; would settle by grid search over regularization weights",
+    "Recalled quarter-wave thickness estimates (~50-100 nm per layer for visible) may not match actual n(λ) data in registry -- actual optimal thicknesses will emerge from optimization",
+    "Polarization splitting at 45° incidence not explicitly optimized -- s and p polarizations may have different performance; would settle by checking polarization-resolved outputs if available",
+    "Assumption that alternating sequence is optimal -- graded or non-periodic sequences might perform better but this route tests only alternating topology"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric coating on fused silica substrate with air incident medium. Materials: alternating TiO2 (Siefke) and SiO2 (Gao) layers (TiO2 (Siefke) first, then SiO2 (Gao), repeating for 24 total layers). Wavelength bands: maximize reflectance in 450-650 nm, maximize transmittance in 700-1000 nm. Incidence angle: 45 degrees. Polarization: unpolarized (average s and p). Design variables: all 24 layer thicknesses in nanometers. Initialization constraints: layers 1-12 may initialize up to 150 nm, layers 13-23 capped at 120 nm maximum initial thickness. Apply L2 regularization penalty on adjacent layer thickness differences during gradient optimization. Manufacturing constraint: maximum 24 layers (fixed). Use gradient_thickness optimizer with the stated initialization bounds and regularization. Report best_target_score, valid_candidates, tightest_margin, run_status, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control_route_01 per refinement chain instruction. Revision introduces targeted perturbations to deep-layer initialization bounds (layers 13-23 capped at 120 nm) to mitigate oscillatory phase accumulation in TMM propagation matrices, and applies mild L2 regularization on adjacent layer thickness differences to promote smoother refractive index profiles. These changes address convergence stiffness observed in prior iterations while preserving the same scientific hypothesis, material system, and layer count."
+}

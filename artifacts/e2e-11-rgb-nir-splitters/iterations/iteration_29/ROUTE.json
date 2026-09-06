@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "Asymmetric 34/92nm Seeded 22-Layer Stack with SA→L-BFGS Hybrid Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing high-index (odd) layers at 34nm and low-index (even) layers at 92nm, then applying simulated annealing for global basin exploration followed by L-BFGS for local refinement, will converge to a thickness configuration that improves upon the 0.9783 baseline by better exploiting the dispersion-shifted asymmetric design space.",
+  "design_principle": "Quarter-wave baseline initialization at 550nm produces symmetric 57/96nm pairs; the observed optimal displacements from iteration_26 suggest an asymmetric 34/92nm ratio better balances the dual-band spectral requirements at 45° oblique incidence.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "22-layer alternating stack: Air | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | Fused Silica substrate. Total finite layers: 22.",
+  "design_variables": [
+    "all 22 layer thicknesses",
+    "optimizer phase transition epoch"
+  ],
+  "soft_objectives": [
+    "maximize reflectance in 450-650nm band",
+    "maximize transmittance in 700-1000nm band",
+    "minimize spectral crosstalk between bands",
+    "improve target score beyond 0.9783"
+  ],
+  "manufacturing_considerations": [
+    "22 layers within 24-layer maximum constraint",
+    "thickness bounds [20, 180] nm for physical realizability",
+    "simulated annealing cooling schedule for first 5 epochs",
+    "L-BFGS line-search tolerance 1e-5 for final convergence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack initialization provides physically motivated starting point for local optimization",
+    "Hybrid global-local optimization strategy balances exploration and exploitation in multimodal thickness space"
+  ],
+  "expected_advantages": [
+    "Asymmetric seed targets proven optimal displacement region from iteration_26",
+    "SA phase avoids local minima in early epochs",
+    "L-BFGS phase provides precise convergence to basin optimum"
+  ],
+  "known_risks": [
+    "SA cooling schedule may be too aggressive or too conservative for this specific landscape",
+    "L-BFGS may not converge if SA phase does not reach basin attraction region",
+    "22-layer count may limit achievable bandwidth compared to 24-layer alternative"
+  ],
+  "execution_request_english": "Optimize a 22-layer alternating TiO2/SiO2 dielectric stack on fused silica substrate at 45° incidence. Initialize odd-indexed TiO2 layers at 34nm and even-indexed SiO2 layers at 92nm. Apply simulated annealing optimizer for epochs 1-5 with exponential cooling schedule, then switch to L-BFGS optimizer with 1e-5 line-search tolerance for epochs 6-20. Thickness bounds: [20, 180] nm for all layers. Evaluate target score using mean reflectance in 450-650nm band and mean transmittance in 700-1000nm band with equal weighting. Report best_target_score, valid_candidates, tightest_margin, thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive to replace current initialization with dispersion-shifted asymmetric seed (34/92nm) and hybrid SA→L-BFGS optimization strategy, targeting the proven optimal displacement region from iteration_26."
+}

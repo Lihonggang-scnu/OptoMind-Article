@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expectations included a distinct transmission peak in the 1000–1700 nm band, improving tightest margin, and clear thickness segregation between the cavity (layer 11) and mirror layers. Actual metrics show the score peaked at 0.7111 in round 2 but degraded to 0.6601 in round 3, a negative deviation of -0.051. The tightest margin sits at 0.278 nm, indicating persistent resonance misalignment. Topologically, layer 11 failed to diverge from mirror stacks; it shifted from 365.38 nm (round 1 candidate 0) to 196.00 nm (round 3 candidate 3), fully overlapping with the thickness distribution of adjacent mirror layers.",
+  "deviation_mechanism": "The optimizer collapsed the resonant cavity into a quarter-wave optical thickness (~λ/4n for typical dielectrics near 196 nm), transforming the intended Fabry-Pérot defect structure into a uniform-period Bragg mirror. This structural homogenization eliminates the standing-wave field concentration required to boost transmission within the target band. As the cavity merged optically with the mirrors, the spectral response broadened and flattened, driving the target score down by 0.051 and leaving the tightest margin at 0.278 nm off-resonance. The search lacked a topological prior to maintain cavity/mirror asymmetry, causing destructive interference suppression in the passband.",
+  "continue_recommended": true,
+  "continue_rationale": "Only three rounds have executed, and the score trajectory exhibits high volatility (+0.060 from round 1 to 2, then -0.051 from round 2 to 3) rather than stagnation relative to the reference epsilon of 0.0001. The recent degradation indicates the optimizer hit a periodic-mirror local optimum, not a search limit. Introducing a constrained initialization that physically separates cavity and mirror degrees of freedom is necessary to test whether enforcing defect-mode topology recovers the higher performance observed earlier.",
+  "insight_for_next": "Fix the cavity layer (index 10 / layer 11) thickness at a half-wave resonant value of 250.0 nm during initialization and apply a hard boundary constraint permitting ±12 nm deviation. Allow layers 0–9 and 11–19 to optimize freely. This decouples the resonant condition from the Bragg stacking condition, forcing the search engine to evaluate legitimate defect modes rather than collapsing into uniform mirror periods.",
+  "insight_grounding": "In round 3 candidate 3, layer 10 contracted to exactly 196.00 nm, matching the scale of neighboring mirror layers (e.g., layer 8 at 169.00 nm, layer 9 at 317.00 nm). This structural merger occurred simultaneously with the objective score declining from 0.7111 (round 2) to 0.6601 (round 3) and the tightest margin degrading to 0.278 nm. The unconstrained simultaneous adjustment of all 20 parameters caused the cavity to lose its distinct resonant identity, confirming that topological decoupling is required to prevent regression.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:28:42.024834+00:00",
+  "attestation_sha256": "6c1a73e2531071991fcec3c9317cd0cf4f19b714c9bf1289ee874db40f290084",
+  "observed_metrics": {
+    "best_target_score": 0.6600713138088479,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.2781681242686433
+  },
+  "reflection_available": true
+}

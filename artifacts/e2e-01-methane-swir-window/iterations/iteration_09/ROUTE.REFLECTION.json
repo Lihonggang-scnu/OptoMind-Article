@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-declaration expected best_target_score to increase above route_01's historical best of 0.7865 if the median structure captured beneficial interference. Instead, the route peaked at 0.7448290454959399 (Round 2) and regressed to 0.5169652788008797 (Round 3). Both values fall below the baseline, showing a lower-direction deviation with a magnitude of ~0.042 at peak and ~0.270 at current. The tightest_margin remained at 0.3426634679624442, confirming the optimizer is actively colliding with tightened geometric bounds rather than navigating a smoothed loss landscape.",
+  "deviation_mechanism": "Contracting thickness bounds around the initial medians restricted the available Optical Path Length (OPL = n × d) variations required to satisfy multi-wavelength interference conditions. Multilayer thin-film optics rely on precise phase accumulation across each interface; narrowing the thickness search window removes the degrees of freedom needed to tune individual layer OPLs. Consequently, the optimizer was forced into suboptimal compromises where destructive interference dominates the target bandgap. The sharp regression from 0.7448 to 0.5170 indicates the contracted parameter space lacks any configuration capable of restoring constructive interference alignment, effectively starving the model of viable spectral shaping pathways.",
+  "continue_recommended": true,
+  "continue_rationale": "Three rounds have executed (score_history: 0.7109350089862733, 0.7448290454959399, 0.5169652788008797). The active score collapse to 0.5169652788008797 coupled with a persistent tightest_margin of 0.3426634679624442 confirms that further bound contraction yields zero scientific benefit and degrades physical realizability. However, reverting to broader bounds preserves a testable hypothesis: the initial medians likely require larger exploration volumes to locate the true interference optimum. Continuing prevents premature termination while honoring the pre-declared contingency to reset parameter ranges when stagnation/regression occurs.",
+  "insight_for_next": "Revert thickness bounds to ±25% of the original medians for Round 4. Replace gradient/local refinement initialization with a stratified Latin Hypercube Sampling strategy across the expanded range to guarantee coverage of previously unexplored OPL combinations. Instruct the optimizer to prioritize global surrogate-model exploration over local convex refinement until best_target_score reliably exceeds 0.7500.",
+  "insight_grounding": "The transition from Round 2 candidate set to Round 3 candidate set shows aggressive compression: e.g., Round 2 candidate thicknesses included layer-5 at 232.7807058290751 nm and layer-7 at 140.5109547359214 nm, yielding 0.7448290454959399. Round 3 compressed these into tighter clusters (e.g., candidate layer-6 hit 261.45542616869506 nm while layer-7 dropped to 109.39666814167998 nm), yet score fell to 0.5169652788008797. The simultaneous rise in tightest_margin to 0.3426634679624442 and drop in best_target_score proves the contracted envelope actively suppresses viable interference states, necessitating explicit bound expansion and broader spatial sampling.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T09:45:43.100382+00:00",
+  "attestation_sha256": "4ea6046736feffbc94c21c57856619da1b4942927b90d51d00818c9865e58f92",
+  "observed_metrics": {
+    "best_target_score": 0.5169652788008797,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.3426634679624442
+  },
+  "reflection_available": true
+}

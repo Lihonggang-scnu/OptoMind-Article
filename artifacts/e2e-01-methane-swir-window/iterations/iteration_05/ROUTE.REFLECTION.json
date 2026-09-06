@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected an increase in best_target_score as the reference wavelength approaches 400-450 nm, but the score decreased from 0.7865496410378232 to 0.7703688251953145 (LOWER by ~0.01618). Conversely, tightest_margin remained robust at 0.30658784181774623 and valid_candidates held steady at 9, deviating from the expectation that a failing hypothesis would rapidly shrink the feasible candidate pool or tighten margins.",
+  "deviation_mechanism": "The optimized thicknesses cluster tightly around 112–177 nm (e.g., candidate 2, layer 3: 176.85 nm; candidate 0, layer 0: 122.14 nm), which corresponds to first-order quarter-wave conditions for near-infrared wavelengths (~800–1000 nm) rather than the targeted 400–450 nm visible range. Driving the quarter_wave_reference_wavelength_nm toward shorter wavelengths forces optical thicknesses below their physically stable operating points without sufficient refractive-index contrast to maintain constructive interference. This shifts phase alignment across the 16-layer stack, reducing the net spectral overlap with the target function and dropping the score.",
+  "continue_recommended": true,
+  "continue_rationale": "Only two rounds have executed. Although the score dipped to 0.770369, the parameter space remains highly viable: valid_candidates is 9 and tightest_margin is 0.3066. The score reduction reflects a boundary-driven exploration attempt outside the current optimal interference regime, not exhaustion of the design space. Halting now would ignore a clearly executable region that previously yielded 0.786549 and requires topological adjustment rather than abandonment.",
+  "insight_for_next": "Reset the thickness initialization to explicitly target 400–450 nm quarter-wave estimates (~50–60 nm for standard oxide/nitride indices) rather than scaling the existing thicker stack. Add a stochastic perturbation (±15% uniform noise) to the initial guess to break the higher-order mode lock, and relax the thickness upper bound by 25% to allow the optimizer to traverse between lower and higher optical resonances.",
+  "insight_grounding": "The persistent clustering of thicknesses above 112 nm across all four recorded candidates (e.g., candidate 1, layer 7: 103.0 nm; candidate 3, layer 14: 170.64 nm) confirms the solver is trapped in a higher-order regime. Coupled with the 0.016-point score loss when forcing the 400-450 nm hypothesis, a fresh initialization anchored to the actual target wavelength's quarter-wave depth is required to re-establish constructive interference alignment.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T09:38:09.794084+00:00",
+  "attestation_sha256": "973b488b5ae256b5284aafa4864a760ea282af870717c012de95cdaf6e8ad9ae",
+  "observed_metrics": {
+    "best_target_score": 0.7703688251953145,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.30658784181774623
+  },
+  "reflection_available": true
+}

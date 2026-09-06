@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Asymmetric Thickness Reinitialization from Round-7 Optimum with 0.5x Step Size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Breaking thickness symmetry via odd/even layer offset initialization (+8nm/-8nm) will enable the gradient optimizer to escape the local minimum that trapped round-7 (score 0.5454), allowing finer phase adjustments across the 420-700 nm passband while maintaining dual stopband suppression at 355-365 nm and 1030-1080 nm.",
+  "design_principle": "Asymmetric perturbation of optimized thickness values breaks the symmetry that may cause gradient-based optimizers to converge to saddle points or shallow local minima. Halved step size prevents overshoot into forbidden spectral regions during fine-tuning.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "layer_thicknesses_nm"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "36 layers maximum",
+    "individual thickness 20-350 nm",
+    "Ta2O5/SiO2 material pair only"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack optimization principles allow non-quarter-wave thickness variation for broadened suppression bands",
+    "Gradient-based optimization with reduced step size enables fine phase control without spectral overshoot"
+  ],
+  "expected_advantages": [
+    "Escapes symmetric local minima from round-7",
+    "Finer control over passband ripple",
+    "Maintains dual-stopband capability with 36-layer budget"
+  ],
+  "known_risks": [
+    "Asymmetric initialization may converge to different but equally suboptimal local minimum",
+    "Halved step size may require more iterations to converge"
+  ],
+  "execution_request_english": "Optimize a 36-layer Ta2O5/SiO2 dielectric filter on fused silica substrate with air incidence at 0 degrees, unpolarized light. Initialize thicknesses from round-7 best candidate [32.0, 252.0, 24.0, 218.0, 31.0, 259.0, 33.0, 253.0, 26.0, 247.0, 24.0, 266.0, 23.0, 269.0, 22.0, 256.0, 23.0, 248.0, 25.0, 262.0, 24.0, 252.0, 21.0, 233.0, 21.0, 244.0, 30.0, 269.0, 31.0, 236.0, 22.0, 235.0, 23.0, 235.0, 29.0, 29.0] nm, then apply asymmetric offset: add +8 nm to odd-indexed layers (indices 0,2,4,...,34) and subtract 8 nm from even-indexed layers (indices 1,3,5,...,35). Clamp all thicknesses to 20-350 nm bounds. Use gradient_thickness optimizer with step size multiplier 0.5x. Optimize for: maximize transmittance in 420-700 nm band, minimize transmittance in 354-356 nm band, minimize transmittance in 355-365 nm band, minimize transmittance in 1030-1080 nm band. Wavelength grid: 300-1200 nm with 1 nm resolution. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Following feedback directive to reinitialize with asymmetric thickness offsets (+8nm odd, -8nm even) from round-7 best candidate and halve optimizer step size to 0.5x to escape local minimum and enable fine-grained phase adjustment."
+}

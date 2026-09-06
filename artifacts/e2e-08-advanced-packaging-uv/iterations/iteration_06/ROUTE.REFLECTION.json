@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "All four expected observations deviate severely due to execution failure. Expected stable valid_candidates instead dropped to exactly 0. Expected rising best_target_score and positive tightest_margin both remain null, indicating the pipeline halted before evaluation. Expected transmittance improvements and suppression comparisons are computationally impossible with zero survivors. Direction: complete collapse/deviation to zero across all metrics. Magnitude: 100% reduction in executable candidates relative to expectations; score and margin updates stalled at 0.",
+  "deviation_mechanism": "The total absence of valid candidates and 'not_run' status indicates that the initialization or initial parameter sampling produced layer stacks violating the hard physical realizability bounds (<20 nm or >350 nm) or introduced near-zero/thin layers that break the TMM phase-accumulation approximation (tan(kd) diverges as d→0). When every sampled geometry falls outside enforceable thickness windows or triggers optical matrix singularities, the solver discards the entire batch, leaving zero candidates to compute margins, averages, or target scores.",
+  "continue_recommended": true,
+  "continue_rationale": "Only one round has executed, falling short of the two-round minimum required to invoke stopping boundaries. The zero-candidate collapse is a recoverable initialization/sampling boundary violation rather than intrinsic physical infeasibility. The presence of a baseline historical score (0.9274780922215423) confirms the objective function and engine are fully operational when geometrically valid inputs are provided. Adjusting the initialization distribution will almost certainly restore candidate generation and allow meaningful convergence testing.",
+  "insight_for_next": "Replace pure random initialization with a bounded quarter-wave estimator strategy: sample thicknesses uniformly within 30–340 nm (shifting away from the hard 20/350 nm edges where singularities cluster) and scale initial layers to λ/4n at the target center wavelength (~560 nm). Add a preprocessing validator that rejects any candidate producing layer thicknesses <15 nm or >355 nm, or flags TMM matrix condition numbers above 1e6, rerolling those samples before engine submission to guarantee a ≥10% survival rate in round 2.",
+  "insight_grounding": "Directly targets the failure signature in `observed_metrics.valid_candidates: 0` and `observed_metrics.run_status: \"not_run\"` after `observed_metrics.rounds_executed: 1`. Validates feasibility using `score_history[0]: 0.9274780922215423`, which proves the scoring pipeline executes successfully given physically coherent inputs. Restricting the sampling domain to 30–340 nm avoids the documented hard bounds (20–350 nm) that previously captured 100% of rejected samples.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:24:17.213316+00:00",
+  "attestation_sha256": "63b82138a9f7be2e0b824a4ddcb9e5864c9c7725310001c2f3a08ad2de3f12c1",
+  "observed_metrics": {
+    "best_target_score": null,
+    "valid_candidates": 0,
+    "run_status": "not_run",
+    "tightest_margin": null
+  },
+  "reflection_available": true
+}

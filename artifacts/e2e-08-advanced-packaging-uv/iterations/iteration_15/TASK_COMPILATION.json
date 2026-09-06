@@ -1,0 +1,647 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 2,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_simulate_and_optimize_a_36_layer_alternating_ta2_693e53b15a",
+    "user_request_original": "Simulate and optimize a 36-layer alternating Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 degree incidence with unpolarized illumination. Layer sequence: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (36 finite layers total, starting with Ta2O5). Each layer thickness bounded 20-350 nm. Initialize from the iteration 02 best candidate thicknesses: [107.14966239852325, 137.99394304715145, 106.1396480229194, 105.43423519442798, 108.38062555215072, 153.38398125209014, 104.20578857329681, 172.77431696012712, 113.15574014639562, 153.98273791778706, 101.5830859896286, 141.79930612672644, 95.67768877875027, 134.33253100901547, 98.27050633991132, 125.78268591037838, 96.4720055073605, 132.10535910279305, 93.8107947096124, 134.212145996059, 96.77431577286404, 127.72598083457547, 94.98807187250448, 132.9856261855332, 91.53349941862439, 133.89897224226587, 97.03284735250075, 133.18762006420167, 94.86093418991078, 143.77354638084745, 85.01210429550451, 146.01264934304848, 98.90937221687832, 146.31368244854312, 108.95437475502086, 41.105935114302895]. Apply gradient-based thickness optimization with maximum step-size constraint of ±20 nm per layer per optimization round. Implement Pareto-retention: automatically preserve any candidate achieving target_score ≥0.925 across all generations. Spectral grid: 300-1200 nm with 1 nm resolution. Compute transmittance for unpolarized light at 0 degrees. Objective: maximize weighted combination of (average transmittance in 420-700 nm) minus (average transmittance in 355-365 nm) minus (average transmittance in 1030-1080 nm) minus (transmittance at 355 nm). Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+    "normalized_request_english": "Optimize 36 alternating Ta2O5/SiO2 layers on fused silica substrate (20–350 nm bounds) using provided initial thicknesses. Maximize mean transmittance in 420–700 nm while minimizing mean transmittance in 355–365 nm, 1030–1080 nm, and at 355 nm under unpolarized normal incidence from 300 to 1200 nm.",
+    "experiments": [
+      {
+        "experiment_id": "ta2o5_sio2_36layer_filter_opt",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "ta2o5_sio2_36layer",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 107.14966239852325,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_1"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 137.99394304715145,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_2"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 106.1396480229194,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_3"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 105.43423519442798,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_4"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 108.38062555215072,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_5"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 153.38398125209014,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_6"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 104.20578857329681,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_7"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 172.77431696012712,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_8"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 113.15574014639562,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_9"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 153.98273791778706,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_10"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 101.5830859896286,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_11"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 141.79930612672644,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_12"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 95.67768877875027,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_13"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 134.33253100901547,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_14"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 98.27050633991132,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_15"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 125.78268591037838,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_16"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 96.4720055073605,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_17"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 132.10535910279305,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_18"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 93.8107947096124,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_19"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 134.212145996059,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_20"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 96.77431577286404,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_21"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 127.72598083457547,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_22"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 94.98807187250448,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_23"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 132.9856261855332,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_24"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 91.53349941862439,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_25"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 133.89897224226587,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_26"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 97.03284735250075,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_27"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 133.18762006420167,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_28"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 94.86093418991078,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_29"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 143.77354638084745,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_30"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 85.01210429550451,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_31"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 146.01264934304848,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_32"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 98.90937221687832,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_33"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 146.31368244854312,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_34"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 108.95437475502086,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_35"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 41.105935114302895,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20,
+                  "max_thickness_nm": 350,
+                  "label": "layer_36"
+                }
+              ],
+              "exit": {
+                "material": "sio2",
+                "constant_k": 0.0
+              }
+            },
+            "spectrum": {
+              "start_nm": 300.0,
+              "stop_nm": 1200.0,
+              "points": 901
+            },
+            "illumination": {
+              "angles_deg": [
+                0.0
+              ],
+              "polarizations": [
+                "unpolarized"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T",
+              "A"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "T",
+              "target": 0.95,
+              "wavelength_min_nm": 420.0,
+              "wavelength_max_nm": 700.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "passband_transmittance_high"
+            },
+            {
+              "observable": "T",
+              "target": 1.0,
+              "wavelength_min_nm": 355.0,
+              "wavelength_max_nm": 355.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "stopband_355nm_low"
+            },
+            {
+              "observable": "T",
+              "target": 1.0,
+              "wavelength_min_nm": 355.0,
+              "wavelength_max_nm": 365.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "stopband_355_365nm_low"
+            },
+            {
+              "observable": "T",
+              "target": 1.0,
+              "wavelength_min_nm": 1030.0,
+              "wavelength_max_nm": 1080.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "stopband_1030_1080nm_low"
+            }
+          ],
+          "optimizer": {
+            "method": "adam_lbfgs",
+            "max_steps": 60,
+            "learning_rate": 0.05,
+            "starts": 3,
+            "seed": 42,
+            "early_stop_patience": 15,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 40.0,
+            "quantization_nm": 1.0
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "passband_transmittance_high",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.95,
+            "region": {
+              "wavelength_nm": [
+                420.0,
+                700.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband_355nm_low",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 1.0,
+            "region": {
+              "wavelength_nm": [
+                355.0,
+                355.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband_355_365nm_low",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 1.0,
+            "region": {
+              "wavelength_nm": [
+                355.0,
+                365.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "stopband_1030_1080nm_low",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 1.0,
+            "region": {
+              "wavelength_nm": [
+                1030.0,
+                1080.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_355_365nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                355.0,
+                365.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_1030_1080nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1030.0,
+                1080.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_transmittance_420_700nm",
+            "metric": "mean_transmittance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                420.0,
+                700.0
+              ]
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "dielectric_filter",
+          "36_layer",
+          "ta2o5_sio2"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 1.0,
+      "thickness_error_model": "absolute_normal",
+      "thickness_relative_fraction": 0.0,
+      "thickness_samples": 16,
+      "angle_perturbation_deg": 0.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [],
+      "scoring_standard_target_alignments": [
+        "ta2o5_sio2_36layer_filter_opt: target stopband_355nm_low pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 355.0-355.0nm; rewrote at_most 0.05 as at_least 1.0",
+        "ta2o5_sio2_36layer_filter_opt: target stopband_355_365nm_low pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 355.0-365.0nm; rewrote at_most 0.05 as at_least 1.0",
+        "ta2o5_sio2_36layer_filter_opt: target stopband_1030_1080nm_low pushed T the wrong way for the frozen standard, which ranks mean_transmittance as maximize over 1030.0-1080.0nm; rewrote at_most 0.05 as at_least 1.0"
+      ],
+      "illumination_corrections": [],
+      "substrate_corrections": [
+        "ta2o5_sio2_36layer_filter_opt: explicit fused-silica substrate uses local sio2 dispersion instead of a constant index"
+      ],
+      "solver_corrections": [],
+      "objective_synchronization": [
+        "ta2o5_sio2_36layer_filter_opt: synchronized 4 simple objectives from executable targets"
+      ],
+      "objective_freeze": [
+        "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (mean_transmittance_420_700nm - mean_transmittance_355_365nm - mean_transmittance_1030_1080nm)",
+        "ta2o5_sio2_36layer_filter_opt: attached the 3 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+      ],
+      "objective_gate": [],
+      "objective_signature": "689d86eb0c4e694f",
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "Replaced null threshold values in optimization targets with explicit numeric bounds (0.95 for passband, 0.05 for stopbands) to resolve scalar type validation errors. All other physics parameters and optimization constraints remain unchanged.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 4427,
+      "completion_tokens": 11055,
+      "total_tokens": 15482
+    },
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 8784,
+      "completion_tokens": 11128,
+      "total_tokens": 19912
+    }
+  ],
+  "raw_response_sha256": [
+    "e0e962a92b26d5485c80ef22e6264c493e441910667d5590260acb6bff37260d",
+    "dc8ab167f8f064473c223a8372384ae11fa684c2a3aa2659d7c2e49998e396fd"
+  ],
+  "rejected_draft": ""
+}

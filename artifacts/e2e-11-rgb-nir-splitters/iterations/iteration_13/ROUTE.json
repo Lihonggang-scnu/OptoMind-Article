@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "Quarter-Wave Seeded 22-Layer Stack with Tightened Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing from analytic quarter-wave thicknesses at λ₀=550 nm with ±3 nm perturbation, combined with tightened [20,150] nm geometric bounds and reduced optimizer step-size, will recover and exceed the prior best target score of 0.9251 by constraining the search toward the physically motivated quarter-wave attractor while avoiding the thickness excursions that caused score regression.",
+  "design_principle": "Quarter-wave baseline initialization provides a physically motivated starting point for local optimization; tightening bounds prevents unphysical thickness excursions that degrade dual-band performance.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "22 finite layers alternating TiO2/SiO2 starting with TiO2 on fused silica substrate, terminated with SiO2. Exact sequence: TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2",
+  "design_variables": [
+    "All 22 layer thicknesses (nm)"
+  ],
+  "soft_objectives": [
+    "Maximize mean reflectance in 450-650 nm band",
+    "Maximize mean transmittance in 700-1000 nm band",
+    "Minimize spectral crosstalk between bands"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 24 layers (22 used)",
+    "All thicknesses bounded to [20,150] nm for deposition uniformity",
+    "Quarter-wave initialization reduces deposition sensitivity"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:126354617:s2chunk:126354617:24738:26830:8e237bfa9da03b59"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection mirrors",
+    "Transfer matrix method for multilayer interference"
+  ],
+  "expected_advantages": [
+    "Faster convergence toward optimal solution",
+    "Reduced risk of thickness excursions causing score regression",
+    "Improved reproducibility across optimization runs"
+  ],
+  "known_risks": [
+    "Quarter-wave initialization may constrain search away from non-quarter-wave optima",
+    "Tightened bounds may exclude valid high-performing thickness combinations"
+  ],
+  "execution_request_english": "Optimize a 22-layer TiO2/SiO2 dichroic coating on fused silica substrate at 45° incidence. Initialize all layer thicknesses from analytic quarter-wave values at λ₀=550 nm (TiO2 d_H≈52 nm, SiO2 d_L≈96 nm) with ±3 nm random perturbation. Apply hard geometric bounds [20,150] nm on all thicknesses. Use gradient-based thickness optimizer with step-size multiplier reduced by 40% relative to baseline. Generate 12 candidate solutions. Evaluate target score as weighted combination of mean reflectance (450-650 nm) and mean transmittance (700-1000 nm). Layer sequence: TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2|TiO2|SiO2 (22 finite layers total). Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive: switched from uniform random initialization to quarter-wave seeded initialization at λ₀=550 nm, applied [20,150] nm thickness clamp, reduced optimizer step-size by 40%, increased candidate pool to 12. Addresses score regression from 0.9251 to 0.6864 by constraining search toward quarter-wave attractor."
+}

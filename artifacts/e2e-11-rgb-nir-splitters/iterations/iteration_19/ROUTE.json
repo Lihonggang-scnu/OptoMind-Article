@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "Round-2 Best Candidate Restart with 50nm Minimum Thickness Floor",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The score degradation from Round 2 to Round 4 was caused by optimization exploring thickness values below 50nm where TMM numerical precision degrades. Restarting from the Round 2 optimum (score 0.9829) with a hard d>=50nm lower bound will recover or exceed the historical best performance.",
+  "design_principle": "Preserve the verified high-performing thickness configuration from Round 2 while constraining the search space to numerically stable regions. The 50nm floor prevents thin-layer numerical collapse while allowing sufficient design freedom for refinement.",
+  "proposed_materials": [
+    "TiO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "24-layer alternating stack: Air | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | TiO2 | SiO2 | Fused Silica. Total finite layers: 24.",
+  "design_variables": [
+    "All 24 layer thicknesses with bounds [50nm, 200nm]"
+  ],
+  "soft_objectives": [
+    "Maximize reflectance in 450-650nm band",
+    "Maximize transmittance in 700-1000nm band",
+    "Minimize band crosstalk",
+    "Maintain robustness score above 0.55"
+  ],
+  "manufacturing_considerations": [
+    "50nm minimum thickness ensures deposition controllability",
+    "24 layers within fabrication capability",
+    "TiO2/SiO2 material pair well-established for visible-NIR coatings"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:219783579:s2chunk:219783579:3990:4521:e19c74116afd73f5",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:96458717:s2chunk:96458717:9785:11774:b5252cc057ae31ed"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack initialization provides physically motivated starting point for local optimization",
+    "Minimum thickness constraints prevent TMM numerical instability in thin-film regimes"
+  ],
+  "expected_advantages": [
+    "Recovery of Round 2 performance level (0.9829)",
+    "Improved numerical stability during optimization",
+    "Maintained design flexibility within 50-200nm bounds"
+  ],
+  "known_risks": [
+    "50nm floor may exclude some optimal thin-layer configurations",
+    "Local optimization may converge to nearby suboptimal minimum"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating TiO2/SiO2 dielectric stack on fused silica substrate at 45 degrees incidence. Initialize thicknesses from Round 2 best candidate: [45.47, 66.26, 100.01, 115.66, 54.39, 104.87, 69.43, 114.90, 69.98, 102.33, 64.45, 116.99, 56.99, 108.17, 51.15, 83.29, 45.85, 81.30, 51.66, 104.20, 56.85, 92.37, 39.98, 156.38] nm. Apply hard lower bound of 50nm to all layers (clip any thickness below 50nm to 50nm before optimization). Upper bound 200nm. Optimize for high reflectance in 450-650nm and high transmittance in 700-1000nm using gradient-based thickness optimization. Evaluate unpolarized light. Maximum 24 layers fixed. Canonical user controls: wavelength intervals 450-650 nm, 700-1000 nm. soft objectives: high reflectance in 450-650 nm; high transmittance in 700-1000 nm; minimized crosstalk between bands. behaviors to suppress or avoid: transmittance in 450-650 nm; reflectance in 700-1000 nm. manufacturing constraints: maximum 24 layers.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Restart from Round 2 best state (score 0.9829) with 50nm minimum thickness constraint to address numerical instability suspected in Rounds 3-4 degradation. Differs from prior iterations by enforcing thickness floor and reinitializing from historical optimum rather than continuing degraded trajectory."
+}

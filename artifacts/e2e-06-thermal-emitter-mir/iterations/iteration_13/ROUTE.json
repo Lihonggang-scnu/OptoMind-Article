@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Fine-Grained 16-Layer Optimization with Reduced Perturbation and Smoothness Penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining the optimizer to smaller per-layer perturbations (±60nm) and penalizing large inter-layer thickness jumps (>400nm) will enable precise tuning of anti-reflection nulls within the high-performing 16-layer manifold, improving target score beyond 0.9057 without destabilizing the solution.",
+  "design_principle": "Exploitation-focused optimization: once a high-performing topology is identified (16L HfO2/SiO2 alternating), reduce search space volatility to refine thickness values rather than exploring distant configurations.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Silicon substrate (16 finite layers, alternating sequence starting with HfO2)",
+  "design_variables": [
+    "layer thicknesses (16 variables, bounded 200-1800nm)",
+    "optimizer perturbation radius (±60nm max)",
+    "smoothness penalty weight for inter-layer differences >400nm"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 8000-13000nm band",
+    "minimize absorptance in 3000-5000nm band",
+    "maintain thickness smoothness between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "16 layers within 24-layer limit",
+    "thickness bounds 200-1800nm compatible with deposition processes",
+    "smoothness constraint reduces extreme thickness variations"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:271432151:s2chunk:271432151:8442:10694:ffaee05868889c7f",
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:11834683:s2chunk:11834683:19297:21346:f13e973aab3fb109"
+  ],
+  "theory_basis": [
+    "Transfer Matrix Method for coherent multilayer interference",
+    "Kirchhoff's law equating emissivity to absorptance for opaque substrates",
+    "Gradient-based local optimization for fine-tuning near optima"
+  ],
+  "expected_advantages": [
+    "Higher precision in thickness tuning compared to coarse global search",
+    "Reduced risk of jumping away from high-performing manifold",
+    "Smoother thickness profiles may improve fabrication tolerance"
+  ],
+  "known_risks": [
+    "May converge to local optimum if initialization is poor",
+    "Smoothness penalty could prevent optimal but discontinuous thickness profiles",
+    "16 layers may be insufficient for ideal spectral shaping"
+  ],
+  "execution_request_english": "Optimize a 16-layer planar dielectric stack on silicon substrate with air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (alternating, starting with HfO2). Each layer thickness bounded between 200nm and 1800nm. Initialize from quarter-wave optical thickness at 10500nm reference wavelength. Use gradient-based optimizer with maximum per-layer perturbation radius of 60nm and soft penalty coefficient of 0.1 for inter-layer thickness differences exceeding 400nm. Evaluate coherent TMM across 3000-13000nm wavelength range at normal incidence. Objective: maximize weighted absorptance (high weight 8000-13000nm, low weight 3000-5000nm). Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 3000-5000 nm, 8000-13000 nm. soft objectives: high emissivity in 8000-13000 nm; low emissivity in 3000-5000 nm. behaviors to suppress or avoid: high emissivity in 3000-5000 nm. manufacturing constraints: total layer count not exceeding 24.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive: reduce per-layer perturbation radius by 60% (target ±60nm) and add smoothness penalty for inter-layer differences >400nm to enable fine-grained exploitation of the 16L high-performing manifold identified in iteration 11."
+}

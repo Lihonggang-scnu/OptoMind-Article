@@ -1,0 +1,55 @@
+{
+  "route_id": "control_route_01",
+  "title": "Fixed Alternating Stack with Thickness Optimization for Dual Stopband",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 36-layer alternating Ta2O5/SiO2 stack with optimized individual layer thicknesses can simultaneously achieve low transmittance in both 355-365 nm and 1030-1080 nm bands while maintaining high transmittance in 420-700 nm, without requiring material substitution or topology changes.",
+  "design_principle": "Quarter-wave optical thickness stacks create constructive interference for reflection at the design wavelength. By tuning layer thicknesses away from simple quarter-wave values, the stopband positions and widths can be adjusted. Multiple periods increase stopband depth. From recalled thin-film theory, a high-index/low-index alternating stack produces a primary stopband centered near the quarter-wave condition, with higher-order stopbands at harmonic wavelengths.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica",
+  "design_variables": [
+    "individual_layer_thicknesses_nm"
+  ],
+  "soft_objectives": [
+    "minimize average transmittance in 355-365 nm band",
+    "minimize average transmittance in 1030-1080 nm band",
+    "maximize average transmittance in 420-700 nm band",
+    "minimize transmittance at 355 nm single wavelength"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers as specified",
+    "individual layer thickness must remain within 20-350 nm bounds",
+    "relaxed to 15-355 nm per feedback directive for zero valid candidates",
+    "air incidence at 0 degrees",
+    "unpolarized illumination"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave stacks produce stopbands centered at wavelengths where optical thickness equals lambda/4",
+    "Alternating high/low index pairs create Bragg reflection conditions",
+    "Stopband depth increases with number of periods in a periodic stack",
+    "Higher-order stopbands appear at approximately odd harmonics of the fundamental design wavelength",
+    "Ta2O5/SiO2 is a standard high-index/low-index pair for visible and near-UV filters from recalled thin-film practice"
+  ],
+  "expected_advantages": [
+    "Fixed topology reduces search space complexity compared to variable layer count",
+    "36 layers provides sufficient periods for deep stopbands if thicknesses are well-optimized",
+    "Alternating structure is manufacturable with standard deposition processes",
+    "Thickness optimization alone can shift stopband positions without material changes"
+  ],
+  "known_risks": [
+    "Ta2O5 material name may not resolve in the local registry - if rejected, need to use the exact measurement name the registry provides",
+    "Quarter-wave design at 355 nm may not naturally produce strong rejection at 1030-1080 nm without careful thickness tuning",
+    "36 layers may be insufficient for deep rejection in both stopbands simultaneously",
+    "Thickness bounds (20-350 nm, relaxed to 15-355 nm) may constrain achievable optical thickness combinations",
+    "Recalled Ta2O5 refractive index at 355 nm is approximately 2.2-2.3 but actual dataset value may differ",
+    "No literature validation of this specific dual-band configuration - performance is uncertain until simulation runs",
+    "Previous iterations failed due to target band not overlapping simulation grid - wavelength range must cover 350-1100 nm minimum"
+  ],
+  "execution_request_english": "Design a planar multilayer dielectric filter on fused silica substrate with air incidence at 0 degrees under unpolarized illumination. The stack consists of exactly 36 layers in alternating sequence: Ta2O5 (Gao), SiO2 (Gao), Ta2O5 (Gao), SiO2 (Gao), repeating 18 times, terminating on fused silica. Optimize individual layer thicknesses within the range 15-355 nm per layer. The simulation wavelength grid must span 350 nm to 1100 nm with sufficient resolution to evaluate all target bands. Target objectives: minimize average transmittance in 355-365 nm band, minimize average transmittance in 1030-1080 nm band, maximize average transmittance in 420-700 nm band, and minimize transmittance at 355 nm single wavelength. Materials are Ta2O5 (Gao) and SiO2 (Gao) from the catalog. Report best_target_score, valid_candidates count, tightest_margin, run_status, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Previous iterations failed compilation due to target band not overlapping simulation grid. This revision expands wavelength coverage to 350-1100 nm and relaxes thickness bounds to 15-355 nm per feedback directive for zero valid candidates."
+}

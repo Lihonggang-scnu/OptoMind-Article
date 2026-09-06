@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected: best_target_score should increase relative to the 0.7865 baseline if the median structure captures beneficial interference. Actual: Score initially rose to 0.7448290454959399 (round 2) but then declined sharply to 0.5169652788008797 (round 3) and 0.4114111427017897 (round 4), falling well below both the baseline and expectation. Direction: lower/declining. Magnitude: ~0.37 absolute loss from round 2 peak, now 47.7% below the route_01 historical best. Expected: tightest_margin should remain stable or improve. Actual: Measured 0.24730926857011132, consistent with tightened bounds but lacks multi-round trend for direct comparison. Expected: If hypothesis false, stagnate near 0.7865. Actual: Did not stagnate; instead degraded severely, refuting simple stagnation.",
+  "deviation_mechanism": "Overly aggressive bounds contraction restricted the optical path length tuning degrees of freedom required to maintain constructive interference across the target spectrum. Under these tight constraints, the optimizer's parameter updates drove thickness combinations away from half-wavelength resonance conditions, accumulating phase errors that increased reflective scattering losses. The resulting search landscape trapped candidates in a local minimum characterized by destructive interference, explaining the rapid score collapse once the initial median approximation proved insufficient for the full spectral response.",
+  "continue_recommended": true,
+  "continue_rationale": "Despite executing 4 rounds, the score trajectory (0.7109350089862733 → 0.7448290454959399 → 0.5169652788008797 → 0.4114111427017897) shows active degradation rather than convergence or safe stagnation. The significant drop indicates the contracted bounds are actively suppressing viable design pathways rather than revealing a hard physical limit. Continuing allows testing whether expanding the parameter space recovers the missing phase-tuning degrees of freedom needed to restore high target scores.",
+  "insight_for_next": "Expand thickness bounds to ±25% of the original median priors to restore optical path tuning capacity. Reset candidate initialization to analytical quarter-wave optical thickness predictions ($\\lambda/2n$) at the central design wavelength. Execute 2 rounds with this relaxed topology and anchored initialization before reapplying any secondary bound contractions.",
+  "insight_grounding": "In the first executed round's candidate set, layer 0 was 192.1604015846197 nm; by the fourth executed round (index 3 of candidate_thicknesses_nm), it shifted to 126.30808077861973 nm. Layer 1 similarly drifted from 267.30460682088676 nm to 209.54337122910545 nm. These large, unconstrained directional shifts under tight bounds correlate directly with the final score crash to 0.4114111427017897, indicating the optimizer was forced into non-resonant thickness combinations. Anchoring to $\\lambda/2n$ physics will prevent such uncontrolled drift and restore resonance alignment.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T09:54:10.706526+00:00",
+  "attestation_sha256": "6d1105ca1d7567fdb99483930277dab32e0036a29912bdd0d02c9760f4441cb3",
+  "observed_metrics": {
+    "best_target_score": 0.4114111427017897,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.24730926857011132
+  },
+  "reflection_available": true
+}

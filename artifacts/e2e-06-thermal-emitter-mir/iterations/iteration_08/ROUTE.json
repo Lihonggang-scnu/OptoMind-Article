@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "HfO2/SiO2 Gradient Thickness Stack with QWOT Regularization on Si Substrate",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with thicknesses optimized around quarter-wave optical thickness at 4000 nm will achieve higher emissivity in 8000-13000 nm while suppressing emissivity in 3000-5000 nm compared to unregularized gradient search.",
+  "design_principle": "Quarter-wave stacks create high-reflectance (low emissivity) bands centered at the design wavelength. By targeting QWOT at 4000 nm (the suppressed band center), odd layers should naturally suppress 3-5 μm emission. Even layers and thickness deviations can then be tuned to enhance 8-13 μm emission through constructive interference in that band.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Kischkat)",
+    "si"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Si substrate (20 dielectric layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 20 layers",
+    "optimization perturbation scale reduced to 2%",
+    "soft regularization weight toward QWOT at 4000 nm for odd-indexed layers"
+  ],
+  "soft_objectives": [
+    "maximize emissivity in 8000-13000 nm band",
+    "minimize emissivity in 3000-5000 nm band",
+    "maintain thickness continuity between adjacent layers for manufacturability"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 20 (under 24 limit)",
+    "thicknesses should remain in practical deposition range (200-2000 nm)",
+    "alternating material sequence simplifies process control"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness creates high reflectance at design wavelength for alternating high/low index stacks",
+    "Recalled: HfO2 has higher refractive index than SiO2 in IR, creating index contrast for interference",
+    "Recalled: Kirchhoff's law links emissivity to absorptance for opaque substrates",
+    "Recalled: Gradient-based optimization can refine thicknesses when initialized near a promising region",
+    "Recalled: Regularization toward known design patterns (QWOT) can guide search away from local minima"
+  ],
+  "expected_advantages": [
+    "QWOT regularization should concentrate search in physically meaningful thickness space",
+    "Reduced perturbation scale (2% vs 10%) enables finer convergence near optimum",
+    "Alternating sequence maintains material simplicity while allowing thickness freedom"
+  ],
+  "known_risks": [
+    "Uncertain whether 4000 nm QWOT target is optimal for 3-5 μm suppression - may need adjustment to 3500 or 4500 nm",
+    "Uncertain refractive index values for HfO2 and SiO2 at 8-13 μm from memory; actual n/k data from registry will determine interference conditions",
+    "Uncertain whether 20 layers is sufficient for desired selectivity; may need 22 or 24 layers if convergence stalls",
+    "Regularization weight is heuristic; too strong may prevent finding better non-QWOT solutions"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar multilayer stack on Si substrate with Air incidence. Layer sequence: HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat) (alternating, starting with HfO2). Tune all 20 layer thicknesses independently. Use gradient-based optimization with perturbation scale of 2% relative to current thickness values. Apply soft regularization penalty for odd-indexed layers (1st, 3rd, 5th, etc.) deviating from quarter-wave optical thickness at 4000 nm wavelength. Target: maximize emissivity in 8000-13000 nm band, minimize emissivity in 3000-5000 nm band. Materials: hfo2, SiO2 (Kischkat), si from registry. Evaluate under frequency-domain plane-wave illumination, normal incidence assumed, unpolarized or both TE/TM averaged.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refinement based on iteration_04 results: reduce optimization perturbation scale from 10% to 2% for fine local refinement, add QWOT regularization at 4000 nm for odd-indexed layers to guide search toward resonant cavity modes that enhance spectral selectivity."
+}

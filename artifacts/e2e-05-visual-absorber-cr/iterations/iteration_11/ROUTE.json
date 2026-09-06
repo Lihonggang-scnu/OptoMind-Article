@@ -1,0 +1,54 @@
+{
+  "route_id": "route_02",
+  "title": "Relaxed Bounds Quarter-Wave Seeded Nelder-Mead",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The score regression from 0.6203 to 0.4402 resulted from premature bound clipping in the gradient-based optimizer; relaxing thickness bounds by ±15% and initializing at quarter-wave positions with a derivative-free Nelder-Mead sampler will recover search space accessibility and improve target score.",
+  "design_principle": "Quarter-wave optical thickness at the spectral transition (~700nm) provides a physically motivated starting point; Nelder-Mead avoids gradient-induced local trapping in the widened search volume.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Cr"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | Cr | HfO2 | SiO2 | HfO2 | SiO2 | Cr | HfO2 | Al substrate (9 finite layers)",
+  "design_variables": [
+    "layer_0_thickness_nm",
+    "layer_1_thickness_nm",
+    "layer_2_thickness_nm",
+    "layer_3_thickness_nm",
+    "layer_4_thickness_nm",
+    "layer_5_thickness_nm",
+    "layer_6_thickness_nm",
+    "layer_7_thickness_nm",
+    "layer_8_thickness_nm"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700nm",
+    "maximize reflectance in 700-2000nm"
+  ],
+  "manufacturing_considerations": [
+    "total layer count 9 (within 20-layer limit)",
+    "thickness bounds [25, 285] nm accommodate ±15% relaxation from prior [30, 250] nm"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance locus method for metal-dielectric multilayer optimization",
+    "Quarter-wave stack theory for spectral transition positioning"
+  ],
+  "expected_advantages": [
+    "Wider search space avoids bound-induced local optima",
+    "Quarter-wave initialization reduces random search overhead",
+    "Nelder-Mead handles non-smooth objective landscapes better than gradient methods"
+  ],
+  "known_risks": [
+    "Wider bounds may increase optimizer iterations before convergence",
+    "Nelder-Mead may converge slower than gradient methods in smooth regions"
+  ],
+  "execution_request_english": "Optimize a 9-layer planar multilayer stack on aluminum substrate with air incidence. Layer sequence: HfO2, SiO2, Cr, HfO2, SiO2, HfO2, SiO2, Cr, HfO2. All layer thicknesses are design variables with bounds [25, 285] nm. Initialize the seed population at quarter-wave optical thickness estimates for 700nm central wavelength: Layer 0 (HfO2) = 135 nm, Layer 1 (SiO2) = 75 nm, Layer 2 (Cr) = 105 nm, Layer 3 (HfO2) = 190 nm, Layer 4 (SiO2) = 75 nm, Layer 5 (HfO2) = 194 nm, Layer 6 (SiO2) = 180 nm, Layer 7 (Cr) = 179 nm, Layer 8 (HfO2) = 148 nm. Use Nelder-Mead derivative-free optimizer. Score candidates by weighted sum: maximize absorptance in 400-700nm band, maximize reflectance in 700-2000nm band. Assume normal incidence, unpolarized light. Evaluate spectral performance across both wavelength bands. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Directly implements feedback directives: relax thickness bounds by ±15%, initialize with quarter-wave estimates at 700nm, switch from gradient_thickness to Nelder-Mead optimizer to avoid premature bound clipping that caused score regression."
+}

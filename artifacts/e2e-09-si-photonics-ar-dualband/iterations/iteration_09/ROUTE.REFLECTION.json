@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The primary expectation that best_target_score should rise across optimization rounds is directly contradicted; the score declined sharply from 0.9960932998852581 to 0.9526376911065155 and further to 0.8479040306771585 over three rounds. This represents a significant negative deviation (direction: lower, magnitude: cumulative drop of ~0.148). However, the expectation that valid_candidates remain high (>=5) is consistently met, with the actual count at 9. The expected failure mode of early plateauing was not triggered; instead, the trajectory shows rapid deterioration rather than stagnation.",
+  "deviation_mechanism": "The score collapse indicates the optimization trajectory drifted out of the high-efficiency optical regime. Initial designs featured thinner outer layers (e.g., Layer 0 at 64.0 nm, Layer 7 at 30.0 nm) that likely satisfied dual-band quarter-wave or half-wave resonance conditions. As mutations progressed, layer thicknesses systematically expanded (e.g., Layer 0 drifting to 112.02 nm, Layer 7 to 79.48 nm), increasing the physical optical path length. This detunes the multilayer stack from the target wavelengths, shifting the interference condition from constructive to destructive. The continuous descent confirms active traversal of the lossy side of a resonance peak rather than premature convergence.",
+  "continue_recommended": true,
+  "continue_rationale": "The route demonstrates active, non-stochastic exploration; the inter-round deltas (~0.043 and ~0.105) vastly exceed the reference epsilon (0.0001), proving the optimizer is physically moving through the design space rather than hitting numerical noise or a hard constraint wall. With valid_candidates holding at 9, the search volume is unconstricted. The current score of 0.8479040306771585 sits near the historical lower bound, but the downward trend indicates we have fallen off a performance ridge. Re-engaging the high-scoring basin is scientifically warranted and computationally feasible before invoking the 15-round exhaustion clause.",
+  "insight_for_next": "Extract the top-performing candidate from Round 1 (score >0.95), restore its exact thickness seed, and apply a controlled isotropic perturbation of ±25 nm to all 8 layers before restarting the local optimizer. This forces the search engine to climb back up the resonance slope instead of drifting further into the suboptimal regime.",
+  "insight_grounding": "The degradation correlates precisely with the thickness shift documented across the candidate pool: the first evaluated configuration maintained compact dimensions [64.0, 142.0, 167.0, 178.0, 113.0, 143.0, 219.0, 30.0] nm, while the most recent evaluated set drifted uniformly thicker to [112.0224425740717, 120.73003454947434, 137.30714695170633, 111.38763503853174, 215.57116419104125, 257.79463392045193, 81.81947344210457, 79.47682827942718] nm. This systematic thickening maps directly to the score decay from 0.9960932998852581 to 0.8479040306771585, making a targeted initialization reset necessary to recover the lost optical coupling efficiency.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:35:00.279227+00:00",
+  "attestation_sha256": "cdd0879b83b9e5e2334a8c8134848457a47ba63838153566c5141567cb93bfb1",
+  "observed_metrics": {
+    "best_target_score": 0.8479040306771585,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.700552143731795
+  },
+  "reflection_available": true
+}

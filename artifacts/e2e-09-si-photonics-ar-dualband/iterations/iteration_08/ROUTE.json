@@ -1,0 +1,54 @@
+{
+  "route_id": "control_route_01",
+  "title": "Dual-band AR coating thickness refinement with locked outer layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Locking the outermost layers while optimizing inner layer thicknesses with reduced perturbation steps will maintain or improve dual-band reflectance performance while producing more manufacturable thickness distributions.",
+  "design_principle": "Anti-reflection coatings work through destructive interference of reflections at each interface. For dual-band operation, non-quarter-wave thicknesses create multiple interference conditions. Outer layers dominate broadband behavior while inner layers fine-tune specific band matching. Reducing optimization step size prevents convergence to extreme thickness values that are difficult to manufacture.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)",
+    "si"
+  ],
+  "proposed_topology": "air | ta2o5 | sio2 | ta2o5 | sio2 | ta2o5 | sio2 | ta2o5 | sio2 | si (8 layers total, alternating high-low index starting with high)",
+  "design_variables": [
+    "thicknesses of layers 1-6 (inner six layers), layers 0 and 7 locked at iteration 04 best values",
+    "perturbation step size limited to ±5 nm"
+  ],
+  "soft_objectives": [
+    "minimize average reflectance in 1260-1360 nm band",
+    "minimize average reflectance in 1530-1565 nm band",
+    "maximize transmittance into silicon substrate",
+    "maintain thickness values within 20-400 nm manufacturable range"
+  ],
+  "manufacturing_considerations": [
+    "maximum 12 layers (using 8)",
+    "individual layer thickness between 20 nm and 400 nm",
+    "materials restricted to Ta2O5 and SiO2",
+    "outermost layers locked to reduce process variation sensitivity"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce minimum reflectance at design wavelength when optical thickness equals λ/4",
+    "Recalled knowledge: Dual-band AR coatings require non-quarter-wave thicknesses to create multiple destructive interference conditions",
+    "Recalled knowledge: Outer layers in AR stacks have greater influence on broadband performance than inner layers",
+    "Recalled knowledge: Gradient-based thickness optimization can converge to local minima; reduced step size helps avoid overshoot",
+    "Recalled knowledge: Ta2O5 has higher refractive index (~2.1-2.2) than SiO2 (~1.45) in near-infrared, making them suitable high-low pairs"
+  ],
+  "expected_advantages": [
+    "Locked outer layers reduce optimization search space and improve convergence stability",
+    "Focused optimization on inner layers targets spectral regions of maximum sensitivity",
+    "Reduced perturbation step (±5 nm) prevents extreme thickness values seen in iteration 04",
+    "Quasi-symmetric seed promotes balanced interference conditions across both bands"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive index values of Ta2O5 and SiO2 at 1260-1565 nm range - these are measured data from the dataset, not design variables, but my recalled approximate values (Ta2O5 ~2.15, SiO2 ~1.45) may differ from registry data",
+    "Uncertainty: Whether 8 layers is optimal vs 10 or 12 layers for this dual-band requirement - this route fixes 8 layers based on iteration 04 success, but more layers might achieve lower reflectance",
+    "Uncertainty: Silicon extinction coefficient in these bands - silicon is nearly transparent in near-IR but exact k values affect transmittance calculation",
+    "Risk: Locking outer layers may prevent finding better global solutions if iteration 04's outer layer values were suboptimal",
+    "What would settle: Looking up measured n/k dispersion data for Ta2O5 and SiO2 from the material registry, running comparative studies with 10 and 12 layer counts"
+  ],
+  "execution_request_english": "Design a planar multilayer dielectric anti-reflection coating for silicon substrate. Incidence medium: air. Substrate: semi-infinite silicon (si). Wavelength bands: 1260-1360 nm and 1530-1565 nm. Incidence angle: 0 degrees. Polarization: unpolarized. Stack topology: 8 layers total, alternating Ta2O5 (Gao) and SiO2 (Lemarchand) starting with Ta2O5 (Gao) adjacent to air. Layer sequence: air | Ta2O5 (Gao) (layer 0) | SiO2 (Lemarchand) (layer 1) | Ta2O5 (Gao) (layer 2) | SiO2 (Lemarchand) (layer 3) | Ta2O5 (Gao) (layer 4) | SiO2 (Lemarchand) (layer 5) | Ta2O5 (Gao) (layer 6) | SiO2 (Lemarchand) (layer 7) | si. Optimization constraints: layers 0 and 7 locked at thicknesses from iteration 04 best candidate (layer 0: 185.61 nm, layer 7: 33.20 nm). Layers 1-6 optimizable with initial seed centered at 55 nm quasi-symmetric distribution. Perturbation step size: ±5 nm maximum. All layer thicknesses must remain within 20-400 nm bounds. Objective: minimize average reflectance across both wavelength bands simultaneously, report transmittance into silicon substrate. Use gradient-based thickness optimization.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refinement based on iteration 04 results: reduced perturbation step size to ±5 nm, locked outermost layers (indices 0 and 7) to stabilize optimization, reinitialized inner six layers with quasi-symmetric seed at 55 nm to focus on region of maximum spectral sensitivity and avoid extreme thickness gradients"
+}

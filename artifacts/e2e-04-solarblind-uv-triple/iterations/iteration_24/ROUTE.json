@@ -1,0 +1,53 @@
+{
+  "route_id": "route_03",
+  "title": "Expanded-bound chirped HfO2/SiO2 stack with hybrid initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Score regression resulted from overly restrictive thickness perturbation bounds that trapped optimization in a local minimum. Expanding bounds to ±15% on layers 1, 2, 7, 9 and implementing hybrid initialization (elite retention plus broad stochastic seeding) will restore search flexibility and improve target score.",
+  "design_principle": "Chirped Bragg reflector architecture with alternating high/low index layers, optimized thicknesses for UV passband (255-280 nm) and visible/NIR stopbands (300-1100 nm). Critical interface layers (1, 2, 7, 9) require expanded tolerance to relieve compensatory strain.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused silica substrate"
+  ],
+  "proposed_topology": "11-layer fixed sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2 on fused silica substrate, air incidence",
+  "design_variables": [
+    "Layer thicknesses (20-150 nm range)",
+    "Perturbation bounds: ±15% on layers 1,2,7,9; ±10% on others",
+    "Hybrid initialization: 50% elite from prior best thicknesses, 50% stochastic ±20%"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 255-280 nm",
+    "Minimize transmittance in 300-700 nm",
+    "Minimize transmittance in 700-1100 nm"
+  ],
+  "manufacturing_considerations": [
+    "11 layers within 30-layer limit",
+    "No metal layers",
+    "HfO2 and SiO2 are conventional depositable dielectrics",
+    "Thickness precision affected by expanded bounds"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341",
+    "s2-chunk:CorpusId:247131178:s2chunk:247131178:22929:25296:b57bea6c60c39b08"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for multilayer interference",
+    "Chirped Bragg stack theory for broadband blocking",
+    "Local minimum escape via expanded search bounds"
+  ],
+  "expected_advantages": [
+    "Restored optimization flexibility compared to restrictive bounds",
+    "Potential to exceed prior peak scores",
+    "Maintains proven 11-layer topology while exploring new thickness regimes"
+  ],
+  "known_risks": [
+    "Expanded bounds may increase fabrication sensitivity",
+    "Hybrid initialization may slow convergence if stochastic seeds dominate",
+    "HfO2 absorption at deep UV wavelengths requires verification"
+  ],
+  "execution_request_english": "Optimize an 11-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2. Thickness bounds: 20-150 nm for all layers. Perturbation bounds: ±15% for layers 1, 2, 7, 9; ±10% for layers 3, 4, 5, 6, 8, 10, 11. Initialization: hybrid scheme with 50% of candidates seeded from prior best-performing thicknesses (target_score > 0.38) and 50% randomly seeded with ±20% stochastic perturbation from nominal quarter-wave values at 267.5 nm center wavelength. Optimize for maximum transmittance in 255-280 nm band and minimum transmittance in 300-700 nm and 700-1100 nm bands. Use gradient_thickness and differential_evolution_thickness optimizers. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: High transmittance in 255–280 nm. behaviors to suppress or avoid: Transmittance in 300–700 nm; Transmittance in 700–1100 nm. manufacturing constraints: Maximum 30 layers; No metal layers; Only conventional depositable inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Score regression attributed to overly restrictive ±2% bounds. This refinement expands bounds to ±15% on critical layers and implements hybrid initialization per feedback directive to escape local minima."
+}

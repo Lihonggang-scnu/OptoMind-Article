@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score deviates from the expected sustained value of >0.6506 by -0.047704 (direction: lower, magnitude: ~4.8%), having peaked temporarily at 0.650603 in Round 2 but settling to 0.602899 by Round 4. tightest_margin observed at 0.369638 remains positive, fully consistent with expectations. valid_candidates observed at 6 is slightly below the expected ~9 but maintains structural feasibility without triggering the relaxation stop condition.",
+  "deviation_mechanism": "The transient achievement of 0.650603 in Round 2 coincided with extreme thickness expansions at Index 4 (jumping from 66.98 nm to 317.301 nm) and Index 10 (from 139.84 nm to 282.287 nm), which pushed the optical path length into a narrow interference resonance window. The subsequent collapse to 0.602899 occurred as these layers relaxed back toward 54.367 nm and 63.052 nm in Rounds 3 and 4. This indicates the high-score basin is physically shallow and surrounded by steep dispersion-driven cliffs; the relaxed bounds allowed the solver to overshoot the resonant peak without sufficient step-size damping to track it, causing the optimizer to revert to a broader, deeper local minimum near 0.60 where phase accumulation naturally stabilizes.",
+  "continue_recommended": true,
+  "continue_rationale": "The route has executed 4 rounds. The criterion for exhaustion (improvement <1e-3 against historical best for two consecutive rounds) is not met, as the move from Round 3 (0.592971) to Round 4 (0.602899) yielded a gain of +0.009928, significantly exceeding the reference epsilon of 0.0001. Parameter mobility remains high (Index 4 varied ~250 nm across rounds), confirming the search has not numerically stagnated. Halting now would discard an active trajectory that is still climbing away from the Round 3 dip.",
+  "insight_for_next": "Freeze all layers except Indices 4 and 10 to their Round 4 values, then run a localized optimization with a reduced step budget (±5 nm) specifically scanning the interval between their Round 2 extremes and Round 4 stabilized positions. This forces a fine-grained traversal of the suspected narrow resonance ridge that produced the 0.6506 peak, preventing the global optimizer from discarding these critical indices prematurely.",
+  "insight_grounding": "Round 2 candidate achieved 0.6506025858694148 solely when Index 4 was at 317.30149000300423 nm and Index 10 was at 282.2871491591539 nm. In Round 4, these collapsed to 54.36655817103086 nm and 63.05169581670785 nm, coinciding with the score drop to 0.6028987522160187. The +0.0099278213142806 improvement from Round 3 (0.5929709309017381) to Round 4 occurred precisely as these two indices locked near 54–63 nm, demonstrating a measurable local gradient exists in this stabilized configuration that warrants targeted refinement.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:38:27.996573+00:00",
+  "attestation_sha256": "8096a903e976263ad8cba74e506c7d79c77873758f13bf073559655a8297943a",
+  "observed_metrics": {
+    "best_target_score": 0.6028987522160187,
+    "valid_candidates": 6,
+    "run_status": "completed",
+    "tightest_margin": 0.36963790386999673
+  },
+  "reflection_available": true
+}

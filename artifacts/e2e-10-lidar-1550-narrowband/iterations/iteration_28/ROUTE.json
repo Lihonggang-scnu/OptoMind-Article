@@ -1,0 +1,55 @@
+{
+  "route_id": "route_02",
+  "title": "Frozen-Core 20L with Stopband QWOT Initialization and Curvature Penalty",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing the inner 10 layers (8-17) at the empirically-optimized 215.0 nm value while initializing outer 12 layers at quarter-wave optical thickness for the lower stopband center (1450 nm) will reduce compensatory overshoot and improve convergence toward the 0.95 transmission target, with L2 curvature penalty suppressing adjacent-layer thickness oscillations.",
+  "design_principle": "Defective DBR bandpass filter with frozen core acting as the defect cavity region, outer layers serving as impedance-matching mirrors. Quarter-wave initialization at stopband wavelength provides stronger initial suppression before optimization refines the passband.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate",
+    "Air incident medium"
+  ],
+  "proposed_topology": "20 alternating layers: Ta2O5(1)-SiO2(2)-Ta2O5(3)-SiO2(4)-Ta2O5(5)-SiO2(6)-Ta2O5(7)-SiO2(8)-Ta2O5(9)-SiO2(10)-Ta2O5(11)-SiO2(12)-Ta2O5(13)-SiO2(14)-Ta2O5(15)-SiO2(16)-Ta2O5(17)-SiO2(18)-Ta2O5(19)-SiO2(20). Layers 8-17 fixed at 215.0 nm. Layers 1-7 and 18-20 optimized.",
+  "design_variables": [
+    "thicknesses of layers 1-7",
+    "thicknesses of layers 18-20",
+    "initialization at 1450 nm QWOT",
+    "L2 curvature penalty weight"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥0.95)",
+    "minimize mean transmittance in 1400-1500 nm stopband",
+    "minimize mean transmittance in 1600-1700 nm stopband",
+    "minimize adjacent-layer thickness differences"
+  ],
+  "manufacturing_considerations": [
+    "10 fixed layers reduce deposition complexity",
+    "215.0 nm thickness is empirically validated from iteration_25",
+    "outer layer bounds [100, 400] nm accommodate QWOT variations"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95"
+  ],
+  "theory_basis": [
+    "Defective DBR structure (HL)^N D(LH)^N creates transmission peak at defect mode wavelength",
+    "Quarter-wave optical thickness n*d = lambda/4 provides maximum reflectance in stopbands",
+    "L2 curvature penalty reduces high-frequency thickness oscillations that cause fabrication sensitivity"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality (12 vs 20 free parameters) improves convergence",
+    "Stopband QWOT initialization provides stronger initial suppression",
+    "Fixed core eliminates compensatory overshoot observed in iteration_25 candidates"
+  ],
+  "known_risks": [
+    "Fixed 215.0 nm may not be optimal for all stopband configurations",
+    "QWOT at 1450 nm may underperform at 1550 nm passband if mirrors are too reflective",
+    "Curvature penalty weight requires tuning to avoid over-constraint"
+  ],
+  "execution_request_english": "Design a 20-layer alternating Ta2O5/SiO2 bandpass filter on fused silica substrate with air incident medium. Layers 1-7 and 18-20 are optimization variables initialized at quarter-wave optical thickness for 1450 nm wavelength (Ta2O5 QWOT ≈ 1450/(4*n_H), SiO2 QWOT ≈ 1450/(4*n_L)) with ±10% random perturbation. Layers 8-17 are fixed constants at exactly 215.0 nm. Optimization bounds for free layers: [100, 400] nm. Apply L2 curvature penalty to objective function penalizing adjacent-layer thickness differences exceeding 30 nm. Evaluate coherent TMM across 1300-1800 nm. Score three weighted objectives: (1) transmittance at 1550 nm, (2) mean transmittance in 1400-1500 nm, (3) mean transmittance in 1600-1700 nm. Total layer count: exactly 20 layers. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Refines iteration_25 frozen-core approach by initializing outer layers at stopband QWOT (1450 nm) instead of arbitrary values, and adding explicit L2 curvature penalty to suppress compensatory overshoot observed in candidates 1-3 of iteration_25."
+}

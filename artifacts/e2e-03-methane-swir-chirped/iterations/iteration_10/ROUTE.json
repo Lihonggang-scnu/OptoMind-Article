@@ -1,0 +1,50 @@
+{
+  "route_id": "route_02",
+  "title": "Quadratic Chirp 26-Layer Stack with Constrained Perturbation Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A quadratic chirp profile in layer optical thicknesses, targeting constructive interference across 300-450 nm while maintaining quarter-wave matching at 1350 nm center SWIR wavelength, will achieve higher dual-band spectral separation than the previous 24-layer designs when optimization is constrained to ±12% perturbations around the chirp baseline.",
+  "design_principle": "Distributed Bragg reflector with quadratic thickness progression: UV reflection band benefits from chirped layer pairs that span the 300-450 nm stopband, while SWIR transmission is preserved by maintaining approximate quarter-wave optical thickness at 1350 nm. Two-phase optimization prevents solver from breaking the monotonic chirp structure.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | (HfO2/SiO2)_13 | Fused Silica substrate - 26 finite layers total, alternating high/low index starting with HfO2",
+  "design_variables": [
+    "26 layer thicknesses initialized from quadratic chirp formula, optimized with ±12% bound constraints"
+  ],
+  "soft_objectives": [
+    "Maximize average reflectance in 300-450 nm band",
+    "Maximize average transmittance in 1000-1700 nm band",
+    "Maintain smooth spectral transition between bands"
+  ],
+  "manufacturing_considerations": [
+    "26 layers within 30-layer maximum constraint",
+    "Thickness bounds prevent extreme values that challenge deposition control",
+    "Alternating H/L sequence simplifies process monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Chirped Bragg reflector theory for broadband reflection",
+    "Quarter-wave stack transmission band theory"
+  ],
+  "expected_advantages": [
+    "Quadratic chirp provides broader UV stopband than linear chirp",
+    "Constrained optimization preserves physical chirp structure",
+    "26 layers offers more degrees of freedom than previous 24-layer attempts without exceeding fabrication limit"
+  ],
+  "known_risks": [
+    "Constrained optimization may not find global optimum if baseline chirp is poorly chosen",
+    "Increased layer count may reduce SWIR transmission due to cumulative absorption/scatter",
+    "Quadratic chirp parameters require careful selection for target dispersion"
+  ],
+  "execution_request_english": "Design and optimize a 26-layer planar dielectric multilayer coating on fused silica substrate with air incidence. Materials: HfO2 (high index) and SiO2 (low index), alternating sequence starting with HfO2 adjacent to air. Initialize layer thicknesses using quadratic chirp formula: d_i = d_0 * (1 + alpha * (i-1)^2) where d_0 = 75 nm for HfO2 layers and 110 nm for SiO2 layers, alpha = 0.003. Then perform gradient-based thickness optimization with bound constraints: each thickness may vary ±12% from its initialized value. Wavelength range: 300-1700 nm with 5 nm sampling. Evaluate at normal incidence, unpolarized light. Objective: maximize weighted spectral performance score with equal weight on (1) average reflectance in 300-450 nm band and (2) average transmittance in 1000-1700 nm band. Report best candidate thicknesses, target score, robustness score, and full spectral curves. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: Maximum total layer count of 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive for two-phase initialization with quadratic chirp baseline and ±12% constrained optimization. Increases layer count from 24 to 26 to provide additional degrees of freedom while staying within 30-layer manufacturing constraint. Addresses score regression by changing initialization strategy rather than repeating previous 24-layer chirped approach."
+}

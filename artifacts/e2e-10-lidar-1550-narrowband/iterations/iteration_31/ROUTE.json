@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Bounded Differential Evolution with 120-250nm Hard Constraints",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining all layer thicknesses to 120-250 nm prevents sampling of the >380 nm regime that triggers phase scrambling, while differential evolution's global search capability will find superior local optima within the physically meaningful thickness range.",
+  "design_principle": "Hard box constraints preserve quasi-half-wave optical spacing at 1550 nm (Ta2O5 QWOT ≈ 157 nm, SiO2 QWOT ≈ 267 nm). The 120-250 nm bounds capture the relevant design space while excluding thicknesses that cause destructive phase interference.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "20 alternating layers: Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2|Ta2O5|SiO2 on Fused Silica",
+  "design_variables": [
+    "all 20 layer thicknesses bounded to [120, 250] nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550 nm",
+    "minimize mean transmittance in 1400-1500 nm band",
+    "minimize mean transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "20 layers within specified limit",
+    "thickness bounds compatible with standard deposition monitoring",
+    "no layers exceed 250 nm reducing stress accumulation"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:7970030:s2chunk:7970030:6660:8623:a758197fcc4ae0db"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness at 1550 nm for Ta2O5 (n≈2.1) is ~157 nm, for SiO2 (n≈1.45) is ~267 nm; 120-250 nm bounds capture sub-QWOT to near-QWOT regime"
+  ],
+  "expected_advantages": [
+    "Eliminates phase-scrambling from >380 nm thicknesses",
+    "Differential evolution explores design space more globally than gradient methods",
+    "Consistent with feedback directive for bounded derivative-free optimization"
+  ],
+  "known_risks": [
+    "May exclude optimal solutions requiring thicknesses >250 nm",
+    "Differential evolution may require more function evaluations",
+    "20-layer constraint may fundamentally limit stopband rejection"
+  ],
+  "execution_request_english": "Optimize a 20-layer alternating Ta2O5/SiO2 dielectric filter on Fused Silica substrate for 1550 nm LiDAR bandpass application. All 20 layer thicknesses are design variables bounded to [120, 250] nm. Use differential evolution optimizer with explicit clipping to enforce hard bounds. Evaluate coherent TMM across 1300-1800 nm wavelength range. Score candidates using three weighted objectives: (1) mean transmittance in 1545-1555 nm passband (maximize), (2) mean transmittance in 1400-1500 nm stopband (minimize), (3) mean transmittance in 1600-1700 nm stopband (minimize). Incident medium is air. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all physically valid candidates. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Direct implementation of feedback directive: enforce hard 120-250 nm box constraints and switch to bounded derivative-free optimizer to eliminate >380 nm phase-scrambling regime observed in prior iterations."
+}

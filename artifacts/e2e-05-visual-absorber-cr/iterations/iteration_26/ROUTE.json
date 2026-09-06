@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Cr-absorber dielectric cavity stack on Al with thickness optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 13-layer stack with Cr absorber layers positioned within HfO2/SiO2 dielectric cavities can achieve higher visible absorptance (400-700 nm) while maintaining high NIR reflectance (700-2000 nm) through thickness tuning alone, without changing material sequence.",
+  "design_principle": "Recalled thin-film physics: lossy metal layers (Cr) absorb where the standing-wave electric field amplitude is high. By positioning Cr at field antinodes in the visible band and using dielectric quarter-wave stacks tuned for NIR reflection, interference enhances visible absorption while the dielectric stack reflects NIR. The Al substrate provides additional IR reflection.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)",
+    "Cr (Rakic-LD)",
+    "Al (Rakic-LD)"
+  ],
+  "proposed_topology": "air | hfo2 | sio2 | cr | hfo2 | sio2 | hfo2 | sio2 | cr | hfo2 | sio2 | cr | hfo2 | sio2 | al",
+  "design_variables": [
+    "individual layer thicknesses for all 13 film layers (hfo2, sio2, cr layers)"
+  ],
+  "soft_objectives": [
+    "maximize mean absorptance in 400-700 nm band",
+    "maximize mean reflectance in 700-2000 nm band",
+    "maintain total layer count at 13 (under 20-layer constraint)"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 13 (within 20-layer limit)",
+    "Cr layer thickness should remain above 8 nm to avoid discontinuity and TMM matrix singularity",
+    "dielectric thicknesses should remain within physically depositable ranges (roughly 20-400 nm)"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave dielectric stacks produce high reflectance at design wavelength; index contrast between HfO2 (~2.0-2.1) and SiO2 (~1.45-1.46) determines reflectance bandwidth.",
+    "Recalled: Thin lossy metal layers (Cr, ~10-50 nm) can provide significant visible absorption while remaining partially transparent.",
+    "Recalled: Positioning absorber at electric field antinode maximizes absorption through interference enhancement.",
+    "Recalled: Al substrate provides intrinsic IR reflectance, reducing dielectric stack burden for 700-2000 nm band."
+  ],
+  "expected_advantages": [
+    "Maintains the 13-layer topology that achieved the highest prior target score (0.6506 in iteration 10).",
+    "Thickness-only tuning isolates the effect of geometric optimization from material or sequence changes.",
+    "Bound relaxation (20% expansion) with 8 nm lower clamp addresses the iteration 22 failure mode (physics_violation, solver_disagreement).",
+    "Seeding from iteration 10's best thickness vector provides informed initialization rather than random start."
+  ],
+  "known_risks": [
+    "Cr is not in material_catalog.guaranteed_names; prior iterations used it successfully, but if the registry cannot resolve 'cr' to exactly one dataset, this route will be rejected. The measurement name that pins one Cr dataset would need to be looked up.",
+    "I am uncertain whether 13 layers is optimal; 15-17 layers might improve NIR reflectance without exceeding the 20-layer limit, but changing layer count would be a different axis.",
+    "I am uncertain about the exact quarter-wave thicknesses for HfO2 and SiO2 across 400-2000 nm; the optimizer must discover these.",
+    "The 8 nm lower clamp is a hypothesis; Cr layers thinner than 8 nm may become discontinuous, but the exact percolation threshold is recalled knowledge, not verified.",
+    "I do not know whether the iteration 10 thickness seed is near a local optimum or far from the global optimum; differential evolution may be needed if gradient methods stall."
+  ],
+  "execution_request_english": "Optimize a 13-layer planar multilayer film on aluminum substrate for spectral selectivity. Stack sequence from air incident side: hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), Cr (Rakic-LD), hfo2, SiO2 (Lemarchand), then Al (Rakic-LD) substrate. All 13 film layer thicknesses are design variables. Wavelength bands: 400-700 nm (maximize absorptance, minimize reflectance), 700-2000 nm (maximize reflectance). Incidence: normal, unpolarized. Thickness bounds: lower bound 8.0 nm (hard clamp to prevent TMM singularity), upper bound expanded by 20% from prior round (approximately 360 nm for dielectrics, 60 nm for Cr (Rakic-LD)). Initialize optimization using the thickness vector from iteration 10's best candidate (target_score 0.6506025858694148): [123.34, 168.22, 10.99, 124.58, 66.98, 108.29, 110.57, 54.71, 76.87, 128.36, 69.57, 139.84, 98.00] nm, with Gaussian perturbations scaled to 5% of the relaxed bounds. Use coherent TMM solver. Score both wavelength bands simultaneously to prevent trade-off sacrifice.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Iteration 22 failed with zero physically valid candidates (physics_violation, solver_disagreement, budget_exhausted). Applying feedback directive: expand thickness bounds by 20%, enforce 8.0 nm lower-bound clamp, and initialize from iteration 10's peak-score thickness vector with Gaussian perturbations. Topology preserved to isolate thickness-tuning effect."
+}

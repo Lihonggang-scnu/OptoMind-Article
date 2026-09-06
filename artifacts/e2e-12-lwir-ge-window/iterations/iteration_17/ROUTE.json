@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "16-layer ZnSe/ZnS alternating stack on Ge with stratified thickness initialization and L2 smoothing",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 16-layer alternating ZnSe/ZnS stack with individual layer thicknesses optimized in the 150-600 nm range can produce constructive interference in the 8000-11000 nm band while creating a stopband in the 3000-5000 nm band, without requiring thicknesses exceeding 600 nm per layer.",
+  "design_principle": "Recalled knowledge of quarter-wave stack behavior: alternating high/low index layers create photonic bandgaps centered at wavelengths proportional to optical thickness (n×d). ZnSe has higher refractive index than ZnS in the IR, so alternating them creates index contrast. By tuning individual layer thicknesses away from a single quarter-wave value, the stopband can be shifted and shaped. L2 smoothing on adjacent thickness differences should reduce extreme oscillations that may arise from overfitting to specific wavelengths.",
+  "proposed_materials": [
+    "zns",
+    "ZnSe (Querry)",
+    "Ge (Icenogle)"
+  ],
+  "proposed_topology": "Air | ZnSe(1) | ZnS(2) | ZnSe(3) | ZnS(4) | ZnSe(5) | ZnS(6) | ZnSe(7) | ZnS(8) | ZnSe(9) | ZnS(10) | ZnSe(11) | ZnS(12) | ZnSe(13) | ZnS(14) | ZnSe(15) | ZnS(16) | Ge substrate",
+  "design_variables": [
+    "Individual layer thicknesses for all 16 layers, each bounded 150-600 nm",
+    "L2 smoothing penalty weight on adjacent thickness differences (applied during first 10 iterations)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000 nm band",
+    "Minimize mean transmittance in 3000-5000 nm band",
+    "Maintain thickness smoothness between adjacent layers"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 16",
+    "Individual layer thicknesses should remain within 150-600 nm for deposition practicality",
+    "Alternating material sequence fixed to simplify process control"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave stacks produce high reflectance (low transmittance) bands centered at λ = 4×n×d for normal incidence",
+    "Recalled knowledge: ZnSe has higher refractive index (~2.4-2.6) than ZnS (~2.2-2.4) in the mid-to-long IR range, providing index contrast for interference effects",
+    "Recalled knowledge: Ge substrate has high refractive index (~4.0) in the IR, creating significant Fresnel reflection at the film-substrate interface that the coating must manage",
+    "Recalled knowledge: L2 regularization on thickness gradients can suppress overfitting and produce more manufacturable designs without fundamentally changing the interference physics"
+  ],
+  "expected_advantages": [
+    "Stratified initialization between 150-600 nm should explore a different region of thickness space than the previous 760 nm or 1000+ nm defaults",
+    "L2 smoothing should reduce the extreme thickness oscillations seen in prior iteration candidates (some exceeded 9000 nm)",
+    "Tighter bounds may improve optimizer convergence by reducing the feasible volume",
+    "Fixed alternating sequence removes material-choice degrees of freedom, isolating thickness optimization as the sole axis"
+  ],
+  "known_risks": [
+    "I am uncertain whether ZnSe and ZnSe remain sufficiently transparent at 8000-11000 nm; absorption edges could reduce passband transmittance. This would need to be confirmed from measured k(λ) data in the material registry.",
+    "I am uncertain about the exact refractive index values for ZnS and ZnSe at these wavelengths; my recalled ranges (~2.2-2.6) are approximate and may vary with deposition method and stoichiometry.",
+    "The 150-600 nm bound may be too restrictive if the optimal design requires thicker layers for LWIR performance; this would need to be tested by comparing against a route with wider bounds.",
+    "L2 smoothing penalty weight is a hyperparameter I am setting from intuition; the optimal value for balancing spectral performance vs. thickness smoothness is unknown without tuning studies.",
+    "Ge substrate absorption in the LWIR is not accounted for in my recalled knowledge; if Ge absorbs significantly at 8000-11000 nm, no coating can achieve high system transmittance."
+  ],
+  "execution_request_english": "Optimize a 16-layer planar multilayer stack on Ge (Icenogle) substrate with air incidence. Layer sequence from air side: ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS, ZnSe (Querry), ZnS (16 layers total, alternating). Each layer thickness is an independent optimization variable bounded between 150 nm and 600 nm. Initialize thicknesses using a quasi-random stratified distribution within these bounds. Apply an L2 smoothing penalty on the difference between adjacent layer thicknesses during the first 10 optimization iterations. Evaluate performance using coherent transfer matrix method across 3000-11000 nm wavelength range at normal incidence. Target: maximize mean transmittance in 8000-11000 nm band while minimizing mean transmittance in 3000-5000 nm band. Materials: zns, ZnSe (Querry), Ge (Icenogle) (resolved from material registry).",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with revised initialization strategy per feedback directives: stratified thickness initialization in 150-600 nm range replacing previous 760 nm default, and L2 smoothing penalty introduced to suppress extreme thickness oscillations observed in prior iteration candidates."
+}

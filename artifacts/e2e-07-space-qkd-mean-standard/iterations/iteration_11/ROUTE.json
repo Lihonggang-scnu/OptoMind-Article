@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "Focused Cavity Resonance Scan with Mirror Step Constraints",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "The defect cavity thickness near 381nm is the primary determinant of 1550nm transmission peak position and bandwidth; fine-tuning this layer while constraining mirror adjustments will improve target score without degrading visible reflectance.",
+  "design_principle": "Initialize from top-3 candidates from previous batch, apply deterministic ±6nm perturbation grid to defect layer 10 (centered on ~381.5nm), constrain optimizer step sizes for mirror layers 0-9 and 11-20 to 20% of current magnitude to prevent destructive mirror-detuning.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "21-layer stack: (HfO2/SiO2)×5 mirror | HfO2 cavity layer | (SiO2/HfO2)×5 mirror on fused silica substrate, air incident",
+  "design_variables": [
+    "All 21 layer thicknesses with cavity layer ±6nm perturbation grid",
+    "Mirror layer optimizer step size constrained to 20%"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 1530-1565nm band",
+    "Maximize reflectance in 400-700nm band",
+    "Improve target score above 0.7613"
+  ],
+  "manufacturing_considerations": [
+    "Total layers = 21 (within 30-layer limit)",
+    "Cavity thickness precision critical for resonance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:237542117:s2chunk:237542117:8315:10343:b445a14bce44b9a2",
+    "s2-chunk:CorpusId:118205225:s2chunk:118205225:3952:5816:b979decdcfc5ff45"
+  ],
+  "theory_basis": [
+    "Fabry-Perot cavity resonance condition determines passband center wavelength",
+    "Mirror layers primarily control stopband reflectance and bandwidth"
+  ],
+  "expected_advantages": [
+    "Focused search reduces optimizer wandering",
+    "Preserves mirror phase contributions while tuning cavity resonance",
+    "May identify local optimum near previous best candidates"
+  ],
+  "known_risks": [
+    "±6nm window may not contain global optimum",
+    "Step size constraints may slow convergence",
+    "Mirror-cavity coupling effects may be underestimated"
+  ],
+  "execution_request_english": "Design a 21-layer HfO2/SiO2 defect-cavity filter on fused silica substrate with air incident medium. Stack sequence: HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2(cavity)|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2|SiO2|HfO2. Initialize optimization from three candidate thickness sets: candidate A [250.6, 306.5, 256.0, 300.9, 269.6, 278.7, 239.9, 252.1, 231.9, 290.2, 382.8, 252.6, 223.5, 252.2, 327.5, 235.6, 255.1, 324.4, 300.3, 253.3, 229.1] nm, candidate B [251.0, 336.4, 257.0, 332.3, 272.2, 284.3, 325.0, 266.3, 305.3, 263.6, 382.1, 269.8, 247.9, 285.2, 315.0, 248.1, 245.0, 277.8, 240.9, 263.8, 255.9] nm, candidate C [334.9, 266.1, 224.5, 253.9, 325.4, 247.8, 234.8, 315.2, 244.8, 263.9, 381.3, 243.2, 265.8, 280.5, 281.2, 322.1, 259.2, 283.0, 255.5, 327.4, 283.8] nm. Apply deterministic perturbation grid to layer 10 (cavity): test thicknesses at [375.5, 379.5, 381.5, 383.5, 387.5] nm. Constrain L-BFGS-B optimizer step sizes for layers 0-9 and 11-20 to maximum 20% of their current thickness values per iteration. Evaluate at normal incidence, unpolarized or both TE/TM. Optimize for high transmittance in 1530-1565nm band and high reflectance in 400-700nm band. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Maximum 30 layers.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Follows feedback directive to clone top-3 candidates and apply ±6nm perturbation grid to defect layer 10 while constraining mirror layer optimizer steps to 20% magnitude. Execution request repaired to be fully standalone without referencing prior route."
+}

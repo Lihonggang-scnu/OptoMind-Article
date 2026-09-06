@@ -1,0 +1,51 @@
+{
+  "route_id": "route_01",
+  "title": "Frozen-Mirror Cavity Refinement with Step-Limited Gradient Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The round-4 score regression (0.9757→0.9477) resulted from optimizer step sizes exceeding the resonant basin width, causing microscopic phase overshoot in the cavity. Constraining optimization to layers 7-11 only, initializing from iteration_10's best thicknesses, and capping step size at 0.05 nm/iteration will recover and potentially exceed the round-3 peak score by preventing escape from the local optimum.",
+  "design_principle": "Fabry-Perot interferometer with dielectric Bragg mirrors; cavity resonance condition is highly sensitive to optical path length. Outer mirrors provide spectral shaping and sideband suppression; cavity layers control peak transmission wavelength and bandwidth. Freezing proven mirror configurations while finely tuning cavity preserves established stopband performance.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "21-layer stack: Air | Ta2O5(176.44nm) | SiO2(391.04nm) | Ta2O5(313.22nm) | SiO2(261.55nm) | Ta2O5(173.42nm) | SiO2(302.83nm) | Ta2O5(187.13nm) | SiO2(192.43nm) | Ta2O5(217.30nm) | SiO2(235.01nm) | Ta2O5(223.53nm) | SiO2(231.35nm) | Ta2O5(136.74nm) | SiO2(209.72nm) | Ta2O5(419.02nm) | SiO2(311.39nm) | Ta2O5(164.85nm) | SiO2(233.44nm) | Ta2O5(201.70nm) | SiO2(302.14nm) | Ta2O5(167.43nm) | Fused Silica substrate. Layers 0-6 and 12-20 frozen at listed thicknesses; layers 7-11 optimizable within 50-450 nm bounds.",
+  "design_variables": [
+    "thicknesses_nm for layers 7, 8, 9, 10, 11 (5 variables total)"
+  ],
+  "soft_objectives": [
+    "maximize transmittance at 1550 nm (target ≥0.95)",
+    "minimize transmittance in 1400-1500 nm band",
+    "minimize transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 21 (within 30-layer constraint)",
+    "all thicknesses within 50-450 nm range for deposition feasibility",
+    "step-size limit reduces sensitivity to thickness control errors during optimization"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:7970030:s2chunk:7970030:6660:8623:a758197fcc4ae0db"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter principle: (HL)^N D(LH)^N structure creates transmission peak at defect resonance",
+    "Quarter-wave DBR mirrors provide high reflectance in stopbands; half-wave or tuned cavity creates passband",
+    "Gradient optimization with step limits prevents overshoot in narrow resonance basins"
+  ],
+  "expected_advantages": [
+    "Preserves round-3 mirror performance that achieved 0.9757 score",
+    "Focused optimization on 5 cavity variables reduces search space complexity",
+    "Step-size cap prevents resonant-basin escape observed in round-4",
+    "Initialization from proven candidate avoids cold-start convergence issues"
+  ],
+  "known_risks": [
+    "Local optimum may still limit further improvement beyond 0.9757",
+    "Fixed mirror layers may prevent discovery of better global configurations",
+    "Step-size limit may slow convergence if basin is wider than expected"
+  ],
+  "execution_request_english": "Design a 21-layer Ta2O5/SiO2 Fabry-Perot bandpass filter on Fused Silica substrate under normal incidence. Layer sequence from air: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5. Initialize all 21 layers at thicknesses: [176.44, 391.04, 313.22, 261.55, 173.42, 302.83, 187.13, 192.43, 217.30, 235.01, 223.53, 231.35, 136.74, 209.72, 419.02, 311.39, 164.85, 233.44, 201.70, 302.14, 167.43] nm. Freeze layers 0-6 and 12-20 (indices) at these values. Optimize only layers 7, 8, 9, 10, 11 with bounds 50-450 nm using gradient_thickness optimizer with maximum step size 0.05 nm per iteration. Evaluate coherent TMM transmittance across 1300-1800 nm. Score: maximize T at 1550 nm, minimize T in 1400-1500 nm and 1600-1700 nm bands. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Round-4 regression (0.9757→0.9477) attributed to optimizer escaping resonant basin. This route implements feedback directive: freeze outer mirrors, optimize cavity layers 7-11 only, initialize from iteration_10 best candidate, cap step size at 0.05 nm/iteration to prevent phase overshoot."
+}

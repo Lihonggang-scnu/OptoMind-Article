@@ -1,0 +1,49 @@
+{
+  "route_id": "control_route_01",
+  "title": "24-layer HfO2/SiO2 dual-band stack with narrowed perturbation bounds on inner layers",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Reducing the perturbation radius from ±12 nm to ±8 nm for layers 7-16 will increase sampling density near the current local optimum, allowing the optimizer to resolve gradient structure that was previously masked by excessive exploration volume, and should produce a measurable increase in best_target_score if the current solution is near but not at the local optimum.",
+  "design_principle": "Recalled thin-film optimization practice suggests that multilayer dielectric stacks have complex thickness-dependent interference patterns where small thickness changes (5-10 nm) can significantly shift spectral features. Quarter-wave stacks centered at different wavelengths require different optical thicknesses, and the dual-band requirement (high reflection at 300-450 nm, high transmission at 1000-1700 nm) creates competing constraints that benefit from fine-grained thickness tuning rather than coarse exploration.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer stack: air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | fused silica substrate",
+  "design_variables": [
+    "Individual layer thicknesses for layers 7-16 (10 inner layers) with perturbation bounds ±8 nm, layers 1-6 and 17-24 fixed at current best candidate values"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1000-1700 nm band",
+    "Maximize average reflectance in 300-450 nm band",
+    "Maintain physical validity (no negative thicknesses, manufacturable layer thicknesses)"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 24 (within 30-layer limit)",
+    "All thicknesses must remain positive and above approximately 15 nm for reliable deposition",
+    "HfO2 and SiO2 are standard e-beam evaporation or sputtering materials"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave optical thickness at wavelength λ requires physical thickness d = λ/(4n) where n is refractive index",
+    "Recalled knowledge: HfO2 has higher refractive index (~2.0-2.1) than SiO2 (~1.45-1.5) in visible-NIR range, making them suitable high/low index pairs",
+    "Recalled knowledge: Dual-band filters often use chirped or aperiodic layer sequences rather than simple periodic stacks to achieve different behavior at different wavelengths",
+    "Recalled knowledge: Gradient-based thickness optimization converges faster when initialized near a known good solution with bounded perturbation",
+    "Recalled knowledge: 20-30 layer dielectric stacks are common for demanding spectral filtering applications"
+  ],
+  "expected_advantages": [
+    "Higher sampling density near current optimum should reveal whether further improvement is possible within the local basin",
+    "Fixing outer layers reduces optimization dimensionality while allowing inner layers to compensate for spectral mismatches",
+    "Deterministic grid walk eliminates randomness that could obscure whether improvements come from strategy or luck"
+  ],
+  "known_risks": [
+    "Uncertain whether 24 layers is optimal versus 26 or 28 layers within the 30-layer limit - this route does not test layer count",
+    "Uncertain about exact refractive index dispersion of HfO2 and SiO2 in the 300-1700 nm range; measured data from material catalog will be used but I do not know the exact values from memory",
+    "Uncertain whether the current best candidate (target_score ~0.942) is near global optimum or trapped in local optimum; narrowing perturbation may not escape local basin if one exists",
+    "The ±8 nm bound is a design choice based on recalled practice, not validated by literature; may be too restrictive if larger changes are needed",
+    "What would settle these: refractive index dispersion curves from material catalog, comparison with routes that vary layer count, comparison with routes using wider perturbation bounds"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on fused silica substrate with air incidence. Materials: alternating HfO2 and SiO2 (Lemarchand) layers, starting with HfO2 at the air side. Initialize from the current best candidate thickness vector: [22.0, 80.0, 21.0, 106.0, 61.0, 44.0, 31.0, 51.0, 36.0, 59.0, 39.0, 61.0, 40.0, 61.0, 42.0, 64.0, 68.0, 72.0, 47.0, 61.0, 45.0, 76.0, 39.0, 27.0] nm. Apply deterministic grid walk optimization with perturbation bounds of ±8 nm on layers 7-16 (indices 6-15 in zero-based counting, corresponding to thicknesses 31.0, 51.0, 36.0, 59.0, 39.0, 61.0, 40.0, 61.0, 42.0, 64.0 nm in the baseline). Keep layers 1-6 and 17-24 fixed at baseline values. Spectral objectives: maximize transmittance in 1000-1700 nm band, maximize reflectance in 300-450 nm band. Use coherent transfer-matrix method. Wavelength sampling should cover both bands adequately. Polarization: unpolarized or average of TE and TM. Incidence angle: 0 degrees (normal) unless otherwise specified in problem. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with narrowed perturbation radius (±12 nm to ±8 nm) for active zone layers 7-16, replacing random-search seeding with deterministic grid walk centered on current best candidate thickness vector to increase sampling density near local optimum"
+}

@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Quadratic Envelope Chirp with 2 Global Scalers (24 Layers)",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining the 24-layer chirp thickness profile to a quadratic envelope with only 2 global optimization parameters (chirp-rate scaler and chirp-amplitude scaler) plus localized perturbation noise will improve optimization convergence and achieve comparable or better dual-band performance than the 24-independent-variable approach, while reducing the risk of overfitting to specific wavelength points.",
+  "design_principle": "Parameterize layer thicknesses using a symmetric quadratic envelope: layers 1-12 follow monotonic expansion from 50 nm to 85 nm, layers 13-24 follow monotonic contraction from 85 nm to 50 nm. The envelope shape is controlled by 2 global scalers, with small random perturbations (±5 nm) added to each layer to allow local optimization freedom.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica (substrate)",
+    "Air (incident)"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "chirp_rate_scaler (global, 0.8-1.2)",
+    "chirp_amplitude_scaler (global, 0.8-1.2)",
+    "per_layer_perturbation_noise (±5 nm bounded)"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Minimize thickness variation between adjacent layers for manufacturability"
+  ],
+  "manufacturing_considerations": [
+    "Total 24 layers within 30-layer constraint",
+    "Quadratic envelope ensures smooth thickness transitions",
+    "Perturbation bounds (±5 nm) reflect typical deposition tolerance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:243942968:s2chunk:243942968:5158:7375:a7146be8d8d7d557",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced",
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8"
+  ],
+  "theory_basis": [
+    "Evolutionary optimization with bounded variables reduces search space while maintaining solution quality",
+    "Graded index profiles reduce interface discontinuities compared to abrupt quarter-wave stacks"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality improves convergence reliability",
+    "Quadratic envelope provides smooth thickness gradient for broadband visible rejection",
+    "Symmetric profile may improve angular tolerance"
+  ],
+  "known_risks": [
+    "Constrained parameterization may limit achievable performance compared to fully independent optimization",
+    "Quadratic envelope may not optimally separate the two target bands"
+  ],
+  "execution_request_english": "Optimize a 24-layer planar dielectric stack on Fused Silica substrate with Air incident medium. Layer sequence: alternating HfO2 (layers 1,3,5,...,23) and SiO2 (layers 2,4,6,...,24). Parameterize thicknesses using a symmetric quadratic envelope: layers 1-12 expand monotonically from 50 nm to 85 nm base profile, layers 13-24 contract monotonically from 85 nm to 50 nm base profile. Introduce 2 global optimization variables: chirp_rate_scaler (bounds 0.8-1.2) and chirp_amplitude_scaler (bounds 0.8-1.2) that scale the base envelope. Add per-layer perturbation noise bounded to ±5 nm. Optimize for maximum transmittance in 1530-1565 nm band and maximum reflectance in 400-700 nm band simultaneously. Use gradient-based or evolutionary optimizer with 100 iterations maximum. Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm array for all candidates. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Maximum 30 layers.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive to replace 24 independent thickness variables with constrained quadratic envelope parameterization using 2 global scalers plus perturbation noise. Maintains 24-layer topology from route_02 while reducing optimization degrees of freedom."
+}

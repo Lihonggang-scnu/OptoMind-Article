@@ -1,0 +1,48 @@
+{
+  "route_id": "route_03",
+  "title": "12-layer ZnS/ZnSe with frozen outer layers and reduced step size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Freezing the first two and last two layers at proven optimal thicknesses while optimizing inner 8 layers with low-variance initialization will stabilize convergence and exploit the 0.30+ performance basin without large resonance-jumps.",
+  "design_principle": "Partial freezing reduces search space dimensionality while preserving boundary conditions that contribute to impedance matching. Low-variance Gaussian initialization (σ=5 nm, center 750 nm) prevents optimizer from jumping between distant local minima.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | Ge (12 finite layers, alternating starting with ZnS)",
+  "design_variables": [
+    "Inner 8 layer thicknesses (layers 3-10)",
+    "Outer 4 layer thicknesses frozen at iteration_13 optimal values"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 8000-11000 nm band",
+    "Minimize transmittance in 3000-5000 nm band",
+    "Maintain robustness score above 0.06"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 12 within 16-layer limit",
+    "Thickness bounds 500-1500 nm for inner layers",
+    "Outer layers fixed at 417 nm (ZnS) and 455 nm (ZnSe) per iteration_13"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack principle for dichroic filtering",
+    "Partial freezing reduces optimization dimensionality while preserving boundary impedance matching"
+  ],
+  "expected_advantages": [
+    "Stable convergence without resonance-jumps",
+    "Exploitation of known 0.30+ performance basin",
+    "Reduced search space improves optimizer efficiency"
+  ],
+  "known_risks": [
+    "Frozen outer layers may not be optimal for 12-layer configuration",
+    "Inner layer initialization may bias toward suboptimal local minimum"
+  ],
+  "execution_request_english": "Optimize a 12-layer alternating ZnS/ZnSe stack on Ge substrate at normal incidence. Layers 1-2 and 11-12 frozen at thicknesses 417 nm (ZnS) and 455 nm (ZnSe) respectively. Layers 3-10 optimizable with thickness bounds 500-1500 nm, initialized with Gaussian distribution centered at 750 nm with standard deviation 5 nm. Use gradient_thickness optimizer with learning rate 0.015 (half of previous 0.03). Spectral range 3000-11000 nm sampled at 2001 points. Maximize transmittance in 8000-11000 nm band while minimizing transmittance in 3000-5000 nm band. Coherent TMM solver. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive: freeze outer layers at iteration_13 optimal values, reduce optimizer step size by half, initialize inner layers with low-variance Gaussian to prevent resonance-jumps between rounds."
+}

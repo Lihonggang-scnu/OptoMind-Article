@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "12-layer ZnS/ZnSe stack with 850nm thickness cap and peak re-initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining individual layer thicknesses to 850nm maximum will reduce optical path difference accumulation and stabilize interference conditions, while re-initializing from the iteration_11 peak candidate (score 0.2961) will escape the degraded optimization basin observed in iteration_13.",
+  "design_principle": "Quarter-wave-based dichroic stack with bounded thickness optimization; thickness cap prevents excessive OPD that destabilizes the LWIR passband while maintaining MWIR suppression through constructive interference in the reflection band.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | Ge substrate (12 finite layers, alternating sequence starting with ZnS)",
+  "design_variables": [
+    "Layer thicknesses (12 variables, each bounded 100-850nm)",
+    "Optimizer learning rate (reduced by 40% from baseline)"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 8000-11000nm band",
+    "Minimize transmittance in 3000-5000nm band",
+    "Maintain valid candidate count above zero"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count exactly 12 (within 16-layer limit)",
+    "Individual layer thickness capped at 850nm for deposition uniformity",
+    "ZnS and ZnSe both compatible with thermal evaporation per evidence"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:253920409:s2chunk:253920409:14121:16260:85ad0582554fb615",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack dichroic design principle for broadband reflection/transmission control",
+    "Stress-matched multilayer preparation for ZnS compressive stress regime"
+  ],
+  "expected_advantages": [
+    "Thickness cap stabilizes interference conditions by limiting OPD accumulation",
+    "Re-initialization from peak candidate provides better starting point than random or quarter-wave initialization",
+    "Reduced learning rate prevents optimizer overshoot in early iterations"
+  ],
+  "known_risks": [
+    "Thickness cap may limit achievable spectral contrast if thicker layers are physically necessary",
+    "Re-initialization may still converge to same local optimum if basin attraction is strong",
+    "12-layer topology already tested in multiple prior iterations with excluded fingerprints"
+  ],
+  "execution_request_english": "Perform coherent TMM optimization for a 12-layer planar dielectric stack on Ge substrate with air incidence at normal angle. Layer sequence: ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe (12 finite layers total). Initialize thicknesses from vector [417, 455, 500, 696, 850, 850, 553, 510, 593, 501, 417, 455] nm (peak candidate from iteration_11 with 1000nm layers capped to 850nm). Bound all thicknesses to 100-850nm range. Optimize for high transmittance in 8000-11000nm band and low transmittance in 3000-5000nm band. Use gradient-based thickness optimizer with learning rate step multiplier reduced by 40% from default. Wavelength sweep: 3000-11000nm with dense sampling in both target bands. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Direct implementation of feedback directives: 850nm thickness cap to restrict OPD accumulation, re-initialization from iteration_11 peak candidate (score 0.2961), and 40% learning rate reduction to dampen overshoot. Addresses the score regression from 0.2961 to 0.1679 observed between iteration_11 and iteration_13."
+}

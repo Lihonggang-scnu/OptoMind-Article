@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expected behavior was a monotonic rise followed by a stable plateau. Actual score history [0.9608, 0.9815, 0.9823, 0.7379, 0.9734, 0.9836, 0.9397] exhibits high volatility with two distinct downward excursions (R4: 0.7379, R7: 0.9397). The predefined failure plateau (<0.90) was not reached, but the fixed-ratio hypothesis is visibly strained by oscillatory convergence. Current tightest_margin is 0.5103; lacking historical margin traces, we cannot verify monotonicity, but the metric remains robustly positive.",
+  "deviation_mechanism": "Enforcing a single global scaling factor across structurally heterogeneous layers forces non-physical optical path mismatches. As the optimizer pushes layers toward boundary limits, the rigid ratio assumption creates sharp refractive-index steps between adjacent films. These abrupt transitions excite parasitic Fabry-Pérot resonances that scatter energy away from the target band and cause phase cancellation. The optimizer thus alternates between coupling regimes, producing the observed score spikes and collapses rather than steady refinement.",
+  "continue_recommended": true,
+  "continue_rationale": "Executed rounds = 7. Valid candidates = 9 (well above the <3 stop threshold). The score never showed sub-epsilon improvement (<1e-4) for two consecutive rounds; instead, it experienced a 0.0438 swing from R6 to R7, which vastly exceeds numerical noise and confirms active constraint-boundary navigation. The route retains exploitable degrees of freedom and has not hit physical exhaustion. Continuing with modified scaling topology is scientifically justified to recover lost ground.",
+  "insight_for_next": "Decouple the global scaler into four independent zone-specific scaling factors (layers 0-5, 6-11, 12-17, 18-23). Initialize each zone by dividing Round 6's best candidate thicknesses by their nominal quarter-wave optical targets. Introduce a gradient-regularization penalty (weight=0.15) on |n_{i+1}*t_{i+1} - n_i*t_i| to suppress the >6x adjacent thickness jumps currently destabilizing the resonance condition.",
+  "insight_grounding": "Route maximum occurred at Round 6 (score 0.983557), but immediately degraded in Round 7 to 0.939740. Analysis of Candidate index 3 from Round 7 reveals the physical driver: Layer index 14 measures 260.2395 nm while Layer index 15 measures 43.1517 nm, creating a >6x discontinuous step that breaks adiabatic wave guidance. In contrast, Candidate index 1 from Round 6 maintained tight adjacency (Layer 11: 96.6919 nm → Layer 12: 84.1013 nm). This direct correlation between measured inter-layer thickness rupture and score collapse proves the uniform scaler is inducing resonance detuning, requiring zone decoupling to restore constructive interference.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T05:31:37.862667+00:00",
+  "attestation_sha256": "fe2309e225d2da432ab8b80d43194c7b6e03a732f0aae35e9cf386aa99e6262e",
+  "observed_metrics": {
+    "best_target_score": 0.939740565450821,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.5103196645570598
+  },
+  "reflection_available": true
+}

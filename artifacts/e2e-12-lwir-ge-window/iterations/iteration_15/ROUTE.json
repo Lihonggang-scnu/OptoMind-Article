@@ -1,0 +1,47 @@
+{
+  "route_id": "route_02",
+  "title": "Local refinement with ≤4nm perturbation bounds around round-3 optimum",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The round-3 optimum (target_score 0.3379) resides in a narrow local basin; constraining perturbations to ≤4nm (~1% of mean thickness) with 40 additional deterministic steps will reveal whether further spectral overlap improvement exists within this basin without escaping to distant local minima.",
+  "design_principle": "Hybrid refinement pass: extract top candidate from round-3, apply bounded perturbation optimization with tight amplitude constraints to maximize spectral overlap while maintaining proximity to known good solution.",
+  "proposed_materials": [
+    "ZnSe",
+    "ZnS",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | Ge substrate (16 finite layers, alternating starting with ZnSe)",
+  "design_variables": [
+    "Layer thicknesses with ±4nm perturbation bounds centered on round-3 best candidate thicknesses"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 8000-11000nm band",
+    "Minimize mean transmittance in 3000-5000nm band",
+    "Improve target_score beyond 0.3379"
+  ],
+  "manufacturing_considerations": [
+    "16-layer count within specification",
+    "Thickness tolerance ±4nm represents tight but achievable deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "Local gradient-based optimization converges faster when initialized near optimum with tight bounds",
+    "Quarter-wave stack theory suggests spectral features are sensitive to ~λ/4n thickness variations"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced search space",
+    "Maintains proximity to known good solution",
+    "Tests whether current optimum is truly local maximum"
+  ],
+  "known_risks": [
+    "May be trapped in same local minimum if basin is flat",
+    "4nm constraint may be too tight to escape shallow local optimum",
+    "Diminishing returns may continue"
+  ],
+  "execution_request_english": "Optimize a 16-layer alternating ZnSe/ZnS multilayer on Ge substrate. Initialize all layer thicknesses at the round-3 best candidate values: [1128.0, 872.0, 479.0, 229.0, 409.0, 964.0, 876.0, 1271.0, 498.0, 463.0, 452.0, 402.0, 277.0, 938.0, 733.0, 1255.0] nm. Constrain each layer thickness optimization bounds to ±4nm around these initialization values. Run 40 deterministic gradient-based optimization steps. Objective: maximize mean transmittance in 8000-11000nm band while minimizing mean transmittance in 3000-5000nm band. Normal incidence, unpolarized illumination. Report final thicknesses, target_score, and robustness_score. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive for hybrid refinement pass with ≤4nm perturbation constraints and 40 additional optimization steps focused on spectral overlap maximization around round-3 optimum."
+}

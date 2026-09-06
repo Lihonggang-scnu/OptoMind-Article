@@ -1,0 +1,1603 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_504f8a743b1509b0",
+    "planning_summary": "This portfolio tests three distinct strategy axes for achieving spectral selectivity in thermal infrared emission using only HfO2/SiO2 dielectric stacks on silicon. Route 1 explores periodic quarter-wave Bragg stacks tuned to the 8-13 μm atmospheric window, leveraging constructive interference for high emissivity in the target band. Route 2 tests aperiodic thickness distributions that may broaden the high-emissivity band while maintaining suppression in 3-5 μm. Route 3 investigates a defect-cavity microresonator structure that creates a narrow high-emissivity peak within the atmospheric window. These axes are chosen because they represent fundamentally different physical mechanisms (Bragg reflection vs. graded impedance vs. cavity resonance) that could succeed or fail independently. Literature L01, L04, L11, L16, and L20 support the general approach of multilayer spectral selectivity for thermal management, but none prescribe the exact topology, so each route states its hypothesis clearly.",
+    "routes": [
+      {
+        "route_id": "route_01",
+        "title": "Periodic Quarter-Wave Bragg Stack for 8-13 μm High Emissivity",
+        "route_kind": "periodic_stack",
+        "scientific_hypothesis": "A periodic alternating HfO2/SiO2 quarter-wave stack tuned to the center of the 8-13 μm atmospheric window will produce high emissivity in that band through constructive interference while suppressing emissivity in the 3-5 μm band through destructive interference.",
+        "design_principle": "Quarter-wave optical thickness layers create a photonic bandgap where reflectance is minimized (emissivity maximized) at the design wavelength and its harmonics. By centering the stack at ~10.5 μm, the fundamental resonance falls within the atmospheric window while the 3-5 μm band lies outside the high-emissivity region.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Kischkat)",
+          "si"
+        ],
+        "proposed_topology": "air | (hfo2 | sio2)_6 | si substrate, exactly 12 layers total (6 pairs)",
+        "design_variables": [
+          "individual layer thicknesses for all 12 layers, starting from quarter-wave at 10500 nm center wavelength"
+        ],
+        "soft_objectives": [
+          "maximize mean emissivity in 8000-13000 nm band",
+          "minimize mean emissivity in 3000-5000 nm band",
+          "maintain total layer count at exactly 12"
+        ],
+        "manufacturing_considerations": [
+          "12 layers is well within the 24-layer limit",
+          "quarter-wave thicknesses at 10.5 μm are physically realizable (hundreds of nm to microns)",
+          "HfO2 and SiO2 are standard deposition materials"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L16",
+          "L20"
+        ],
+        "theory_basis": [
+          "Transfer matrix method for multilayer interference",
+          "Kirchhoff's law relating emissivity to absorptance",
+          "Quarter-wave stack bandgap theory"
+        ],
+        "expected_advantages": [
+          "Simple periodic structure is easy to fabricate",
+          "Well-understood physics enables predictable tuning",
+          "Literature L16 and L20 support multilayer selective emitter approach"
+        ],
+        "known_risks": [
+          "Periodic stacks produce narrowband response that may not cover full 8-13 μm window",
+          "Higher-order harmonics could create unwanted emissivity peaks in 3-5 μm band",
+          "Fixed pair count may limit achievable selectivity"
+        ],
+        "execution_request_english": "Design a periodic multilayer dielectric stack on silicon substrate with air incidence. Stack structure: air | (hfo2 | SiO2 (Kischkat))_6 | si, exactly 12 layers total. Optimize individual layer thicknesses for all 12 layers, initialized at quarter-wave optical thickness for 10500 nm center wavelength. Target: maximize emissivity in 8000-13000 nm band, minimize emissivity in 3000-5000 nm band. Wavelength range for evaluation: 3000-13000 nm. Polarization: unpolarized (average TE and TM). Incidence angle: 0 degrees (normal). Material refractive indices from catalog datasets for hfo2, SiO2 (Kischkat), and si. Total layer count fixed at 12.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "route_02",
+        "title": "Aperiodic Thickness-Graded Stack for Broadened 8-13 μm Response",
+        "route_kind": "chirped_stack",
+        "scientific_hypothesis": "An aperiodic HfO2/SiO2 stack with chirped (graded) layer thicknesses will produce broader high-emissivity coverage across the full 8-13 μm atmospheric window compared to a periodic stack, while maintaining low emissivity in 3-5 μm.",
+        "design_principle": "Varying layer thicknesses across the stack creates multiple overlapping resonances that broaden the high-emissivity band. Gradually changing optical thickness from front to back of the stack can create an impedance-matched transition that reduces reflection across a wider wavelength range.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Kischkat)",
+          "si"
+        ],
+        "proposed_topology": "air | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | si substrate, exactly 24 layers total (12 pairs)",
+        "design_variables": [
+          "individual layer thicknesses for all 24 layers, initialized with linear chirp from 8000 nm to 13000 nm quarter-wave values"
+        ],
+        "soft_objectives": [
+          "maximize mean emissivity in 8000-13000 nm band",
+          "minimize mean emissivity in 3000-5000 nm band",
+          "maximize spectral uniformity (minimize variance) within 8000-13000 nm band"
+        ],
+        "manufacturing_considerations": [
+          "24 layers uses the maximum allowed layer count",
+          "chirped thicknesses require precise deposition control",
+          "HfO2 and SiO2 are compatible with standard thin-film processes"
+        ],
+        "evidence_ids": [
+          "L04",
+          "L11",
+          "L22"
+        ],
+        "theory_basis": [
+          "Impedance matching through graded index structures",
+          "Multiple resonance superposition for bandwidth broadening",
+          "Literature L04 and L11 on dual-selective emitters"
+        ],
+        "expected_advantages": [
+          "Full 24-layer budget allows more degrees of freedom for optimization",
+          "Chirped design may achieve broader band coverage than periodic approach",
+          "Literature L04 supports dual-selective emitter concept"
+        ],
+        "known_risks": [
+          "More layers increase fabrication complexity and potential for defects",
+          "Aperiodic optimization may converge to local minima",
+          "L22 notes temperature-dependent effects not modeled here"
+        ],
+        "execution_request_english": "Design an aperiodic multilayer dielectric stack on silicon substrate with air incidence. Stack structure: air | (hfo2 | SiO2 (Kischkat))_12 | si, exactly 24 layers total. Optimize individual layer thicknesses for all 24 layers, initialized with linear chirp from quarter-wave at 8000 nm (front) to quarter-wave at 13000 nm (back). Target: maximize mean emissivity in 8000-13000 nm band, minimize mean emissivity in 3000-5000 nm band, maximize spectral uniformity within 8000-13000 nm. Wavelength range for evaluation: 3000-13000 nm. Polarization: unpolarized (average TE and TM). Incidence angle: 0 degrees (normal). Material refractive indices from catalog datasets for hfo2, SiO2 (Kischkat), and si. Total layer count fixed at 24.",
+        "priority": 2,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "route_03",
+        "title": "Defect Cavity Microresonator for Narrowband 8-13 μm Peak",
+        "route_kind": "defect_cavity",
+        "scientific_hypothesis": "A Fabry-Perot microcavity formed by HfO2/SiO2 Bragg mirrors with a central defect layer will produce a sharp high-emissivity resonance within the 8-13 μm atmospheric window while maintaining very low emissivity outside the resonance, including the 3-5 μm band.",
+        "design_principle": "Two Bragg mirror stacks sandwich a cavity layer whose optical thickness creates a resonant mode within the mirror bandgap. This produces a narrow transmission (high emissivity) peak at the cavity resonance wavelength while the mirrors suppress emission elsewhere.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Kischkat)",
+          "si"
+        ],
+        "proposed_topology": "air | (hfo2 | sio2)_4 | hfo2 (cavity) | (sio2 | hfo2)_4 | si substrate, exactly 17 layers total (8 mirror layers + 1 cavity + 8 mirror layers)",
+        "design_variables": [
+          "mirror layer thicknesses (8 pairs, 16 layers) at quarter-wave for 10500 nm, cavity layer thickness (1 layer) tuned for resonance position within 8000-13000 nm"
+        ],
+        "soft_objectives": [
+          "maximize peak emissivity at cavity resonance within 8000-13000 nm",
+          "minimize emissivity in 3000-5000 nm band",
+          "position resonance near 10500 nm center of atmospheric window"
+        ],
+        "manufacturing_considerations": [
+          "17 layers is within the 24-layer limit",
+          "cavity thickness precision critical for resonance positioning",
+          "Bragg mirrors require consistent layer thickness control"
+        ],
+        "evidence_ids": [
+          "L08",
+          "L19",
+          "L31"
+        ],
+        "theory_basis": [
+          "Fabry-Perot resonator theory",
+          "Defect mode in photonic bandgap structures",
+          "Literature L08 on quasi-optical microcavity, L19 on resonator structures for emissivity tuning"
+        ],
+        "expected_advantages": [
+          "Very high peak emissivity achievable at resonance",
+          "Strong suppression outside resonance band",
+          "Literature L08 and L19 support microcavity approach for spectral control"
+        ],
+        "known_risks": [
+          "Narrow resonance may not cover full 8-13 μm window, reducing integrated emissivity",
+          "Resonance position sensitive to thickness errors",
+          "L19 notes phase-change materials not used here, limiting tunability"
+        ],
+        "execution_request_english": "Design a defect-cavity multilayer dielectric stack on silicon substrate with air incidence. Stack structure: air | (hfo2 | SiO2 (Kischkat))_4 | hfo2_cavity | (SiO2 (Kischkat) | hfo2)_4 | si, exactly 17 layers total. Optimize mirror layer thicknesses (16 layers) at quarter-wave for 10500 nm, and cavity layer thickness (1 layer) to position resonance within 8000-13000 nm band. Target: maximize peak emissivity at resonance, minimize emissivity in 3000-5000 nm band. Wavelength range for evaluation: 3000-13000 nm. Polarization: unpolarized (average TE and TM). Incidence angle: 0 degrees (normal). Material refractive indices from catalog datasets for hfo2, SiO2 (Kischkat), and si. Total layer count fixed at 17.",
+        "priority": 3,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      {
+        "route_id": "control_route_01",
+        "title": "DBR-based spectral emissivity selector tuned to 3-5 μm reflection band",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A quarter-wave stack centered at 4 μm using HfO2/SiO2 pairs will produce high reflectance (low emissivity) in the 3-5 μm band while maintaining sufficient transmittance to allow silicon substrate emission in the 8-13 μm band.",
+        "design_principle": "Distributed Bragg reflectors create stopbands where reflectance is high when layer optical thicknesses satisfy the quarter-wave condition at a center wavelength. Emissivity equals absorptance per Kirchhoff's law, so high reflectance corresponds to low emissivity. By tuning the Bragg center to 3-5 μm, the stack should suppress emission there while remaining relatively transparent at longer wavelengths where the optical thickness no longer satisfies the Bragg condition.",
+        "proposed_materials": [
+          "hfo2",
+          "SiO2 (Kischkat)",
+          "si"
+        ],
+        "proposed_topology": "air | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | si",
+        "design_variables": [
+          "thickness_hfo2_layer_1_nm",
+          "thickness_sio2_layer_2_nm",
+          "thickness_hfo2_layer_3_nm",
+          "thickness_sio2_layer_4_nm",
+          "thickness_hfo2_layer_5_nm",
+          "thickness_sio2_layer_6_nm",
+          "thickness_hfo2_layer_7_nm",
+          "thickness_sio2_layer_8_nm",
+          "thickness_hfo2_layer_9_nm",
+          "thickness_sio2_layer_10_nm",
+          "thickness_hfo2_layer_11_nm",
+          "thickness_sio2_layer_12_nm",
+          "thickness_hfo2_layer_13_nm",
+          "thickness_sio2_layer_14_nm",
+          "thickness_hfo2_layer_15_nm",
+          "thickness_sio2_layer_16_nm",
+          "thickness_hfo2_layer_17_nm",
+          "thickness_sio2_layer_18_nm",
+          "thickness_hfo2_layer_19_nm",
+          "thickness_sio2_layer_20_nm"
+        ],
+        "soft_objectives": [
+          "maximize mean emissivity in 8000-13000 nm band",
+          "minimize mean emissivity in 3000-5000 nm band",
+          "maintain smooth spectral response without sharp resonant spikes"
+        ],
+        "manufacturing_considerations": [
+          "total layer count is 20, within the 24 layer limit",
+          "all layers are dielectric materials compatible with standard deposition",
+          "individual layer thicknesses should remain in practical deposition range (tens to thousands of nm)"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Recalled: Quarter-wave stacks produce maximum reflectance when each layer optical thickness equals λ/4 at the design wavelength",
+          "Recalled: HfO2 has higher refractive index than SiO2 in the infrared, providing index contrast for Bragg reflection",
+          "Recalled: Emissivity equals absorptance for opaque or semi-opaque systems per Kirchhoff's law of thermal radiation",
+          "Recalled: Bragg stopband width increases with refractive index contrast between alternating layers",
+          "Recalled: Silicon substrate is absorptive in the thermal IR and will contribute to emission if the overlying stack is transparent"
+        ],
+        "expected_advantages": [
+          "Simple periodic topology reduces optimization complexity",
+          "Quarter-wave starting point provides physically reasonable initial thicknesses",
+          "20 layers provides sufficient optical depth for strong reflection in the target band",
+          "Dielectric-only stack avoids metallic absorption losses"
+        ],
+        "known_risks": [
+          "Uncertain: Exact refractive index values of hfo2 and sio2 at 3-13 μm wavelengths - the catalog data will determine actual optical behavior",
+          "Uncertain: Whether 10 pairs provides sufficient reflectance at 3-5 μm without excessive reflection at 8-13 μm - may need to adjust pair count",
+          "Uncertain: Silicon substrate extinction coefficient at these wavelengths affects baseline emission - catalog data required",
+          "Uncertain: Whether quarter-wave condition at 4 μm is the optimal center wavelength - 3.5 μm or 4.5 μm might perform better",
+          "Risk: If hfo2 or sio2 have significant absorption in 8-13 μm, the stack itself will emit rather than transmit substrate emission"
+        ],
+        "execution_request_english": "Optimize a 20-layer planar multilayer dielectric stack on silicon substrate with air incidence. Stack sequence: air | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | si. All 20 dielectric layer thicknesses are independent optimization variables. Target wavelength bands: 3000-5000 nm (minimize emissivity) and 8000-13000 nm (maximize emissivity). Polarization: unpolarized or average of TE and TM. Incidence angle: 0 degrees (normal incidence). Materials: hfo2, SiO2 (Kischkat), si from catalog. Evaluate emissivity as 1 minus reflectance minus transmittance, or directly as absorptance per Kirchhoff's law. Optimize thicknesses to maximize emissivity in 8000-13000 nm while minimizing emissivity in 3000-5000 nm.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      }
+    ],
+    "research_influence": [
+      "L01 and L16 motivated the general multilayer selective emitter approach used in route_01, supporting periodic Bragg stack design for infrared stealth applications",
+      "L04 and L11 influenced route_02's dual-selective design principle, emphasizing the need for both high emission in atmospheric window and low emission elsewhere",
+      "L08 and L19 informed route_03's microcavity approach, with L08 specifically discussing quasi-optical microcavity structures for spectral selectivity",
+      "L20 reinforced the feasibility of near-perfect spectral selectivity through multilayer design, supporting all three routes' objectives",
+      "L22 was noted as a risk factor for route_02, warning that temperature-dependent effects may affect static emitter performance"
+    ],
+    "unresolved_decisions": [
+      "Incidence angle was not specified in the request; all routes assume normal incidence (0 degrees) as a baseline hypothesis that could be tested in future work",
+      "Polarization state was not specified; all routes use unpolarized (TE+TM average) as the default for thermal emission applications",
+      "The exact refractive index datasets for hfo2 and sio2 in the 3-13 μm range will be resolved by the material catalog at execution time"
+    ],
+    "stop_if_all_routes_fail": "If all three routes fail to achieve best_target_score above 0.5 after exhausting their stop conditions, the fundamental constraint of using only HfO2/SiO2 dielectrics without metallic or absorbing layers may be insufficient for the required spectral selectivity; consider expanding material palette or accepting reduced performance targets.",
+    "route_sources": {
+      "route_01": "literature_planned",
+      "route_02": "literature_planned",
+      "route_03": "literature_planned",
+      "control_route_01": "llm_memory_control"
+    },
+    "normal_route_count": 3,
+    "control_route_count": 1,
+    "control_route": {
+      "route_id": "control_route_01",
+      "source": "llm_memory_control",
+      "knowledge_source": "model_prior_knowledge_only",
+      "s2_literature_included": false,
+      "method_research_supplied": false
+    }
+  },
+  "attempts": 1,
+  "normalization_warnings": [],
+  "usage": [
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 10010,
+      "completion_tokens": 4207,
+      "total_tokens": 14217
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 2695,
+      "completion_tokens": 13079,
+      "total_tokens": 15774
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 2695,
+      "completion_tokens": 2297,
+      "total_tokens": 4992
+    },
+    {
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "prompt_tokens": 2695,
+      "completion_tokens": 2593,
+      "total_tokens": 5288
+    }
+  ],
+  "model_name": "qwen3.5-plus",
+  "planning_mechanism": "literature_route_planning",
+  "control_route_planning": {
+    "schema_version": "tmm-control-route-planning.v1",
+    "status": "planned",
+    "model_name": "qwen3.5-plus",
+    "question_digest": "504f8a743b1509b0",
+    "route_count": 1,
+    "attempts": 1,
+    "warnings": [],
+    "validation_errors": [],
+    "queries": {
+      "status": "unavailable",
+      "queries": [],
+      "rationale": "",
+      "attempts": 0,
+      "validation_errors": [],
+      "usage": []
+    },
+    "literature": {
+      "status": "not_consulted",
+      "requested_limit": 0,
+      "returned": 0,
+      "duplicates_dropped": 0,
+      "dropped_for_context": 0,
+      "character_count": 0,
+      "errors": [
+        "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction."
+      ],
+      "papers": []
+    },
+    "planning_usage": [
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 3180,
+        "completion_tokens": 2740,
+        "total_tokens": 5920
+      },
+      {
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "prompt_tokens": 2695,
+        "completion_tokens": 3692,
+        "total_tokens": 6387
+      }
+    ],
+    "material_verification": {
+      "checked": true,
+      "catalog": {
+        "schema_version": "1.0",
+        "guaranteed_names": [
+          "ag",
+          "al",
+          "al2o3",
+          "aln",
+          "hfo2",
+          "mgf2",
+          "si",
+          "si3n4",
+          "sic",
+          "sio2",
+          "ti",
+          "tio2",
+          "zno",
+          "zns"
+        ],
+        "coverage": "the guaranteed-name list proves name resolution only; the separate route candidate ranking reads actual n/k grids and records native coverage or explicit interpolation/endpoint-extension availability. Execution still keeps the registry's allow_extrapolation switch fail-closed",
+        "source": "tmm_engine.MaterialRegistry local provider, each name resolved before listing",
+        "candidate_ranking": {
+          "schema_version": "material-candidate-ranking.v1",
+          "max_candidates": 10,
+          "equal_weight_metrics": [
+            "target_band_coverage",
+            "n_k_completeness",
+            "sampling_density"
+          ]
+        },
+        "internal_selector": {
+          "schema_version": "route-material-selector.v1",
+          "enabled": true,
+          "model": "qwen3.5-plus",
+          "max_tokens": 1800
+        },
+        "catalog_status": {
+          "local_csv": {
+            "provider": "local_csv",
+            "materials_dir": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials",
+            "dataset_count": 14
+          },
+          "rii_sqlite": {
+            "provider": "rii_sqlite",
+            "database_path": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\rii_cache.db",
+            "available": true,
+            "page_count": 2712,
+            "refractive_index_point_count": 252442,
+            "extinction_coefficient_point_count": 209839,
+            "database_size_bytes": 13070336,
+            "database_mtime_epoch": 1788067314.2741244,
+            "database_sha256": "e4c1ec34cc4f765a8400ff87bb7dee8705b6da2cdb11a229cc57ad9bdd274989",
+            "upstream": "https://refractiveindex.info and https://github.com/polyanskiy/refractiveindex.info-database",
+            "license": "CC0-1.0"
+          }
+        }
+      },
+      "routes": {
+        "control_route_01": {
+          "selection": {
+            "schema_version": "route-material-selector.v1",
+            "ranking_schema_version": "material-candidate-ranking.v1",
+            "status": "selected_by_llm",
+            "selection_method": "ranked_candidates_then_internal_llm",
+            "max_candidates": 10,
+            "target_wavelength_ranges_um": [
+              [
+                3.0,
+                5.0
+              ],
+              [
+                8.0,
+                13.0
+              ]
+            ],
+            "user_question": "我需要为热光伏系统的低温发射端设计一个热红外发射率调控膜：在 8000-13000 nm（8-13 微米）大气窗口内具有尽可能高的发射率（即高吸收/高发射），而在 3000-5000 nm（3-5 微米）波段的发射率尽可能低以减少非目标波段的热损失。请在空气入射、硅基底条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 24 层。",
+            "requests": [
+              {
+                "request_id": "material_01",
+                "proposed_material": "hfo2",
+                "target_wavelength_ranges_um": [
+                  [
+                    3.0,
+                    5.0
+                  ],
+                  [
+                    8.0,
+                    13.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "hfo2",
+                    "resolved_material": "hfo2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Hf",
+                        1
+                      ],
+                      [
+                        "O",
+                        2
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Hf",
+                        1
+                      ],
+                      [
+                        "O",
+                        2
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "hfo2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "hfo2.csv",
+                    "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 702,
+                    "k_points_in_band": 702,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 1,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "local_csv",
+                  "dataset_id": "hfo2",
+                  "reason": "Exact formula match HfO2, highest physical rank 1"
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "hfo2",
+                  "resolved_material": "hfo2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Hf",
+                      1
+                    ],
+                    [
+                      "O",
+                      2
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Hf",
+                      1
+                    ],
+                    [
+                      "O",
+                      2
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "hfo2",
+                  "shelf": null,
+                  "book": null,
+                  "page": "hfo2.csv",
+                  "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 702,
+                  "k_points_in_band": 702,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                },
+                "selected_material": "hfo2"
+              },
+              {
+                "request_id": "material_02",
+                "proposed_material": "sio2",
+                "target_wavelength_ranges_um": [
+                  [
+                    3.0,
+                    5.0
+                  ],
+                  [
+                    8.0,
+                    13.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "SiO2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "rii_sqlite",
+                    "dataset_id": 408,
+                    "shelf": "main",
+                    "book": "SiO2",
+                    "page": "Kischkat",
+                    "filepath": "main\\SiO2\\Kischkat.yml",
+                    "range_um": [
+                      1.53846,
+                      14.28571
+                    ],
+                    "grid_range_um": [
+                      1.53846,
+                      14.28571
+                    ],
+                    "n_range_um": [
+                      1.53846,
+                      14.28571
+                    ],
+                    "k_range_um": [
+                      1.53846,
+                      14.28571
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 1451,
+                    "n_points_in_band": 454,
+                    "k_points_in_band": 454,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.006784999999999819,
+                    "sampling_density": 147.38393515107248,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      1451
+                    ]
+                  },
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 2,
+                    "material": "sio2",
+                    "resolved_material": "sio2",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "O",
+                        2
+                      ],
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "sio2",
+                    "shelf": null,
+                    "book": null,
+                    "page": "sio2.csv",
+                    "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\sio2.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 702,
+                    "k_points_in_band": 702,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 0.6784999999999963,
+                    "score": 0.892833333333332,
+                    "physical_score": 0.892833333333332,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 2,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "rii_sqlite",
+                  "dataset_id": 408,
+                  "reason": "Exact formula match SiO2, highest physical rank 1"
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "SiO2",
+                  "resolved_material": "sio2",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "O",
+                      2
+                    ],
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "O",
+                      2
+                    ],
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "provider": "rii_sqlite",
+                  "dataset_id": 408,
+                  "shelf": "main",
+                  "book": "SiO2",
+                  "page": "Kischkat",
+                  "filepath": "main\\SiO2\\Kischkat.yml",
+                  "range_um": [
+                    1.53846,
+                    14.28571
+                  ],
+                  "grid_range_um": [
+                    1.53846,
+                    14.28571
+                  ],
+                  "n_range_um": [
+                    1.53846,
+                    14.28571
+                  ],
+                  "k_range_um": [
+                    1.53846,
+                    14.28571
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 1451,
+                  "n_points_in_band": 454,
+                  "k_points_in_band": 454,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.006784999999999819,
+                  "sampling_density": 147.38393515107248,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    1451
+                  ]
+                },
+                "selected_material": "SiO2 (Kischkat)"
+              },
+              {
+                "request_id": "material_03",
+                "proposed_material": "si",
+                "target_wavelength_ranges_um": [
+                  [
+                    3.0,
+                    5.0
+                  ],
+                  [
+                    8.0,
+                    13.0
+                  ]
+                ],
+                "candidates": [
+                  {
+                    "ranking_schema_version": "material-candidate-ranking.v1",
+                    "rank": 1,
+                    "material": "si",
+                    "resolved_material": "si",
+                    "semantic_match": "exact_formula",
+                    "formula_exact": true,
+                    "formula_signature": [
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "requested_formula_signature": [
+                      [
+                        "Si",
+                        1
+                      ]
+                    ],
+                    "provider": "local_csv",
+                    "dataset_id": "si",
+                    "shelf": null,
+                    "book": null,
+                    "page": "si.csv",
+                    "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\si.csv",
+                    "range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "grid_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "n_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "k_range_um": [
+                      0.2,
+                      25.0
+                    ],
+                    "full_coverage": true,
+                    "native_nk_full_coverage": true,
+                    "has_n": true,
+                    "has_k": true,
+                    "points": 2481,
+                    "n_points_in_band": 702,
+                    "k_points_in_band": 702,
+                    "band_coverage_fraction": 1.0,
+                    "target_band_coverage_score": 1.0,
+                    "n_coverage_fraction": 1.0,
+                    "k_coverage_fraction": 1.0,
+                    "n_k_completeness_score": 1.0,
+                    "effective_step_um": 0.009999999999999787,
+                    "sampling_density": 100.00000000000213,
+                    "sampling_score": 1.0,
+                    "score": 1.0,
+                    "physical_score": 1.0,
+                    "grid_source": "source_grid",
+                    "grid_load_error": null,
+                    "interpolation_available": true,
+                    "interpolation_mode": "native",
+                    "native_candidate_pool_used": true,
+                    "partial_candidate_fallback": false,
+                    "rank_key": [
+                      1,
+                      0,
+                      1,
+                      2481
+                    ]
+                  }
+                ],
+                "compatible_candidate_count": 1,
+                "status": "ranked",
+                "llm_selection": {
+                  "selected_rank": 1,
+                  "provider": "local_csv",
+                  "dataset_id": "si",
+                  "reason": "Exact formula match Si for substrate, highest physical rank 1"
+                },
+                "selected_candidate": {
+                  "ranking_schema_version": "material-candidate-ranking.v1",
+                  "rank": 1,
+                  "material": "si",
+                  "resolved_material": "si",
+                  "semantic_match": "exact_formula",
+                  "formula_exact": true,
+                  "formula_signature": [
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "requested_formula_signature": [
+                    [
+                      "Si",
+                      1
+                    ]
+                  ],
+                  "provider": "local_csv",
+                  "dataset_id": "si",
+                  "shelf": null,
+                  "book": null,
+                  "page": "si.csv",
+                  "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\si.csv",
+                  "range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "grid_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "n_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "k_range_um": [
+                    0.2,
+                    25.0
+                  ],
+                  "full_coverage": true,
+                  "native_nk_full_coverage": true,
+                  "has_n": true,
+                  "has_k": true,
+                  "points": 2481,
+                  "n_points_in_band": 702,
+                  "k_points_in_band": 702,
+                  "band_coverage_fraction": 1.0,
+                  "target_band_coverage_score": 1.0,
+                  "n_coverage_fraction": 1.0,
+                  "k_coverage_fraction": 1.0,
+                  "n_k_completeness_score": 1.0,
+                  "effective_step_um": 0.009999999999999787,
+                  "sampling_density": 100.00000000000213,
+                  "sampling_score": 1.0,
+                  "score": 1.0,
+                  "physical_score": 1.0,
+                  "grid_source": "source_grid",
+                  "grid_load_error": null,
+                  "interpolation_available": true,
+                  "interpolation_mode": "native",
+                  "native_candidate_pool_used": true,
+                  "partial_candidate_fallback": false,
+                  "rank_key": [
+                    1,
+                    0,
+                    1,
+                    2481
+                  ]
+                },
+                "selected_material": "si"
+              }
+            ],
+            "call_count": 1,
+            "selector_payload": {
+              "schema_version": "route-material-selector.v1",
+              "user_question": "我需要为热光伏系统的低温发射端设计一个热红外发射率调控膜：在 8000-13000 nm（8-13 微米）大气窗口内具有尽可能高的发射率（即高吸收/高发射），而在 3000-5000 nm（3-5 微米）波段的发射率尽可能低以减少非目标波段的热损失。请在空气入射、硅基底条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 24 层。",
+              "target_wavelength_ranges_um": [
+                [
+                  3.0,
+                  5.0
+                ],
+                [
+                  8.0,
+                  13.0
+                ]
+              ],
+              "selection_rule": "Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.",
+              "requests": [
+                {
+                  "request_id": "material_01",
+                  "proposed_material": "hfo2",
+                  "target_wavelength_ranges_um": [
+                    [
+                      3.0,
+                      5.0
+                    ],
+                    [
+                      8.0,
+                      13.0
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "hfo2",
+                      "resolved_material": "hfo2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "Hf",
+                          1
+                        ],
+                        [
+                          "O",
+                          2
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "Hf",
+                          1
+                        ],
+                        [
+                          "O",
+                          2
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "hfo2",
+                      "shelf": null,
+                      "book": null,
+                      "page": "hfo2.csv",
+                      "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 702,
+                      "k_points_in_band": 702,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.009999999999999787,
+                      "sampling_density": 100.00000000000213,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 1,
+                  "status": "ranked"
+                },
+                {
+                  "request_id": "material_02",
+                  "proposed_material": "sio2",
+                  "target_wavelength_ranges_um": [
+                    [
+                      3.0,
+                      5.0
+                    ],
+                    [
+                      8.0,
+                      13.0
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "SiO2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "rii_sqlite",
+                      "dataset_id": 408,
+                      "shelf": "main",
+                      "book": "SiO2",
+                      "page": "Kischkat",
+                      "filepath": "main\\SiO2\\Kischkat.yml",
+                      "range_um": [
+                        1.53846,
+                        14.28571
+                      ],
+                      "grid_range_um": [
+                        1.53846,
+                        14.28571
+                      ],
+                      "n_range_um": [
+                        1.53846,
+                        14.28571
+                      ],
+                      "k_range_um": [
+                        1.53846,
+                        14.28571
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 1451,
+                      "n_points_in_band": 454,
+                      "k_points_in_band": 454,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.006784999999999819,
+                      "sampling_density": 147.38393515107248,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        1451
+                      ]
+                    },
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 2,
+                      "material": "sio2",
+                      "resolved_material": "sio2",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "O",
+                          2
+                        ],
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "sio2",
+                      "shelf": null,
+                      "book": null,
+                      "page": "sio2.csv",
+                      "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\sio2.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 702,
+                      "k_points_in_band": 702,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.009999999999999787,
+                      "sampling_density": 100.00000000000213,
+                      "sampling_score": 0.6784999999999963,
+                      "score": 0.892833333333332,
+                      "physical_score": 0.892833333333332,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 2,
+                  "status": "ranked"
+                },
+                {
+                  "request_id": "material_03",
+                  "proposed_material": "si",
+                  "target_wavelength_ranges_um": [
+                    [
+                      3.0,
+                      5.0
+                    ],
+                    [
+                      8.0,
+                      13.0
+                    ]
+                  ],
+                  "candidates": [
+                    {
+                      "ranking_schema_version": "material-candidate-ranking.v1",
+                      "rank": 1,
+                      "material": "si",
+                      "resolved_material": "si",
+                      "semantic_match": "exact_formula",
+                      "formula_exact": true,
+                      "formula_signature": [
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "requested_formula_signature": [
+                        [
+                          "Si",
+                          1
+                        ]
+                      ],
+                      "provider": "local_csv",
+                      "dataset_id": "si",
+                      "shelf": null,
+                      "book": null,
+                      "page": "si.csv",
+                      "filepath": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\si.csv",
+                      "range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "grid_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "n_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "k_range_um": [
+                        0.2,
+                        25.0
+                      ],
+                      "full_coverage": true,
+                      "native_nk_full_coverage": true,
+                      "has_n": true,
+                      "has_k": true,
+                      "points": 2481,
+                      "n_points_in_band": 702,
+                      "k_points_in_band": 702,
+                      "band_coverage_fraction": 1.0,
+                      "target_band_coverage_score": 1.0,
+                      "n_coverage_fraction": 1.0,
+                      "k_coverage_fraction": 1.0,
+                      "n_k_completeness_score": 1.0,
+                      "effective_step_um": 0.009999999999999787,
+                      "sampling_density": 100.00000000000213,
+                      "sampling_score": 1.0,
+                      "score": 1.0,
+                      "physical_score": 1.0,
+                      "grid_source": "source_grid",
+                      "grid_load_error": null,
+                      "interpolation_available": true,
+                      "interpolation_mode": "native",
+                      "native_candidate_pool_used": true,
+                      "partial_candidate_fallback": false,
+                      "rank_key": [
+                        1,
+                        0,
+                        1,
+                        2481
+                      ]
+                    }
+                  ],
+                  "compatible_candidate_count": 1,
+                  "status": "ranked"
+                }
+              ]
+            },
+            "selector_prompt": {
+              "system": "You are the internal material-dataset selector inside a scientific TMM\nharness. This is not route planning and you must not redesign the route.\nReturn exactly one JSON object and no markdown:\n{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":562,\"reason\":\"...\"}]}\n\nThe user question is authoritative. Each request contains candidates already\nretrieved from the local MaterialRegistry and sorted by three equal physical\nmetrics: target-band coverage, n/k completeness, and sampling density. Rank 1\nis the most physically reliable candidate; lower rank means less reliable.\nChoose exactly one candidate from the supplied list for every request. Never\ninvent, rename, or edit a provider or dataset_id. The selected_rank must point\nto the selected array element, and provider/dataset_id must copy that element.\n\nMaterial identity, stoichiometry, explicit material state/preparation, and an\nexplicit requested source are hard constraints. A candidate with\nformula_exact=false or semantic_match=same_element_family is not an allowed\nsubstitute for a formula request. SiO is not SiO2, even if the SiO2 candidate\nhas better physical coverage. When several candidates satisfy the hard\nconstraints, select the highest-ranked one (usually rank 1). If no candidate\nsatisfies them, return selected_rank:null, provider:null, dataset_id:null and\nreason:\"needs_confirmation\" for that request.",
+              "user": "{\"requests\": [{\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"hfo2\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"C:\\\\Users\\\\huyas\\\\Desktop\\\\OptoMind-Article-2\\\\veritmm\\\\tmm_engine\\\\materials\\\\hfo2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"Hf\", 1], [\"O\", 2]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 702, \"k_range_um\": [0.2, 25.0], \"material\": \"hfo2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 702, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"hfo2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Hf\", 1], [\"O\", 2]], \"resolved_material\": \"hfo2\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 1, \"proposed_material\": \"hfo2\", \"request_id\": \"material_01\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[3.0, 5.0], [8.0, 13.0]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": \"SiO2\", \"dataset_id\": 408, \"effective_step_um\": 0.006784999999999819, \"filepath\": \"main\\\\SiO2\\\\Kischkat.yml\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [1.53846, 14.28571], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 454, \"k_range_um\": [1.53846, 14.28571], \"material\": \"SiO2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 454, \"n_range_um\": [1.53846, 14.28571], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"Kischkat\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 1451, \"provider\": \"rii_sqlite\", \"range_um\": [1.53846, 14.28571], \"rank\": 1, \"rank_key\": [1, 0, 1, 1451], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 147.38393515107248, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": \"main\", \"target_band_coverage_score\": 1.0}, {\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"sio2\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"C:\\\\Users\\\\huyas\\\\Desktop\\\\OptoMind-Article-2\\\\veritmm\\\\tmm_engine\\\\materials\\\\sio2.csv\", \"formula_exact\": true, \"formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 702, \"k_range_um\": [0.2, 25.0], \"material\": \"sio2\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 702, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"sio2.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 0.892833333333332, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 2, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"O\", 2], [\"Si\", 1]], \"resolved_material\": \"sio2\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 0.6784999999999963, \"score\": 0.892833333333332, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 2, \"proposed_material\": \"sio2\", \"request_id\": \"material_02\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[3.0, 5.0], [8.0, 13.0]]}, {\"candidates\": [{\"band_coverage_fraction\": 1.0, \"book\": null, \"dataset_id\": \"si\", \"effective_step_um\": 0.009999999999999787, \"filepath\": \"C:\\\\Users\\\\huyas\\\\Desktop\\\\OptoMind-Article-2\\\\veritmm\\\\tmm_engine\\\\materials\\\\si.csv\", \"formula_exact\": true, \"formula_signature\": [[\"Si\", 1]], \"full_coverage\": true, \"grid_load_error\": null, \"grid_range_um\": [0.2, 25.0], \"grid_source\": \"source_grid\", \"has_k\": true, \"has_n\": true, \"interpolation_available\": true, \"interpolation_mode\": \"native\", \"k_coverage_fraction\": 1.0, \"k_points_in_band\": 702, \"k_range_um\": [0.2, 25.0], \"material\": \"si\", \"n_coverage_fraction\": 1.0, \"n_k_completeness_score\": 1.0, \"n_points_in_band\": 702, \"n_range_um\": [0.2, 25.0], \"native_candidate_pool_used\": true, \"native_nk_full_coverage\": true, \"page\": \"si.csv\", \"partial_candidate_fallback\": false, \"physical_score\": 1.0, \"points\": 2481, \"provider\": \"local_csv\", \"range_um\": [0.2, 25.0], \"rank\": 1, \"rank_key\": [1, 0, 1, 2481], \"ranking_schema_version\": \"material-candidate-ranking.v1\", \"requested_formula_signature\": [[\"Si\", 1]], \"resolved_material\": \"si\", \"sampling_density\": 100.00000000000213, \"sampling_score\": 1.0, \"score\": 1.0, \"semantic_match\": \"exact_formula\", \"shelf\": null, \"target_band_coverage_score\": 1.0}], \"compatible_candidate_count\": 1, \"proposed_material\": \"si\", \"request_id\": \"material_03\", \"status\": \"ranked\", \"target_wavelength_ranges_um\": [[3.0, 5.0], [8.0, 13.0]]}], \"schema_version\": \"route-material-selector.v1\", \"selection_rule\": \"Candidates are pre-ranked by three equal physical metrics: target-band coverage, n/k completeness, and sampling density. Rank 1 is the most physically reliable candidate. Use the highest-ranked candidate that also satisfies the user's exact material formula, state and source constraints. Never replace SiO with SiO2 or another stoichiometry.\", \"target_wavelength_ranges_um\": [[3.0, 5.0], [8.0, 13.0]], \"user_question\": \"我需要为热光伏系统的低温发射端设计一个热红外发射率调控膜：在 8000-13000 nm（8-13 微米）大气窗口内具有尽可能高的发射率（即高吸收/高发射），而在 3000-5000 nm（3-5 微米）波段的发射率尽可能低以减少非目标波段的热损失。请在空气入射、硅基底条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 24 层。\"}",
+              "sha256": "a33cb67b9369aa087a53aae47b50b4baf559661f838135b3cfa3274f1ac724e4"
+            },
+            "selector_model": "qwen3.5-plus",
+            "selector_response": {
+              "raw_content": "{\"selections\":[{\"request_id\":\"material_01\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"hfo2\",\"reason\":\"Exact formula match HfO2, highest physical rank 1\"},{\"request_id\":\"material_02\",\"selected_rank\":1,\"provider\":\"rii_sqlite\",\"dataset_id\":408,\"reason\":\"Exact formula match SiO2, highest physical rank 1\"},{\"request_id\":\"material_03\",\"selected_rank\":1,\"provider\":\"local_csv\",\"dataset_id\":\"si\",\"reason\":\"Exact formula match Si for substrate, highest physical rank 1\"}]}",
+              "sha256": "b974fda22c2470d74fc5eb4c36dab2e22923e1a487917f36c1414cefdcd4e7ee",
+              "usage": {
+                "model_name": "qwen3.5-plus",
+                "mock_llm": false,
+                "prompt_tokens": 2695,
+                "completion_tokens": 3692,
+                "total_tokens": 6387
+              }
+            }
+          },
+          "resolved": [
+            {
+              "proposed": "hfo2",
+              "ok": true,
+              "resolved": "hfo2",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "local_csv",
+              "dataset_id": "hfo2",
+              "source": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\hfo2.csv",
+              "coverage_um": [
+                0.2,
+                25.0
+              ],
+              "dataset": "local_csv:hfo2"
+            },
+            {
+              "proposed": "SiO2 (Kischkat)",
+              "ok": true,
+              "resolved": "sio2",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "rii_sqlite",
+              "dataset_id": "408",
+              "source": "main\\SiO2\\Kischkat.yml",
+              "coverage_um": [
+                1.53846,
+                14.28571
+              ],
+              "dataset": "rii_sqlite:408"
+            },
+            {
+              "proposed": "si",
+              "ok": true,
+              "resolved": "si",
+              "code": null,
+              "detail": null,
+              "choices": [],
+              "near": [],
+              "where": "proposed_materials",
+              "dataset_names": [],
+              "provider": "local_csv",
+              "dataset_id": "si",
+              "source": "C:\\Users\\huyas\\Desktop\\OptoMind-Article-2\\veritmm\\tmm_engine\\materials\\si.csv",
+              "coverage_um": [
+                0.2,
+                25.0
+              ],
+              "dataset": "local_csv:si"
+            }
+          ]
+        }
+      },
+      "repaired": []
+    },
+    "plan": {
+      "problem_id": "tmm_problem_504f8a743b1509b0",
+      "planning_summary": "This control axis tests whether a distributed Bragg reflector (DBR) design tuned to reflect at 3-5 μm while remaining transparent at 8-13 μm can achieve the spectral emissivity selectivity required for thermophotovoltaic cold emitter applications. The design draws on recalled knowledge of interference-based multilayer optics: alternating high/low index dielectric layers create wavelength-selective reflectance bands. By centering the Bragg condition at approximately 4 μm, the stack should suppress emissivity in the 3-5 μm band while allowing the silicon substrate to emit in the 8-13 μm atmospheric window. This route was planned from the model's own prior knowledge alone with no literature retrieval.",
+      "routes": [
+        {
+          "route_id": "control_route_01",
+          "title": "DBR-based spectral emissivity selector tuned to 3-5 μm reflection band",
+          "route_kind": "optimize_existing_stack",
+          "scientific_hypothesis": "A quarter-wave stack centered at 4 μm using HfO2/SiO2 pairs will produce high reflectance (low emissivity) in the 3-5 μm band while maintaining sufficient transmittance to allow silicon substrate emission in the 8-13 μm band.",
+          "design_principle": "Distributed Bragg reflectors create stopbands where reflectance is high when layer optical thicknesses satisfy the quarter-wave condition at a center wavelength. Emissivity equals absorptance per Kirchhoff's law, so high reflectance corresponds to low emissivity. By tuning the Bragg center to 3-5 μm, the stack should suppress emission there while remaining relatively transparent at longer wavelengths where the optical thickness no longer satisfies the Bragg condition.",
+          "proposed_materials": [
+            "hfo2",
+            "SiO2 (Kischkat)",
+            "si"
+          ],
+          "proposed_topology": "air | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | hfo2 | sio2 | si",
+          "design_variables": [
+            "thickness_hfo2_layer_1_nm",
+            "thickness_sio2_layer_2_nm",
+            "thickness_hfo2_layer_3_nm",
+            "thickness_sio2_layer_4_nm",
+            "thickness_hfo2_layer_5_nm",
+            "thickness_sio2_layer_6_nm",
+            "thickness_hfo2_layer_7_nm",
+            "thickness_sio2_layer_8_nm",
+            "thickness_hfo2_layer_9_nm",
+            "thickness_sio2_layer_10_nm",
+            "thickness_hfo2_layer_11_nm",
+            "thickness_sio2_layer_12_nm",
+            "thickness_hfo2_layer_13_nm",
+            "thickness_sio2_layer_14_nm",
+            "thickness_hfo2_layer_15_nm",
+            "thickness_sio2_layer_16_nm",
+            "thickness_hfo2_layer_17_nm",
+            "thickness_sio2_layer_18_nm",
+            "thickness_hfo2_layer_19_nm",
+            "thickness_sio2_layer_20_nm"
+          ],
+          "soft_objectives": [
+            "maximize mean emissivity in 8000-13000 nm band",
+            "minimize mean emissivity in 3000-5000 nm band",
+            "maintain smooth spectral response without sharp resonant spikes"
+          ],
+          "manufacturing_considerations": [
+            "total layer count is 20, within the 24 layer limit",
+            "all layers are dielectric materials compatible with standard deposition",
+            "individual layer thicknesses should remain in practical deposition range (tens to thousands of nm)"
+          ],
+          "evidence_ids": [],
+          "theory_basis": [
+            "Recalled: Quarter-wave stacks produce maximum reflectance when each layer optical thickness equals λ/4 at the design wavelength",
+            "Recalled: HfO2 has higher refractive index than SiO2 in the infrared, providing index contrast for Bragg reflection",
+            "Recalled: Emissivity equals absorptance for opaque or semi-opaque systems per Kirchhoff's law of thermal radiation",
+            "Recalled: Bragg stopband width increases with refractive index contrast between alternating layers",
+            "Recalled: Silicon substrate is absorptive in the thermal IR and will contribute to emission if the overlying stack is transparent"
+          ],
+          "expected_advantages": [
+            "Simple periodic topology reduces optimization complexity",
+            "Quarter-wave starting point provides physically reasonable initial thicknesses",
+            "20 layers provides sufficient optical depth for strong reflection in the target band",
+            "Dielectric-only stack avoids metallic absorption losses"
+          ],
+          "known_risks": [
+            "Uncertain: Exact refractive index values of hfo2 and sio2 at 3-13 μm wavelengths - the catalog data will determine actual optical behavior",
+            "Uncertain: Whether 10 pairs provides sufficient reflectance at 3-5 μm without excessive reflection at 8-13 μm - may need to adjust pair count",
+            "Uncertain: Silicon substrate extinction coefficient at these wavelengths affects baseline emission - catalog data required",
+            "Uncertain: Whether quarter-wave condition at 4 μm is the optimal center wavelength - 3.5 μm or 4.5 μm might perform better",
+            "Risk: If hfo2 or sio2 have significant absorption in 8-13 μm, the stack itself will emit rather than transmit substrate emission"
+          ],
+          "execution_request_english": "Optimize a 20-layer planar multilayer dielectric stack on silicon substrate with air incidence. Stack sequence: air | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | hfo2 | SiO2 (Kischkat) | si. All 20 dielectric layer thicknesses are independent optimization variables. Target wavelength bands: 3000-5000 nm (minimize emissivity) and 8000-13000 nm (maximize emissivity). Polarization: unpolarized or average of TE and TM. Incidence angle: 0 degrees (normal incidence). Materials: hfo2, SiO2 (Kischkat), si from catalog. Evaluate emissivity as 1 minus reflectance minus transmittance, or directly as absorptance per Kirchhoff's law. Optimize thicknesses to maximize emissivity in 8000-13000 nm while minimizing emissivity in 3000-5000 nm.",
+          "priority": 1,
+          "parent_route_id": null,
+          "revision_reason": null
+        }
+      ],
+      "knowledge_source": "model_prior_knowledge_only",
+      "knowledge_source_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+      "research_influence": [],
+      "unresolved_decisions": [
+        "Whether 10 pairs (20 layers) is optimal vs. 12 pairs (24 layers) for this spectral selectivity - chose 20 to leave margin",
+        "Whether the Bragg center should be exactly 4 μm or shifted toward 3.5 μm or 4.5 μm - will be determined by optimization",
+        "Exact refractive index dispersion of hfo2 and sio2 in the 3-13 μm range - catalog data will resolve this"
+      ],
+      "stop_if_all_routes_fail": "If this control route cannot achieve any spectral selectivity (best_target_score remains below 0.3 after full optimization), the problem may require different material choices or a non-DBR topology such as a resonant cavity design."
+    },
+    "pre_declarations": {
+      "control_route_01": {
+        "expected_observations": [
+          "best_target_score should increase across optimization rounds as thicknesses converge toward spectral selectivity",
+          "valid_candidates should remain high (above 5) indicating the topology supports feasible solutions",
+          "tightest_margin should not systematically decrease across rounds, indicating manufacturing tolerance is maintained",
+          "If hypothesis fails: best_target_score will plateau low and emissivity in 3000-5000 nm will remain high despite optimization"
+        ],
+        "stop_conditions": [
+          "if best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+          "if valid_candidates falls below 3 for two consecutive rounds, relax thickness bounds and continue",
+          "if tightest_margin falls below 0.1 for three consecutive rounds, reduce optimization step size and continue"
+        ]
+      }
+    },
+    "planning_mechanism": "llm_memory_control",
+    "knowledge_source": "model_prior_knowledge_only",
+    "no_literature_disclosure": "This route was planned from the model's own prior knowledge alone. No Semantic Scholar query was issued, no retrieved paper reached the prompt, and no method-research report was supplied -- neither for the initial plan nor for any continuation round. It is the control arm of a controlled comparison against the literature-grounded routes, and its evidence-id allowlist is empty by construction.",
+    "evidence_ids_allowed": [],
+    "literature_client_invoked": false,
+    "method_research_supplied": false
+  },
+  "route_sources": {
+    "route_01": "literature_planned",
+    "route_02": "literature_planned",
+    "route_03": "literature_planned",
+    "control_route_01": "llm_memory_control"
+  },
+  "normal_route_count": 3,
+  "control_route_count": 1
+}

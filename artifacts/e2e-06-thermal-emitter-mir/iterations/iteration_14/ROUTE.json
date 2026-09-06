@@ -1,0 +1,54 @@
+{
+  "route_id": "control_route_01",
+  "title": "20-layer HfO2/SiO2 thickness-optimized emissivity discriminator on Si",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 20-layer alternating HfO2/SiO2 stack with individually tunable thicknesses can simultaneously suppress emissivity in 3000-5000 nm while enhancing emissivity in 8000-13000 nm, with the spectral selectivity arising from interference effects rather than material absorption.",
+  "design_principle": "Recalled thin-film interference physics: high-index/low-index alternating layers create photonic stopbands where reflectance is high (emissivity low). By tuning individual layer thicknesses away from strict quarter-wave conditions, the stopband can be positioned at 3-5 μm while allowing transmission (and thus emission via Kirchhoff's law through substrate coupling) at 8-13 μm. The Si substrate provides the thermal emission source; the stack modulates what escapes.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Kischkat)",
+    "si"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Si substrate (20 layers total, alternating starting with HfO2)",
+  "design_variables": [
+    "individual layer thicknesses for all 20 layers",
+    "quadratic penalty weight for thickness regularization",
+    "thickness perturbation bounds for optimization steps"
+  ],
+  "soft_objectives": [
+    "maximize mean emissivity in 8000-13000 nm band",
+    "minimize mean emissivity in 3000-5000 nm band",
+    "maintain physically valid candidates (positive thicknesses, no numerical instability)",
+    "improve best_target_score across iteration rounds without collapsing robustness"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 20 (within 24-layer limit)",
+    "individual layer thicknesses should remain in fabricable range (roughly 200-2000 nm based on recalled deposition conventions)",
+    "avoid extreme thickness ratios between adjacent layers that would cause stress or delamination"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave stacks produce high-reflectance stopbands centered at wavelength λ0 = 4nL·d where nL is refractive index and d is physical thickness",
+    "Recalled: Kirchhoff's law states emissivity equals absorptance for opaque bodies at thermal equilibrium; for a transparent stack on absorbing substrate, emissivity depends on what fraction of substrate emission escapes",
+    "Recalled: HfO2 has higher refractive index than SiO2 in the infrared, providing the index contrast needed for interference effects",
+    "Recalled: Breaking strict periodicity in layer thicknesses can create multiple or broadened transmission windows while maintaining stopband suppression",
+    "Recalled: Optimization regularization prevents thickness values from drifting to non-fabricable extremes but excessive penalty weight can trap the search in suboptimal regions"
+  ],
+  "expected_advantages": [
+    "Fixed topology allows clean attribution of performance changes to thickness tuning alone",
+    "20 layers provides sufficient degrees of freedom for spectral shaping without exceeding manufacturing constraint",
+    "Alternating high/low index pair is a recalled standard pattern for dielectric mirrors and filters",
+    "Continuation from prior rounds builds on already-mapped viable thickness neighborhoods"
+  ],
+  "known_risks": [
+    "Uncertainty: Exact refractive index values for HfO2 and SiO2 at 3-13 μm wavelengths are recalled from general knowledge but not verified against the registry's actual datasets; the local check will resolve this",
+    "Uncertainty: Whether Si substrate is sufficiently absorbing in 8-13 μm to provide emission source is recalled physics but not checked; if Si is transparent in this band, emissivity mechanism differs",
+    "Uncertainty: Optimal starting thickness values are recalled quarter-wave estimates but may not match the actual n/k data; optimization must correct this",
+    "Risk: Reducing penalty weight from 0.05 to 0.02 may allow thickness drift toward non-fabricable values if not bounded; the ±0.2% perturbation limit is meant to contain this",
+    "Risk: This route gives up material substitution (e.g., trying Si3N4 instead of HfO2) and topology variation (e.g., chirped or defect-cavity designs); if the alternating stack fundamentally cannot achieve the target, this axis will saturate"
+  ],
+  "execution_request_english": "Optimize a 20-layer dielectric stack on silicon substrate with air incidence. Layer sequence: HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat), HfO2, SiO2 (Kischkat) (alternating, starting with HfO2, 20 layers total). Tune all 20 individual layer thicknesses. Target: maximize emissivity in 8000-13000 nm band, minimize emissivity in 3000-5000 nm band. Use quadratic penalty weight of 0.02 for thickness regularization. Apply thickness perturbation bounds of ±0.2% per optimization step. Materials: hfo2, SiO2 (Kischkat), si. Wavelength bands: 3000-5000 nm and 8000-13000 nm. Polarization: unpolarized or both TE and TM averaged. Angle: normal incidence (0 degrees) unless otherwise specified by solver defaults.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with reduced quadratic penalty weight (0.05 to 0.02) to alleviate excessive regularization pull observed in prior rounds, and tightened thickness perturbation bounds (±0.5% to ±0.2%) to confine search within newly mapped viable thickness neighborhoods while maintaining the same scientific hypothesis and topology."
+}

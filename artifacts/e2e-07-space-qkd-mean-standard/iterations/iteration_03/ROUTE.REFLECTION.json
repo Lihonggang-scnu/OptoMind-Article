@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Round 1 produces a best_target_score of 0.7005682042932584 and a tightest_margin of 0.43831322925678484. The hypothesis predicts peak performance when the defect thickness approaches the half-wave condition at 1550 nm; candidate 0 layer 10 initializes at exactly 390.0 nm, which aligns with the expected resonant thickness magnitude. However, the tightest_margin remains below 0.5, indicating that visible-band rejection is weaker than anticipated. No explicit transmission peak wavelength or bandwidth metrics were returned, so spectral peak alignment cannot be numerically confirmed, but the 390.0 nm defect strongly implies resonance formation near the target band. The deviation is in magnitude (margin lower than expected robust rejection) rather than direction.",
+  "deviation_mechanism": "The marginal tightest_margin of 0.43831322925678484 alongside a mid-tier target score of 0.7005682042932584 stems from the fixed quarter-wave initialization of the Bragg mirrors. When outer layers are locked to alternating 200.0 nm and 270.0 nm steps, the optical bandwidth of the stopband is limited by the material index contrast alone. Without allowing those layers to deviate from strict quarter-wave conditions, the optimizer cannot simultaneously broaden the high-reflection stopband and finely tune the defect phase. This creates a physical trade-off where the defect reaches resonance (~390.0 nm) but out-of-band leakage persists, capping the achievable metric score until the mirror dispersion is relaxed.",
+  "continue_recommended": true,
+  "continue_rationale": "Only 1 round has been executed (rounds_executed: 1), which falls short of the 2-round minimum required to evaluate convergence or declare a route exhausted. The current metrics (score: 0.7005682042932584, margin: 0.43831322925678484) show active optimization potential with unexplored degrees of freedom in the mirror section. A single initial evaluation cannot justify stopping; the route requires additional iterations to decouple mirror bandwidth from defect tuning.",
+  "insight_for_next": "Decouple mirror dispersion from the defect resonance by relaxing the fixed quarter-wave constraints on all layers except index 10. Sample the 20 mirror layers uniformly between 210.0 nm and 340.0 nm, apply a tighter bounding box of 380.0–400.0 nm to candidate 0 layer 10, and use a L-BFGS-B optimizer with a soft penalty on total thickness variation to encourage smoother mirror profiles while preserving the half-wave defect.",
+  "insight_grounding": "Candidate 0, layer 10 is explicitly initialized to 390.0 nm in round 1, confirming the solver correctly identifies the half-wave defect target. The baseline tightest_margin of 0.43831322925678484 quantifies the current visible-rejection bottleneck. The surrounding 20 layers strictly alternate between 200.0 nm and 270.0 nm (indices 0-9 and 11-20), enforcing a rigid quarter-wave cascade that physically limits stopband broadening. Relaxing these specific bounds directly addresses the measured margin deficit while preserving the 390.0 nm defect physics.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T19:16:52.983242+00:00",
+  "attestation_sha256": "4f5dab9a46cc92a362ba9753eb81c0331b3e203c596293b40bca4854e939896a",
+  "observed_metrics": {
+    "best_target_score": 0.7005682042932584,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.43831322925678484
+  },
+  "reflection_available": true
+}

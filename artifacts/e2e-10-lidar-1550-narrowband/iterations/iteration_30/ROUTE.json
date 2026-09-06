@@ -1,0 +1,50 @@
+{
+  "route_id": "control_route_01",
+  "title": "Defect-cavity narrowband filter with fixed outer Bragg mirrors and optimized central cavity",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "A 29-layer Ta2O5/SiO2 stack with outer Bragg mirror layers fixed at quarter-wave optical thickness and only the central 11 layers optimized will achieve transmittance ≥ 0.95 at 1550 nm while suppressing 1400-1500 nm and 1600-1700 nm bands, with improved convergence stability compared to full-stack optimization.",
+  "design_principle": "Quarter-wave Bragg mirrors (alternating high/low index layers at λ/4n optical thickness) create high-reflectivity stopbands. Introducing a phase defect or cavity region in the center creates a resonant transmission peak within the stopband. Fixing outer layers reduces the optimization search space dimensionality, preventing extreme thickness compressions and guiding the solver toward stable resonant solutions.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "29 layers total: Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5, starting with Ta2O5 at air interface, ending with Ta2O5 at substrate interface, with layers 10-20 (11 central layers) as the optimizable cavity region",
+  "design_variables": [
+    "thicknesses of layers 10-20 (11 central cavity layers)",
+    "thicknesses of layers 1-9 and 21-29 fixed at quarter-wave values"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1550 nm passband",
+    "minimize mean transmittance in 1400-1500 nm stopband",
+    "minimize mean transmittance in 1600-1700 nm stopband"
+  ],
+  "manufacturing_considerations": [
+    "total layers ≤ 30",
+    "quarter-wave outer layers simplify manufacturing control",
+    "central cavity thickness tolerance critical for peak wavelength"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave Bragg stacks produce stopbands centered at the design wavelength with bandwidth proportional to the index contrast ratio",
+    "A central defect layer or cavity region in a Bragg stack creates a narrow transmission resonance within the stopband",
+    "Reducing optimization dimensionality by fixing outer mirror layers improves convergence stability in gradient-based thickness optimization",
+    "Ta2O5/SiO2 is a standard high-contrast dielectric pair for visible and near-infrared filters"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced design variable count (11 vs 29 thicknesses)",
+    "More stable resonant peak position due to fixed outer mirror phase conditions",
+    "Easier manufacturing verification for outer layers at standard quarter-wave thicknesses",
+    "Maintained stopband performance from proven Bragg mirror structure"
+  ],
+  "known_risks": [
+    "Ta2O5 refractive index at 1550 nm recalled as approximately 2.1-2.2 but exact dispersion not verified - would need material dataset lookup",
+    "SiO2 refractive index recalled as approximately 1.45 at 1550 nm but exact value not verified",
+    "Quarter-wave thickness calculation depends on exact n values - 185 nm for Ta2O5 and 267 nm for SiO2 are approximate based on recalled indices",
+    "Fixed outer layers may limit achievable stopband width if quarter-wave assumption is inaccurate for the required 1400-1700 nm suppression range",
+    "Central cavity optimization may be sensitive to initial thickness guesses - would benefit from literature on defect-cavity initialization"
+  ],
+  "execution_request_english": "Design a 29-layer planar dielectric filter on fused silica substrate with air incidence. Materials are Ta2O5 (Gao) and SiO2 (Lemarchand) in alternating sequence starting with Ta2O5 (Gao) at the air interface. Layers 1-9 and 21-29 (outer Bragg mirrors) have fixed thicknesses: Ta2O5 (Gao) layers at 185 nm, SiO2 (Lemarchand) layers at 267 nm (quarter-wave optical thickness at 1550 nm based on recalled indices). Layers 10-20 (11 central cavity layers) have optimizable thicknesses bounded between 50 nm and 400 nm. Optimize for maximum mean transmittance at 1550 nm (single wavelength target) and minimum mean transmittance across 1400-1500 nm and 1600-1700 nm bands. Use coherent transfer-matrix method solver. Total layer count is exactly 29.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Shift to damping/regional-local search mode anchored around proven high-performance topology from prior iterations. Constrain outer Bragg mirror layers to fixed quarter-wave values based on historical convergence, allocate optimization degrees-of-freedom exclusively to central 11 cavity layers to reduce dimensionality-driven noise and prevent extreme thickness compressions."
+}

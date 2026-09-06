@@ -1,0 +1,52 @@
+{
+  "route_id": "route_02",
+  "title": "20-Layer Asymmetric FP with Linear Chirp Seeding and ±5 nm Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The score collapse in iteration_09 resulted from over-constrained thickness bounds (±4 nm) preventing optimizer escape from a poor local minimum. Seeding optimization from a quarter-wave-based thickness profile with an imposed linear chirp across central layers 1-12, combined with wider ±5 nm relaxation bounds, will enable the optimizer to explore convex directions hinted at by tail-layer expansions while breaking residual periodicity that limits stopband suppression.",
+  "design_principle": "Controlled monotonic drift (linear chirp) applied to seed thicknesses breaks strict quarter-wave periodicity in the stack center, allowing gradient-based optimization to discover non-quarter-wave thickness distributions that improve both passband transmission and stopband rejection simultaneously.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "20 finite layers total, alternating Ta2O5/SiO2 sequence starting with Ta2O5 (layer 1) on Fused Silica substrate, air incident medium. Layers 1-12 receive linear chirp seed perturbation; layers 13-20 retain base quarter-wave thicknesses as seed.",
+  "design_variables": [
+    "layer thicknesses (20 variables, seeded from quarter-wave profile with chirp applied to layers 1-12)",
+    "thickness bounds ±5.0 nm around seeded values"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550 nm (target ≥0.95)",
+    "minimize mean transmittance in 1400-1500 nm stopband",
+    "minimize mean transmittance in 1600-1700 nm stopband",
+    "maintain physical validity (positive thicknesses, no absorption)"
+  ],
+  "manufacturing_considerations": [
+    "20 layers within 30-layer constraint",
+    "±5 nm thickness tolerance represents realistic deposition control",
+    "alternating sequence simplifies process monitoring"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:7970030:s2chunk:7970030:6660:8623:a758197fcc4ae0db"
+  ],
+  "theory_basis": [
+    "Defective DBR bandpass filter principle (evidence 279797769): non-quarter-wave thickness optimization can create transmission peaks with sideband suppression",
+    "Needle optimization with gradual evolution (evidence 225461372): merit function targeting specific spectral ranges handles multi-wavelength targets",
+    "Edge filter sensitivity to small index variations (evidence 7970030): narrow transition zones require precise thickness control"
+  ],
+  "expected_advantages": [
+    "Wider bounds (±5 nm vs ±4 nm) allow optimizer to escape local minimum",
+    "Linear chirp seed breaks periodicity that may limit stopband performance",
+    "Directly implements feedback directive mechanistic insight",
+    "Retains successful 20-layer topology from iteration_02 (score 0.9227)"
+  ],
+  "known_risks": [
+    "Chirp magnitude may be insufficient to escape poor basin if seed is too far from optimum",
+    "Linear chirp may not match optimal thickness distribution shape",
+    "20 layers may be insufficient for dual stopband suppression with high passband transmission"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar dielectric filter stack with alternating Ta2O5 and SiO2 layers on Fused Silica substrate, air incident medium. Layer sequence: Ta2O5(1), SiO2(2), Ta2O5(3), SiO2(4), Ta2O5(5), SiO2(6), Ta2O5(7), SiO2(8), Ta2O5(9), SiO2(10), Ta2O5(11), SiO2(12), Ta2O5(13), SiO2(14), Ta2O5(15), SiO2(16), Ta2O5(17), SiO2(18), Ta2O5(19), SiO2(20). Seed thicknesses as follows: layers 1-12 start from base quarter-wave values (Ta2O5 ≈153 nm, SiO2 ≈263 nm) with linear chirp perturbation applied: layer 1 receives +0.5 nm offset, layer 12 receives -0.5 nm offset, with linear interpolation for layers 2-11. Layers 13-20 use base quarter-wave values (Ta2O5 ≈153 nm, SiO2 ≈263 nm, layer 20 ≈266 nm). Set optimization bounds to ±5.0 nm around each seeded thickness value. Use gradient-based thickness optimizer. Evaluate transmittance spectrum at normal incidence (0 degrees), unpolarized or both s and p polarizations. Score objectives: (1) mean transmittance at 1550 nm wavelength (single point), (2) mean transmittance across 1400-1500 nm band, (3) mean transmittance across 1600-1700 nm band. Target: maximize 1550 nm transmission, minimize both stopband transmissions. Total layer count fixed at 20. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Iteration_09 score collapsed to 0.0196 due to over-constrained ±4 nm bounds preventing optimizer escape from poor local minimum. This route implements feedback directive: seed from quarter-wave profile, apply linear chirp to central 12 layers, widen bounds to ±5.0 nm to enable exploration of convex directions hinted at by tail-layer expansions in iteration_02."
+}

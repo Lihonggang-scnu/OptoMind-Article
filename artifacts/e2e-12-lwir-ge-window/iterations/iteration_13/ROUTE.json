@@ -1,0 +1,45 @@
+{
+  "route_id": "route_03",
+  "title": "Central-layer gradient optimization with 7% jitter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The central layers (indices 3-8) of the 12-layer ZnS/ZnSe stack dominate the dichroic spectral separation, and localized gradient optimization within ±7% of the previous best candidate will yield higher target scores than full-stack optimization.",
+  "design_principle": "Preserve outer layer quarter-wave matching while tuning central interference cavity thicknesses to sharpen the LWIR passband and MWIR rejection edge.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "12 finite layers: Air | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | Ge substrate.",
+  "design_variables": [
+    "Thicknesses of layers 3, 4, 5, 6, 7, 8 (0-indexed)"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance in 8000-11000 nm",
+    "Minimize transmittance in 3000-5000 nm"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 12 (within 16 limit)",
+    "Thickness tolerance ±7% on optimized layers"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:214638277:s2chunk:214638277:6515:7982:4191339905722ba3"
+  ],
+  "theory_basis": [
+    "Interference filter theory where central layers control band edge steepness",
+    "Prior iteration evidence showing score improvement from 0.2566 to 0.2961 with 12-layer stack"
+  ],
+  "expected_advantages": [
+    "Faster convergence by reducing design variable count",
+    "Isolates sensitivity of central stack region"
+  ],
+  "known_risks": [
+    "Local minima may trap gradient optimizer",
+    "Fixed outer layers may limit global optimum"
+  ],
+  "execution_request_english": "Optimize a 12-layer planar stack on Ge substrate with sequence ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe. Initialize all 12 layers with thicknesses [417.0, 455.0, 500.0, 696.0, 1000.0, 1000.0, 553.0, 510.0, 593.0, 501.0, 417.0, 455.0] nm. Fix layers 0, 1, 2, 9, 10, 11 to these initial values. Optimize layers 3, 4, 5, 6, 7, 8 using gradient-based methods with bounds set to ±7% of their initial values. Evaluate transmittance in 8000-11000 nm (maximize) and 3000-5000 nm (minimize) at normal incidence. Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Focus optimization on central layers identified as sensitive in prior iterations, per insight appendage directive."
+}

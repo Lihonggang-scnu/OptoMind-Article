@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expectation of balanced improvement across both stopbands yielded a lower final score of 0.7000331284723299 versus the historical best of 0.9405175915275809, showing a downward deviation with a magnitude of -0.2405. The tightest_margin remained positive at 0.3750200584282405, fully consistent with the expectation that thickness bounds are respected. The valid_candidates count of 8 aligns with the prediction of a lower yield due to a complex optimization landscape. The target of moderate intermediate transmittance is not directly supported by the observed metric trajectory; instead, the sharp score oscillation suggests severe spectral imbalance or localized constraint violations rather than the predicted steady-state moderation.",
+  "deviation_mechanism": "Excessive adjacent-layer thickness asymmetry breaks the local quarter-wave phase accumulation required for simultaneous Bragg reflection at 355–365 nm and 1030–1080 nm. When neighboring layers vary by >100 nm, the optical path difference shifts outside the coherent superposition window for both bands, forcing the electromagnetic solution into a regime where energy leaks through one stopband while reflecting in the other. This creates a rugged objective landscape where the optimizer repeatedly samples phase-incoherent thickness configurations, yielding volatile scores and preventing convergence to the physically balanced transmittance profile expected for dual-band filters.",
+  "continue_recommended": true,
+  "continue_rationale": "The route shows dynamic exploratory behavior rather than stagnation. The score history spans a wide feasible range (low of 0.4837295887944716 in round 3 rebounding to 0.8747356754253351 in round 5), and the current value of 0.7000331284723299 sits comfortably within that envelope. The tightest_margin of 0.3750200584282405 confirms design space boundaries remain satisfiable. There is zero evidence of physical infeasibility or numerical collapse; the trajectory indicates the search can still access higher-performance topologies, making another round scientifically productive.",
+  "insight_for_next": "Impose a hard maximum difference of 40 nm between adjacent layer thicknesses during both initialization and the optimization phase. Re-seed the population using a bi-periodic template consisting of 4 periods for the 360 nm center followed by 4 periods for the 1050 nm center, allowing free-form thickness perturbation only within ±15 nm of the initialized quarter-wave values to preserve local phase coherence while enabling global band-shaping.",
+  "insight_grounding": "The fourth candidate array exhibits disruptive adjacent jumps of 64.2 nm (index 0: 81.61665915979361 → index 1: 158.4215268150414) and 131.2 nm (index 1: 158.4215268150414 → index 2: 27.672844544815177), directly mapping to the score instability observed in the later rounds. In contrast, the third candidate array maintains tightly bounded neighbor transitions (e.g., index 14: 44.125673997129724 → index 15: 199.523740817271 shows structured spacing rather than erratic swings), coinciding with the route's highest recovery score of 0.8747356754253351 in round 5. Confining Δt ≤ 40 nm removes the numerically destabilizing jumps identified in candidate_thicknesses_nm[3].",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T22:35:33.102470+00:00",
+  "attestation_sha256": "7d0b8b2def970b581b8c8a89054065f39ac07357fe93d8c56781602fc47bc188",
+  "observed_metrics": {
+    "best_target_score": 0.7000331284723299,
+    "valid_candidates": 8,
+    "run_status": "completed",
+    "tightest_margin": 0.3750200584282405
+  },
+  "reflection_available": true
+}

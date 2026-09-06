@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "24-Layer Stack with Latin Hypercube Sampling and Expanded Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Increasing layer count to 24 while using stratified Latin Hypercube Sampling initialization across ±25% quarter-wave bounds will access previously unexplored optical path length combinations, enabling better dual-band spectral separation than the 12L baseline (0.7448) and avoiding the 16L regression (0.5170).",
+  "design_principle": "Global surrogate-model exploration with LHS initialization provides broader coverage of the thickness design space before local refinement, reducing risk of convergence to poor local minima that caused the 16L score regression.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2] × 12 | Fused Silica substrate; exactly 24 finite layers in alternating sequence starting with HfO2",
+  "design_variables": [
+    "All 24 layer physical thicknesses (nm)",
+    "Optimizer initialization via stratified Latin Hypercube Sampling"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 1000-1700 nm band",
+    "Maximize average reflectance in 300-450 nm band",
+    "Achieve best_target_score > 0.7500"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 24 remains within 30-layer constraint",
+    "Thickness bounds ±25% of quarter-wave medians (HfO2: 155 nm ±25%, SiO2: 230 nm ±25%)"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for plane-wave propagation through layered media",
+    "Latin Hypercube Sampling for stratified design space coverage"
+  ],
+  "expected_advantages": [
+    "Broader exploration of thickness combinations than gradient-only initialization",
+    "24 layers provide more degrees of freedom for dual-band optimization than 12L or 16L",
+    "±25% bounds balance exploration with fabrication realism"
+  ],
+  "known_risks": [
+    "Higher layer count increases optimization complexity and computation time",
+    "May still converge to local minima if surrogate model underexplores",
+    "Performance may not exceed 12L baseline if additional layers introduce parasitic interference"
+  ],
+  "execution_request_english": "Design and optimize a 24-layer planar dielectric stack on fused silica substrate with air incidence. Stack sequence: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Fused Silica (exactly 24 finite layers, alternating starting with HfO2). Initialize all 24 layer thicknesses using stratified Latin Hypercube Sampling across bounds: HfO2 layers 116.25-193.75 nm (155 nm ±25%), SiO2 layers 172.5-287.5 nm (230 nm ±25%). Use global surrogate-model optimizer prioritizing exploration over local refinement until best_target_score exceeds 0.7500. Evaluate normal-incidence unpolarized plane-wave illumination. Spectral range 300-1700 nm. Objective: maximize transmittance in 1000-1700 nm band, maximize reflectance in 300-450 nm band. Total layer count constraint: exactly 24 layers (within 30-layer limit). Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Round 4 refinement per feedback directives: increased layer count to 24, implemented LHS initialization, reverted to ±25% thickness bounds, prioritized global exploration over local gradient refinement to address 16L score regression."
+}

@@ -1,0 +1,49 @@
+{
+  "route_id": "route_03",
+  "title": "Quarter-Wave Seeded 36-Layer Dual-Stopband with ±8 nm Bounded Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Anchoring the search near theoretical quarter-wave interference conditions at both stopband center wavelengths (360 nm UV, 1055 nm NIR) with bounded ±8 nm perturbation will reduce invalid candidate ratio and enable optimizer to focus on admittance matching rather than discovering feasible geometries, improving target score consistency above 0.85.",
+  "design_principle": "Modified Quarter-Wavelength Optimization from evidence s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f: Start with quarter-wave optical thickness layers for high-reflection bands, then vary optical thickness through optimization. Alternating high-low index Bragg stack structure provides dual stopband suppression.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "36-layer alternating Ta2O5/SiO2 stack on fused silica substrate, air incidence. Layer 1=Ta2O5, Layer 2=SiO2, continuing alternation through Layer 36=SiO2. Total finite-layer count: 36.",
+  "design_variables": [
+    "layer thicknesses (36 variables, bounded 20-350 nm)"
+  ],
+  "soft_objectives": [
+    "minimize mean transmittance in 355-365 nm band",
+    "minimize mean transmittance in 1030-1080 nm band",
+    "maximize mean transmittance in 420-700 nm band",
+    "maintain individual layer thickness within 20-350 nm bounds"
+  ],
+  "manufacturing_considerations": [
+    "36 layers within fabrication capability",
+    "thickness bounds 20-350 nm respect deposition constraints",
+    "alternating structure simplifies process control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Bragg reflector interference conditions at multiple wavelengths"
+  ],
+  "expected_advantages": [
+    "Reduced search space invalidity",
+    "Faster convergence to high-performing candidates",
+    "Physical interpretability of initial design"
+  ],
+  "known_risks": [
+    "Quarter-wave initialization may trap optimizer in local minimum",
+    "Dual-wavelength quarter-wave conditions may conflict",
+    "Passband ripple may increase with more layers"
+  ],
+  "execution_request_english": "Optimize a 36-layer alternating Ta2O5/SiO2 multilayer filter on fused silica substrate with air incidence at 0 degrees, unpolarized light. Initialize thicknesses using quarter-wave conditions: Ta2O5 layers at d=λ_UV/(4*n_Ta2O5)≈39 nm for λ_UV=360 nm, SiO2 layers at d=λ_NIR/(4*n_SiO2)≈176 nm for λ_NIR=1055 nm. Apply alternating sequence starting with Ta2O5. Constrain optimization to ±8 nm Gaussian perturbation around these base values during candidate generation. Layer thickness bounds: 20-350 nm. Optimize for: minimize mean transmittance at 355-365 nm, minimize mean transmittance at 1030-1080 nm, maximize mean transmittance at 420-700 nm. Use gradient_thickness optimizer with bounded noise initialization. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Replace unstructured random initialization from prior route_03 iterations with deterministic quarter-wave seeding at λ₁=360 nm and λ₂=1055 nm per feedback directive. Prior iteration_03 achieved 0.9405 with 36-layer structure but used less structured initialization. This refinement anchors search near theoretical interference conditions to reduce invalid ratio."
+}

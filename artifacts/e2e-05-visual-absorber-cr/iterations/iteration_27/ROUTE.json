@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "Extended Cr Bound with Diversity Injection",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The optimal Cr absorbing layer thickness exceeds the previous 4.0 nm upper bound; extending to 6.0 nm while injecting diversity in bottom 30% of candidates will discover higher-performing interference pathways without losing proven baseline configurations.",
+  "design_principle": "Preserve the verified 20-layer Cr/HfO2/SiO2/Al topology from iteration_24 best candidate while widening Cr thickness search space and introducing deterministic diversity to escape local optima.",
+  "proposed_materials": [
+    "Cr",
+    "HfO2",
+    "SiO2",
+    "Al"
+  ],
+  "proposed_topology": "Air | Cr (layer 0) | HfO2 (layer 1) | SiO2 (layer 2) | HfO2 (layer 3) | SiO2 (layer 4) | HfO2 (layer 5) | SiO2 (layer 6) | HfO2 (layer 7) | SiO2 (layer 8) | HfO2 (layer 9) | SiO2 (layer 10) | HfO2 (layer 11) | SiO2 (layer 12) | HfO2 (layer 13) | SiO2 (layer 14) | HfO2 (layer 15) | SiO2 (layer 16) | HfO2 (layer 17) | SiO2 (layer 18) | HfO2 (layer 19) | Al substrate. Total 20 finite layers.",
+  "design_variables": [
+    "layer_0_thickness_nm (Cr, bounds [0.5, 6.0])",
+    "layer_1_to_19_thickness_nm (HfO2/SiO2 alternating, bounds [1.0, 300.0])"
+  ],
+  "soft_objectives": [
+    "maximize absorptance in 400-700 nm",
+    "maximize reflectance in 700-2000 nm",
+    "maintain robustness to thickness variations"
+  ],
+  "manufacturing_considerations": [
+    "20 layers within user constraint",
+    "Cr thickness up to 6.0 nm remains fabricable via sputtering",
+    "alternating HfO2/SiO2 standard deposition process"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:133611346:s2chunk:133611346:5057:7380:6ca46dea7c17561d",
+    "s2-chunk:CorpusId:137632737:s2chunk:137632737:6770:8901:59db53297ea07b40",
+    "s2-chunk:CorpusId:270274245:s2chunk:270274245:3605:5768:fbb86c1f70dc3487"
+  ],
+  "theory_basis": [
+    "Admittance locus method for metal-dielectric multilayer optimization",
+    "D/M/D interference design principle for spectral selectivity"
+  ],
+  "expected_advantages": [
+    "Wider Cr search space captures optimal absorbing thickness",
+    "Diversity injection prevents premature convergence",
+    "Preserves proven 20-layer topology"
+  ],
+  "known_risks": [
+    "Cr thickness >4 nm may reduce visible absorptance if too thick",
+    "Diversity may temporarily reduce best_target_score during exploration"
+  ],
+  "execution_request_english": "Optimize a 20-layer planar stack on Al substrate with air incidence. Layer sequence: Cr | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2. Initialize from iteration_24 best candidate thicknesses [1.0, 123.0, 94.0, 4.0, 22.0, 52.0, 139.0, 83.0, 40.0, 98.0, 231.0, 43.0, 4.0, 123.0, 48.0, 113.0, 155.0, 14.0, 70.0, 154.0] nm. Set Cr layer (index 0) thickness bounds to [0.5, 6.0] nm. Set all dielectric layers (indices 1-19) bounds to [1.0, 300.0] nm. Use gradient_thickness optimizer. Initialize 70% of candidates from baseline with small perturbations; initialize remaining 30% with random thickness draws uniformly distributed in [baseline - 50 nm, baseline + 50 nm] for each layer. Evaluate at normal incidence, unpolarized. Spectral objectives: maximize absorptance in 400-700 nm band, maximize reflectance in 700-2000 nm band. Canonical user controls: wavelength intervals 400-700 nm, 700-2000 nm. soft objectives: high absorptance in 400-700 nm; low reflectance in 400-700 nm; high reflectance in 700-2000 nm. behaviors to suppress or avoid: high reflectance in 400-700 nm; high absorptance in 700-2000 nm. manufacturing constraints: total layer count not exceeding 20.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Extended Cr upper bound from 4.0 nm to 6.0 nm per feedback directive; added deterministic diversity protocol (30% random reinitialization) to inject novel interference pathways while preserving proven baselines."
+}

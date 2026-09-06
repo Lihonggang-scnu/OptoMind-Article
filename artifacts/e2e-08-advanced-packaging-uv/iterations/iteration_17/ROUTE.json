@@ -1,0 +1,47 @@
+{
+  "route_id": "route_03",
+  "title": "36-Layer Dual-Stopband with Thickness Continuity Constraint and Quarter-Wave Seeding",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Enforcing adjacent layer thickness difference constraints (Δd ≤ 12 nm) during population initialization, combined with quarter-wave optical thickness seeding at 360 nm and 1050 nm, will reduce impedance discontinuities that caused score regression in rounds 2-3, enabling the optimizer to recover or exceed the round-1 baseline score of 0.9405.",
+  "design_principle": "Quarter-wave stack initialization provides physically sensible starting points for dual-stopband rejection; thickness continuity constraints prevent steep gradients that destabilize optimization; 36 layers provide sufficient degrees of freedom for dual-band suppression while maintaining passband transmission.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica substrate",
+  "design_variables": [
+    "layer thicknesses (36 variables, bounded 20-350 nm)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "layer thickness range 20-350 nm",
+    "adjacent layer thickness difference Δd ≤ 12 nm during initialization"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Impedance matching through gradual thickness transitions"
+  ],
+  "expected_advantages": [
+    "Reduced optimization instability from steep thickness gradients",
+    "Better recovery of round-1 performance",
+    "Physically meaningful initialization reduces search space"
+  ],
+  "known_risks": [
+    "Thickness continuity constraint may limit optimizer exploration",
+    "36 layers may still exhibit local minima"
+  ],
+  "execution_request_english": "Optimize a 36-layer alternating Ta2O5/SiO2 stack on fused silica substrate with air incidence at 0 degrees unpolarized illumination. Initialize thicknesses using quarter-wave optical thickness at 360 nm for UV stopband and 1050 nm for NIR stopband, with adjacent layer thickness difference constrained to ≤12 nm during population initialization. Thickness bounds: 20-350 nm per layer. Optimize to maximize average transmittance in 420-700 nm passband while minimizing average transmittance in 355-365 nm and 1030-1080 nm stopbands and minimizing transmittance at 355 nm. Use gradient-based thickness optimizer with continuity-constrained initialization. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Incorporates feedback directive to enforce Δd ≤ 12 nm constraint during initialization and quarter-wave seeding at 360/1050 nm to address impedance gradient issues from prior rounds"
+}

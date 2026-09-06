@@ -1,0 +1,52 @@
+{
+  "route_id": "control_route_01",
+  "title": "29-layer HfO2/MgF2 UV bandpass with relaxed thickness bounds and best-candidate initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The optimal 29-layer HfO2/MgF2 bandpass filter for 255-280 nm transmission has at least one layer thickness between 25-30 nm; relaxing the lower bound from 30 nm to 25 nm and initializing from the historical best configuration will improve the target score beyond 0.738.",
+  "design_principle": "Quarter-wave stack theory suggests that layer thicknesses near λ/4n at the center wavelength create constructive interference in the passband. For UV at ~267 nm center, HfO2 (n~2.1-2.3 in UV) gives ~29-32 nm quarter-wave thickness, and MgF2 (n~1.38-1.42 in UV) gives ~47-48 nm. Some layers in a multi-band design may need to deviate from exact quarter-wave to balance multiple spectral regions, potentially requiring thicknesses below 30 nm.",
+  "proposed_materials": [
+    "hfo2",
+    "MgF2 (Rodriguez-de_Marcos)",
+    "SiO2 (Gao)"
+  ],
+  "proposed_topology": "Air | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | HfO2 | MgF2 | SiO2 substrate (29 coating layers, alternating HfO2 first from air)",
+  "design_variables": [
+    "Individual layer thicknesses for all 29 coating layers, optimization bounds [25, 150] nm",
+    "Initialization from historical best candidate thicknesses with ±5 nm perturbation"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 255-280 nm band",
+    "Minimize mean transmittance in 300-700 nm band",
+    "Minimize mean transmittance in 700-1100 nm band"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 29 (under 30-layer limit)",
+    "All materials are conventional evaporable or sputterable dielectrics",
+    "Minimum thickness 25 nm is near the lower limit for uniform deposition control",
+    "No metal layers as required"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: HfO2 has refractive index approximately 2.1-2.3 in the 250-300 nm UV range, making it a suitable high-index material for UV bandpass filters",
+    "Recalled knowledge: MgF2 has refractive index approximately 1.38-1.42 in the UV range and is one of the lowest-index conventional dielectric coatings available",
+    "Recalled knowledge: Quarter-wave optical thickness at 267 nm center wavelength gives physical thickness of λ/4n, approximately 29-32 nm for HfO2 and 47-48 nm for MgF2",
+    "Recalled knowledge: Alternating high-low index stacks create stopbands centered at the quarter-wave wavelength, with bandwidth scaling with index contrast ratio",
+    "Recalled knowledge: Multi-band suppression (visible and NIR) requires either multiple stack periods or non-quarter-wave layer thicknesses to create additional stopband features"
+  ],
+  "expected_advantages": [
+    "Relaxing the 30 nm lower bound to 25 nm may allow the optimizer to find thinner layers that better balance the three spectral bands",
+    "Initializing from the historical best (score 0.738) with small perturbations focuses the search near a known good solution rather than random exploration",
+    "29 layers provides sufficient degrees of freedom for multi-band control while staying under the 30-layer manufacturing constraint"
+  ],
+  "known_risks": [
+    "I am uncertain about the exact UV refractive index values of HfO2 and MgF2 at 255-280 nm; the material catalog datasets will provide measured values",
+    "I am uncertain whether 25 nm minimum thickness is practically depositable with uniform control; this would need process validation",
+    "I do not know if the historical best candidate at 0.738 is near a global optimum or a local maximum; this route tests only local improvement",
+    "The alternating HfO2/MgF2 topology is fixed; if a different material pair or non-alternating sequence would perform better, this route cannot discover it",
+    "I am recalling that MgF2 is UV-transparent down to ~115 nm, but the exact extinction coefficient behavior in 255-280 nm band should be verified from the dataset"
+  ],
+  "execution_request_english": "Design a 29-layer planar multilayer filter on a SiO2 (Gao) substrate with air incidence. The stack alternates HfO2 and MgF2 (Rodriguez-de_Marcos) starting with HfO2 from the air side: HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | MgF2 (Rodriguez-de_Marcos) | HfO2 | SiO2 (Gao) substrate. Optimize all 29 coating layer thicknesses with bounds [25, 150] nm. Initialize thicknesses from the historical best candidate (thicknesses: [115.0, 140.5, 112.5, 70.0, 51.0, 83.0, 126.0, 97.5, 158.5, 107.5, 60.0, 72.5, 64.5, 103.0, 77.0, 89.5, 89.0, 178.0, 95.0, 182.0, 105.5, 86.5, 99.5, 175.5, 57.5, 96.5, 95.5, 77.5, 103.0] nm) with ±5 nm random perturbation. Use coherent transfer matrix method solver. Evaluate three spectral bands: maximize mean transmittance in 255-280 nm, minimize mean transmittance in 300-700 nm, minimize mean transmittance in 700-1100 nm. Normal incidence, unpolarized light. No metal layers. Total coating layers exactly 29.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route: relaxed lower thickness bound from 30 nm to 25 nm per feedback directive, changed initialization from uniform random to targeted perturbation around historical best candidate (target_score 0.738) to test whether optimal solution lies just outside previous bounds"
+}

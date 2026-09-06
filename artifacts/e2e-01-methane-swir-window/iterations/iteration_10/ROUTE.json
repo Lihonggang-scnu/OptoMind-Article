@@ -1,0 +1,50 @@
+{
+  "route_id": "route_01",
+  "title": "Corrected QWOT Initialization at 425 nm with Stochastic Perturbation",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Initializing layer thicknesses near quarter-wave optical thickness at the UV reflection band center (425 nm) rather than the SWIR transmission band will better establish the short-wavelength stopband, and stochastic perturbation will help escape higher-order resonance local minima that limited prior rounds.",
+  "design_principle": "Quarter-wave stack design with HfO2/SiO2 alternating layers, initialized at λ0=425 nm QWOT values (HfO2≈53 nm, SiO2≈73 nm for n≈2.0 and n≈1.46), with ±15% uniform random noise added to break symmetry and enable optimizer to traverse between optical resonances.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "Air | [HfO2 | SiO2]×8 | Fused Silica substrate (16 finite layers total, 8 high-index and 8 low-index layers in alternating sequence starting with HfO2)",
+  "design_variables": [
+    "16 layer physical thicknesses in nm, initialized near 425 nm QWOT with ±15% noise, optimization bounds relaxed by 25% from prior rounds"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1000-1700 nm band",
+    "Maximize mean reflectance in 300-450 nm band",
+    "Maintain total layer count at 16"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 16 is well within 30-layer fabrication limit",
+    "Individual layer thicknesses 40-100 nm range is compatible with standard deposition monitoring",
+    "HfO2/SiO2 material pair has established deposition processes for low stress and high laser damage threshold"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:274423247:s2chunk:274423247:19920:21392:754dc3c23c4e91b8",
+    "s2-chunk:CorpusId:3305144:s2chunk:3305144:7191:9483:943eca16d4760a0c",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for plane-wave propagation through isotropic layered media",
+    "Quarter-wave stack theory: stopband centered at wavelength where optical thickness equals λ/4",
+    "Higher-order resonance avoidance through randomized initialization"
+  ],
+  "expected_advantages": [
+    "Better UV stopband establishment through proper QWOT initialization at reflection band",
+    "Escaping local minima through stochastic perturbation",
+    "Relaxed bounds allow optimizer to explore thickness space between lower and higher order resonances"
+  ],
+  "known_risks": [
+    "Optimizer may still converge to suboptimal local minimum despite perturbation",
+    "16 layers may be insufficient for both wide UV stopband and wide SWIR passband simultaneously",
+    "Index dispersion not fully captured in single-wavelength QWOT estimate"
+  ],
+  "execution_request_english": "Optimize a 16-layer alternating HfO2/SiO2 dielectric stack on fused silica substrate under normal air incidence. Layer sequence: HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2, HfO2, SiO2 (16 finite layers total). Initialize thicknesses at quarter-wave optical thickness for 425 nm center wavelength (HfO2 nominal 53 nm, SiO2 nominal 73 nm) with ±15% uniform random noise applied to each layer. Set optimization bounds: HfO2 layers 35-120 nm, SiO2 layers 50-150 nm. Use gradient-based thickness optimizer with dual-band objective: maximize mean transmittance over 1000-1700 nm and maximize mean reflectance over 300-450 nm, equal weighting. Evaluate at normal incidence, unpolarized or average of TE and TM. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all valid candidates. Canonical user controls: wavelength intervals 300-450 nm, 1000-1700 nm. soft objectives: high transmission in 1000-1700 nm; high reflection in 300-450 nm. behaviors to suppress or avoid: reflection in 1000-1700 nm; transmission in 300-450 nm. manufacturing constraints: total layer count <= 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Reset thickness initialization from SWIR-centered (~100-200 nm) to UV-centered QWOT (~50-75 nm) per feedback directive to better establish the 300-450 nm reflection stopband. Added ±15% stochastic perturbation to break higher-order mode lock observed in prior rounds. Relaxed thickness upper bounds by 25% to enable optimizer traversal between optical resonances."
+}

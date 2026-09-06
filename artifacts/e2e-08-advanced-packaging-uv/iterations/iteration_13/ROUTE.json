@@ -1,0 +1,48 @@
+{
+  "route_id": "route_01",
+  "title": "45 nm Minimum Thickness with 360 nm QW Initialization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Raising the minimum layer thickness from 20 nm to 45 nm eliminates numerical convergence issues caused by ultra-thin layers, while quarter-wave initialization at 360 nm (center of UV stopband) provides a physically meaningful starting point that improves optimization stability and final target score.",
+  "design_principle": "Quarter-wave stack design centered at the primary suppression wavelength (360 nm), with bounded thickness constraints that prevent numerically problematic thin layers while maintaining sufficient design freedom for dual-stopband optimization.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "36-layer alternating Ta2O5/SiO2 stack on fused silica substrate, air incidence, starting with Ta2O5 as first layer",
+  "design_variables": [
+    "individual layer thicknesses (36 variables)",
+    "optimization trajectory with hard clip operator"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance in 420-700 nm passband",
+    "minimize average transmittance in 355-365 nm stopband",
+    "minimize average transmittance in 1030-1080 nm stopband",
+    "minimize transmittance at 355 nm single wavelength"
+  ],
+  "manufacturing_considerations": [
+    "minimum thickness 45 nm improves deposition repeatability",
+    "maximum thickness 350 nm within standard process capability",
+    "36 layers within typical ion-assisted deposition limits"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness (n*d = λ/4) provides maximum reflectance at design wavelength for alternating high-low index stacks",
+    "Minimum thickness constraints prevent numerical instability in transfer-matrix calculations for ultra-thin layers"
+  ],
+  "expected_advantages": [
+    "Improved numerical stability compared to 20 nm minimum",
+    "Better UV stopband performance due to 360 nm QW center",
+    "Faster convergence from physically meaningful initialization"
+  ],
+  "known_risks": [
+    "45 nm minimum may limit ability to fine-tune NIR stopband at 1030-1080 nm",
+    "Quarter-wave at 360 nm may reduce passband transmittance at longer visible wavelengths"
+  ],
+  "execution_request_english": "Optimize a 36-layer planar multilayer filter on fused silica substrate with air incidence at 0 degrees, unpolarized light. Materials: alternating Ta2O5 (high index) and SiO2 (low index), starting with Ta2O5. Layer thickness bounds: 45-350 nm per layer. Initialize all layers to quarter-wave optical thickness at 360 nm (Ta2O5: 360/(4*n_Ta2O5), SiO2: 360/(4*n_SiO2)). Use gradient_thickness optimizer with hard clip operator enforcing 45 nm minimum during first 50% of optimization epochs. Objective: maximize weighted score combining (1) high average transmittance in 420-700 nm, (2) low average transmittance in 355-365 nm, (3) low average transmittance in 1030-1080 nm, (4) low transmittance at 355 nm. Spectral grid: 1 nm spacing from 350-1100 nm. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Raised minimum thickness from 20 nm to 45 nm per feedback directive to address numerical convergence issues observed in iteration_01. Changed QW center from 350 nm to 360 nm (center of UV stopband) for better physical alignment. Implemented hard clip operator for first 50% of epochs."
+}

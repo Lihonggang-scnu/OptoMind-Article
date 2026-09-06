@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score deviated from a monotonic upward trajectory, dropping from 0.9405 (round 1) to 0.4837 (round 3) before recovering to 0.7187 (round 4). tightest_margin remained positive at 0.4856, confirming thickness bounds were respected. valid_candidates settled at 9, aligning with the expectation of reduced yields due to the complex dual-stopband optimization landscape. The deviation direction is non-monotonic: a sharp decrease followed by a substantial rebound.",
+  "deviation_mechanism": "The non-monotonic score evolution stems from competing impedance-matching requirements across the 355-365 nm and 1030-1080 nm windows. In round 3, the optimizer generated stacks with steep adjacent-layer thickness gradients (e.g., round 3, layer index 7: 39.4999 nm → layer index 8: 29.3142 nm), creating high-refractive-index contrasts that disrupted phase accumulation and induced parasitic scattering/reflection. This broke the balance between the two stopbands, collapsing the score to 0.4837. The round 4 recovery to 0.7187 occurred when the search redistributed optical path lengths (e.g., round 4, layer indices 5-7: 28.0836, 51.0029, 29.3942 nm), smoothing the effective refractive index profile and restoring coherent interference conditions.",
+  "continue_recommended": true,
+  "continue_rationale": "The route exhibits active, non-stagnant behavior rather than exhaustion. The score rebounded by +0.2350 from 0.4837 to 0.7187 over the final round, dramatically exceeding the 1e-3 marginal-gains threshold. tightest_margin remains robustly positive at 0.4856, confirming geometric feasibility is intact. With 9 valid candidates retained, the parameter space remains navigable. Continuing is scientifically justified to explore the basin surrounding the recovered optimum and stabilize balanced performance.",
+  "insight_for_next": "Enforce a hard constraint on adjacent layer thickness differences (Δd ≤ 12 nm) during population initialization. Supplement this with quasi-periodic seeding centered on quarter-wave optical thicknesses for 360 nm and 1050 nm to provide the optimizer with physically sensible starting points that respect impedance continuity, thereby avoiding the steep gradients that caused the round 3 optical mismatch.",
+  "insight_grounding": "The round 3 score collapse to 0.4837 directly correlates with the measured local gradient in the leading candidate of that round (array index 2): layer index 7 is 39.4999 nm and layer index 8 is 29.3142 nm (Δ = -10.1857 nm). In contrast, the round 4 recovery to 0.7187 coincides with candidates showing moderated transitions, such as array index 0 where layer indices 5 and 7 are 28.0836 nm and 51.0029 nm respectively, separated by intermediate layers that buffer the optical impedance. Constraining Δd ≤ 12 nm targets the exact gradient magnitude proven to trigger the resonance failure.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:58:35.884971+00:00",
+  "attestation_sha256": "77961d26eb4c072c6b601479732b84cbe96ddf0e76c8e9b3048ac260e8050390",
+  "observed_metrics": {
+    "best_target_score": 0.7186603843910639,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.4856246728534792
+  },
+  "reflection_available": true
+}

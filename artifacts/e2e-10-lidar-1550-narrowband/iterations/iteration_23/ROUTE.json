@@ -1,0 +1,51 @@
+{
+  "route_id": "control_route_01",
+  "title": "Cavity-Core Isolated Optimization for 1550 nm Narrowband Filter",
+  "route_kind": "defect_cavity",
+  "scientific_hypothesis": "Freezing outer Bragg reflector layers while optimizing only the central cavity region (layers 13-17) will improve 1550 nm transmission without degrading stopband suppression in 1400-1500 nm and 1600-1700 nm bands.",
+  "design_principle": "In a defect-cavity narrowband filter, the central defect layers determine the resonance wavelength and peak transmission, while the outer distributed Bragg reflector (DBR) stacks determine stopband width and rejection depth. By fixing the DBR sections and tuning only the cavity core, optimization can refine the passband shape without destabilizing the mirror performance.",
+  "proposed_materials": [
+    "Ta2O5 (Gao)",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "29-layer explicit stack: Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5/SiO2/Ta2O5 (air incident, fused silica substrate)",
+  "design_variables": [
+    "thicknesses of layers 13-17 (cavity core region only)",
+    "layers 0-12 and 18-28 frozen at quarter-wave values"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550 nm (target ≥ 0.95)",
+    "minimize mean transmittance in 1400-1500 nm band",
+    "minimize mean transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layer count fixed at 29 (within 30-layer limit)",
+    "all thicknesses within 50-400 nm fabricable range",
+    "normal incidence assumed for deposition monitoring"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled: Quarter-wave optical thickness at center wavelength produces maximum reflectance in DBR mirrors",
+    "Recalled: Defect cavity layers at approximately half-wave optical thickness create transmission resonance within stopband",
+    "Recalled: Ta2O5 has higher refractive index than SiO2, providing index contrast for Bragg reflection",
+    "Recalled: Narrowband filter bandwidth scales inversely with number of mirror pair periods",
+    "Recalled: Cavity layer thickness tolerance directly affects resonance wavelength shift"
+  ],
+  "expected_advantages": [
+    "Isolated cavity tuning reduces optimization dimensionality from 29 to 5 variables",
+    "Frozen outer layers preserve established stopband performance from prior iterations",
+    "Lower learning rate and gradient clipping prevent phase-slip during fine cavity adjustment",
+    "Initialization from best prior candidate provides proximity to local optimum"
+  ],
+  "known_risks": [
+    "Ta2O5 is not in material_catalog.guaranteed_names; local registry must resolve it to exactly one dataset - if resolution fails, the route requires repair with a guaranteed alternative",
+    "Recalled quarter-wave thicknesses (185 nm Ta2O5, 268 nm SiO2 at 1550 nm) are approximate; actual n-values at 1550 nm may differ and would need lookup to confirm",
+    "Freezing outer layers may prevent global optimum if cavity-mirror coupling is significant; this trade-off was not verified against literature",
+    "Gradient clipping at 0.05 may slow convergence if cavity requires larger thickness adjustments",
+    "Uncertainty whether 29 layers provides sufficient stopband depth for both 1400-1500 nm and 1600-1700 nm bands simultaneously"
+  ],
+  "execution_request_english": "Design a 29-layer planar multilayer dielectric narrowband filter for 1550 nm LiDAR receiver. Incident medium is air, substrate is fused silica. Materials are Ta2O5 (Gao) (high index) and SiO2 (Lemarchand) (low index). Stack sequence is alternating Ta2O5 (Gao)/SiO2 (Lemarchand) starting with Ta2O5 (Gao) at air interface, ending with Ta2O5 (Gao) at substrate interface. Layers 0-12 and 18-28 are frozen at quarter-wave optical thicknesses: Ta2O5 (Gao) layers at 185 nm, SiO2 (Lemarchand) layers at 268 nm. Layers 13-17 (cavity core) are optimizable with initial thicknesses [152.6, 301.8, 288.5, 158.6, 265.6] nm and bounds [50, 400] nm. Optimization uses gradient-based thickness tuning with learning rate reduced to 50% of default and gradient clipping at 0.05. Objectives: maximize mean transmittance at 1550 nm (single wavelength), minimize mean transmittance over 1400-1500 nm band, minimize mean transmittance over 1600-1700 nm band. Normal incidence, unpolarized or both polarizations averaged. Coherent transfer-matrix solver. Total layers exactly 29.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control_route_01 per refinement chain instruction. Strategy shifts to isolated cavity-core optimization with frozen outer reflectors, initialized from iteration 19 best differential-evolution candidate for layers 13-17. Learning rate reduced and gradient clipping enabled per feedback directives."
+}

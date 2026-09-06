@@ -1,0 +1,45 @@
+{
+  "observed_vs_expected": "The expected observation that `best_target_score` should rise consistently as the UV stopband optimizes is contradicted by the actual score history `[0.7829354018808976, 0.8995857518038861, 0.5314561184228155, 0.6407804002262127, 0.45051093208788323, 0.9462713710566238, 0.5166753428972839]`. Rather than a monotonic increase, the route exhibits severe oscillation, ending with a sharp downward deviation from a peak of `0.9462713710566238` in round 6 to `0.5166753428972839` in round 7. The `tightest_margin` observed in the final round is `0.386311137861895` (positive), which aligns with the expectation of staying within bounds during this specific execution, but earlier iterations clearly breached them. `valid_candidates` is 9; while insufficient population context prevents a full judgment here, the primary deviation is the non-convergent, volatile score trajectory.",
+  "deviation_mechanism": "The performance collapse originates from the optimizer driving layer thicknesses into non-physical regimes that violate the `20–350 nm` operational window. As documented in the second entry of `candidate_thicknesses_nm`, individual layers were pushed to `10.00001162451284 nm` and `398.0169235210598 nm`. Thinning a layer below 20 nm drastically reduces its optical path length and destroys the quarter-wave phase matching required for constructive interference in the UV stopband. Conversely, exceeding 350 nm introduces parasitic higher-order resonances and excessive absorption/scattering losses. These out-of-bounds thicknesses fundamentally break the designed interference condition, yielding degraded transmittance spectra and directly causing the measured score drop from `0.9462713710566238` to `0.5166753428972839`.",
+  "continue_recommended": true,
+  "continue_rationale": "Despite the round 7 score of `0.5166753428972839`, the route has proven physically executable and retains significant search potential, as demonstrated by the peak score of `0.9462713710566238` achieved in round 6. The extreme volatility indicates the algorithm is currently straying outside the feasible design space rather than exhausting the solution manifold. With 7 rounds executed and no sign of the marginal-gain exhaustion threshold (<1e-3 improvement against historical best), applying strict boundary enforcement will likely stabilize the search and recover the high-performance configurations previously identified.",
+  "insight_for_next": "Implement hard thickness clamping (`clip(t, 20.0, 350.0)`) immediately after every population update or optimization step to permanently reject non-physical states. Additionally, reduce the initial perturbation radius for the next round (e.g., limit random shifts to ±15 nm around quarter-wave targets) to confine early evolutionary steps to robust, manufacturable thicknesses before allowing aggressive exploitation.",
+  "insight_grounding": "This directive is grounded in the specific out-of-bound values found in `candidate_thicknesses_nm` (second array), which contain `10.00001162451284 nm` and `398.0169235210598 nm`. These exact measurements correlate with the route's inability to sustain the `0.9462713710566238` peak seen in round 6, dropping to `0.5166753428972839` in round 7. Clamping and tighter initialization directly address the measured physical over-extension that breaks the optical interference model.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T23:13:14.583218+00:00",
+  "attestation_sha256": "67b813dc3b899702891aef35553fe9af5284ae80b7a57c57940a05786b77913d",
+  "observed_metrics": {
+    "best_target_score": 0.5166753428972839,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.386311137861895
+  },
+  "reflection_available": true,
+  "disagreement": {
+    "present": true,
+    "llm_recommendation": true,
+    "deterministic_verdict": "stop",
+    "deterministic_readings": {
+      "gate_max_rounds": true,
+      "gate_budget": false,
+      "gate_physics": true,
+      "gate_stagnation": true,
+      "observed_gain": 0.4957604389687406,
+      "epsilon": 0.0001,
+      "window_scores": [
+        0.45051093208788323,
+        0.9462713710566238,
+        0.5166753428972839
+      ],
+      "stagnation_is_advisory_only": true
+    },
+    "llm_stop_policy": {
+      "minimum_rounds_required": 4,
+      "rounds_executed": 9,
+      "stop_basis": "",
+      "explicit_no_benefit_stop": false
+    },
+    "resolution": "blocked_by_budget"
+  }
+}

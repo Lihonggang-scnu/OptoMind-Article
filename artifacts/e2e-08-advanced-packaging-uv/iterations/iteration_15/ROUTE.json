@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Step-Size Constrained Optimization with Elite Preservation for 36-Layer Dual-Stopband Filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining per-layer thickness adjustments to ±20 nm per optimization round and preserving elite candidates (target_score ≥0.925) will prevent the optimizer from losing the high-transmittance topology identified in iteration 02, maintaining or improving upon the 0.9275 best_target_score while avoiding the regression to 0.8473 observed in iteration 11.",
+  "design_principle": "Modified quarter-wave optimization with bounded step-size prevents large thickness jumps that destabilize the dual-stopband interference condition. Elite preservation ensures the optimizer does not discard verified high-performing topologies during stochastic exploration.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (36 finite layers, 18 Ta2O5 + 18 SiO2, alternating starting with Ta2O5)",
+  "design_variables": [
+    "layer thicknesses (36 variables, each bounded 20-350 nm)",
+    "optimization step-size limit (±20 nm per layer per round)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance in 420-700 nm",
+    "minimize average transmittance in 355-365 nm",
+    "minimize average transmittance in 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "individual layer thickness 20-350 nm",
+    "Ta2O5 and SiO2 only",
+    "step-size constraint aids deposition repeatability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:237322138:s2chunk:237322138:10936:13204:a3cb809ee6dc2b5d"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack optimization with non-quarter-wave thickness variation for broadened suppression bands",
+    "Needle optimization principle for multi-wavelength coatings"
+  ],
+  "expected_advantages": [
+    "Prevents optimizer from losing verified high-scoring topology",
+    "Step-size constraint improves numerical convergence stability",
+    "Maintains 36-layer complexity for dual-stopband capability"
+  ],
+  "known_risks": [
+    "Step-size constraint may slow convergence to global optimum",
+    "Elite preservation may reduce exploration diversity if too restrictive"
+  ],
+  "execution_request_english": "Simulate and optimize a 36-layer alternating Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 degree incidence with unpolarized illumination. Layer sequence: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica (36 finite layers total, starting with Ta2O5). Each layer thickness bounded 20-350 nm. Initialize from the iteration 02 best candidate thicknesses: [107.14966239852325, 137.99394304715145, 106.1396480229194, 105.43423519442798, 108.38062555215072, 153.38398125209014, 104.20578857329681, 172.77431696012712, 113.15574014639562, 153.98273791778706, 101.5830859896286, 141.79930612672644, 95.67768877875027, 134.33253100901547, 98.27050633991132, 125.78268591037838, 96.4720055073605, 132.10535910279305, 93.8107947096124, 134.212145996059, 96.77431577286404, 127.72598083457547, 94.98807187250448, 132.9856261855332, 91.53349941862439, 133.89897224226587, 97.03284735250075, 133.18762006420167, 94.86093418991078, 143.77354638084745, 85.01210429550451, 146.01264934304848, 98.90937221687832, 146.31368244854312, 108.95437475502086, 41.105935114302895]. Apply gradient-based thickness optimization with maximum step-size constraint of ±20 nm per layer per optimization round. Implement Pareto-retention: automatically preserve any candidate achieving target_score ≥0.925 across all generations. Spectral grid: 300-1200 nm with 1 nm resolution. Compute transmittance for unpolarized light at 0 degrees. Objective: maximize weighted combination of (average transmittance in 420-700 nm) minus (average transmittance in 355-365 nm) minus (average transmittance in 1030-1080 nm) minus (transmittance at 355 nm). Report best_target_score, valid_candidates count, tightest_margin, and final thicknesses_nm for all candidates. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directives: ±20 nm step-size constraint and Pareto-retention for candidates ≥0.925 to prevent loss of verified high-performing topology from iteration 02 (0.9275 score). Addresses numerical_convergence failure category by constraining optimization step magnitude."
+}

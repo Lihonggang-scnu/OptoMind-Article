@@ -1,0 +1,345 @@
+{
+  "schema_version": "tmm-task-compilation.v1",
+  "status": "compiled",
+  "benchmark_id": null,
+  "model_name": "qwen3.7-flash",
+  "attempts": 2,
+  "task": {
+    "schema_version": "optical-design-task.tmm.v1",
+    "task_id": "tmm_design_an_8_layer_planar_dielectric_anti_reflect_5612cceb1b",
+    "user_request_original": "Design an 8-layer planar dielectric anti-reflection coating on silicon substrate. Stack structure: Air incident medium, then 8 alternating layers starting with Ta2O5 (Gao) (Layer 1), then SiO2 (Lemarchand) (Layer 2), Ta2O5 (Gao) (Layer 3), SiO2 (Lemarchand) (Layer 4), Ta2O5 (Gao) (Layer 5), SiO2 (Lemarchand) (Layer 6), Ta2O5 (Gao) (Layer 7), SiO2 (Lemarchand) (Layer 8), terminating into semi-infinite silicon substrate. All 8 layer thicknesses are optimizable variables, each bounded between 20 nm and 400 nm. Illumination: normal incidence (0 degrees), unpolarized light. Wavelength range: evaluate performance across two bands simultaneously - 1260-1360 nm and 1530-1565 nm. Objective: minimize average power reflectance in both bands while maximizing transmittance into silicon substrate. Use gradient-based thickness optimization with multiple initialization points to navigate the non-convex design space. Report best achieved target score, individual layer thicknesses for the best candidate, mean reflectance in each band, and transmittance into silicon. Materials: Ta2O5 (Gao) and SiO2 (Lemarchand) only, resolved from material registry. Maximum 12 layers allowed by constraint, this design uses exactly 8 layers.",
+    "normalized_request_english": "Design an 8-layer planar anti-reflection coating on silicon using alternating Ta2O5 and SiO2 layers. Optimize all 8 layer thicknesses (20–400 nm) to minimize mean reflectance in the 1260–1360 nm and 1530–1565 nm bands and maximize mean transmittance across 1260–1565 nm under normal incidence unpolarized illumination.",
+    "experiments": [
+      {
+        "experiment_id": "opt_8layer_ar_dual_band",
+        "mode": "optimize",
+        "tmm_task": {
+          "simulation": {
+            "stack": {
+              "name": "8_layer_ar_ta2o5_sio2_si",
+              "incident": {
+                "constant_n": 1.0,
+                "constant_k": 0.0
+              },
+              "layers": [
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_1"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_2"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_3"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_4"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_5"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_6"
+                },
+                {
+                  "material": "ta2o5",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_7"
+                },
+                {
+                  "material": "sio2",
+                  "thickness_nm": 200.0,
+                  "coherence": "coherent",
+                  "optimizable": true,
+                  "min_thickness_nm": 20.0,
+                  "max_thickness_nm": 400.0,
+                  "label": "layer_8"
+                }
+              ],
+              "exit": {
+                "material": "si"
+              }
+            },
+            "spectrum": {
+              "start_nm": 1260.0,
+              "stop_nm": 1565.0,
+              "points": 401
+            },
+            "illumination": {
+              "angles_deg": [
+                0.0
+              ],
+              "polarizations": [
+                "unpolarized"
+              ]
+            },
+            "solver": "smatrix",
+            "allow_material_extrapolation": false,
+            "requested_outputs": [
+              "R",
+              "T"
+            ],
+            "physics": {
+              "geometry_class": "layered_planar",
+              "material_class": "isotropic",
+              "excitation_class": "plane_wave",
+              "time_domain_required": false
+            }
+          },
+          "targets": [
+            {
+              "observable": "R",
+              "target": 0.5,
+              "wavelength_min_nm": 1260.0,
+              "wavelength_max_nm": 1360.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "r_min_band1"
+            },
+            {
+              "observable": "R",
+              "target": 0.5,
+              "wavelength_min_nm": 1530.0,
+              "wavelength_max_nm": 1565.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_most",
+              "aggregation": "mean",
+              "name": "r_min_band2"
+            },
+            {
+              "observable": "T",
+              "target": 0.5,
+              "wavelength_min_nm": 1260.0,
+              "wavelength_max_nm": 1565.0,
+              "weight": 1.0,
+              "angle_deg": 0.0,
+              "polarization": "unpolarized",
+              "constraint": "at_least",
+              "aggregation": "mean",
+              "name": "t_max_full"
+            }
+          ],
+          "optimizer": {
+            "method": "adam_lbfgs",
+            "max_steps": 200,
+            "learning_rate": 0.05,
+            "starts": 3,
+            "seed": 42,
+            "early_stop_patience": 15,
+            "improvement_tolerance": 1e-07,
+            "gradient_clip_norm": 10.0,
+            "thickness_window_nm": 100.0,
+            "quantization_nm": 1.0
+          }
+        },
+        "objectives": [
+          {
+            "objective_id": "r_min_band1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.5,
+            "region": {
+              "wavelength_nm": [
+                1260.0,
+                1360.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "r_min_band2",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "weight": 1.0,
+            "target": 0.5,
+            "region": {
+              "wavelength_nm": [
+                1530.0,
+                1565.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "t_max_full",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "weight": 1.0,
+            "target": 0.5,
+            "region": {
+              "wavelength_nm": [
+                1260.0,
+                1565.0
+              ],
+              "angle_deg": 0.0,
+              "polarization": "unpolarized"
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_reflectance_1260_1360nm",
+            "metric": "mean_reflectance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1260.0,
+                1360.0
+              ]
+            },
+            "admission_role": "score_only"
+          },
+          {
+            "objective_id": "fixedscore.mean_reflectance_1530_1565nm",
+            "metric": "mean_reflectance",
+            "sense": "report",
+            "weight": 1.0,
+            "target": null,
+            "region": {
+              "wavelength_nm": [
+                1530.0,
+                1565.0
+              ]
+            },
+            "admission_role": "score_only"
+          }
+        ],
+        "tags": [
+          "ar_coating",
+          "dual_band",
+          "thickness_opt"
+        ]
+      }
+    ],
+    "verification": {
+      "require_spectral_convergence": true,
+      "require_independent_solver": true,
+      "check_passivity": true,
+      "check_energy_conservation": true,
+      "forbid_material_extrapolation": true
+    },
+    "portfolio": {
+      "maximum_candidates": 8,
+      "include_best_target_score": true,
+      "include_most_robust": true,
+      "include_simplest_fabrication": true,
+      "include_structurally_distinctive": true,
+      "include_pareto_front": true
+    },
+    "uncertainty": {
+      "thickness_sigma_nm": 1.0,
+      "thickness_error_model": "absolute_normal",
+      "thickness_relative_fraction": 0.0,
+      "thickness_samples": 16,
+      "angle_perturbation_deg": 0.0,
+      "material_dataset_policy": "evaluate_all_eligible",
+      "maximum_material_scenarios": 8,
+      "random_seed": 42
+    },
+    "budget": {
+      "wall_time_seconds": 900.0,
+      "maximum_forward_evaluations": 20000,
+      "maximum_optimizer_runs": 2,
+      "maximum_qwen_calls": 2,
+      "maximum_qwen_input_tokens": 12000,
+      "maximum_qwen_output_tokens": 2000,
+      "maximum_qwen_cost_cny": 2.0
+    },
+    "benchmark_id": null,
+    "metadata": {
+      "compiler": "QwenTMMTaskCompiler",
+      "compiler_schema": "tmm-task-compilation.v1",
+      "compiler_model": "qwen3.7-flash",
+      "performance_targets_are_soft": true,
+      "diversity_required": false,
+      "target_threshold_corrections": [],
+      "scoring_standard_target_alignments": [],
+      "illumination_corrections": [],
+      "substrate_corrections": [],
+      "solver_corrections": [],
+      "objective_synchronization": [
+        "opt_8layer_ar_dual_band: synchronized 3 simple objectives from executable targets"
+      ],
+      "objective_freeze": [
+        "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (0 - mean_reflectance_1260_1360nm - mean_reflectance_1530_1565nm)",
+        "opt_8layer_ar_dual_band: attached the 2 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+      ],
+      "objective_gate": [],
+      "objective_signature": "f88ec5dffdbe2e3a",
+      "uncertainty_normalization": []
+    }
+  },
+  "rationale": "Bounded 8-layer planar AR coating on silicon optimized via coherent TMM. Fixed alternating Ta2O5/SiO2 sequence uses uniform 200 nm initial thickness guess within 20–400 nm bounds. Dual-band reflectance suppression and transmission enhancement targets drive gradient-based thickness optimization under normal unpolarized illumination.",
+  "validation_errors": [],
+  "usage": [
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 3417,
+      "completion_tokens": 10859,
+      "total_tokens": 14276
+    },
+    {
+      "model_name": "qwen3.7-flash",
+      "mock_llm": false,
+      "prompt_tokens": 5077,
+      "completion_tokens": 6434,
+      "total_tokens": 11511
+    }
+  ],
+  "raw_response_sha256": [
+    "a4450ce2c2343cbce465edb52a29a4b5be0008899dae8976fcc6df9d029315af",
+    "9ec1d42b0cefd2d3480fe2ed7b48147a3caf29ee5c2129c5ee3a48715517138b"
+  ],
+  "rejected_draft": ""
+}

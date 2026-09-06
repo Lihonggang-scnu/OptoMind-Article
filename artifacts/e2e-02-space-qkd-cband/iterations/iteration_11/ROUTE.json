@@ -1,0 +1,49 @@
+{
+  "route_id": "route_01",
+  "title": "30-layer HfO2/SiO2 dichroic with thickness bounds centered on Round 1 best candidate",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Constraining layer thicknesses to ±35% of the Round 1 best candidate values will prevent optimizer drift into non-productive regions while allowing sufficient freedom to improve the dichroic figure of merit toward the theoretical limit.",
+  "design_principle": "Bounded local optimization around a known high-performing configuration preserves the interference physics that achieved 0.9532 score while enabling fine-tuning.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "exactly 6 alternating HfO2/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "layer thicknesses (30 variables, each bounded to ±35% of Round 1 best candidate: [59.0, 95.0, 64.0, 91.0, 100.0, 131.0, 57.0, 98.0, 96.0, 91.0, 61.0, 90.0, 56.0, 77.0, 55.0, 71.0, 51.0, 86.0, 99.0, 93.0, 78.0, 127.0, 77.0, 71.0, 42.0, 52.0, 73.0, 87.0, 49.0, 115.0] nm)"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance in 1530-1565 nm",
+    "maximize mean reflectance in 400-700 nm",
+    "minimize transmittance in 400-700 nm",
+    "minimize reflectance in 1530-1565 nm"
+  ],
+  "manufacturing_considerations": [
+    "30 layers within specified limit",
+    "thickness bounds ensure manufacturability near Round 1 solution"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:279318729:s2chunk:279318729:2622:4768:92ac3e4614135e81",
+    "s2-chunk:CorpusId:195545021:s2chunk:195545021:58866:61075:02c786ba5b6885f8"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for layered isotropic media",
+    "Quarter-wave stack theory for high-reflection bands",
+    "Dichroic filter design principles"
+  ],
+  "expected_advantages": [
+    "Prevents optimizer from exploring thickness regions that degraded Round 5 performance",
+    "Maintains 30-layer interference capacity that achieved 0.9532",
+    "Bounded search reduces computational waste"
+  ],
+  "known_risks": [
+    "Bounds may prevent discovery of superior non-local optima",
+    "Round 1 candidate may already be near local optimum"
+  ],
+  "execution_request_english": "Optimize a 30-layer dielectric stack on fused silica substrate with air incidence. Layer sequence: alternating HfO2 and SiO2, starting with HfO2 at air interface (30 finite layers total, 15 pairs). Initialize thicknesses at [59.0, 95.0, 64.0, 91.0, 100.0, 131.0, 57.0, 98.0, 96.0, 91.0, 61.0, 90.0, 56.0, 77.0, 55.0, 71.0, 51.0, 86.0, 99.0, 93.0, 78.0, 127.0, 77.0, 71.0, 42.0, 52.0, 73.0, 87.0, 49.0, 115.0] nm. Constrain each layer thickness to ±35% of its initialization value. Optimize for maximum transmittance in 1530-1565 nm band and maximum reflectance in 400-700 nm band under normal incidence, unpolarized illumination. Use gradient-based thickness optimizer with bounded variables. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating HfO2/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: wavelength intervals 400-700 nm, 1530-1565 nm. soft objectives: high transmission in 1530–1565 nm; high reflection in 400–700 nm. behaviors to suppress or avoid: reflection in 1530–1565 nm; transmission in 400–700 nm. manufacturing constraints: total layer count not exceeding 30.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Round 5 reduced layer count from 30 to 12, causing score regression from 0.9532 to 0.8391. This route restores 30 layers and adds thickness bounds centered on Round 1 best candidate to prevent optimizer drift while preserving the interference capacity that achieved higher performance."
+}

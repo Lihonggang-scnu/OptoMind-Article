@@ -1,0 +1,54 @@
+{
+  "route_id": "control_route_01",
+  "title": "Visible-Reflecting DBR with Quarter-Wave Stack at 550 nm",
+  "route_kind": "periodic_stack",
+  "scientific_hypothesis": "A 24-layer alternating HfO2/SiO2 stack with quarter-wave optical thicknesses centered at 550 nm will produce high reflectance in 400-700 nm while maintaining high transmittance in 1530-1565 nm, with thickness variations constrained to 65-105 nm reducing optimizer oscillation.",
+  "design_principle": "Distributed Bragg reflector physics: alternating high/low refractive index layers at quarter-wave optical thickness create constructive interference for reflection at the design wavelength. Layers thinner than quarter-wave at visible wavelengths become increasingly transparent at longer IR wavelengths where optical thickness is proportionally smaller.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer stack: HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2/HfO2/SiO2 on fused silica substrate, air incident",
+  "design_variables": [
+    "Individual layer thicknesses (24 variables), constrained to 65-105 nm range",
+    "Alternating high/low index initialization pattern",
+    "Learning rate reduced by 50% from prior round",
+    "Regularization penalty on inter-layer thickness variance increased"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Minimize thickness variance between adjacent layers for manufacturability"
+  ],
+  "manufacturing_considerations": [
+    "Maximum 30 layers (24 used)",
+    "Thickness range 65-105 nm compatible with standard deposition tools",
+    "HfO2 and SiO2 are space-qualified coating materials",
+    "Alternating pattern simplifies deposition sequencing"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Quarter-wave stack reflectance bandwidth scales with refractive index contrast ratio (nH/nL)",
+    "HfO2 refractive index approximately 2.0-2.1 in visible, 1.9 in IR from recalled material data",
+    "SiO2 refractive index approximately 1.45-1.46 across visible and IR from recalled material data",
+    "Optical thickness n*d = lambda/4 at center wavelength creates maximum reflectance at that wavelength",
+    "Transmission at wavelengths longer than design wavelength increases as layers become optically thinner"
+  ],
+  "expected_advantages": [
+    "Tighter thickness bounds (65-105 nm) reduce optimizer search space and accelerate convergence",
+    "Quarter-wave initialization at 550 nm provides physically meaningful starting point",
+    "Increased regularization suppresses the wide thickness oscillations observed in iteration_04",
+    "24 layers provides sufficient stopband depth while staying under 30-layer constraint"
+  ],
+  "known_risks": [
+    "Recalled refractive index values for HfO2 and SiO2 may differ from actual catalog data - the registry measurements will determine actual performance",
+    "Quarter-wave at 550 nm may not optimally balance visible reflectance vs IR transmission - this is a hypothesis being tested",
+    "Uncertain whether 65-105 nm bounds are too restrictive for achieving optimal visible band edge performance",
+    "Normal incidence assumed since angle was not specified in original request - angle sensitivity not characterized",
+    "Polarization effects not addressed since polarization was not specified"
+  ],
+  "execution_request_english": "Design a 24-layer planar multilayer dielectric film on fused silica substrate with air incident medium. Use only hfo2 and SiO2 (Lemarchand) materials in alternating sequence starting with hfo2 at the air interface. Optimize individual layer thicknesses with bounds constrained to 65-105 nm. Initialize with quarter-wave optical thickness pattern centered at 550 nm (hfo2 approximately 69 nm, SiO2 (Lemarchand) approximately 95 nm). Reduce learning rate by 50% compared to prior optimization round. Increase regularization penalty on inter-layer thickness variance. Evaluate performance at normal incidence across two wavelength bands: maximize transmittance in 1530-1565 nm band and maximize reflectance in 400-700 nm band. Total layer count fixed at 24.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Continuation of control route with refined optimization parameters per feedback directives: thickness bounds constrained to 65-105 nm, quarter-wave initialization at 550 nm enforced, learning rate reduced by 50%, regularization on thickness variance increased to suppress oscillations observed in iteration_04"
+}

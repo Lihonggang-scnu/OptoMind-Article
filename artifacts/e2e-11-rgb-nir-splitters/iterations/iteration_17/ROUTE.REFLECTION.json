@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The observed best_target_score is 0.732095, which is substantially lower than the expected threshold of 0.970. It also crosses the pre-declared hypothesis-failure boundary of 0.960, dropping by approximately 0.228 points below that limit, confirming the hypothesis that 20 layers are insufficient for the required bandwidth. The valid_candidates metric is 9, which is consistent with the expectation of exceeding 8, indicating the constraint set remains feasible despite the low reflectance performance. No value was recorded for robustness_score, so consistency cannot be verified for that specific claim.",
+  "deviation_mechanism": "A 20-layer dielectric stack using TiO2/SiO2 lacks sufficient optical depth to establish a wide enough stopband for the target spectral region. As the optimizer perturbs the 20 thickness parameters to improve the objective, it frequently pushes solutions into regimes where the phase accumulation per layer deviates critically from quarter-wave conditions. This causes destructive interference to break down across portions of the target band, explaining the severe score volatility (dropping from 0.92508 in round 2 to 0.67466 in round 4). The tight coupling between neighboring layers in a fixed 20-layer topology creates a rugged, highly non-convex fitness landscape where small thickness changes cause large swings in transmission/reflection, preventing convergence to a high-reflectance solution.",
+  "continue_recommended": true,
+  "continue_rationale": "Five rounds have executed with a peak score of 0.92508 (round 2) and a final score of 0.732095 (round 5). The valid_candidates count remains at 9, proving the search space is navigable and not collapsed. Because the best_target_score falls well below the 0.950 contingency threshold established in pre-declarations, the route's structural hypothesis (that 20 layers suffice) is refuted, but the physical mechanism (TiO2/SiO2 interference) remains sound. Continuing to increase the layer count to 22 directly addresses the identified degree-of-freedom bottleneck and aligns with the pre-defined experimental contingency.",
+  "insight_for_next": "Increase the stack layer count from 20 to 22. Initialize the new round with a 22-layer quarter-wave sequence based on the mean refractive indices of TiO2 and SiO2 at the center wavelength, maintaining the existing thickness bounds. Run a targeted local search or gradient-free optimizer focused on fine-tuning the outermost 4-6 layers first to stabilize the edge bands, then progressively widen the optimization window inward to avoid the oscillatory collapse seen in rounds 3-5.",
+  "insight_grounding": "Candidate 0 maintained a rigid periodic structure of alternating 57.0 nm and 96.0 nm layers across all 20 positions, yet its corresponding score trajectory mirrored the aggregate history: peaking at 0.92508 in round 2 before degrading to 0.732095 by round 5. The persistent existence of 9 valid candidates alongside this 0.228-point deficit below the 0.960 hypothesis threshold confirms that the failure originates from topological limitation rather than constraint infeasibility. Adding two layers introduces the necessary phase-doubling capacity to extend the photonic bandgap without forcing the optimizer into unstable boundary regions.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-06T04:54:05.078644+00:00",
+  "attestation_sha256": "19e051bcbb4d8fcda6d57038c0dfb1687d6f720ab3375802d41e82bb18f7431d",
+  "observed_metrics": {
+    "best_target_score": 0.7320951493056587,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.5015104744886661
+  },
+  "reflection_available": true
+}

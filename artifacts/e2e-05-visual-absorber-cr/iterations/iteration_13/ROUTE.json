@@ -1,0 +1,48 @@
+{
+  "route_id": "control_route_01",
+  "title": "Control Axis: 13-Layer Cr-Embedded Dielectric Stack with Refined Cr Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 13-layer stack with a thin Cr layer at index 2, sandwiched between HfO2/SiO2 quarter-wave pairs tuned for 1000 nm, will maximize Visible absorption while maintaining NIR reflectance, and constraining Cr thickness to [10, 18] nm will improve optimization convergence.",
+  "design_principle": "Recalled knowledge of thin-film interference: dielectric pairs with optical thickness ~lambda/4 at 1000 nm create high reflectance in NIR; a thin semi-transparent metal layer (Cr) absorbs Visible light while allowing IR to reflect off the underlying stack/substrate; bounding the metal thickness prevents it from becoming opaque (blocking IR reflection) or too thin (insufficient absorption).",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)",
+    "Cr (Rakic-LD)",
+    "Al (Rakic-LD)"
+  ],
+  "proposed_topology": "Air | HfO2 | SiO2 | Cr | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | Al",
+  "design_variables": [
+    "thicknesses_nm (13 variables, one per film layer)"
+  ],
+  "soft_objectives": [
+    "Maximize mean absorptance in 400-700 nm",
+    "Maximize mean reflectance in 700-2000 nm",
+    "Maintain physical validity (non-negative thickness)"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count fixed at 13 (within 20-layer limit)",
+    "Cr thickness constrained to [10, 18] nm for stability",
+    "Dielectric thicknesses bounded [50, 300] nm"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled rule of thumb: Quarter-wave stacks centered at 1000 nm use ~125 nm HfO2 (n~2.0) and ~170 nm SiO2 (n~1.45).",
+    "Recalled behavior: Cr films < 20 nm are semi-transparent in Visible but reflective in IR when backed by a mirror.",
+    "Recalled design pattern: Embedding the absorber near the front reduces parasitic absorption in the rear stack."
+  ],
+  "expected_advantages": [
+    "Faster convergence due to narrowed Cr search space",
+    "Higher IR reflectance due to explicit quarter-wave tuning in first two layers",
+    "Robustness against over-absorption in NIR"
+  ],
+  "known_risks": [
+    "Material name 'cr' is not in the provided guaranteed_names list; local resolution must succeed.",
+    "Recalled quarter-wave thicknesses are approximate; actual n/k dispersion may shift optimal values.",
+    "Fixed topology may miss better configurations with Cr at different depths.",
+    "Uncertainty in whether 13 layers is optimal vs 14 or 12; this route does not explore layer count."
+  ],
+  "execution_request_english": "Optimize a 13-layer planar multilayer stack on an Al (Rakic-LD) substrate under air incidence. Material sequence: Layer 1=HfO2, Layer 2=SiO2 (Lemarchand), Layer 3=Cr (Rakic-LD), Layer 4=HfO2, Layer 5=SiO2 (Lemarchand), Layer 6=HfO2, Layer 7=SiO2 (Lemarchand), Layer 8=HfO2, Layer 9=SiO2 (Lemarchand), Layer 10=HfO2, Layer 11=SiO2 (Lemarchand), Layer 12=HfO2, Layer 13=SiO2 (Lemarchand). Design variables are the thicknesses of these 13 layers. Bounds: Layer 3 (Cr (Rakic-LD)) must be between 10.0 and 18.0 nm. All other layers must be between 50.0 and 300.0 nm. Wavelength bands: 400-700 nm (target: maximize absorptance), 700-2000 nm (target: maximize reflectance). Polarization: unpolarized. Angle: 0 degrees (normal incidence). Solver: coherent TMM. Objective: maximize weighted sum of mean absorptance (400-700 nm) and mean reflectance (700-2000 nm).",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Refined Cr layer thickness bounds to [10.0, 18.0] nm based on prior control iteration observations of optimal clusters, while maintaining the same 13-layer topology and material sequence."
+}

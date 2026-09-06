@@ -1,0 +1,51 @@
+{
+  "route_id": "route_02",
+  "title": "Quarter-Wave Initialized 36-Layer Stack with Bounded Gradient Optimization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A 36-layer Ta2O5/SiO2 alternating stack initialized at quarter-wave optical thickness centered on 560 nm passband, with thickness bounds shifted to 30-340 nm away from singular edges, will achieve better numerical convergence than pure random initialization while maintaining dual-stopband suppression capability.",
+  "design_principle": "Modified quarter-wavelength optimization: start with λ/4n layers at passband center (560 nm), then vary optical thickness through bounded gradient optimization to smooth spectral characteristics and broaden suppression bands at 355-365 nm and 1030-1080 nm.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica substrate"
+  ],
+  "proposed_topology": "Air | (Ta2O5 | SiO2) × 18 pairs | Fused Silica substrate. Total 36 finite layers, alternating high-low index sequence starting with Ta2O5.",
+  "design_variables": [
+    "individual layer thicknesses (36 variables, bounded 30-340 nm)"
+  ],
+  "soft_objectives": [
+    "maximize average transmittance 420-700 nm",
+    "minimize average transmittance 355-365 nm",
+    "minimize average transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm"
+  ],
+  "manufacturing_considerations": [
+    "36 layers within maximum allowed count",
+    "thickness bounds 30-340 nm avoid deposition singularities near 20/350 nm edges",
+    "Ta2O5/SiO2 material pair compatible with standard deposition techniques"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:237322138:s2chunk:237322138:10936:13204:a3cb809ee6dc2b5d",
+    "s2-chunk:CorpusId:245822325:s2chunk:245822325:9655:11670:c26022c37015a7c0"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Transfer-matrix method for coherent planar multilayer interference",
+    "Bounded optimization for thickness variables within manufacturing constraints"
+  ],
+  "expected_advantages": [
+    "Quarter-wave initialization provides physically meaningful starting point",
+    "Shifted thickness bounds (30-340 nm) reduce numerical singularities",
+    "Gradient optimization can refine from good initial guess"
+  ],
+  "known_risks": [
+    "May converge to local minimum near quarter-wave solution",
+    "36 layers may still cause numerical conditioning issues",
+    "Dual-stopband requirement may conflict with single quarter-wave center"
+  ],
+  "execution_request_english": "Design and optimize a 36-layer planar dielectric filter on fused silica substrate. Stack topology: Air incident medium | Ta2O5(1) | SiO2(2) | Ta2O5(3) | SiO2(4) | Ta2O5(5) | SiO2(6) | Ta2O5(7) | SiO2(8) | Ta2O5(9) | SiO2(10) | Ta2O5(11) | SiO2(12) | Ta2O5(13) | SiO2(14) | Ta2O5(15) | SiO2(16) | Ta2O5(17) | SiO2(18) | Ta2O5(19) | SiO2(20) | Ta2O5(21) | SiO2(22) | Ta2O5(23) | SiO2(24) | Ta2O5(25) | SiO2(26) | Ta2O5(27) | SiO2(28) | Ta2O5(29) | SiO2(30) | Ta2O5(31) | SiO2(32) | Ta2O5(33) | SiO2(34) | Ta2O5(35) | SiO2(36) | Fused Silica substrate. All 36 layers have individual thickness optimization variables bounded 30-340 nm. Initialize thicknesses at quarter-wave optical thickness: Ta2O5 layers at 560 nm/(4*n_Ta2O5), SiO2 layers at 560 nm/(4*n_SiO2). Illumination: 0 degree incidence, unpolarized light. Simulation wavelength grid must cover 350-1100 nm with sufficient resolution to evaluate target bands: 355 nm (single wavelength), 355-365 nm (band), 420-700 nm (passband), 1030-1080 nm (band). Optimize using gradient-based method to maximize passband transmittance while minimizing stopband transmittance. Report thicknesses_nm for all 36 layers, best_target_score, valid_candidates count, and tightest_margin. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Repair compilation failure from iteration_06 (target band grid overlap error) by ensuring wavelength grid covers all target bands. Address numerical_convergence from iteration_02 by using quarter-wave initialization and shifted thickness bounds (30-340 nm instead of 20-350 nm) to avoid edge singularities."
+}

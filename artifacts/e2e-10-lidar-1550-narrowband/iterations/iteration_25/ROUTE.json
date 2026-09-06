@@ -1,0 +1,50 @@
+{
+  "route_id": "route_02",
+  "title": "Frozen Bulk 215nm with Inner Interface Optimization Only",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The high score (0.9227) from round 1 is primarily determined by the bulk cavity region (layers 9-18) converging to ~215 nm uniform thickness. Fixing these layers and optimizing only the transition interfaces (layers 1-8 and 19-20) should maintain score >0.85 with reduced search dimensionality, confirming the bulk cavity as the dominant performance driver.",
+  "design_principle": "Defective DBR bandpass filter with quarter-wave mirrors and half-wave defect cavity. Bulk cavity thickness fixed at optimal value; only mirror-cavity interfaces optimized for impedance matching.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2",
+    "Fused Silica"
+  ],
+  "proposed_topology": "20 explicit layers: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Fused Silica. Layers 1-8 and 19-20 optimizable; layers 9-18 fixed at 215.0 nm.",
+  "design_variables": [
+    "thicknesses of layers 1-8",
+    "thicknesses of layers 19-20"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance at 1550 nm",
+    "minimize mean transmittance in 1400-1500 nm band",
+    "minimize mean transmittance in 1600-1700 nm band"
+  ],
+  "manufacturing_considerations": [
+    "total layers = 20 (within 30-layer constraint)",
+    "fixed bulk reduces deposition complexity",
+    "interface layers allow tuning for fabrication tolerance"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:279797769:s2chunk:279797769:2162:3595:0bebf5b29fbbe93a",
+    "s2-chunk:CorpusId:252550066:s2chunk:252550066:4107:5333:1cc9d4e63cf35c95",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Defective DBR structure (HL)^N D(LH)^N creates transmission peak at defect wavelength",
+    "Quarter-wave optical thickness n*d = lambda0/4 for mirror layers",
+    "Half-wave defect cavity n*d = lambda0/2 enables resonant transmission"
+  ],
+  "expected_advantages": [
+    "Reduced optimization dimensionality (12 vs 20 variables)",
+    "Preserves proven bulk cavity configuration",
+    "Faster convergence with focused search space"
+  ],
+  "known_risks": [
+    "Interface layers alone may be insufficient to recover round-1 score",
+    "Fixed bulk may prevent further improvement if interfaces need co-optimization"
+  ],
+  "execution_request_english": "Design a 20-layer Ta2O5/SiO2 bandpass filter on Fused Silica substrate for 1550 nm LiDAR. Layer sequence: alternating Ta2O5/SiO2 starting with Ta2O5. Fix layers 9-18 (indices 8-17, 0-based) at exactly 215.0 nm thickness. Optimize layers 1-8 and 19-20 within bounds [100-400] nm. Incident medium is air. Evaluate transmittance at: passband 1550 nm (single wavelength), stopbands 1400-1500 nm and 1600-1700 nm (spectral means). Objective: maximize passband transmittance while minimizing stopband transmittance. Use gradient-based thickness optimization with coherent plane-wave TMM. Canonical user controls: wavelength intervals 1400-1500 nm, 1550-1550 nm, 1600-1700 nm. soft objectives: high transmittance at 1550 nm (soft target ≥ 0.95); strong suppression of transmittance in 1400-1500 nm and 1600-1700 nm. behaviors to suppress or avoid: transmittance in 1400-1500 nm; transmittance in 1600-1700 nm. manufacturing constraints: total layers ≤ 30.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Following feedback directive to fix bulk layers 9-18 at optimal ~215 nm values from iteration 21, restricting optimization to interface layers only to verify score maintenance with reduced DOF."
+}

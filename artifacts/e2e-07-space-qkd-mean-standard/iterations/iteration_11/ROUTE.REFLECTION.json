@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The pre-declared expectation was that best_target_score would peak when the defect thickness converges to a half-wave condition at 1550 nm. Actual observation shows monotonic score improvement across all 3 executed rounds (0.700568 → 0.761335 → 0.773122), but the converged defect thicknesses remain significantly lower than the theoretical half-wave target (~516 nm for n≈1.5 or ~387 nm for n≈2.1). Instead, central layers cluster between 248–262 nm and 293–305 nm. Direction of deviation: lower magnitude. Magnitude: measured central layer thicknesses are ~35–50% smaller than the expected half-wave condition. tightest_margin reached 0.4418715792534639, indicating visible rejection constraints are actively shaping the solution rather than remaining saturated.",
+  "deviation_mechanism": "The optimizer is resolving a fundamental optical trade-off between resonant phase accumulation and broadband edge rejection. A strict half-wave defect at 1550 nm maximizes constructive interference within the cavity, but pushes the operating point into the middle of the photonic stopband defined by the surrounding mirrors. Compressing the central layer to ~350 nm (layer 10 in the final candidate) reduces the round-trip phase shift, effectively detuning the cavity to maintain coupling with the wider telecom passband while preserving the high-index contrast needed to sustain the visible stopband. This physical mechanism explains why the score improves despite deviating from the nominal half-wave thickness: the composite objective rewards simultaneous telecommunication band transmittance and visible rejection, forcing the solver to sacrifice pure cavity resonance depth for spectral balance.",
+  "continue_recommended": true,
+  "continue_rationale": "Three rounds have executed with strictly increasing scores: 0.7005682042932584 (R1), 0.7613346230499516 (R2), and 0.773122224440753 (R3). The latest improvement (Δ = 0.011788) exceeds both the reference epsilon (1e-4) and the pre-declared exhaustion threshold (1e-3). The optical stack remains physically feasible, and the solver is still navigating the loss landscape toward a better spectral balance. No stagnation or hardware/compiler failure is present.",
+  "insight_for_next": "Apply explicit asymmetric bounds to the central cavity region (layers 8–10) to force layer 10 into the 380–430 nm window, decoupling it from the global mirror-constrained search. Simultaneously freeze peripheral mirror thicknesses (layers 0–7) to lock in the accumulated visible margin, allowing the inner defect to converge closer to the 1550 nm half-wave condition without destabilizing the stopband edges.",
+  "insight_grounding": "The final candidate (round 3, last array) shows layer 10 at 350.7768196355736 nm, while adjacent mirror layers (0–7) stabilize between 220–305 nm, establishing a tightest_margin of 0.4418715792534639. Because peripheral layers are already optimized for visible rejection, constraining them eliminates parameter cross-coupling. Driving layer 10 upward breaks the sub-half-wave compression regime currently limiting the score, enabling a targeted test of whether moving closer to the 1550 nm half-wave target yields further objective gains.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T19:41:27.193618+00:00",
+  "attestation_sha256": "7d3da0eae496622d72ea565f10bc4ce07a4f8dc28b5cb8fcfae5ea2395270e80",
+  "observed_metrics": {
+    "best_target_score": 0.773122224440753,
+    "valid_candidates": 10,
+    "run_status": "completed",
+    "tightest_margin": 0.4418715792534639
+  },
+  "reflection_available": true
+}

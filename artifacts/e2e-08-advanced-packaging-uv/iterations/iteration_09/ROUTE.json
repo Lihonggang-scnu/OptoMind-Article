@@ -1,0 +1,50 @@
+{
+  "route_id": "route_03",
+  "title": "Bounded-Noise Reinitialization from Round-1 Baseline with Pairwise Regularization",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The round-2 score regression resulted from unconstrained optimizer mutations diverging from the high-performing round-1 baseline. Reinitializing strictly to the 43.0/180.0 nm alternating profile with bounded uniform noise Δt ∈ [-5.0 nm, +5.0 nm] per layer, combined with pairwise thickness regularization penalizing |t_i - t_{i+1}| > 30 nm, will suppress mid-stack thickness spikes and recover or exceed the round-1 target score of 0.9405.",
+  "design_principle": "Preserve the verified quarter-wave-inspired alternating Ta2O5/SiO2 stack topology that achieved 0.9405 in round 1, but constrain the search space to a local neighborhood around the baseline to prevent optimizer divergence while allowing fine-tuning.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "individual layer thicknesses (36 variables, bounded 20-350 nm)",
+    "initialization centered on 43.0/180.0 nm baseline with ±5.0 nm uniform noise"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance 420-700 nm",
+    "minimize mean transmittance 355-365 nm",
+    "minimize mean transmittance 1030-1080 nm",
+    "minimize transmittance at 355 nm point",
+    "minimize pairwise thickness discontinuity penalty"
+  ],
+  "manufacturing_considerations": [
+    "maximum 36 layers",
+    "layer thickness range 20-350 nm",
+    "bounded noise initialization improves fabrication repeatability",
+    "pairwise regularization reduces extreme thickness gradients"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:237322138:s2chunk:237322138:10936:13204:a3cb809ee6dc2b5d"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack optimization principle from evidence showing alternating high-low index layers for bandpass/rejection filters",
+    "Bounded search neighborhood prevents optimizer divergence from known good baseline"
+  ],
+  "expected_advantages": [
+    "Recovers round-1 performance by preventing divergence",
+    "Pairwise regularization suppresses isolated thickness spikes observed in round-2 candidates",
+    "Bounded noise allows local fine-tuning without global topology change"
+  ],
+  "known_risks": [
+    "May converge to local optimum near baseline without exploring better distant configurations",
+    "Pairwise regularization may overly constrain thickness freedom if 30 nm threshold is too strict"
+  ],
+  "execution_request_english": "Optimize a 36-layer alternating Ta2O5/SiO2 dielectric filter on fused silica substrate at 0 degree incidence, unpolarized light. Initialize all candidates to the baseline alternating profile: Ta2O5 layers at 43.0 nm, SiO2 layers at 180.0 nm, for 18 pairs (Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | ... | SiO2 | Fused Silica). Apply bounded uniform noise perturbation Δt ∈ [-5.0 nm, +5.0 nm] to each layer thickness during population initialization. Enforce hard bounds 20-350 nm on all thicknesses. Include a pairwise regularization term in the fitness function that adds penalty proportional to max(0, |t_i - t_{i+1}| - 30 nm) for each adjacent layer pair. Optimize for: maximum mean transmittance in 420-700 nm band, minimum mean transmittance in 355-365 nm band, minimum mean transmittance in 1030-1080 nm band, and minimum transmittance at 355 nm. Report best_target_score, valid_candidates count, tightest_margin, and thicknesses_nm for all valid candidates. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Round-2 score regression (0.9405 to 0.7545) attributed to unconstrained optimizer mutations diverging from high-performing round-1 baseline. This route implements feedback directive: reinitialize to 43.0/180.0 nm baseline, apply bounded ±5.0 nm noise, add pairwise thickness regularization to suppress mid-stack spikes."
+}

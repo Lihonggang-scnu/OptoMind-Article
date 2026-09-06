@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "The expectation that best_target_score should rise was violated. The actual score trajectory is [0.7829, 0.8996, 0.5315, 0.6408, 0.4505], peaking at round 2 before dropping persistently to 0.4505—a deviation of approximately 0.45 points in the lower direction. The expectation that tightest_margin should remain positive held (actual 0.3456), as all thicknesses stayed within the 20-350 nm bounds. The valid_candidates count of 9 remains sufficient for continued search, consistent with the expectation that initialization yields a viable population.",
+  "deviation_mechanism": "The score collapse after round 2 is driven by optical phase cancellation caused by layer compression near the lower geometric bound. The provided arrays (zero-indexed 2 and 3) show multiple layers thinning to ~24.5–27.0 nm (array 2, indices 6 and 7) and 20.1 nm (array 3, index 10). At these sub-30 nm scales, the physical optical path length becomes insufficient to satisfy the quarter-wave phase condition for the target 355-365 nm band, destroying Bragg reflection contrast. Simultaneously, ultra-thin dielectric layers amplify parasitic absorption and interface scattering, which penalizes the combined objective function regardless of whether geometric constraints are met.",
+  "continue_recommended": true,
+  "continue_rationale": "The route is experiencing active divergence rather than stagnation, with a 0.4491-point drop from the round-2 peak (0.8996) to the current round (0.4505). Because the optimizer is driving layers into the numerically fragile sub-30 nm regime that physically degrades performance, repairing the search space bounds will restore feasibility. Five rounds have been executed, meeting the minimum threshold, but the trajectory clearly indicates a recoverable boundary collision rather than an exhausted physical axis.",
+  "insight_for_next": "Increase the minimum thickness floor from 20.0 nm to 25.0 nm to enforce a minimum optical path length, and re-initialize the optimizer using the exact thickness vector from round 2’s best candidate as a warm start. Switch to individual-layer stochastic perturbation instead of global scaling to prevent simultaneous multi-layer collapse into the instability zone.",
+  "insight_grounding": "The score decline from 0.8996 (round 2) to 0.4505 (round 5) maps directly to thickness values crossing the critical ~25 nm threshold: candidate array 2, indices 6 and 7 shrank to 27.02 nm and 24.51 nm; candidate array 3, index 10 shrank to 20.11 nm. These specific measurements confirm that approaching the 20 nm bound eliminates adequate quarter-wave spacing for the UV band, directly causing the objective function collapse. Reverting to the round-2 geometry preserves the highest recorded metric before this boundary collision occurred.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T22:16:43.209154+00:00",
+  "attestation_sha256": "daed62f5e90d34065915d15c273aed87ba765891a67af28d812f2b4c71af2b65",
+  "observed_metrics": {
+    "best_target_score": 0.45051093208788323,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.3455821274957499
+  },
+  "reflection_available": true
+}

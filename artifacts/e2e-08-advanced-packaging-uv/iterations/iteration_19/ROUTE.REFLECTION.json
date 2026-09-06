@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Consistency with best_target_score rising expectation: INCONSISTENT. The score declined from an initial 0.927 (Round 1) to 0.816 (Round 4), a net drop of ~0.111. Consistency with tightest_margin remaining positive: CONSISTENT (observed 0.385). Consistency with valid_candidates stability: DEVIATED (dropped to 9, indicating fragmentation of the feasible set under optimization stress).",
+  "deviation_mechanism": "The uniform 100.0 nm initialization established a coherent periodic stack that naturally managed reflection across the target band, yielding 0.927. The optimizer broke this symmetry by introducing extreme asymmetric optical path variations (e.g., compressing layer index 6 to 27.03 nm while expanding layer index 14 to 187.62 nm in Round 2). This disrupted the cumulative phase-matching required for broadband transmission, scattering energy into out-of-band reflections or evanescent modes. The subsequent rebound to 0.816 in Round 4 indicates the optimizer partially recovered favorable layer couplings, but the unanchored search continues to wander across a rugged interference landscape where small thickness changes drastically alter constructive/destructive interference patterns.",
+  "continue_recommended": true,
+  "continue_rationale": "The score sequence [0.927, 0.847, 0.626, 0.816] exhibits high-amplitude oscillation rather than asymptotic decay, proving the search space retains accessible high-performance regions. The +0.190 recovery in Round 4 specifically demonstrates that previously visited or nearby parameter combinations yield significantly better physics-based outcomes. With only four rounds executed and clear evidence of active landscape navigation, terminating now would discard a dynamically responsive route that merely requires constrained initialization to localize its search near the proven 0.927 optimum.",
+  "insight_for_next": "Reinitialize candidates using tightly bounded Gaussian perturbations (σ=10 nm) centered on the Round 1 uniform 100.0 nm vector to preserve the foundational interference condition. Implement a hard step-size limiter of 15 nm per iteration to prevent destructive overshoot, and apply a penalty weight for inter-layer thickness variance >40 nm to enforce smooth optical impedance transitions while allowing gradual refinement of the passband profile.",
+  "insight_grounding": "Historical best score of 0.927 was achieved exclusively with the uniform 100.0 nm initialization (all indices 0-35 set to 100.0 nm). Optimization immediately degraded performance (to 0.847) when layer index 6 shrank to 27.03 nm and layer index 14 expanded to 187.62 nm (Round 2 data). Performance bottomed at 0.626 (Round 3) as excursions worsened (layer index 6 at 28.33 nm, layer index 14 at 191.59 nm). Recovery to 0.816 (Round 4) coincided with layer index 6 returning to 116.29 nm and layer index 14 contracting to 66.09 nm, restoring moderate path matching. Anchoring perturbations to the verified 100.0 nm baseline directly addresses these documented detours.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T22:16:53.982493+00:00",
+  "attestation_sha256": "993738e2e85c3e8c4c8f58467066f29eac5d1a03fc297396c2c443ff4b30b5ac",
+  "observed_metrics": {
+    "best_target_score": 0.8160175110710759,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.38530423601319996
+  },
+  "reflection_available": true
+}

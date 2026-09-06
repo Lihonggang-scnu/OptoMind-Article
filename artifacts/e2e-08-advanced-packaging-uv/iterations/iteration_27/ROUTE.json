@@ -1,0 +1,47 @@
+{
+  "route_id": "route_01",
+  "title": "36-Layer DBR with Relaxed Bounds and Projection Operator",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Relaxing thickness bounds from [20,350]nm to [15,355]nm with a hard projection operator will eliminate compilation failures while maintaining or improving the 0.8996 target score achieved in iteration_05, as the additional 5nm margin accommodates optimizer drift without violating physical constraints.",
+  "design_principle": "Quarter-wave DBR stack centered at 355nm for UV stopband, with optimized thickness perturbations to create secondary stopband at 1030-1080nm while preserving 420-700nm passband transmission.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers)",
+  "design_variables": [
+    "all 36 layer thicknesses continuous in [15, 355] nm"
+  ],
+  "soft_objectives": [
+    "maximize mean transmittance 420-700nm",
+    "minimize mean transmittance 355nm",
+    "minimize mean transmittance 355-365nm",
+    "minimize mean transmittance 1030-1080nm"
+  ],
+  "manufacturing_considerations": [
+    "36 layers within stated maximum",
+    "thickness bounds relaxed to [15,355]nm per fallback protocol",
+    "projection operator clamps optimizer output before TMM evaluation"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:110520903:s2chunk:110520903:15:2261:1134512e8e2ab66f",
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for high-reflection bands",
+    "Transfer-matrix method for multilayer interference"
+  ],
+  "expected_advantages": [
+    "Fixes iteration_22 compilation failure",
+    "Maintains proven 36-layer topology from iteration_05",
+    "Projection operator prevents bound violations"
+  ],
+  "known_risks": [
+    "Relaxed bounds may reduce fabrication tolerance",
+    "Score may not exceed 0.8996 historical best"
+  ],
+  "execution_request_english": "Design a 36-layer planar dielectric filter on fused silica substrate with air incidence at 0 degrees unpolarized illumination. Stack topology: Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | ... alternating for 18 pairs (36 finite layers total) | Fused Silica. Materials: Ta2O5 (high index) and SiO2 (low index). Optimize all 36 layer thicknesses as continuous variables bounded in [15, 355] nm. Implement hard projection operator that clamps any optimizer-proposed thickness to this range before TMM evaluation. Add matrix condition number diagnostic: if cond(M) > 1e10 during TMM solve, halt scoring and return warning. Objectives: maximize mean transmittance in 420-700nm band, minimize mean transmittance at 355nm single wavelength, minimize mean transmittance in 355-365nm band, minimize mean transmittance in 1030-1080nm band. Spectral grid: 1nm spacing from 350-1100nm. Initialize with quarter-wave thicknesses at 355nm (Ta2O5: ~62nm, SiO2: ~95nm) with 10% random perturbation. Use gradient-based thickness optimizer with 500 iterations maximum. Topology realization override: disregard any symbolic repeat count, range, or ellipsis above and use exactly 6 alternating Ta2O5/SiO2 pairs (12 finite layers). Optimize only continuous physical thicknesses; the task compiler must fully expand every finite layer. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 355-355 nm, 355-365 nm, 420-700 nm, 1030-1080 nm. soft objectives: high average transmittance in 420-700 nm; low average transmittance at 355 nm; low average transmittance in 355-365 nm; low average transmittance in 1030-1080 nm. behaviors to suppress or avoid: high transmittance at 355 nm; high transmittance in 355-365 nm; high transmittance in 1030-1080 nm; high loss in 420-700 nm. manufacturing constraints: maximum 36 layers; layer thickness range 20-350 nm.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Iteration_22 failed compilation due to initial thickness outside [20,350]nm bounds. This route implements the feedback directive to relax bounds to [15,355]nm with projection operator and condition number diagnostic."
+}

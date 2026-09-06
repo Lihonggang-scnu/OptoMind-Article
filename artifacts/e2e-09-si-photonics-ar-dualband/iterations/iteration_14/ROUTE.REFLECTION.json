@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "Expectation 1 (best_target_score > 0.99747 if asymmetric init escapes local optimum) is consistent with the 'if false' branch: actual score is 0.98093, remaining well below the 0.99747 threshold and dropping 0.01541 from the round 2 peak of 0.99679. Expectation 2 (tightest_margin stable or improving as score→1.0) shows flat behavior at 0.7161 while score declines, indicating the margin does not tighten despite the trajectory moving away from the target optimum. Expectation 3 (valid_candidates ≥ 1 if feasible) is consistent: actual count is 9, confirming the thickness bounds and objectives do not conflict.",
+  "deviation_mechanism": "The sharp score degradation from round 3 to round 4 is caused by optimizer step-size overshooting the narrow phase-matching bandwidth of the dielectric stack. Thickness changes >100 nm in layers 2 and 3 shift the optical path length (OPL = n·d) beyond the ±λ/8 constructive/destructive interference tolerance. This phase displacement detunes the multi-layer Fabry-Pérot resonance condition, broadening the reflection dip or shifting it off-target, which directly collapses the figure-of-merit calculation.",
+  "continue_recommended": true,
+  "continue_rationale": "The route retains full physical executability and demonstrates a reachable performance basin. Constraint feasibility is empirically confirmed by 9 valid candidates, and the optimizer previously accessed a high-FOM region (0.99679 in round 2). The current failure mode is strictly numerical overshoot, not a refutation of the layer stack hypothesis or constraint set. Continuing with modified update dynamics can recover the basin; halting now would discard verified feasible designs and conflate optimizer instability with physical infeasibility.",
+  "insight_for_next": "Enforce a hard per-layer thickness delta cap of ≤20 nm per iteration and activate Armijo backtracking for step-size reduction when the projected FOM improves by <0.5% or turns negative. Warm-start the next round by loading round 2 thicknesses [279.8617688079154, 333.3593077509311, 189.5448178749496, 169.65941185009737, 155.71418667406007, 212.56583405371734, 59.58012092901587, 179.53581357329864, 127.68881039833408, 296.1689236430107, 296.14735016248585, 332.0703044787995] as the initial guess, then resume constrained gradient updates.",
+  "insight_grounding": "Candidate 3 (round 3) to Candidate 4 (round 4) shows layer 3 increasing from 22.2339924329668 nm to 138.11434169396568 nm (+115.88 nm delta) and layer 2 decreasing from 152.99300164226685 nm to 127.72491466023865 nm (-25.27 nm delta). These exact transitions coincide with the score_history descent from 0.9963409744355969 to 0.9809274965872326. Constraining the step size based on these measured deltas will prevent OPL phase-scrambling and preserve the interference alignment that produced the 0.9967917716343195 peak in round 2.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T21:44:00.550381+00:00",
+  "attestation_sha256": "43f6ddbf9aa02b246dd1df81e2b8ce62b871685aeb5dd09f02489799a8550e04",
+  "observed_metrics": {
+    "best_target_score": 0.9809274965872326,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.7160945529702558
+  },
+  "reflection_available": true
+}

@@ -1,0 +1,61 @@
+{
+  "route_id": "route_01",
+  "title": "Local Refinement Around Round 1 Optimum with ±6nm Bounds",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "The round 1 optimum (0.846 score, 14 layers) represents a favorable basin in the design space; tight local refinement (±6nm) with gradient acceleration will recover or exceed that performance by fine-tuning phase-matching without escaping the basin.",
+  "design_principle": "Constrained local optimization preserves the successful global structure from round 1 while allowing fine adjustment of optical thickness for dual-band performance. Gradient-based optimizer (L-BFGS) dampens coarse oscillations observed between intermediate rounds.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2"
+  ],
+  "proposed_topology": "exactly 14 finite layers from the incident side: HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2",
+  "design_variables": [
+    "Physical thickness of HfO2 layer 1",
+    "Physical thickness of SiO2 layer 2",
+    "Physical thickness of HfO2 layer 3",
+    "Physical thickness of SiO2 layer 4",
+    "Physical thickness of HfO2 layer 5",
+    "Physical thickness of SiO2 layer 6",
+    "Physical thickness of HfO2 layer 7",
+    "Physical thickness of SiO2 layer 8",
+    "Physical thickness of HfO2 layer 9",
+    "Physical thickness of SiO2 layer 10",
+    "Physical thickness of HfO2 layer 11",
+    "Physical thickness of SiO2 layer 12",
+    "Physical thickness of HfO2 layer 13",
+    "Physical thickness of SiO2 layer 14"
+  ],
+  "soft_objectives": [
+    "Maximize transmittance 1530-1565nm",
+    "Maximize reflectance 400-700nm"
+  ],
+  "manufacturing_considerations": [
+    "±6nm tolerance represents tight but achievable deposition control for space-qualified coatings",
+    "14 layers well within 30-layer limit",
+    "HfO2 outermost layer for environmental durability"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:225461372:s2chunk:225461372:27939:30123:62f6d887b5b63324",
+    "s2-chunk:CorpusId:254823355:s2chunk:254823355:34368:36239:3c089577cc582ced"
+  ],
+  "theory_basis": [
+    "Transfer matrix method for multilayer interference",
+    "Local gradient-based optimization converges faster than global search when near optimum",
+    "Quarter-wave stack theory for high-reflection bands"
+  ],
+  "expected_advantages": [
+    "Faster convergence than global search",
+    "Preserves successful round 1 structure",
+    "Tight bounds reduce risk of escaping good basin",
+    "Gradient acceleration dampens oscillations from prior rounds"
+  ],
+  "known_risks": [
+    "May be trapped in local optimum if round 1 was not global best",
+    "±6nm may be too restrictive if round 1 thicknesses were suboptimal",
+    "Cannot explore topologically distinct solutions"
+  ],
+  "execution_request_english": "Perform one bounded TMM thickness optimization for an exactly 14-layer planar stack. Use the fixed material sequence from the incident side: HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2 / HfO2 / SiO2. Optimize only the physical thickness of each finite layer within the user-declared bounds. Do not optimize material identity or layer count in this route. Optimize a 14-layer HfO2/SiO2 alternating stack on fused silica substrate with air incident medium. Initialize thicknesses from round 1 best candidate: [50.69, 81.96, 44.76, 74.71, 61.68, 82.14, 65.10, 121.47, 70.87, 91.78, 79.48, 119.16, 63.56, 64.70] nm. Apply ±6nm absolute bounds on each layer thickness. Use gradient-based optimizer (L-BFGS or BFGS variant) with learning rate 0.025. Evaluate transmittance at 1530-1565nm band and reflectance at 400-700nm band at normal incidence, unpolarized light. Total layers fixed at 14. Material sequence: HfO2-SiO2-HfO2-SiO2-HfO2-SiO2-HfO2-SiO2-HfO2-SiO2-HfO2-SiO2-HfO2-SiO2. Canonical user controls: wavelength intervals 1530-1565 nm, 400-700 nm. soft objectives: High transmittance in 1530-1565 nm band; High reflectance in 400-700 nm band. behaviors to suppress or avoid: Low reflectance in 1530-1565 nm band; Low transmittance in 400-700 nm band. manufacturing constraints: Maximum 30 layers.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Round 1 achieved best score (0.846); subsequent rounds with different bounds/layer counts regressed to 0.481. Feedback directive explicitly recommends tight local refinement around round 1 optimum with ±6nm bounds and gradient-accelerated optimizer to dampen coarse oscillations."
+}

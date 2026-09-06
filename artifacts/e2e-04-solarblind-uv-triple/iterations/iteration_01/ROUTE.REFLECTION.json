@@ -1,0 +1,19 @@
+{
+  "observed_vs_expected": "best_target_score measured at 0.4147, which is below 0.5 and consistent with the expectation that scores may plateau or start low before resonance aligns. tightest_margin is 0.2136 nm, remaining positive as predicted for valid candidates. valid_candidates count is 9, matching the expectation that constraints have not yet been violated. Score did not increase relative to a prior round because only one round has executed.",
+  "deviation_mechanism": "The score remains sub-unity because the initial layer thicknesses do not satisfy the Bragg interference or Fabry-Pérot resonance conditions for the 255–280 nm band. At these UV wavelengths, constructive interference requires optical path lengths strictly tuned to λ/4 or λ/2. Candidate 3's first three layers (63.66 nm, 112.61 nm, 87.32 nm) represent irregular step heights that scatter phase and suppress standing-wave buildup. Without phased initialization or sufficient gradient iterations, the system settles in a non-resonant local minimum where transmitted power averages across the band rather than peaking.",
+  "continue_recommended": true,
+  "continue_rationale": "Only one round has been executed, which does not satisfy the two-round threshold required to trigger either stochastic stagnation or total candidate collapse stop conditions. The presence of 9 valid candidates and a positive tightest_margin of 0.2136 nm confirms the design space remains accessible. Continuing is necessary to gather evidence on whether the optimizer can transition the architecture from a broadband/non-resonant state to a spectrally selective resonance.",
+  "insight_for_next": "Replace the current initialization protocol with a physics-guided seed: construct all alternating-index pairs as exact quarter-wave layers (λ/4) at the band midpoint 267.5 nm using estimated effective refractive indices. Then apply one round of bounded differential evolution or L-BFGS-B with an augmented penalty for deviations from these optical path lengths to force phase alignment before allowing free thickness variation.",
+  "insight_grounding": "Grounded in Round 1 measurements: best_target_score=0.414673, tightest_margin=0.213621 nm, valid_candidates=9. Specifically, Candidate 3 exhibits thickness sequence [63.6622, 112.6102, 87.3202...] nm for layers 1-3. Calculated optical thicknesses at n≈1.45 yield ~0.58λ and ~0.97λ paths, which destructively interfere with the 255–280 nm target window. The flat early trajectory proves unguided random/sampling initialization lacks the required symmetry-breaking phase control for UV cavity modes.",
+  "stop_basis": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-09-05T17:25:47.747391+00:00",
+  "attestation_sha256": "6f7e023be8c4f0e66ae30291abac61e47b81d5110522b6dd801004ebcdbfd593",
+  "observed_metrics": {
+    "best_target_score": 0.4146731568559004,
+    "valid_candidates": 9,
+    "run_status": "completed",
+    "tightest_margin": 0.21362074370214937
+  },
+  "reflection_available": true
+}

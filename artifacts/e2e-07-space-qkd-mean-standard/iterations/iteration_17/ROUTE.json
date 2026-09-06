@@ -1,0 +1,56 @@
+{
+  "route_id": "control_route_01",
+  "title": "Localized thickness refinement on sensitive layers of 24-layer HfO2/SiO2 dual-band filter",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing thickness-stable layers (2, 3, 12, 23) while optimizing only the seven most sensitive layers (0, 1, 4, 5, 13, 14, 15) will achieve equal or better target scores with improved convergence stability compared to full-stack optimization.",
+  "design_principle": "In quarter-wave based dielectric stacks, layers near high-field regions and at material interfaces contribute disproportionately to spectral performance. Prior iteration data suggests certain layers show minimal thickness variation across optimization rounds, indicating they are either over-constrained or less critical to the objective function.",
+  "proposed_materials": [
+    "hfo2",
+    "SiO2 (Lemarchand)"
+  ],
+  "proposed_topology": "24-layer alternating stack: air | HfO2(1) | SiO2(2) | HfO2(3) | SiO2(4) | HfO2(5) | SiO2(6) | HfO2(7) | SiO2(8) | HfO2(9) | SiO2(10) | HfO2(11) | SiO2(12) | HfO2(13) | SiO2(14) | HfO2(15) | SiO2(16) | HfO2(17) | SiO2(18) | HfO2(19) | SiO2(20) | HfO2(21) | SiO2(22) | HfO2(23) | SiO2(24) | fused_silica_substrate",
+  "design_variables": [
+    "thickness_layer_0_hfo2",
+    "thickness_layer_1_sio2",
+    "thickness_layer_4_hfo2",
+    "thickness_layer_5_sio2",
+    "thickness_layer_13_hfo2",
+    "thickness_layer_14_sio2",
+    "thickness_layer_15_hfo2"
+  ],
+  "soft_objectives": [
+    "Maximize mean transmittance in 1530-1565 nm band",
+    "Maximize mean reflectance in 400-700 nm band",
+    "Maintain robustness score above 0.40"
+  ],
+  "manufacturing_considerations": [
+    "Total layer count 24 (within 30-layer limit)",
+    "Individual layer thicknesses should remain within 40-150 nm range for deposition practicality",
+    "HfO2 and SiO2 are standard space-qualified coating materials"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Recalled knowledge: Quarter-wave optical thickness at center wavelength provides starting point for dielectric mirror design",
+    "Recalled knowledge: High-index/low-index alternating stacks create photonic bandgaps through constructive interference",
+    "Recalled knowledge: HfO2 has refractive index approximately 2.0-2.1 in visible/near-IR, SiO2 approximately 1.45-1.50",
+    "Recalled knowledge: Layer sensitivity varies with position in stack; surface layers often more critical for broadband performance",
+    "Recalled knowledge: Reducing optimization dimensionality can improve convergence when some parameters are insensitive"
+  ],
+  "expected_advantages": [
+    "Faster convergence due to reduced parameter space (7 variables vs 24)",
+    "Better resolution of sub-nm thickness features in critical layers",
+    "Maintained comparability with prior 24-layer iterations",
+    "Potential improvement in target score through focused tuning"
+  ],
+  "known_risks": [
+    "Uncertain whether the identified sensitive layers from prior iterations generalize to this specific spectral requirement - would need full sensitivity analysis to confirm",
+    "Uncertain optimal thickness bounds for the 7 variable layers - using 40-150 nm range based on recalled quarter-wave estimates at 550 nm and 1550 nm, but actual optimal may differ",
+    "Uncertain whether fixing layers 2, 3, 12, 23 at their previous best values will limit achievable performance - these may need adjustment for global optimum",
+    "Refractive index dispersion of HfO2 and SiO2 across 400-1565 nm range is recalled approximately; actual dataset values may shift optimal thicknesses",
+    "No literature verification of whether 24 layers is optimal for this dual-band requirement; may be over or under-constrained"
+  ],
+  "execution_request_english": "Optimize a 24-layer alternating HfO2/SiO2 (Lemarchand) dielectric stack on fused silica substrate with air incident medium. Layers alternate starting with HfO2 at the air interface. Optimize only 7 layer thicknesses: layer 0 (HfO2), layer 1 (SiO2 (Lemarchand)), layer 4 (HfO2), layer 5 (SiO2 (Lemarchand)), layer 13 (HfO2), layer 14 (SiO2 (Lemarchand)), layer 15 (HfO2). Fix remaining 17 layers at their thickness values from the best candidate in iteration 13 (candidate hfo2_SiO2 (Lemarchand)_24layer_dual_band_opt__g__ebbcd37d44b7). Wavelength bands: maximize transmittance at 1530-1565 nm, maximize reflectance at 400-700 nm. Normal incidence. Use gradient-based thickness optimizer with step size reduced to 0.0125 (half of previous 0.025). Thickness bounds for variable layers: 40-150 nm. Evaluate coherent transfer matrix method. Report best_target_score, valid_candidates, tightest_margin, and thicknesses_nm for all candidates.",
+  "priority": 1,
+  "parent_route_id": "control_route_01",
+  "revision_reason": "Localized refinement based on feedback directives: focus optimization on layers showing largest inter-round shifts (0, 1, 4, 5, 13, 14, 15) while fixing stable layers (2, 3, 12, 23) to reduce dimensionality and resolve sub-nm features"
+}

@@ -1,0 +1,52 @@
+{
+  "route_id": "route_01",
+  "title": "Perturbation-Guided 25-Layer HfO2/SiO2 with Forced Layer 3/9/13 Offset",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Forcing deterministic thickness perturbations on layers 3, 9, and 13 by +/- 3.0 nm from their iteration_08 optimized positions will break symmetry-lock on specific optical paths, enabling the gradient optimizer to discover improved phase-matching conditions that increase best_target_score beyond 0.5155.",
+  "design_principle": "Apply the feedback directive's deterministic perturbation schedule to escape local optima while preserving the verified HfO2/SiO2 quarter-wave stack principle. Increase layer count from 21 to 25 to provide additional degrees of freedom for visible/NIR blocking.",
+  "proposed_materials": [
+    "HfO2",
+    "SiO2",
+    "Fused silica substrate",
+    "Air incident medium"
+  ],
+  "proposed_topology": "25 finite layers: Air | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | SiO2 | HfO2 | Fused silica",
+  "design_variables": [
+    "All 25 layer thicknesses (optimizable)",
+    "Initial thicknesses for layers 3, 9, 13 offset by +3.0 nm from iteration_08 best candidate"
+  ],
+  "soft_objectives": [
+    "Maximize best_target_score beyond 0.5155",
+    "Maintain valid_candidates >= 5",
+    "Improve tightest_margin relative to iteration_08"
+  ],
+  "manufacturing_considerations": [
+    "25 layers within 30-layer limit",
+    "HfO2 and SiO2 are conventional evaporatable dielectrics",
+    "Layer thickness tolerance +/- 3.0 nm perturbation is within typical deposition control"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:199509322:s2chunk:199509322:1692:2630:cc317bbe73df5404",
+    "s2-chunk:CorpusId:211025653:s2chunk:211025653:51504:53760:1f8ca3d4c1d7c341",
+    "s2-chunk:CorpusId:247131178:s2chunk:247131178:22929:25296:b57bea6c60c39b08"
+  ],
+  "theory_basis": [
+    "Transfer-matrix method for planar multilayer interference",
+    "Quarter-wave stack principle for bandpass filters",
+    "Perturbation theory for escaping local optima in gradient-based optimization"
+  ],
+  "expected_advantages": [
+    "Breaking symmetry-lock may reveal higher-scoring regions of design space",
+    "25 layers provide more blocking capability than 21 layers",
+    "Deterministic perturbation is reproducible and traceable"
+  ],
+  "known_risks": [
+    "Perturbation may temporarily reduce target_score before improvement",
+    "HfO2 absorption at 255 nm may limit maximum achievable transmission",
+    "Increased layer count may reduce robustness_score"
+  ],
+  "execution_request_english": "Optimize a 25-layer HfO2/SiO2 alternating stack on fused silica substrate under air incidence for solar-blind UV filter application. Wavelength bands: maximize transmittance at 255-280 nm, suppress transmittance at 300-700 nm and 700-1100 nm. Initialize all layer thicknesses at quarter-wave optical thickness centered at 267 nm. Before optimization begins, apply deterministic perturbation: add +3.0 nm to initial thickness of layer 3 (HfO2), layer 9 (HfO2), and layer 13 (HfO2). Use gradient_thickness optimizer with standard bounds. Material registry resolves HfO2 and SiO2. Total finite layers: 25. No metal layers. Report best_target_score, valid_candidates, tightest_margin, run_status, and thicknesses_nm for all candidates. Canonical user controls: wavelength intervals 255-280 nm, 300-700 nm, 700-1100 nm. soft objectives: High transmittance in 255–280 nm. behaviors to suppress or avoid: Transmittance in 300–700 nm; Transmittance in 700–1100 nm. manufacturing constraints: Maximum 30 layers; No metal layers; Only conventional depositable inorganic dielectric materials.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Applied feedback directive to inject deterministic perturbation on layers 3, 9, 13 (+3.0 nm offset) to break symmetry-lock observed in iteration_08. Increased layer count from 21 to 25 to explore additional design space toward 30-layer limit."
+}

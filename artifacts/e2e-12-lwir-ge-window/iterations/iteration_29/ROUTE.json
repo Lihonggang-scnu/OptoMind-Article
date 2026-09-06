@@ -1,0 +1,52 @@
+{
+  "route_id": "route_03",
+  "title": "12-layer ZnS/ZnSe stack with geometric progression initialization and constrained step size",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "A linear geometric progression in layer thickness (350-950 nm across 12 layers) anchors the macroscopic optical phase slope, enabling the optimizer to resolve finer interference features between MWIR suppression and LWIR transmission bands rather than leaping across spectral resonances.",
+  "design_principle": "Thickness gradient creates distributed phase accumulation that separates MWIR stopband from LWIR passband more cleanly than uniform initialization. Constrained step size (±80 nm) prevents large jumps that skip local optima.",
+  "proposed_materials": [
+    "ZnS",
+    "ZnSe",
+    "Ge"
+  ],
+  "proposed_topology": "Air | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | ZnS | ZnSe | Ge substrate (12 finite layers, alternating starting with ZnS)",
+  "design_variables": [
+    "Layer thicknesses (12 optimizable variables, bounds 300-1000 nm)",
+    "Initialization: linear progression from 350 nm to 950 nm",
+    "Optimizer max step: ±80 nm per iteration"
+  ],
+  "soft_objectives": [
+    "Maximize average transmittance in 8000-11000 nm band",
+    "Minimize average transmittance in 3000-5000 nm band",
+    "Maintain smooth spectral transition between bands"
+  ],
+  "manufacturing_considerations": [
+    "Total 12 layers within 16-layer limit",
+    "Thickness bounds 300-1000 nm compatible with thermal evaporation",
+    "Alternating ZnS/ZnSe sequence simplifies deposition scheduling"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:253920409:s2chunk:253920409:14121:16260:85ad0582554fb615",
+    "s2-chunk:CorpusId:268014808:s2chunk:268014808:15112:17070:581c60d401e53151",
+    "s2-chunk:CorpusId:258407986:s2chunk:258407986:3902:5725:e5a3c3c3db7fd735"
+  ],
+  "theory_basis": [
+    "Quarter-wave stack theory for dichroic filter design",
+    "Interference phase accumulation in multilayer systems",
+    "Gradient-based optimization with step constraints for spectral feature resolution"
+  ],
+  "expected_advantages": [
+    "Improved separation of MWIR/LWIR bands through distributed phase control",
+    "Reduced risk of optimizer skipping local optima",
+    "Better convergence stability compared to uniform initialization"
+  ],
+  "known_risks": [
+    "Geometric progression may not match optimal quarter-wave conditions at either band center",
+    "Step constraint may slow convergence if initial guess is far from optimum",
+    "12 layers may be insufficient for deep MWIR suppression"
+  ],
+  "execution_request_english": "Design a 12-layer planar multilayer dielectric film on Ge substrate with air incidence. Layer sequence: ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe, ZnS, ZnSe (12 finite layers total, alternating starting with ZnS at air interface). All 12 layer thicknesses are optimizable variables with bounds 300-1000 nm. Initialize thicknesses with linear geometric progression: layer 1 = 350 nm, layer 12 = 950 nm, intermediate layers linearly interpolated. Constrain optimizer maximum single-step displacement to ±80 nm per iteration. Use coherent TMM solver at normal incidence (0 degrees), unpolarized light. Spectral range: 3000-11000 nm with 2001 sample points. Objective: maximize average transmittance in 8000-11000 nm band while minimizing average transmittance in 3000-5000 nm band. Total layer count fixed at 12 (within 16-layer manufacturing constraint). Materials resolved via registry (ZnS, ZnSe, Ge). Canonical user controls: wavelength intervals 8000-11000 nm, 3000-5000 nm. soft objectives: High transmittance in 8000-11000 nm band; Low transmittance in 3000-5000 nm band. behaviors to suppress or avoid: High transmittance in 3000-5000 nm band. manufacturing constraints: Total layer count not exceeding 16.",
+  "priority": 1,
+  "parent_route_id": "route_03",
+  "revision_reason": "Implements feedback directive: replaced near-uniform ~750 nm initialization with linear geometric progression (350-950 nm) and added ±80 nm step constraint to anchor macroscopic phase slope and force finer interference feature resolution. Previous 12-layer route_03 variants used frozen outer layers or uniform initialization which showed score regression."
+}

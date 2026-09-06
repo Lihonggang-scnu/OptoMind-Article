@@ -1,0 +1,48 @@
+{
+  "route_id": "route_02",
+  "title": "Quarter-Wave Initialized 12L with Fixed Boundaries and Reduced Step",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Fixing boundary layer thicknesses to round-1 optimal values (279.86 nm entry, 332.07 nm exit) while initializing interior layers to quarter-wave estimates at 1380 nm center wavelength will stabilize phase entry/exit conditions and reduce optimization oscillation, enabling convergence toward the 0.9968 peak score.",
+  "design_principle": "Quarter-wave thickness initialization provides physically meaningful starting point; fixed boundaries reduce search space dimensionality while preserving proven interface matching; reduced step-size dampens oscillatory behavior observed in rounds 3-5.",
+  "proposed_materials": [
+    "Ta2O5",
+    "SiO2"
+  ],
+  "proposed_topology": "Air | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Ta2O5 | SiO2 | Si (12 finite layers, alternating high-low index starting with Ta2O5)",
+  "design_variables": [
+    "interior layer thicknesses (indices 1-10)",
+    "boundary layers fixed at 279.86 nm and 332.07 nm"
+  ],
+  "soft_objectives": [
+    "minimize mean reflectance 1260-1360 nm",
+    "minimize mean reflectance 1530-1565 nm",
+    "maximize transmittance into Si"
+  ],
+  "manufacturing_considerations": [
+    "all layers 20-400 nm",
+    "12 layer maximum",
+    "Ta2O5/SiO2 material pair only"
+  ],
+  "evidence_ids": [
+    "s2-chunk:CorpusId:101495240:s2chunk:101495240:13921:15892:77bea92e9fd53a23",
+    "s2-chunk:CorpusId:290861773:s2chunk:290861773:38501:40208:f4813fe9b5ee3e0b",
+    "s2-chunk:CorpusId:85444779:s2chunk:85444779:12499:14753:a3ae379b5a33f693"
+  ],
+  "theory_basis": [
+    "Quarter-wave optical thickness d = lambda_target/(4*n) provides destructive interference condition for normal incidence",
+    "Fixed boundary conditions reduce optimization degrees of freedom while preserving impedance matching at interfaces"
+  ],
+  "expected_advantages": [
+    "Reduced optimization oscillation compared to rounds 3-5",
+    "Faster convergence to high-scoring region near 0.9968",
+    "Physically interpretable thickness initialization"
+  ],
+  "known_risks": [
+    "Fixed boundaries may prevent discovery of superior boundary configurations",
+    "Quarter-wave at single center wavelength may not optimally cover dual bands"
+  ],
+  "execution_request_english": "Optimize a 12-layer alternating Ta2O5/SiO2 antireflection stack on silicon substrate. Layer sequence: Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2, Ta2O5, SiO2 (12 finite layers between air and Si). Initialize layer 0 (first Ta2O5) fixed at 279.86 nm and layer 11 (final SiO2) fixed at 332.07 nm. Initialize interior layers 1-10 using quarter-wave optical thickness at 1380 nm center wavelength (Ta2O5 ~165 nm, SiO2 ~238 nm) with ±12% perturbation bounds. Apply gradient-based thickness optimization with step-size reduced by 50% relative to prior rounds. Minimize mean reflectance across both 1260-1360 nm and 1530-1565 nm bands simultaneously at 0 degree normal incidence, unpolarized illumination. All layer thicknesses constrained to 20-400 nm range. Report best target score, robustness score, and final thickness array. Canonical user controls: incidence angles 0 degrees. polarization unpolarized. wavelength intervals 1260-1360 nm, 1530-1565 nm. soft objectives: low average reflectance in 1260-1360 nm band; low average reflectance in 1530-1565 nm band. behaviors to suppress or avoid: high reflection in the specified bands. manufacturing constraints: maximum 12 layers; individual layer thickness between 20 nm and 400 nm; materials restricted to Ta2O5 and SiO2.",
+  "priority": 1,
+  "parent_route_id": "route_02",
+  "revision_reason": "Implements feedback directive: quarter-wave initialization with ±12% bounds, 50% reduced step-size, fixed boundary layers at round-1 optimal values to address 0.9963→0.9809→0.9905 oscillation pattern"
+}
