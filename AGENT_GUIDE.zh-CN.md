@@ -7,8 +7,6 @@
 OptoMind-Article 的主对象是 `code/` 下的 TMM research harness。`veritmm/` 是它调用的物理执行组件，单独跑 VeriTMM 只能证明执行器可用，不能替代整条 harness 评估。
 
 评估时遵守以下边界：
-
-- 不执行 Git 操作，不修改六组正式原始记录；新的测试写入新的输出目录。
 - 不读取、打印、复制或上传任何密钥内容；只检查密钥文件是否存在以及字节长度。
 - 不把 `--force-mock` 的结果当作真实科研结果。该模式用于检查模型不可用时是否按协议停止。
 - 不把 `FINAL_ANSWER.md` 单独当作证据；数值结论必须回到迭代产物和物理证书。
@@ -21,7 +19,7 @@ OptoMind-Article 的主对象是 `code/` 下的 TMM research harness。`veritmm/
 | 路径 | 用途 |
 |---|---|
 | `START_OPTOMIND.cmd` / `python quickstart.py ui` | 统一前端：静态回放，以及检查通过后激活的真实提问 |
-| `START_REPLAY.cmd` / `python quickstart.py replay` | 六组固化产物的只读可视化入口 |
+| `START_REPLAY.cmd` / `python quickstart.py replay` | 固化产物的只读可视化入口 |
 | `RUN_LIGHT_TEST.cmd` / `python quickstart.py test` | 自动配置环境并执行有界真实测试 |
 | `code/scripts/run_tmm_research_harness.py` | 完整研究链路底层入口 |
 | `code/replay_ui/` | 静态回放前端文件 |
@@ -29,7 +27,7 @@ OptoMind-Article 的主对象是 `code/` 下的 TMM research harness。`veritmm/
 | `code/tests/` | 单元、协议、物理链路和回归测试 |
 | `code/api_keys/qwen-api-key.txt` | Qwen 空密钥模板 |
 | `code/api_keys/semantic-scholar-api-key.txt` | Semantic Scholar 空密钥模板 |
-| `code/outputs/tmm_research_harness/` | 六组正式记录与新运行的默认输出位置 |
+| `code/outputs/tmm_research_harness/` | 正式记录与新运行的默认输出位置 |
 | `veritmm/scripts/run_tmm_task.py` | 独立 VeriTMM 任务入口 |
 
 主 harness 会优先使用仓库根目录同级的 `veritmm/`，因此不应把它改回原开发机的绝对路径。
