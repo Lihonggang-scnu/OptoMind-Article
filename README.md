@@ -88,8 +88,20 @@ VeriTMM 执行、物理证书与候选验证
 3. 在统一前端选择“真实提问”，点击“检查并准备真实运行”。程序会核对项目资产、准备隔离 Python 环境，并对 Qwen 和 Semantic Scholar 发起最小真实连通请求；只有全部通过后，问题输入框和运行按钮才会激活。
 4. 输入一个自然语言光学设计需求，选择“快速真实验证”或“完整自主研究”。当前任务的阶段事件和进度会显示在同一页面。
 
-macOS、Linux 或希望使用终端的用户在仓库根目录执行：
+或者执行：
+```powershell
+cd code
+python -u scripts/run_tmm_research_harness.py `
+  '甲烷泄漏巡检短波红外窗口薄膜设计：T(1000-1700nm) 尽可能高，R(300-450nm) 尽可能高，HfO2/SiO2，熔融石英基底，不超过 30 层' `
+  --wall-time-seconds 9000 `
+  --minimum-rounds-before-llm-stop 4 `
+  --max-rounds-per-route 10 `
+  --route-planning-maximum-routes 6 `
+  --maximum-initial-routes 6
+```
+即可运行。输出写入 `local_runs/<run-id>/`。完整模式约 20-40 轮、20-90 分钟、¥2-7。
 
+macOS、Linux 用户在仓库根目录执行：
 ```bash
 python3 quickstart.py ui
 ```
