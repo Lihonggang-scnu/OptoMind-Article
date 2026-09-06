@@ -293,6 +293,12 @@ def _compact_method_research(report: Mapping[str, Any]) -> Dict[str, Any]:
     )
     compact_evidence: list[dict[str, Any]] = []
     for item in evidence_rows[:16]:
+        # O-04 progressive disclosure: the prompt carries a 240-char head
+        # plus a content hash and a pointer into METHOD_RESEARCH.json, which
+        # keeps the full text on disk. Decision-relevant identity fields
+        # (evidence_id/paper_id/title/year/allowed_use) are kept verbatim.
+        text_full = str(item.get("text") or "")
+        text_head = text_full[:240]
         compact_evidence.append(
             {
                 key: item.get(key)
@@ -308,7 +314,18 @@ def _compact_method_research(report: Mapping[str, Any]) -> Dict[str, Any]:
                     "query_ids",
                 )
             }
-            | {"text": str(item.get("text") or "")[:1200]}
+            | {
+                "text_head": text_head,
+                "text_head_chars": len(text_head),
+                "text_chars": len(text_full),
+                "text_sha256": __import__("hashlib").sha256(
+                    text_full.encode("utf-8")
+                ).hexdigest(),
+                "full_text_pointer": (
+                    "METHOD_RESEARCH.json#evidence."
+                    + str(item.get("evidence_id") or "")
+                ),
+            }
         )
     return {
         "status": report.get("status"),
@@ -337,8 +354,13 @@ def _compact_prior_iterations(
                 "route_id": item.get("route_id"),
                 "route_title": item.get("route_title"),
                 "compilation_status": item.get("compilation_status"),
-                "compilation_rationale": item.get("compilation_rationale"),
-                "compilation_errors": list(item.get("compilation_errors") or [])[:6],
+                "compilation_rationale": str(
+                    item.get("compilation_rationale") or ""
+                )[:240],
+                "compilation_errors": [
+                    str(error)[:200]
+                    for error in (item.get("compilation_errors") or [])[:6]
+                ],
                 "run_status": item.get("run_status"),
                 "physically_valid_candidate_count": item.get(
                     "physically_valid_candidate_count", 0
@@ -1563,6 +1585,7 @@ class QwenTMMStrategyPlanner:
         charter: Any | None = None,
         force_mock: bool | None = None,
         chain_id: str | None = None,
+        insight_appendage: str = "",
     ) -> StrategyPlanningResult:
         # T-05 Charter immutability gate (field presence) runs first.
         if charter is not None:
@@ -1588,6 +1611,12 @@ class QwenTMMStrategyPlanner:
                 "model": self._model_label,
             },
         }
+        # O-05: the caller-supplied INSIGHT_APPENDAGE block -- verified
+        # deltas, mechanical insights and the tested-stack exclusion list --
+        # enters verbatim; the planner must treat it as ground truth about
+        # what was already tried.
+        if insight_appendage:
+            base_payload["insight_appendage"] = str(insight_appendage)
         # Fix A: when refining a single chain, inject its stable id so the
         # planner knows to set parent_route_id on every continuation route.
         if chain_id:

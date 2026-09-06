@@ -41,6 +41,7 @@ class VeriTMMResult:
     raw_outputs: dict[str, Any] = field(default_factory=dict)  # passthrough
     cpu_seconds: float = 0.0        # measured wall time of the engine call
     outcome: str = "certified"      # certified | physics_rejected | engine_error | budget_blocked
+    verification: dict[str, Any] | None = None  # four-state verify-run report
 
 
 def _read_json_if_exists(path: Path) -> dict[str, Any] | None:
@@ -214,6 +215,47 @@ class VeriTMMAdapter:
         raw_outputs[CERTIFICATE_FILENAME] = certificate
         certified = bool(certificate.get("accepted", False))
         outcome = "certified" if certified else "physics_rejected"
+
+        # O-02: attach the engine's independent four-state verification
+        # (integrity / certification / replay / authenticity). Fail-open
+        # bookkeeping, fail-closed judgement: the certificate remains the
+        # ONLY physics verdict, so an unavailable or non-valid report never
+        # flips `certified` -- it is preserved verbatim with the reason.
+        verification: dict[str, Any] | None = None
+        if certified:
+            try:
+                from tmm_engine.verify_run import verify_run_dir
+
+                verification = dict(verify_run_dir(output_dir))
+                overall = str(verification.get("overall_status") or "")
+                if overall != "valid":
+                    raw_outputs["verify_run_error"] = (
+                        f"verify_run overall_status={overall!r}"
+                    )
+            except Exception as exc:
+                verification = None
+                raw_outputs["verify_run_error"] = f"{type(exc).__name__}: {exc}"
+
+        # O-10: the certificate's energy ledger summary (independence class
+        # and residuals) travels with the result -- evidence for absorbing
+        # tasks, never an acceptance input.
+        energy_block = certificate.get("energy_accounting")
+        if isinstance(energy_block, Mapping):
+            raw_outputs["energy_accounting_summary"] = {
+                "independence_class": energy_block.get("independence_class"),
+                "method": energy_block.get("method"),
+                "residuals": energy_block.get("residuals"),
+            }
+
+        # O-02: surface the run-level evidence ledger (nine dimensions) and
+        # the physics sub-summary recorded by the engine, when present.
+        evidence = summary.get("evidence_coverage") if summary else None
+        if isinstance(evidence, Mapping):
+            raw_outputs["evidence_coverage"] = dict(evidence)
+        physics = summary.get("physics") if summary else None
+        if isinstance(physics, Mapping):
+            raw_outputs["physics_summary"] = dict(physics)
+
         return VeriTMMResult(
             certificate_path=certificate_path,
             certified=certified,
@@ -221,6 +263,7 @@ class VeriTMMAdapter:
             raw_outputs=raw_outputs,
             cpu_seconds=elapsed,
             outcome=outcome,
+            verification=verification,
         )
 
 

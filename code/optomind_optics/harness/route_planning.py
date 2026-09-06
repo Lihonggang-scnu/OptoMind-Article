@@ -165,7 +165,15 @@ class LiteraturePaper(BaseModel):
     queries: Tuple[str, ...] = ()
 
     def prompt_row(self) -> Dict[str, Any]:
-        """The form the planning prompt sees: label first, so it can be cited."""
+        """The form the planning prompt sees: label first, so it can be cited.
+
+        O-04 progressive disclosure: the prompt carries a 240-char summary
+        head plus the full text's hash and a pointer into ROUTE_PLANNING.json
+        (whose literature.papers keep the verbatim summary).  Citation and
+        decision identity fields stay verbatim; only the bulk text degrades
+        to head+pointer, which keeps every planning round's payload small
+        even when a repair round re-sends the bibliography.
+        """
 
         row: Dict[str, Any] = {"label": self.label, "title": self.title}
         if self.year is not None:
@@ -175,7 +183,13 @@ class LiteraturePaper(BaseModel):
         if self.citation_count:
             row["citation_count"] = self.citation_count
         if self.summary:
-            row["summary"] = self.summary
+            head = self.summary[:240]
+            row["summary_head"] = head
+            row["summary_chars"] = len(self.summary)
+            row["summary_sha256"] = hashlib.sha256(
+                self.summary.encode("utf-8")
+            ).hexdigest()
+            row["full_summary_pointer"] = "ROUTE_PLANNING.json#literature.papers"
         return row
 
 
@@ -971,6 +985,20 @@ class QwenLiteratureRoutePlanner:
                         "material must be a name the local registry resolves."
                     ),
                 }
+                # O-04 progressive disclosure: a repair round has already seen
+                # the bibliography once. It keeps the citable labels and the
+                # pointer; the summary heads (and their hashes) stay in the
+                # artifact and in the first round's prompt, so nothing is lost
+                # -- the repair only needs to know which labels exist.
+                payload["literature"] = [
+                    {
+                        "label": paper.label,
+                        "title": paper.title,
+                        "year": paper.year,
+                        "summaries_in": "ROUTE_PLANNING.json#literature.papers",
+                    }
+                    for paper in harvest.papers
+                ]
             try:
                 response = self.client.call(
                     [

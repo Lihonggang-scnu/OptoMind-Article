@@ -14,3 +14,27 @@ from pathlib import Path
 _VERITMM_ROOT = Path(__file__).resolve().parents[1] / "veritmm"
 if _VERITMM_ROOT.exists() and str(_VERITMM_ROOT) not in sys.path:
     sys.path.insert(0, str(_VERITMM_ROOT))
+
+
+# O-12: confirmation gates default to a 30s human wait; in the test suite
+# the "human" is always silent, so clamp the wait to 1s globally (production
+# behaviour is untouched -- this fixture only exists under pytest).
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _clamp_confirmation_wait(monkeypatch):
+    from optomind_optics.harness import confirmation_gate as _cg
+
+    original_init = _cg.ConfirmationGate.__init__
+
+    def clipped_init(self, run_dir, *, timeout_seconds=30, **kwargs):
+        original_init(
+            self,
+            run_dir,
+            timeout_seconds=min(int(timeout_seconds), 1),
+            **kwargs,
+        )
+
+    monkeypatch.setattr(_cg.ConfirmationGate, "__init__", clipped_init)
+    yield

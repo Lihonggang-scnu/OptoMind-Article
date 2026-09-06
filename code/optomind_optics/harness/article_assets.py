@@ -246,7 +246,16 @@ def _resolve_artifact_path(run_root: Path, relative_path: str) -> Path:
         raise AssetIntegrityError(
             f"unsafe artifact relative_path: {relative_path!r}"
         )
-    candidate = run_root / Path(*parts)
+    joined = Path(*parts)
+    # O-01FIX: reject drive-qualified or otherwise rooted inputs. A bare
+    # drive prefix such as ``C:evil.json`` is drive-RELATIVE on Windows and
+    # resolves against that drive's current directory, so it can escape the
+    # run root depending on the process cwd.
+    if joined.is_absolute() or joined.drive:
+        raise AssetIntegrityError(
+            f"unsafe artifact relative_path: {relative_path!r}"
+        )
+    candidate = run_root / joined
     try:
         resolved = candidate.resolve(strict=False)
     except OSError as exc:

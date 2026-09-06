@@ -48,6 +48,25 @@ jobs:
       - run: python -m pip install -e ".[test]"
       - run: python -m pytest -q
 
+  cross-platform:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[test]"
+      # Identity level: fixed task hashes must be byte-identical across
+      # platforms.  Numerical level: fixed simulations must reproduce the
+      # golden values within the declared acceptance tolerance.
+      - run: python -m pytest tests/test_cross_platform_reproducibility.py -q
+      - run: python -m pytest tests/test_tmm_physics_runtime.py tests/test_tmm_task_io.py tests/test_tmm_acceptance.py -q
+
   torch:
     runs-on: ubuntu-latest
     steps:
@@ -241,3 +260,17 @@ jobs:
               )
           )
           PY
+
+  capability-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Capability catalog drift gate
+        run: python -m tmm_engine.cli capability-catalog --check
+      - name: Capability contract cases
+        run: python -m pytest tests/test_capability_catalog.py -q

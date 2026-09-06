@@ -1,6 +1,6 @@
 # Architecture
 
-VeriTMM remains a TMM engine. Version 0.6 exposes a deterministic protocol,
+VeriTMM remains a TMM engine. Version 1.1 exposes a deterministic protocol,
 reproducible experiment layer, scientific-analysis studies, a research
 interface, and an offline agent benchmark around that engine. It does not turn
 the project into a generic scientific-research workflow, an external-solver
@@ -33,7 +33,7 @@ acceptance path used by a forward simulation.
 
 ## Research layer
 
-The v0.6 research package is a client of the managed execution boundary, not a
+The v1.1 research package is a client of the managed execution boundary, not a
 numerical backend:
 
 ```mermaid
@@ -104,7 +104,42 @@ does not replace physical verification.
 - **PyTorch differentiable S-matrix:** batched gradient path for thickness design;
   its output is independently recomputed before acceptance.
 
-The v0.6 protocol formally exposes finite sweep, thickness sensitivity, and
+## Physics backend layer (`tmm_engine.backends`)
+
+The physics of one coherent stack assembly is described by a `KernelSpec` — a
+plain data container (complex index per medium ordered incident → films →
+exit, film thicknesses, wavelengths, angle, polarization, assembly formula
+name) that imports neither numpy nor torch, so every backend consumes the same
+description natively and torch tensors keep their autograd graph.  Backends
+implement one minimal surface, `assemble(KernelSpec) -> BackendResult` (R/T/A
+plus optional r/t amplitudes):
+
+- `numpy_backend` — the reference: a thin wrapper over the existing
+  `tmm_engine.tmm_solver` S-matrix path with unchanged numerics.
+- `torch_backend` — wraps `tmm_engine.differentiable.DifferentiableTMM`
+  (batched, autograd-capable, float64 by default with an opt-in float32
+  tier).  Explicit dtypes on sequence inputs keep the phase thickness free of
+  float32 quantization; tensor inputs pass through untouched.
+- `jax` — reserved name, deliberately unimplemented.
+
+The registry discovers sibling `*_backend.py` modules that declare
+`BACKEND_NAME`, so **adding a backend means adding one file** — no existing
+code changes.  A backend that is absent or not importable (for example torch
+without the optional extra, or the unimplemented jax) is reported as
+`BackendNotRegisteredError` by `get_backend`, never as a raw `ImportError`.
+Cross-backend equivalence (R/T agreement to 1e-9 relative in float64,
+gradient-vs-central-difference to 1e-6, and the drop-in discovery contract)
+is pinned by `tests/test_backend_equivalence.py`.  The Byrnes implementation
+stays outside this layer on purpose: it remains an independent
+cross-implementation check, not a registered execution backend.
+
+**New backend guide:** create `tmm_engine/backends/<name>_backend.py`, set
+`BACKEND_NAME = "<name>"`, implement `assemble(kernel: KernelSpec) ->
+BackendResult` (accept unbatched kernels; promote to a batch of one), and
+import your array library inside the file.  The registry picks the file up
+automatically on the next lookup; nothing else changes.
+
+The v1.1 protocol formally exposes finite sweep, thickness sensitivity, and
 tolerance/yield operations. It still does not execute external solver families.
 Unsupported geometry, material, excitation, or output combinations are
 rejected with typed failures rather than routed silently. AgentBench observes

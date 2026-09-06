@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
 import shutil
 import threading
 import time
@@ -64,6 +65,34 @@ from .scoring_standard import (
     ScoringStandard,
 )
 from .stop_controller import DEFAULT_MINIMUM_SCORE_IMPROVEMENT, evaluate_stagnation
+from .event_store import EventStore, rebuild_projections, write_research_plan
+from .noise_floor import (
+    NOISE_FLOOR_EVENT_TYPE,
+    rebuild_noise_floor,
+    sample_event,
+    write_noise_floor_projection,
+)
+from .hypothesis_tree import (
+    TREE_FILENAME,
+    HypothesisTree,
+    build_failure_memory_summary,
+)
+from .bt_ranking import BT_RANKING_FILENAME, rank_candidates
+from .engine_capabilities import probe as probe_engine_capabilities
+from .confirmation_gate import ConfirmationGate, ConfirmationRequest
+from .proposal_gate import (
+    GATE_EVENT_TYPE,
+    DeadEndLedger,
+    ProposalGate,
+    build_dead_end_index,
+)
+from .action_ledger import (
+    LEDGER_EVENT_TYPE,
+    build_insight_appendage,
+    build_ledger_entry,
+    entry_to_event_payload,
+)
+from tmm_engine.hashing import stable_sha256
 from .strategy_planner import DesignRoute
 from .tournament_summary import summarize_tournament
 from .task_compiler import ArticleTurboQwenClient, QwenTMMTaskCompiler
@@ -140,6 +169,10 @@ class RouteTrack:
     # _route_hash of every accepted version of this chain, including the
     # original portfolio member; guards against non-substantive revisions.
     version_hashes: set[str] = field(default_factory=set)
+    # O-07: _route_hash of versions that have actually EXECUTED a round.
+    # The proposal gate checks duplicates against this set -- the pending
+    # round's own hash must not count as "already tried".
+    executed_hashes: set[str] = field(default_factory=set)
 
 
 class ComponentProtocol(Protocol):
@@ -374,6 +407,30 @@ class TMMResearchHarnessConfig(BaseModel):
     # R-08: run same-wave VeriTMM rounds in a process pool. Auto-disabled
     # whenever an injected tmm_harness_factory is present (tests).
     parallel_tmm: bool = True
+    # O-08: open_research activates the hypothesis-tree scheduling layer
+    # (draft/debug/improve nodes, mechanical falsification, BT final
+    # ranking). bounded_design -- the default -- is the six-time tournament
+    # template with byte-identical behaviour; the strong template wins when
+    # it exists (AI Scientist v2 lesson, encoded as the default).
+    # O-12: human-in-the-loop gates at key data hand-offs (default all
+    # four). During development/E2E the human is silent -- gates auto-accept
+    # after confirmation_timeout_seconds. Only key nodes are gated; never
+    # per-round high-frequency operations.
+    confirmation_gates: List[str] = Field(
+        default_factory=lambda: [
+            "scoring_standard_freeze",
+            "route_portfolio_plan",
+            "champion_selection",
+            "budget_checkpoint",
+        ]
+    )
+    confirmation_timeout_seconds: int = 30
+    # O-12: the budget gate fires when the pre-run estimate exceeds this
+    # many CNY (the O-14 per-run hard top is 30; warn at 25).
+    budget_gate_threshold_cny: float = 25.0
+    research_mode: str = "bounded_design"
+    num_drafts: int = 3
+    debug_prob: float = 0.5
     # R-10: add one knowledge-blind control route beside the normal portfolio.
     # The low-level harness keeps this opt-in for backwards-compatible injected
     # test seams; the production CLI enables it by default. Its quota is added
@@ -397,12 +454,26 @@ class TMMResearchHarnessConfig(BaseModel):
             raise ValueError("research harness limits must be positive")
         return int(value)
 
-    @field_validator("maximum_refinement_rounds")
+    @field_validator("maximum_refinement_rounds", "num_drafts")
     @classmethod
     def _non_negative_integer(cls, value: int) -> int:
         if int(value) < 0:
-            raise ValueError("maximum_refinement_rounds must be non-negative")
+            raise ValueError("maximum_refinement_rounds/num_drafts must be non-negative")
         return int(value)
+
+    @field_validator("research_mode")
+    @classmethod
+    def _known_research_mode(cls, value: str) -> str:
+        if value not in {"bounded_design", "open_research"}:
+            raise ValueError("research_mode must be bounded_design or open_research")
+        return value
+
+    @field_validator("debug_prob")
+    @classmethod
+    def _probability(cls, value: float) -> float:
+        if not 0.0 <= float(value) <= 1.0:
+            raise ValueError("debug_prob must be within [0, 1]")
+        return float(value)
 
     @field_validator("wall_time_seconds")
     @classmethod
@@ -428,6 +499,224 @@ class TMMResearchHarnessResult(BaseModel):
     final_answer: TMMResearchAnswer | None = None
     telemetry: Dict[str, Any] = Field(default_factory=dict)
     artifacts: Tuple[str, ...] = ()
+
+
+def _build_intent_equivalence_certificate(
+    task_payload: Mapping[str, Any],
+    *,
+    source_clause: str,
+) -> Dict[str, Any] | None:
+    """Map the compiled task onto an IntentSpec, recompile via the engine's
+    intent contract, and return the certificate summary (None on any gap)."""
+
+    from optomind_optics.harness.veritmm_adapter import _ensure_real_veritmm_import
+
+    _ensure_real_veritmm_import()
+    from tmm_engine import intent as engine_intent
+    from tmm_engine import schemas as engine_schemas
+
+    stack_payload = None
+    targets_payload = []
+    for experiment in task_payload.get("experiments") or []:
+        raw_task = dict(experiment.get("tmm_task") or {})
+        simulation = dict(raw_task.get("simulation") or raw_task)
+        if simulation.get("stack") and stack_payload is None:
+            stack_payload = simulation.get("stack")
+        if raw_task.get("targets"):
+            targets_payload.extend(
+                target
+                for target in raw_task["targets"]
+                if isinstance(target, Mapping)
+            )
+    if not stack_payload:
+        return None
+    def _medium(payload: Any) -> Any:
+        if isinstance(payload, engine_schemas.MediumSpec) or payload is None:
+            return payload
+        if isinstance(payload, Mapping):
+            return engine_schemas.MediumSpec(
+                material=payload.get("material"),
+                constant_n=payload.get("constant_n"),
+                constant_k=payload.get("constant_k"),
+                provider=payload.get("provider"),
+                dataset_id=payload.get("dataset_id"),
+            )
+        return None
+
+    stack = engine_schemas.StackSpec(
+        layers=[
+            engine_schemas.LayerSpec(**layer)
+            for layer in stack_payload.get("layers", [])
+            if isinstance(layer, Mapping)
+        ],
+        incident=_medium(stack_payload.get("incident")),
+        exit=_medium(stack_payload.get("exit")),
+        name=str(stack_payload.get("name") or "compiled"),
+    )
+    # O-10FIX: the compiled task carries targets under tmm_task.targets
+    # with observable T/R/A and constraint at_least/at_most — map them onto
+    # the engine's IntentObservable schema (relation literal >=/<=).
+    relation_map = {"at_least": ">=", "at_most": "<=", "match": "=="}
+    observables = []
+    for target in targets_payload:
+        constraint = str(target.get("constraint") or "at_least")
+        observables.append(
+            engine_intent.IntentObservable(
+                quantity=str(target.get("observable") or "T"),
+                domain=engine_intent.IntentDomain(
+                    wavelength_min=engine_intent.IntentQuantity(
+                        value=target.get("wavelength_min_nm"), unit="nm"
+                    ),
+                    wavelength_max=engine_intent.IntentQuantity(
+                        value=target.get("wavelength_max_nm"), unit="nm"
+                    ),
+                    angle_deg=target.get("angle_deg"),
+                    polarization=target.get("polarization"),
+                ),
+                reducer=str(target.get("aggregation") or "mean"),
+                relation=relation_map.get(constraint, ">="),
+                target=target.get("target"),
+                constraint_role="soft",
+                weight=float(target.get("weight") or 1.0),
+            )
+        )
+    if not observables:
+        return None
+    spec = engine_intent.IntentSpec(
+        intent_id=stable_sha256(task_payload)[:16],
+        source_clause=str(source_clause or "")[:400],
+        observables=observables,
+    )
+    compiled = engine_intent.compile_intent(spec, stack)
+    certificate = getattr(compiled, "certificate", None)
+    if certificate is None:
+        return None
+    dump = (
+        certificate.model_dump(mode="json")
+        if hasattr(certificate, "model_dump")
+        else getattr(certificate, "__dict__", {})
+    )
+    return {
+        "schema_version": "optomind-intent-equivalence.v1",
+        "semantic_status": str(
+            dump.get("semantic_status")
+            or dump.get("status")
+            or "unknown"
+        ),
+        "certificate": dump,
+    }
+
+
+def _verify_workbench_run(execution_dir: Path) -> Dict[str, Any] | None:
+    """O-14: partial verification for workbench-layout inner runs.
+
+    integrity: every ARTIFACT_MANIFEST record is re-hashed on disk.
+    certification: the physics certificate's own accepted verdict.
+    authenticity: the engine version/identity recorded inside the
+    certificate. replay: unsupported (no managed manifest) -- stated, not
+    faked. Returns None when the directory lacks the manifest chain.
+    """
+
+    manifest_path = execution_dir / "ARTIFACT_MANIFEST.json"
+    manifest = _read_json_if_present(manifest_path)
+    if manifest is None:
+        return None
+    import hashlib
+
+    checked = 0
+    mismatches = 0
+    for entry in manifest.get("artifacts") or []:
+        rel = str(entry.get("relative_path") or "")
+        if not rel:
+            continue
+        artifact = execution_dir / rel
+        try:
+            digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        except OSError:
+            mismatches += 1
+            continue
+        checked += 1
+        if digest != str(entry.get("sha256") or ""):
+            mismatches += 1
+    nested_certs = sorted(
+        (execution_dir / "experiments").glob("**/PHYSICS_ACCEPTANCE_CERTIFICATE.json")
+    )
+    root_cert = _read_json_if_present(
+        execution_dir / "PHYSICS_ACCEPTANCE_CERTIFICATE.json"
+    )
+    certificate = root_cert or (
+        _read_json_if_present(nested_certs[0]) if nested_certs else {}
+    )
+    if nested_certs and root_cert is None:
+        accepted_any = False
+        for cert_path in nested_certs:
+            cert_payload = _read_json_if_present(cert_path) or {}
+            accepted_any = accepted_any or bool(cert_payload.get("accepted"))
+        certificate = dict(certificate)
+        certificate["accepted"] = accepted_any
+    runtime = certificate.get("runtime") or {}
+    return {
+        "schema_version": "optomind-verification-partial.v1",
+        "integrity_status": "valid" if mismatches == 0 else "invalid",
+        "integrity_records_checked": checked,
+        "integrity_mismatches": mismatches,
+        "certification_status": (
+            "certified" if certificate.get("accepted") else "not_certified"
+        ),
+        "authenticity_status": (
+            "engine_recorded"
+            if certificate.get("veritmm_version") or runtime
+            else "unsigned"
+        ),
+        "replay_status": "unsupported",
+        "replay_reason": (
+            "workbench layout has no managed manifest; full replay needs the "
+            "managed execution path"
+        ),
+    }
+
+
+def _compute_gradient_summary(compiled_payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """O-10: top influential layers for the compiled task, via the engine's
+    gradient API. Evidence for "which layer is worth moving" -- it never
+    gates acceptance."""
+
+    from optomind_optics.harness.veritmm_adapter import _ensure_real_veritmm_import
+
+    _ensure_real_veritmm_import()
+    from tmm_engine import gradient_api
+    from tmm_engine.task_io import simulation_task_from_dict
+
+    experiments = compiled_payload.get("experiments") or []
+    for experiment in experiments:
+        raw_task = dict(experiment.get("tmm_task") or {})
+        simulation = dict(raw_task.get("simulation") or raw_task)
+        if not simulation.get("stack"):
+            continue
+        task = simulation_task_from_dict(simulation)
+        result = gradient_api.compute_sensitivity(task)
+        summary = result.to_dict() if hasattr(result, "to_dict") else {}
+        return {
+            "objective": summary.get("objective"),
+            "method": summary.get("method"),
+            "metric_value": summary.get("metric_value"),
+            "top_influential_layers": list(
+                summary.get("top_influential_layers") or ()
+            )[:4],
+        }
+    return {"unavailable": "no simulation stack in the compiled task"}
+
+
+def _read_json_if_present(path: Path) -> Dict[str, Any] | None:
+    """Best-effort JSON read; None when absent or unparsable."""
+
+    try:
+        if path.is_file():
+            value = json.loads(path.read_text(encoding="utf-8"))
+            return value if isinstance(value, dict) else None
+    except (OSError, ValueError):
+        return None
+    return None
 
 
 def _mapping(value: Any) -> Dict[str, Any]:
@@ -643,6 +932,43 @@ class TMMResearchHarness:
         # tournament. Exposed read-only-ish for introspection, tests and R-07
         # summarization; the scheduler itself owns the single reference.
         self.tournament_tracks: Dict[str, RouteTrack] = {}
+        # O-03: EVENTS.jsonl is the append-only source of truth; the
+        # legacy RESEARCH_EVENTS.jsonl line and the SQLite graph stay
+        # untouched as parallel projections of the same decisions.
+        self._event_store = EventStore(self.work_dir, self.run_id)
+        # O-05: per-hypothesis confidence, updated ONLY by the ledger's
+        # mechanical rule table (LLM may explain, never write numbers).
+        self._track_confidence: Dict[str, float] = {}
+        # O-07: last compiled task sha per chain -- equal consecutive
+        # shas are same-config reruns and feed the noise floor.
+        self._track_last_task_sha: Dict[str, str] = {}
+        # O-07: the latest reflection/feedback directives per chain -- the
+        # gate's criterion 3 reads them (a directed retry is never a blind
+        # rerun).
+        self._track_directives: Dict[str, tuple] = {}
+        # O-07: one-shot gate override per chain, set only by a
+        # scheduler-adjudicated retry; consumed (and cleared) by the next
+        # gate evaluation, leaving an OVERRIDE note in the event.
+        self._track_gate_override: Dict[str, bool] = {}
+        # O-08: open_research scheduling layer (dormant in bounded_design).
+        self._tree: HypothesisTree | None = None
+        self._route_node_id: Dict[str, str] = {}
+        # O-12: file-protocol confirmation gate (PENDING/RESOLVED handshake,
+        # timeout auto-accept). The responder is silent during development.
+        self._confirmation_gate = ConfirmationGate(
+            self.work_dir,
+            timeout_seconds=self.config.confirmation_timeout_seconds,
+        )
+        # O-06: solver capabilities resolve through the registry; the direct
+        # TMMHarnessOrchestrator construction below stays as the fallback and
+        # the test seam. No behaviour change in this revision -- the tool
+        # handle is consumed by later work orders (gradients, O-10).
+        try:
+            from .capability_registry import default_registry
+
+            self._veritmm_tool = default_registry().resolve("tmm.simulate_optimize")
+        except Exception:
+            self._veritmm_tool = None
         self._started = 0.0
 
     def _default_tmm_factory(self, directory: Path, run_id: str) -> TMMHarnessOrchestrator:
@@ -821,6 +1147,54 @@ class TMMResearchHarness:
             else "first_route_objective_freeze"
         )
         path = self._write("SCORING_STANDARD.json", envelope)
+        if standard is not None and "scoring_standard_freeze" in self.config.confirmation_gates:
+            # O-12: the frozen criteria are the run's law -- park them here
+            # before anything downstream adopts them.
+            gated = self._ask_confirmation(
+                "scoring_standard_freeze",
+                "scoring_standard",
+                {"standard": standard.model_dump(mode="json")},
+                schema_hint={
+                    "editable": ["standard.formula", "standard.metrics"],
+                    "types": {"formula": "string", "metrics": "list"},
+                },
+            )
+            if gated is None:
+                # Human rejected the standard: degrade to the pre-existing
+                # first-route objective freeze path, recorded honestly.
+                self._event(
+                    "scoring_standard_unavailable",
+                    status="rejected_by_human",
+                    errors=0,
+                )
+                self._write(
+                    "SCORING_STANDARD.json",
+                    {
+                        "status": "unavailable",
+                        "validation_errors": ["scoring standard rejected by human"],
+                        "ranking_mechanism": "first_route_objective_freeze",
+                    },
+                )
+                return None
+            if isinstance(gated, Mapping) and gated.get("standard"):
+                try:
+                    from .scoring_standard import ScoringStandard
+
+                    rebuilt = ScoringStandard.model_validate(gated["standard"])
+                    standard = rebuilt
+                    envelope = dict(envelope)
+                    envelope["standard"] = rebuilt.model_dump(mode="json")
+                    envelope["human_modified"] = True
+                    path = self._write("SCORING_STANDARD.json", envelope)
+                    self._event(
+                        "scoring_standard_human_modified",
+                        formula=rebuilt.formula,
+                    )
+                except Exception as exc:
+                    self._event(
+                        "scoring_standard_human_modified_invalid",
+                        reason=f"{type(exc).__name__}: {exc}"[:200],
+                    )
         if standard is None:
             self._event(
                 "scoring_standard_unavailable",
@@ -837,6 +1211,14 @@ class TMMResearchHarness:
             formula=standard.formula,
             metrics=[metric.canonical_id for metric in standard.metrics],
             question_digest=standard.question_digest,
+        )
+        # O-03: the frozen decision enters the chain exactly once.
+        self._event(
+            "scoring_standard_frozen",
+            formula=standard.formula,
+            metrics=[metric.canonical_id for metric in standard.metrics],
+            question_digest=standard.question_digest,
+            artifact_path=path.relative_to(self.work_dir).as_posix(),
         )
         adopt = getattr(self.task_compiler, "adopt_scoring_standard", None)
         if callable(adopt):
@@ -945,6 +1327,12 @@ class TMMResearchHarness:
             question_digest=result.question_digest,
             literature_status=result.literature.status,
             papers=result.literature.returned,
+        )
+        self._event(
+            "route_planned",
+            route_count=result.route_count,
+            route_ids=[route["route_id"] for route in result.plan["routes"]],
+            artifact_path=path.relative_to(self.work_dir).as_posix(),
         )
         self._event(
             "routes_planned_from_literature",
@@ -1135,6 +1523,14 @@ class TMMResearchHarness:
             }
             with self.events_path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+            # O-03 dual-write: the same decision enters the hash-chained
+            # store. The legacy line keeps its shape; the store adds the
+            # tamper-evident envelope (seq/prev_hash/entry_hash).
+            self._event_store.append(
+                event_type,
+                dict(payload),
+                parent_event=f"sequence:{self._event_sequence}",
+            )
             with self._state_lock:
                 if "RESEARCH_EVENTS.jsonl" not in self._artifacts:
                     self._artifacts.append("RESEARCH_EVENTS.jsonl")
@@ -1163,6 +1559,13 @@ class TMMResearchHarness:
             int(self.config.maximum_iterations), max(0, int(route_count)) * rounds
         )
         self._iteration_ceiling = ceiling
+        self._event(
+            "budget_changed",
+            reason="per_route_round_quota",
+            routes=int(route_count),
+            rounds_per_route=rounds,
+            iteration_ceiling=ceiling,
+        )
         self._event(
             "route_round_quota_allocated",
             routes=int(route_count),
@@ -1277,6 +1680,7 @@ class TMMResearchHarness:
         prior_iterations: Iterable[Mapping[str, Any]] = (),
         feedback_directives: Iterable[str] = (),
         chain_id: str | None = None,
+        insight_appendage: str = "",
     ) -> tuple[Any, dict[str, dict[str, list[str]]]]:
         try:
             result = self.strategy_planner.plan(
@@ -1286,6 +1690,7 @@ class TMMResearchHarness:
                 feedback_directives=feedback_directives,
                 force_mock=self.config.qwen_force_mock,
                 chain_id=chain_id,
+                insight_appendage=insight_appendage,
             )
             # R-04: StrategyPlanningResult now has pre_declarations field
             pre_decls = getattr(result, "pre_declarations", {})
@@ -1340,6 +1745,142 @@ class TMMResearchHarness:
         pre_decls = getattr(result, "pre_declarations", {})
         return result, pre_decls
 
+    def _ask_confirmation(
+        self,
+        node: str,
+        payload_kind: str,
+        payload: Any,
+        *,
+        schema_hint: Dict[str, Any] | None = None,
+    ) -> Any:
+        """O-12: run one confirmation gate; return payload_after (the
+        original for accepted/timeout) or None when the human rejected."""
+
+        if node not in self.config.confirmation_gates:
+            return payload
+        request = ConfirmationRequest(
+            gate_id=f"{self.run_id}-{node}",
+            node=node,
+            payload_kind=payload_kind,
+            payload=payload,
+            schema_hint=schema_hint or {},
+            timeout_seconds=self.config.confirmation_timeout_seconds,
+        )
+        resolution = self._confirmation_gate.ask(
+            request,
+            event_sink=lambda event_type, payload: self._event(
+                event_type, **dict(payload)
+            ),
+        )
+        if resolution.decision == "rejected":
+            return None
+        return resolution.payload_after
+
+    def _estimate_run_cost_cny(self) -> float:
+        """O-12 pre-run cost estimate for the budget gate (documented
+        heuristic: every scheduled round costs ~3 LLM calls at ~9k in /
+        3k out tokens on the plus tier)."""
+
+        from optomind_research.runtime.cost_ledger import estimate_call_cost_cny
+
+        rounds_total = max(
+            1,
+            len(self.tournament_tracks) * int(self.config.max_rounds_per_route),
+        )
+        calls = rounds_total * 3 + 10
+        total = 0.0
+        for _ in range(calls):
+            total += estimate_call_cost_cny("qwen3.5-plus", 9000, 3000)
+        return round(total, 2)
+
+    def _champion_selection_gate(self, scoring_ranking: Dict[str, Any]) -> Dict[str, Any]:
+        """O-12 node 3: park the final ranking/champion before the answer is
+        built. A human-modified order replaces the leaderboard winner/rows in
+        the artifact (both scales preserved)."""
+
+        if "champion_selection" not in self.config.confirmation_gates:
+            return scoring_ranking
+        gated = self._ask_confirmation(
+            "champion_selection",
+            "final_ranking",
+            {
+                "winner": scoring_ranking.get("winner"),
+                "leaderboard": scoring_ranking.get("leaderboard"),
+                "formula": scoring_ranking.get("formula"),
+            },
+            schema_hint={
+                "editable": ["leaderboard", "winner"],
+                "types": {"leaderboard": "list of {rank, route_id, candidate_id, score}"},
+            },
+        )
+        if gated is None:
+            scoring_ranking = dict(scoring_ranking)
+            scoring_ranking["champion_rejected_by_human"] = True
+            self._event(
+                "champion_selection_rejected",
+                note="human rejected the champion; the artifact records it",
+            )
+            return scoring_ranking
+        if isinstance(gated, Mapping) and gated.get("leaderboard") != scoring_ranking.get(
+            "leaderboard"
+        ):
+            scoring_ranking = dict(scoring_ranking)
+            scoring_ranking["leaderboard"] = gated.get("leaderboard")
+            scoring_ranking["winner"] = gated.get("winner")
+            scoring_ranking["human_modified"] = True
+            self._event(
+                "champion_selection_human_modified",
+                winner=str(gated.get("winner")),
+            )
+        return scoring_ranking
+
+    def _evaluate_proposal_gate(
+        self,
+        track: RouteTrack,
+        gate: "ProposalGate",
+        observation_count: int,
+        pre_declarations: Optional[Dict[str, Dict[str, list[str]]]] = None,
+    ) -> Optional["GateDecision"]:
+        """O-07: the seven typed criteria, evaluated BEFORE the expensive
+        round. Cheap operations never pass through here."""
+
+        route = track.current_route
+        # Duplicate detection must live in the SAME hash space as the chain's
+        # accepted versions (track.version_hashes holds _route_hash values).
+        fingerprint = _route_hash(route)
+        # O-07: predictions live in the R-04 pre-execution sidecar, not in
+        # the route payload (DesignRoute is extra=forbid by contract).
+        declarations = (pre_declarations or {}).get(track.route_id) or {}
+        gated_route = dict(route)
+        gated_route["expected_observations"] = declarations.get(
+            "expected_observations"
+        ) or ()
+        gated_route["stop_conditions"] = declarations.get("stop_conditions") or ()
+        decision = gate.evaluate(
+            proposal_id=track.route_id,
+            hypothesis_id=track.route_id,
+            route=gated_route,
+            fingerprint=fingerprint,
+            chain_version_hashes=track.executed_hashes,
+            rounds_used=track.rounds_used,
+            directives=self._track_directives.get(track.route_id, ()),
+            budget_approved=self._budget_remaining(observation_count),
+            has_attestation_channel=bool(pre_declarations),
+            override=self._track_gate_override.get(track.route_id, False),
+        )
+        # One-shot: the override adjudicated exactly one retry round.
+        self._track_gate_override.pop(track.route_id, None)
+        if decision.approved:
+            self._event(
+                GATE_EVENT_TYPE,
+                **decision.to_payload(
+                    proposal_id=track.route_id,
+                    hypothesis_id=track.route_id,
+                ),
+            )
+            return decision
+        return decision
+
     def _prepare_track_round(
         self,
         track: RouteTrack,
@@ -1384,6 +1925,23 @@ class TMMResearchHarness:
             rounds_used=track.rounds_used,
         )
 
+        # O-03: a round's execution begins with its compilation prompt; the
+        # inputs are hashed here so the prompt is rebuildable from events.
+        prompt_question = str(route["execution_request_english"])
+        self._event(
+            "round_started",
+            route_id=route_id,
+            iteration_id=iteration_id,
+            prompt_stage="task_compiler",
+        )
+        self._event(
+            "prompt_assembled",
+            route_id=route_id,
+            stage="task_compiler",
+            question=prompt_question,
+            input_sha256=stable_sha256(prompt_question),
+            force_mock=self.config.qwen_force_mock,
+        )
         compilation: Any | None = None
         try:
             compilation = self.task_compiler.compile(
@@ -1393,6 +1951,13 @@ class TMMResearchHarness:
             with self._state_lock:
                 self._usage.extend(_usage_rows(compilation))
             compilation_payload = _mapping(compilation)
+            self._event(
+                "tool_called",
+                tool="task_compiler",
+                route_id=route_id,
+                iteration_id=iteration_id,
+                status=str(compilation_payload.get("status") or ""),
+            )
         except Exception as exc:
             compilation_payload = {
                 "status": "unavailable",
@@ -1415,6 +1980,57 @@ class TMMResearchHarness:
             # WITHIN this route's chain and carries the parent task
             # fingerprint, so P17 auditability survives parallel chains.
             task_sha256 = hashlib.sha256(task_file.read_bytes()).hexdigest()
+            self._event(
+                "task_compiled",
+                route_id=route_id,
+                lineage_round=track.lineage_round + 1,
+                task_sha256=task_sha256,
+                artifact_path=task_file.relative_to(self.work_dir).as_posix(),
+            )
+            # O-10: when the engine's intent contract is available, re-express
+            # the compiled task as an IntentSpec -> compile_intent round trip
+            # and archive the CompilationEquivalenceCertificate beside the
+            # task. Any construction failure silently degrades (original
+            # path untouched); the certificate never replaces the task.
+            capabilities = probe_engine_capabilities()
+            if capabilities.intent:
+                try:
+                    certificate_payload = _build_intent_equivalence_certificate(
+                        task.model_dump(mode="json"),
+                        source_clause=str(route.get("execution_request_english") or ""),
+                    )
+                    if certificate_payload is not None:
+                        atomic_write_json(
+                            iteration_dir / "COMPILED_TASK_EQUIVALENCE.json",
+                            certificate_payload,
+                        )
+                        self._event(
+                            "intent_equivalence_certified",
+                            route_id=route_id,
+                            semantic_status=str(
+                                certificate_payload.get("semantic_status")
+                            ),
+                        )
+                except Exception as exc:
+                    self._event(
+                        "intent_equivalence_unavailable",
+                        route_id=route_id,
+                        reason=f"{type(exc).__name__}: {exc}"[:200],
+                    )
+            # O-07 passive noise-floor accumulation: a compiled task whose sha
+            # equals this chain's previous one is a same-config rerun; the
+            # score delta between the two rounds is a noise sample.
+            previous_sha = self._track_last_task_sha.get(route_id)
+            if previous_sha == task_sha256 and len(track.score_history) >= 2:
+                self._event(
+                    NOISE_FLOOR_EVENT_TYPE,
+                    **sample_event(
+                        stable_sha256({"route": route_id})[:16],
+                        "best_target_score",
+                        track.score_history[-1] - track.score_history[-2],
+                    ),
+                )
+            self._track_last_task_sha[route_id] = task_sha256
             track.lineage_round += 1
             declared_reason = str(route.get("revision_reason") or "").strip()
             if declared_reason:
@@ -1546,10 +2162,11 @@ class TMMResearchHarness:
             run_payload = {}
             result_path = None
         task = pre_ctx.get("task")
-        task_path = None
-        compiled_file = iteration_dir / "COMPILED_TASK.json"
-        if task is not None and compilation_status == "compiled" and compiled_file.exists():
-            task_path = compiled_file.relative_to(self.work_dir).as_posix()
+        task_path = pre_ctx.get("task_path")
+        if task_path is None:
+            compiled_file = iteration_dir / "COMPILED_TASK.json"
+            if task is not None and compilation_status == "compiled" and compiled_file.exists():
+                task_path = compiled_file.relative_to(self.work_dir).as_posix()
         observation = observation_from_run_result(
             iteration_id=pre_ctx["iteration_id"],
             route_id=route_id,
@@ -1579,12 +2196,124 @@ class TMMResearchHarness:
                 cid for cid in observation.selected_candidate_ids if cid not in track.best_candidate_ids
             )
         track.rounds_used += 1
+        track.executed_hashes.add(_route_hash(track.current_route))
         with self._state_lock:
             observations.append(observation)
             self._observations = observations
+        # O-02: attach the engine's independent four-state verification and
+        # the run-level evidence ledger to this round's observation record.
+        # Purely additive keys: existing observation keys are untouched, the
+        # certificate stays the only physics verdict, and any verify-run
+        # failure is recorded verbatim instead of altering the round.
+        execution_dir = iteration_dir / "tmm_run"
+        verification: Dict[str, Any] | None = None
+        evidence_coverage: Dict[str, Any] | None = None
+        verify_error: str | None = None
+        summary = _read_json_if_present(execution_dir / "RESULT_SUMMARY.json")
+        if isinstance(summary, Mapping):
+            evidence = summary.get("evidence_coverage")
+            if isinstance(evidence, Mapping):
+                evidence_coverage = dict(evidence)
+            certificate = _read_json_if_present(
+                execution_dir / "PHYSICS_ACCEPTANCE_CERTIFICATE.json"
+            )
+            if isinstance(certificate, Mapping) and certificate.get("accepted"):
+                try:
+                    from .veritmm_adapter import _ensure_real_veritmm_import
+
+                    _ensure_real_veritmm_import()
+                    from tmm_engine.verify_run import verify_run_dir
+
+                    verification = dict(verify_run_dir(execution_dir))
+                    if str(verification.get("overall_status") or "") != "valid":
+                        verify_error = (
+                            "verify_run overall_status="
+                            f"{verification.get('overall_status')!r}"
+                        )
+                except Exception as exc:
+                    verification = None
+                    verify_error = f"{type(exc).__name__}: {exc}"
+
+        observation_payload = observation.model_dump(mode="json")
+        if verification is not None:
+            observation_payload["verification"] = verification
+        if evidence_coverage is not None:
+            observation_payload["evidence_coverage"] = evidence_coverage
+        if verify_error:
+            observation_payload["verify_run_error"] = verify_error
+        # O-10: gradient sensitivity for the current best candidate ("which
+        # layer is worth moving" becomes a computation, not a guess) and the
+        # energy-ledger summary from the physics certificate. Both are
+        # capability-gated and never touch acceptance semantics.
+        gradient_summary = None
+        energy_summary = None
+        capabilities = probe_engine_capabilities()
+        if capabilities.gradient and task_path is not None:
+            try:
+                compiled_payload = json.loads(
+                    (self.work_dir / task_path).read_text(encoding="utf-8")
+                )
+                gradient_summary = _compute_gradient_summary(compiled_payload)
+            except Exception as exc:
+                gradient_summary = {"unavailable": f"{type(exc).__name__}: {exc}"[:200]}
+        certificate_payload = _read_json_if_present(
+            iteration_dir / "tmm_run" / "PHYSICS_ACCEPTANCE_CERTIFICATE.json"
+        )
+        if certificate_payload is None:
+            # Workbench layout: certificates live in experiment/candidate
+            # subdirs (any depth under experiments/).
+            nested = sorted(
+                (iteration_dir / "tmm_run" / "experiments").glob(
+                    "**/PHYSICS_ACCEPTANCE_CERTIFICATE.json"
+                )
+            )
+            certificate_payload = _read_json_if_present(nested[0]) if nested else None
+        if isinstance(certificate_payload, Mapping):
+            block = certificate_payload.get("energy_accounting")
+            if isinstance(block, Mapping):
+                energy_summary = {
+                    "independence_class": block.get("independence_class"),
+                    "method": block.get("method"),
+                    "residuals": block.get("residuals"),
+                }
+        if gradient_summary is not None:
+            observation_payload["gradient_summary"] = gradient_summary
+        if energy_summary is not None:
+            observation_payload["energy_accounting_summary"] = energy_summary
+        # O-14: workbench-layout rounds have no managed manifest, so the
+        # full four-state verify-run is unavailable; a PARTIAL verification
+        # is still derivable from the inner artifact chain (integrity over
+        # ARTIFACT_MANIFEST hashes + certification + authenticity), with
+        # replay honestly declared unsupported. Never conflated with the
+        # managed full four-state report.
+        if verification is None and certificate_payload is not None:
+            partial = _verify_workbench_run(execution_dir)
+            if partial is not None:
+                observation_payload["verification_partial"] = partial
+        self._event(
+            "round_observed",
+            route_id=route_id,
+            iteration_id=pre_ctx["iteration_id"],
+            run_status=observation.run_status,
+            valid_candidates=observation.physically_valid_candidate_count,
+            best_target_score=observation.best_target_score,
+        )
+        if verification is not None or verify_error:
+            self._event(
+                "tool_called",
+                tool="verify_run_dir",
+                route_id=route_id,
+                iteration_id=pre_ctx["iteration_id"],
+                verification_overall=(
+                    str(verification.get("overall_status"))
+                    if verification is not None
+                    else None
+                ),
+                error=verify_error,
+            )
         atomic_write_json(
             iteration_dir / "ITERATION_OBSERVATION.json",
-            observation.model_dump(mode="json"),
+            observation_payload,
         )
         self._event(
             "route_completed",
@@ -1594,7 +2323,39 @@ class TMMResearchHarness:
             run_status=observation.run_status,
             valid_candidates=observation.physically_valid_candidate_count,
             best_target_score=observation.best_target_score,
+            verification_overall=(
+                str(verification.get("overall_status"))
+                if verification is not None
+                else None
+            ),
+            evidence_coverage=(
+                dict(evidence_coverage) if evidence_coverage is not None else None
+            ),
         )
+        if self.config.research_mode == "open_research" and self._tree is not None:
+            node_id = self._route_node_id.get(route_id)
+            if node_id and node_id in self._tree.nodes:
+                buggy = (
+                    observation.compilation_status != "compiled"
+                    or observation.physically_valid_candidate_count <= 0
+                )
+                self._tree.update_node(
+                    node_id,
+                    metric=observation.best_target_score,
+                    is_buggy=buggy,
+                )
+                node = self._tree.nodes[node_id]
+                self._event(
+                    "tree_node_updated",
+                    node_id=node_id,
+                    route_id=route_id,
+                    metric=node.metric,
+                    is_buggy=node.is_buggy,
+                    status=node.status,
+                    rotations=node.falsification.rotations,
+                    supported_keeps=node.falsification.supported_keeps,
+                    refuted_discards=node.falsification.refuted_discards,
+                )
         return {
             "track": track,
             "iteration_id": pre_ctx["iteration_id"],
@@ -1602,6 +2363,8 @@ class TMMResearchHarness:
             "observation": observation,
             "compilation_payload": compilation_payload,
             "run_payload": run_payload,
+            "verification": verification,
+            "gradient_summary": gradient_summary,
         }
 
     def _execute_track_round(
@@ -1647,16 +2410,32 @@ class TMMResearchHarness:
         observation: ResearchIterationObservation = ctx["observation"]
         pre_decl = pre_declarations.get(track.route_id, {})
         epsilon = DEFAULT_MINIMUM_SCORE_IMPROVEMENT
+        observation_dump = observation.model_dump(mode="json")
+        self._event(
+            "prompt_assembled",
+            route_id=track.route_id,
+            stage="route_reflection",
+            observation_sha256=stable_sha256(observation_dump),
+            score_history=list(track.score_history),
+            epsilon=epsilon,
+            force_mock=self.config.qwen_force_mock,
+        )
         try:
             reflection = reflect_on_route(
                 self._reflection_client,
                 pre_declarations=pre_decl,
-                observation=observation.model_dump(mode="json"),
+                observation=observation_dump,
                 score_history=list(track.score_history),
                 epsilon=epsilon,
                 force_mock=self.config.qwen_force_mock,
             )
             reflection_available = reflection.degraded_reason == ""
+            self._event(
+                "tool_called",
+                tool="route_reflection",
+                route_id=track.route_id,
+                reflection_available=reflection_available,
+            )
         except Exception as exc:
             # Engine-side failure of the REFLECTION infrastructure is treated
             # exactly like a degraded response (vote ABSENT, never a stop).
@@ -1877,9 +2656,10 @@ class TMMResearchHarness:
 
         if disagreement["present"]:
             refl_path = ctx["iteration_dir"] / "ROUTE.REFLECTION.json"
-            refl_data = json.loads(refl_path.read_text(encoding="utf-8"))
-            refl_data["disagreement"] = disagreement
-            atomic_write_json(refl_path, refl_data)
+            if refl_path.is_file():
+                refl_data = json.loads(refl_path.read_text(encoding="utf-8"))
+                refl_data["disagreement"] = disagreement
+                atomic_write_json(refl_path, refl_data)
 
         directives: tuple[str, ...] = ()
         replan_mode: str | None = None
@@ -2002,6 +2782,48 @@ class TMMResearchHarness:
                 status=status,
                 reason=termination_reason,
             )
+        # O-05: one ActionEffectLedger entry per feedback decision. All
+        # numbers are program-computed from the frozen metric; the LLM's
+        # decision vote is recorded as advice, the belief update is the
+        # rule table's alone.
+        rounds_used = int(track.rounds_used)
+        history = track.score_history
+        score_before = history[-2] if len(history) >= 2 else None
+        score_after = history[-1] if history else None
+        expected_rows = track.current_route.get("expected_observations") or ()
+        confidence_before = self._track_confidence.get(track.route_id, 0.5)
+        entry = build_ledger_entry(
+            action_id=f"{track.route_id}:r{rounds_used}:{ctx['iteration_id']}",
+            hypothesis_id=track.route_id,
+            rounds_used=rounds_used,
+            best_score_before=score_before,
+            best_score_after=score_after,
+            expected_claim="; ".join(str(row) for row in expected_rows)[:500],
+            expected_delta=None,
+            gradient_basis=ctx.get("gradient_summary"),
+            run_status=str(observation.run_status),
+            certificate_id=str(
+                (ctx.get("run_payload") or {}).get("certificate_id") or ""
+            ),
+            verification_overall=(
+                str((ctx.get("verification") or {}).get("overall_status"))
+                if ctx.get("verification")
+                else None
+            ),
+            confidence_before=confidence_before,
+            decision_action=str(decision.action),
+            replan_trigger=replan_mode == "continue",
+            decision_reason=str(decision.reason)[:500],
+        )
+        self._track_confidence[track.route_id] = float(
+            entry.belief_update.after
+        )
+        self._track_directives[track.route_id] = tuple(directives)
+        self._event(
+            LEDGER_EVENT_TYPE,
+            **entry_to_event_payload(entry),
+        )
+
         return {
             "status": status,
             "termination_reason": termination_reason,
@@ -2035,6 +2857,20 @@ class TMMResearchHarness:
             for row in list(self._observations)
             if str(row.route_id) == track.route_id
         ]
+        # O-05: the Robin-style appendage re-flows THIS chain's verified
+        # results (deltas, mechanical insights, exclusions) into the next
+        # candidate generation. Template-generated; no LLM-authored numbers.
+        appendage = build_insight_appendage(
+            route_id=track.route_id,
+            observations=own_rows,
+            directives=directives,
+        )
+        if self.config.research_mode == "open_research":
+            # O-08: the two-part failure memory is a standard assembly of the
+            # tree context (same discipline as the O-05 insight block).
+            appendage = (
+                build_failure_memory_summary(own_rows) + "\n\n" + appendage
+            )
         try:
             if track.source == CONTROL_ROUTE_SOURCE:
                 replanning, replan_pre_declarations = self._plan_control_continuation(
@@ -2050,6 +2886,7 @@ class TMMResearchHarness:
                     prior_iterations=own_rows,
                     feedback_directives=directives,
                     chain_id=track.route_id,
+                    insight_appendage=appendage,
                 )
         except Exception as exc:
             return {
@@ -2669,6 +3506,30 @@ class TMMResearchHarness:
                     )
                     feedback_history.append(retry_decision)
                     final_decision = retry_decision
+                    # O-07: directed retry => directives stored + one-shot
+                    # gate override (the duplicate was scheduler-adjudicated).
+                    self._track_directives[track.route_id] = tuple(
+                        retry_decision.feedback_for_planner
+                    )
+                    self._track_gate_override[track.route_id] = True
+                    if self.config.research_mode == "open_research" and self._tree is not None:
+                        parent_id = self._route_node_id.get(track.route_id)
+                        if parent_id:
+                            child = self._tree.create_node(
+                                parent_id=parent_id,
+                                route_id=track.route_id,
+                                stage="debug",
+                                plan_pointer=str(track.current_route.get("execution_request_english") or ""),
+                            )
+                            self._route_node_id[track.route_id] = child.node_id
+                            self._event(
+                                "tree_node_created",
+                                node_id=child.node_id,
+                                parent_id=parent_id,
+                                stage="debug",
+                                debug_depth=child.debug_depth,
+                                route_id=track.route_id,
+                            )
                     self._event(
                         "route_retry_scheduled",
                         wave=wave_index,
@@ -2774,6 +3635,7 @@ class TMMResearchHarness:
             resumed=bool(self._resume_parent_run_id),
         )
         if scoring_ranking is not None:
+            scoring_ranking = self._champion_selection_gate(scoring_ranking)
             self._write("SCORING_RANKING.json", scoring_ranking)
         if not self._budget_remaining(len(observations)) and final_decision.action not in {
             "stop_completed",
@@ -2852,6 +3714,50 @@ class TMMResearchHarness:
             artifacts=tuple(dict.fromkeys(self._artifacts)),
         )
         self._write("RESEARCH_RESULT.json", result)
+        self._event(
+            "run_completed",
+            status=final_status,
+            routes=[tid for tid in ordered_track_ids],
+            rounds_executed=len(observations),
+        )
+        # O-03: projections are rebuilt from the event store at every run end.
+        final_events = self._event_store.read_all()
+        rebuild_projections(final_events, self.work_dir)
+        write_noise_floor_projection(final_events, self.work_dir)
+        self._write("DEAD_ENDS.json", build_dead_end_index(final_events).to_dict())
+        if self.config.research_mode == "open_research" and self._tree is not None:
+            # O-08: tree journal + Bradley-Terry final ranking.
+            self._tree.save(self.work_dir)
+            for entry in self._tree.events:
+                self._event(str(entry.get("event_type")), **dict(entry.get("payload") or {}))
+            candidates = []
+            for observation in observations:
+                for summary in observation.candidate_summaries:
+                    if summary.get("target_score") is None:
+                        continue
+                    candidates.append(
+                        {
+                            "candidate_id": summary.get("candidate_id"),
+                            "frozen_score": summary.get("target_score"),
+                            "route_id": observation.route_id,
+                            "certificate_id": summary.get("certificate_id"),
+                            "summary": (
+                                f"thicknesses={summary.get('thicknesses_nm')}"
+                            ),
+                        }
+                    )
+            ranking = rank_candidates(
+                candidates,
+                client=None,
+                force_mock=self.config.qwen_force_mock,
+            )
+            ranking["tree_file"] = TREE_FILENAME
+            self._write(BT_RANKING_FILENAME, ranking)
+            self._event(
+                "bt_ranking_written",
+                mechanism=ranking["ranking_mechanism"],
+                candidates=len(ranking["ranked_candidates"]),
+            )
         self._event("research_finished", status=final_status, resumed=bool(self._resume_parent_run_id))
         return result
 
@@ -3096,6 +4002,17 @@ class TMMResearchHarness:
             normal_route_count=len(normal_routes),
             control_route_count=int(control_route is not None),
         )
+        # O-03: the portfolio decision is recorded whichever mechanism made
+        # it -- literature planning or the legacy strategy-planner fallback.
+        self._event(
+            "route_planned",
+            route_count=len(normal_routes) + int(control_route is not None),
+            planning_mechanism=(
+                "literature_route_planned"
+                if literature_routes
+                else "strategy_planner_fallback"
+            ),
+        )
 
         # ------------------------------------------------------------------
         # R-06 tournament scheduler: every portfolio member races its own
@@ -3122,6 +4039,18 @@ class TMMResearchHarness:
         feedback_history: list[ResearchFeedbackDecision] = []
         # Bookkeeping counters kept for telemetry parity with the legacy loop.
         refinement_rounds = 0
+        # O-10: one bounded capability probe per run; the results gate every
+        # 2.0 consumption point and degrade silently when absent.
+        capabilities = probe_engine_capabilities()
+        self._event(
+            "engine_capabilities_probed",
+            **capabilities.as_event_payload(),
+        )
+        # O-12 budget checkpoint: gate the run when the pre-run estimate
+        # approaches the per-run hard top (30 CNY; warn at 25). The estimate
+        # happens after the portfolio exists, so it sits at the top of the
+        # wave loop instead -- see the _run_budget_checkpoint call below.
+
         final_decision = ResearchFeedbackDecision(
             action="stop_best_effort", reason="No experiment was executed."
         )
@@ -3158,6 +4087,103 @@ class TMMResearchHarness:
             ordered_track_ids.append(route_id)
         self.tournament_tracks = tracks
         self._allocate_round_quota(len(ordered_track_ids))
+        if self.config.research_mode == "open_research":
+            # O-08: one draft root per portfolio route; the tree schedules,
+            # the existing chain executes.
+            self._tree = HypothesisTree(
+                num_drafts=self.config.num_drafts,
+                debug_prob=self.config.debug_prob,
+            )
+            for route_id in ordered_track_ids:
+                route = tracks[route_id].current_route
+                node = self._tree.create_node(
+                    parent_id=None,
+                    route_id=route_id,
+                    stage="draft",
+                    plan_pointer=str(route.get("execution_request_english") or ""),
+                    hypothesis=str(route.get("scientific_hypothesis") or ""),
+                    prediction=str(route.get("expected_observations") or ""),
+                )
+                self._route_node_id[route_id] = node.node_id
+                self._event(
+                    "tree_node_created",
+                    node_id=node.node_id,
+                    parent_id=None,
+                    stage="draft",
+                    debug_depth=0,
+                    route_id=route_id,
+                )
+        # O-03: Anthropic-style plan file -- JSON steps with pass flags,
+        # written once at start; workers may only append nodes or flip flags.
+        write_research_plan(
+            self.work_dir,
+            [
+                {
+                    "route_id": route_id,
+                    "kind": tracks[route_id].current_route.get("route_kind"),
+                    "title": tracks[route_id].current_route.get("title"),
+                    "steps": [
+                        "compile task",
+                        "execute TMM round",
+                        "observe and score by the frozen standard",
+                    ],
+                }
+                for route_id in ordered_track_ids
+            ],
+        )
+
+        if "route_portfolio_plan" in self.config.confirmation_gates:
+            portfolio_payload = {
+                route_id: tracks[route_id].current_route
+                for route_id in ordered_track_ids
+            }
+            gated_portfolio = self._ask_confirmation(
+                "route_portfolio_plan",
+                "route_portfolio",
+                portfolio_payload,
+                schema_hint={
+                    "editable": [
+                        "<route_id>.title",
+                        "<route_id>.execution_request_english",
+                        "<route_id>.design_variables",
+                    ],
+                    "types": {"execution_request_english": "string"},
+                },
+            )
+            if gated_portfolio is None:
+                return self._early_finish(
+                    question,
+                    problem,
+                    method_research=merged_research,
+                    strategy_plan=plan,
+                    status="aborted_human_rejected",
+                    stage="route_portfolio_plan",
+                    reason="the human rejected the route portfolio",
+                )
+            if isinstance(gated_portfolio, Mapping):
+                from .strategy_planner import DesignRoute as _DesignRoute
+
+                modified_routes = 0
+                for route_id, route_payload in gated_portfolio.items():
+                    track = tracks.get(str(route_id))
+                    if track is None or not isinstance(route_payload, Mapping):
+                        continue
+                    try:
+                        revised = _DesignRoute.model_validate(
+                            route_payload
+                        ).model_dump(mode="json")
+                        if revised.get("route_id") == str(route_id):
+                            track.current_route = revised
+                            modified_routes += 1
+                    except Exception:
+                        # An invalid human edit keeps the original route; the
+                        # diff lives in the confirmation_resolved event.
+                        continue
+                self._event(
+                    "route_portfolio_human_reviewed",
+                    routes=list(gated_portfolio.keys()),
+                    modified=modified_routes,
+                )
 
         def _racing() -> list[RouteTrack]:
             return [
@@ -3165,6 +4191,44 @@ class TMMResearchHarness:
                 for tid in ordered_track_ids
                 if tracks[tid].status == TRACK_RACING
             ]
+
+        # O-12 budget checkpoint: the estimate needs the final portfolio.
+        if "budget_checkpoint" in self.config.confirmation_gates:
+            estimated = self._estimate_run_cost_cny()
+            if estimated > float(self.config.budget_gate_threshold_cny):
+                rounds_planned = len(ordered_track_ids) * int(
+                    self.config.max_rounds_per_route
+                )
+                sent_payload = {
+                    "estimated_cost_cny": estimated,
+                    "hard_top_cny": 30.0,
+                    "rounds_planned": rounds_planned,
+                    "suggestion": (
+                        "reduce max_rounds_per_route or maximum_routes to "
+                        "stay under the per-run hard top"
+                    ),
+                }
+                budget_payload = self._ask_confirmation(
+                    "budget_checkpoint",
+                    "budget_summary",
+                    sent_payload,
+                )
+                if budget_payload is None:
+                    return self._early_finish(
+                        question,
+                        problem,
+                        status="aborted_human_rejected",
+                        stage="budget_checkpoint",
+                        reason=(
+                            "the human rejected the budget: estimated "
+                            f"{estimated} CNY exceeds the warning line"
+                        ),
+                    )
+                self._event(
+                    "budget_checkpoint_resolved",
+                    estimated_cost_cny=estimated,
+                    human_modified=bool(budget_payload != sent_payload),
+                )
 
         wave_index = 0
         halt_run = False
@@ -3220,10 +4284,124 @@ class TMMResearchHarness:
                 racing=[t.route_id for t in racing_now],
             )
 
+            # ---- O-07 queue ordering: anti-consensus / cold / |delta| desc /
+            # in-band last. Stable sort: all-pass runs keep the prior order.
+            events_so_far = self._event_store.read_all()
+            if self.config.research_mode == "open_research" and self._tree is not None:
+                # O-08 scheduling step: debug failing leaves first (mechanical
+                # rule, seeded rng), then improve the best good node; the
+                # chosen action is recorded for the event stream.
+                step = self._tree.next_action(random.Random(wave_index))
+                self._event(
+                    "tree_step",
+                    wave=wave_index,
+                    action=step.get("action"),
+                    parent_id=step.get("parent_id"),
+                )
+                debug_route = None
+                if step.get("action") in {"debug", "improve"}:
+                    parent = self._tree.nodes.get(step.get("parent_id"))
+                    if parent is not None:
+                        debug_route = parent.route_id
+                racing_now = sorted(
+                    racing_now,
+                    key=lambda track: (
+                        0 if track.route_id == debug_route else 1,
+                        -(
+                            float(
+                                self._tree.best_good_node().metric
+                                if self._tree.best_good_node()
+                                and self._tree.nodes.get(
+                                    self._route_node_id.get(track.route_id, "")
+                                )
+                                and self._route_node_id.get(track.route_id)
+                                in self._tree.nodes
+                                and self._tree.nodes[
+                                    self._route_node_id[track.route_id]
+                                ].metric
+                                is not None
+                                else 0.0
+                            )
+                        ),
+                    ),
+                )
+            events_so_far = self._event_store.read_all()
+            gate = ProposalGate(
+                noise_floor=rebuild_noise_floor(events_so_far),
+                dead_ends=build_dead_end_index(events_so_far),
+            )
+            if len(racing_now) > 1:
+                racing_now = sorted(
+                    racing_now,
+                    key=lambda track: gate.queue_priority(
+                        hypothesis_id=track.route_id,
+                        rounds_used=track.rounds_used,
+                        avg_abs_delta=(
+                            (
+                                sum(
+                                    abs(
+                                        track.score_history[i]
+                                        - track.score_history[i - 1]
+                                    )
+                                    for i in range(1, len(track.score_history))
+                                )
+                                / len(track.score_history[1:])
+                            )
+                            if len(track.score_history) > 1
+                            else None
+                        ),
+                        expected_delta=None,
+                    ),
+                )
+
             # ---- R-08 Phase 1a (serial): allocate / attest / compile -------
             base_index = len(observations)
             pre_ctxs: list[Dict[str, Any]] = []
             for slot, track in enumerate(racing_now):
+                gate_decision = self._evaluate_proposal_gate(
+                    track, gate, len(observations), pre_declarations
+                )
+                if gate_decision is not None and not gate_decision.approved:
+                    # O-07: typed rejection, then the EXISTING repair
+                    # semantics -- a synthesized un-compiled context walks the
+                    # same refine path a compilation failure would.
+                    iteration_id = f"{track.route_id}-gate-{wave_index}-{slot}"
+                    iteration_dir = self.work_dir / "iterations" / (
+                        f"wave{wave_index}_{track.route_id}_gate"
+                    )
+                    iteration_dir.mkdir(parents=True, exist_ok=True)
+                    self._event(
+                        GATE_EVENT_TYPE,
+                        **gate_decision.to_payload(
+                            proposal_id=track.route_id,
+                            hypothesis_id=track.route_id,
+                        ),
+                    )
+                    pre_ctxs.append(
+                        {
+                            "track": track,
+                            "route": track.current_route,
+                            "route_id": track.route_id,
+                            "iteration_id": iteration_id,
+                            "iteration_dir": iteration_dir,
+                            "compilation_status": "gate_rejected",
+                            "compilation_payload": {
+                                "status": "gate_rejected",
+                                "rationale": (
+                                    "proposal gate rejected this expensive "
+                                    "round; see proposal_gate_decided event"
+                                ),
+                                "validation_errors": list(gate_decision.failed),
+                                "repair_suggestions": list(
+                                    gate_decision.suggestions
+                                ),
+                                "usage": [],
+                            },
+                            "task": None,
+                            "gate_rejected": True,
+                        }
+                    )
+                    continue
                 pre_ctxs.append(
                     self._prepare_track_round(
                         track,
@@ -3358,6 +4536,16 @@ class TMMResearchHarness:
                 contexts.append(observed)
             # ---- Phase 2 (concurrent): LLM reflections ---------------------
             def _safe_reflect(c: Dict[str, Any]) -> Dict[str, Any]:
+                if c.get("gate_rejected"):
+                    # O-07: an un-run round has nothing to reflect on; a
+                    # degraded vote keeps the ledger path identical.
+                    return {
+                        "reflection": RouteReflection.degraded(
+                            reason="proposal gate rejected the round before execution"
+                        ),
+                        "reflection_available": False,
+                        "epsilon": DEFAULT_MINIMUM_SCORE_IMPROVEMENT,
+                    }
                 try:
                     return self._reflect_track(c, pre_declarations)
                 except Exception as exc:
@@ -3510,6 +4698,26 @@ class TMMResearchHarness:
                         route_id=track.route_id,
                         revision_reason=str(revised.get("revision_reason") or "")[:200],
                     )
+                    if self.config.research_mode == "open_research" and self._tree is not None:
+                        # O-08: an accepted revision extends the chain as an
+                        # improve child; the node map follows the chain.
+                        parent_id = self._route_node_id.get(track.route_id)
+                        child = self._tree.create_node(
+                            parent_id=parent_id,
+                            route_id=track.route_id,
+                            stage="improve",
+                            plan_pointer=str(revised.get("execution_request_english") or ""),
+                            prediction=str(revised.get("expected_observations") or ""),
+                        )
+                        self._route_node_id[track.route_id] = child.node_id
+                        self._event(
+                            "tree_node_created",
+                            node_id=child.node_id,
+                            parent_id=parent_id,
+                            stage="improve",
+                            debug_depth=child.debug_depth,
+                            route_id=track.route_id,
+                        )
                     continue
                 termination_reason = str(outcome.get("reason") or "replanning failed")
                 # A planner/API failure or a non-substantive revision is an
@@ -3540,6 +4748,31 @@ class TMMResearchHarness:
                     )
                     feedback_history.append(retry_decision)
                     final_decision = retry_decision
+                    # O-07: the retry carries explicit directives, so the
+                    # next gate round must not read it as a blind rerun, and
+                    # the duplicate was already adjudicated by the scheduler.
+                    self._track_directives[track.route_id] = tuple(
+                        retry_decision.feedback_for_planner
+                    )
+                    self._track_gate_override[track.route_id] = True
+                    if self.config.research_mode == "open_research" and self._tree is not None:
+                        parent_id = self._route_node_id.get(track.route_id)
+                        if parent_id:
+                            child = self._tree.create_node(
+                                parent_id=parent_id,
+                                route_id=track.route_id,
+                                stage="debug",
+                                plan_pointer=str(track.current_route.get("execution_request_english") or ""),
+                            )
+                            self._route_node_id[track.route_id] = child.node_id
+                            self._event(
+                                "tree_node_created",
+                                node_id=child.node_id,
+                                parent_id=parent_id,
+                                stage="debug",
+                                debug_depth=child.debug_depth,
+                                route_id=track.route_id,
+                            )
                     self._event(
                         "route_retry_scheduled",
                         wave=wave_index,
@@ -3629,6 +4862,7 @@ class TMMResearchHarness:
         self._event("tournament_summarized", frontier=len(tournament_summary["pareto_frontier"]))
 
         if scoring_ranking is not None:
+            scoring_ranking = self._champion_selection_gate(scoring_ranking)
             self._write("SCORING_RANKING.json", scoring_ranking)
 
         if not self._budget_remaining(len(observations)) and final_decision.action not in {
@@ -3701,6 +4935,51 @@ class TMMResearchHarness:
             artifacts=tuple(dict.fromkeys(self._artifacts)),
         )
         self._write("RESEARCH_RESULT.json", result)
+        self._event(
+            "run_completed",
+            status=final_status,
+            routes=[tid for tid in ordered_track_ids],
+            rounds_executed=len(observations),
+        )
+        # O-03: projections are rebuilt from the event store at every run end.
+        final_events = self._event_store.read_all()
+        rebuild_projections(final_events, self.work_dir)
+        write_noise_floor_projection(final_events, self.work_dir)
+        self._write("DEAD_ENDS.json", build_dead_end_index(final_events).to_dict())
+        if self.config.research_mode == "open_research" and self._tree is not None:
+            # O-08: tree journal + Bradley-Terry final ranking (same as the
+            # shared finish path).
+            self._tree.save(self.work_dir)
+            for entry in self._tree.events:
+                self._event(str(entry.get("event_type")), **dict(entry.get("payload") or {}))
+            candidates = []
+            for observation in observations:
+                for summary in observation.candidate_summaries:
+                    if summary.get("target_score") is None:
+                        continue
+                    candidates.append(
+                        {
+                            "candidate_id": summary.get("candidate_id"),
+                            "frozen_score": summary.get("target_score"),
+                            "route_id": observation.route_id,
+                            "certificate_id": summary.get("certificate_id"),
+                            "summary": (
+                                f"thicknesses={summary.get('thicknesses_nm')}"
+                            ),
+                        }
+                    )
+            ranking = rank_candidates(
+                candidates,
+                client=None,
+                force_mock=self.config.qwen_force_mock,
+            )
+            ranking["tree_file"] = TREE_FILENAME
+            self._write(BT_RANKING_FILENAME, ranking)
+            self._event(
+                "bt_ranking_written",
+                mechanism=ranking["ranking_mechanism"],
+                candidates=len(ranking["ranked_candidates"]),
+            )
         self._event("research_finished", status=final_status)
         return result
 
@@ -3805,6 +5084,16 @@ class TMMResearchHarness:
             artifacts=tuple(dict.fromkeys(self._artifacts)),
         )
         self._write("RESEARCH_RESULT.json", result)
+        self._event(
+            "run_completed",
+            status=status,
+            stage=stage,
+            reason=reason,
+        )
+        final_events = self._event_store.read_all()
+        rebuild_projections(final_events, self.work_dir)
+        write_noise_floor_projection(final_events, self.work_dir)
+        self._write("DEAD_ENDS.json", build_dead_end_index(final_events).to_dict())
         return result
 
 

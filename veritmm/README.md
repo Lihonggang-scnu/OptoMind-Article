@@ -13,6 +13,74 @@
 
 </div>
 
+## What's new in VeriTMM 2.0.0
+
+VeriTMM 2.0.0 extends the verifier-first transfer-matrix core into a more
+complete, reproducible research interface. The numerical scope remains
+planar, isotropic, one-dimensional multilayer optics; the major advance is
+that more of the scientific reasoning around a calculation is now explicit,
+machine-readable, and independently checkable.
+
+### Research-grade verification
+
+| Area | What 2.0.0 adds |
+|---|---|
+| Energy and physical checks | Independent layer-absorption accounting, an `energy_accounting` ledger, optional reciprocity checks, and clearer worst-case/tightest-margin diagnostics. |
+| Evidence and replay | Evidence collection is separated from verdict evaluation; verification evidence and policy can be persisted; `verify-run` independently checks integrity, certification, replay, and authenticity states. |
+| Reproducibility | Canonical JSON identities, environment fingerprints, an independent analytic validation suite, and structured explanations for unsupported physics. |
+| Optimization | Shared NumPy/PyTorch backend registration, first-class gradient and sensitivity APIs, batch proposals, and declarative `OptimizationProblem` compilation. |
+| Research runtime | `SimulationJob`, failure-isolated batches, code-aware cache invalidation, read-only provenance graphs, capability self-description, and deterministic CPU parallel study execution. |
+| AI integration | Scientific-intent compilation with equivalence certificates, an agent-safe stdio MCP（Model Context Protocol）surface, a packaged `veritmm-tmm` Agent Skill, and compact/standard/full response projections. |
+
+### New public interfaces
+
+The command-line interface adds `verify-run`, `gradient`, `sensitivity`,
+`optimize-problem`, `lineage-graph`, `explain-superiority`, and
+`capability-catalog`. The optional `veritmm-mcp` executable exposes the
+agent-safe MCP projection, while `veritmm skill-path` and
+`veritmm install-skill` make the packaged skill available to compatible hosts.
+Existing simulation, optimization, sweep, tolerance, inspection, lineage,
+comparison, and offline benchmark workflows remain available.
+
+### Compatibility and scientific boundaries
+
+- Existing task schemas and the `veritmm-run-result-v1` envelope remain
+  compatible. Historical run directories can be inspected with `verify-run`
+  without treating a stored verdict as if it were new evidence.
+- Canonical identities are declared with
+  `identity_scheme: "veritmm-canonical-json-v1"`. ASCII-only payload digests
+  retain their previous values; non-ASCII task content can intentionally
+  produce a new task/cache identity.
+- Objective score, sensitivity, tolerance/yield, robust-design claims, and
+  nominal physical validity remain separate scientific claims. An optimizer,
+  dataset, or AI agent cannot create or strengthen a physics certificate.
+- The supported physics boundary is unchanged: scalar, isotropic, planar 1D
+  TMM. Gratings, metasurfaces, diffraction orders, general anisotropy,
+  nonlinear optics, finite beams, and other out-of-scope physics are rejected
+  explicitly.
+
+### Evidence from `OptoMind-Article-2`
+
+The 2.0.0 engine has been used as the optical execution and verification
+component in `OptoMind-Article-2`, a companion research workflow for auditable
+thin-film design. That workflow exercises managed simulation, independent
+verification, gradient/sensitivity guidance, declarative design problems,
+scientific-intent compilation, evidence summaries, and energy accounting.
+Recorded research certificates include `veritmm_version: "2.0.0"` and the
+`energy_accounting` block, and the consumer integration regression suite
+passes 13 tests. Artifacts produced by earlier engine versions retain the
+version identity of the engine that actually produced them.
+
+### Release validation
+
+- Full Python 3.11 regression: **788 passed, 3 skipped**; skipped cases are
+  host-dependent optional/referee or symlink checks.
+- Offline AgentBench: **85 / 85** cases passed, with
+  `release_gate_passed=true`, zero unsupported false acceptances, and zero
+  network calls.
+- The built `veritmm-2.0.0` wheel exposes the `veritmm` and optional
+  `veritmm-mcp` entry points and includes the packaged Agent Skill resources.
+
 VeriTMM is first and foremost a **transfer-matrix-method (TMM) tool** for
 planar, isotropic, one-dimensional multilayer optics. Its distinctive purpose
 is to make established TMM physics safer and easier for AI agents to use in
@@ -21,7 +89,7 @@ physics, governed material data, differentiable inverse design, convergence
 checks, independent cross-validation, and machine-readable physics certificates
 are exposed through one reproducible task protocol.
 
-VeriTMM v1.0 builds a deterministic, AI-facing laboratory around
+VeriTMM v2.0 builds a deterministic, AI-facing laboratory around
 that TMM core: capability discovery, JSON Schema contracts, no-spectrum
 preflight, typed failures, auditable run artifacts, persistent experiments,
 parameter studies, sensitivity/tolerance analysis, robust thickness design,
@@ -117,7 +185,7 @@ This division is intentional: AI supplies scientific strategy and candidate
 designs; VeriTMM supplies deterministic TMM computation, bounded execution and
 physical verification.
 
-## v1.0 command-line protocol
+## Command-line protocol
 
 The installed `veritmm` command is the public machine-facing entry point:
 
@@ -251,7 +319,7 @@ never changes a capability rule or physics certificate.
 For the published release:
 
 ```bash
-pip install veritmm  # installs the current 1.0.0 release
+pip install veritmm  # installs the current 2.0.0 release
 ```
 
 For development from a checkout:
@@ -408,9 +476,11 @@ fields, thermal transport or fabrication chemistry. Use RCWA, Berreman 4×4,
 FDTD or FEM when those effects are essential.
 
 VeriTMM does not execute external solver families or contain an LLM kernel.
-The optional MCP transport remains deferred: the Python and CLI protocol are
-complete without it. Those boundaries do not change the TMM scope of the
-numerical engine.
+An agent-safe MCP surface (stdio, simulate-only, explicit allowlist) is
+available as an optional extra (`pip install 'veritmm[mcp]'`, command
+`veritmm-mcp`); it projects the same managed execution, experiment store,
+and verify-run entry points the CLI uses and adds no new physics path.
+Those boundaries do not change the TMM scope of the numerical engine.
 
 ## Testing
 
@@ -440,7 +510,7 @@ encouraged to treat the tests and certificates as the contract.
 
 ## Status
 
-`v1.0.0` is the first stable release. It delivers algorithm-neutral,
-certificate-bound research infrastructure on top of a verifier-first TMM core.
-Public APIs and protocol details are stable; the physics boundary remains
-fail-closed.
+`v2.0.0` delivers algorithm-neutral, certificate-bound research infrastructure
+on top of a verifier-first TMM core. Public APIs and protocol details remain
+compatible with the established v1 task envelope; the physics boundary
+remains fail-closed.

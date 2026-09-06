@@ -1922,6 +1922,7 @@ def _align_targets_with_scoring_standard(
         "T": "worst_case_transmittance",
         "A": "worst_case_absorption",
     }
+
     # Both aggregations of one observable answer to the same scored metric: a
     # standard that ranks by mean reflectance still means "more" when a route
     # writes its target as a worst case.

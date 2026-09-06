@@ -702,7 +702,85 @@ def _locate_row(
     for candidate in attainment.values():
         if _row_matches(candidate, metric):
             return candidate
+    # O-14 fallback: an unannotated row (no metric/region fields — some
+    # workbench evaluations emit bare observed values keyed by objective_id)
+    # can still be matched by observable + band parsed from its key, so the
+    # route stays in the frozen ranking instead of dropping out over a
+    # naming gap. The match is recorded for audit.
+    weak = _weak_observable_band_match(attainment, metric, errors)
+    return weak
+
+
+def _weak_observable_band_match(
+    attainment: Mapping[str, Any],
+    metric: FixedScoreMetric,
+    errors: list[str],
+) -> Mapping[str, Any] | None:
+    """Match an unannotated attainment row by observable + band.
+
+    The row must carry no ``metric`` annotation (annotated rows go through
+    the strict matcher) and its key must encode the observable letter plus a
+    wavelength band that agrees with the frozen metric's band.
+    """
+
+    import re as _re
+
+    base = str(metric.metric or "").lower()
+    if base.endswith("transmittance"):
+        metric_observable = "T"
+    elif base.endswith("reflectance"):
+        metric_observable = "R"
+    elif base.endswith("absorption"):
+        metric_observable = "A"
+    else:
+        metric_observable = ""
+    bands = metric.bands_nm()
+    for key, row in attainment.items():
+        if not isinstance(row, Mapping) or row.get("metric"):
+            continue
+        observed = row.get("observed")
+        if observed is None:
+            continue
+        token = _re.search(r"(?:^|[_\-])([trta])(?:_?(\d+))?(?:_?(\d+))?$", str(key).lower())
+        if token is None:
+            continue
+        observable = token.group(1).upper()
+        if observable != metric_observable:
+            continue
+        if token.group(2) is None:
+            # No band in the key: acceptable only when the frozen metric has
+            # exactly one band, so the match cannot be ambiguous.
+            if len(bands) != 1:
+                continue
+            errors.append(
+                f"{metric.canonical_id} matched unannotated row {key!r} by "
+                "observable fallback (single band; O-14)"
+            )
+            return row
+        lo, hi = float(token.group(2)), float(token.group(3) or token.group(2))
+        if any(
+            abs(lo - float(band_lo)) <= 1e-6 and abs(hi - float(band_hi)) <= 1e-6
+            for band_lo, band_hi in bands
+        ):
+            errors.append(
+                f"{metric.canonical_id} matched unannotated row {key!r} by "
+                "observable+band fallback (O-14)"
+            )
+            return row
     return None
+
+
+def standard_metric_aggregation(metric: FixedScoreMetric) -> str:
+    """O-14: the frozen metric's aggregation is encoded in its base name
+    (worst_case_transmittance -> worst_case, otherwise mean). Compilation
+    must align each scored target's aggregation to this so the inner
+    harness's scoring rows match what the frozen formula consumes."""
+
+    return (
+        "worst_case"
+        if str(metric.metric or "").startswith("worst_case_")
+        else "mean"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -942,6 +1020,21 @@ class QwenScoringStandardBuilder:
                         "complete JSON object. Copy metric names character for "
                         "character from capability_catalog.scoreable_metrics, and "
                         "keep the bands and directions the user's request implies."
+                    ),
+                }
+                # O-04 progressive disclosure: the repair round has already
+                # seen the full catalogue once. The canonical names remain
+                # inline (scoreable_metrics), and each metric row degrades to
+                # its name plus a pointer; the full document is deterministic
+                # and reproducible from metric_catalog.catalog_document().
+                payload["capability_catalog"] = {
+                    "schema_version": "metric-catalog-compact.v1",
+                    "scoreable_metrics": list(SCOREABLE_METRICS),
+                    "note": (
+                        "repair round: full catalog document elided; metric "
+                        "names, senses and regions were supplied in the first "
+                        "round and remain reproducible via "
+                        "metric_catalog.catalog_document()"
                     ),
                 }
             try:
@@ -1207,6 +1300,7 @@ def _as_plain(value: Any) -> Any:
 
 
 __all__ = [
+    "standard_metric_aggregation",
     "DEFAULT_MAXIMUM_ATTEMPTS",
     "DEFAULT_MAXIMUM_METRICS",
     "DEFAULT_MAXIMUM_SPECTRAL_POINTS",

@@ -9,6 +9,7 @@ command line or copying them into the repository.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -24,6 +25,8 @@ HARNESS_SCRIPT = CODE_ROOT / "scripts" / "run_tmm_research_harness.py"
 DEFAULT_KEY_DIR = CODE_ROOT / "api_keys"
 DEFAULT_QUESTION_FILE = CODE_ROOT / "examples" / "evaluator_quick_test_question.txt"
 OUTPUT_ROOT = CODE_ROOT / "outputs" / "tmm_research_harness"
+REPLAY_DATA_ROOT = ROOT / "replay_data"
+REPLAY_CATALOG = REPLAY_DATA_ROOT / "catalog.json"
 LOCAL_RUN_ROOT = ROOT / "local_runs"
 REQUIREMENTS = CODE_ROOT / "requirements-evaluator.txt"
 VENV_DIR = ROOT / ".venv"
@@ -62,6 +65,38 @@ def _python_in_venv() -> Path:
     if os.name == "nt":
         return VENV_DIR / "Scripts" / "python.exe"
     return VENV_DIR / "bin" / "python"
+
+
+def _public_replay_count() -> int | None:
+    """Return the number of bundled compact replay records, if available."""
+
+    try:
+        payload = json.loads(REPLAY_CATALOG.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    totals = payload.get("totals") if isinstance(payload, dict) else None
+    value = totals.get("runs") if isinstance(totals, dict) else None
+    if value is None and isinstance(payload, dict):
+        runs = payload.get("runs")
+        value = len(runs) if isinstance(runs, list) else None
+    try:
+        count = int(value)
+    except (TypeError, ValueError):
+        return None
+    return count if count > 0 else None
+
+
+def _formal_replay_available() -> bool:
+    """Whether the optional full artifact archive is present locally."""
+
+    try:
+        return OUTPUT_ROOT.is_dir() and any(
+            (path / "REQUEST.json").is_file()
+            for path in OUTPUT_ROOT.iterdir()
+            if path.is_dir()
+        )
+    except OSError:
+        return False
 
 
 def _runtime_ready(python: str | Path) -> bool:
@@ -210,10 +245,20 @@ def build_full_test_command(
 
 
 def run_replay(*, port: int = 8765, no_open: bool = False) -> int:
+    if not _formal_replay_available():
+        count = _public_replay_count()
+        if count is None:
+            print("未发现可回放的研究记录；请检查 replay_data/ 是否完整。")
+        else:
+            print(
+                f"当前源码包包含 {count} 组精简只读回放摘要；完整历史运行树未随源码发布。"
+            )
+            print("精简数据位于 replay_data/，可供在线静态回放页面读取。")
+        return 0
     command = [sys.executable, "-u", str(REPLAY_SCRIPT), "--port", str(port)]
     if no_open:
         command.append("--no-open")
-    print("正在启动六组完整记录的只读回放台；此功能不需要密钥。")
+    print("正在启动完整研究记录的只读回放台；此功能不需要密钥。")
     return _run(command)
 
 
@@ -270,7 +315,7 @@ def run_light_test(args: argparse.Namespace) -> int:
         }
     )
     print("密钥文件已就绪（只传递文件路径，不输出密钥内容）。")
-    print("轻量连通性测试采用 1 条路线、1 轮的有界参数，不改动六组正式回放记录。")
+    print("轻量连通性测试采用 1 条路线、1 轮的有界参数，不改动公开回放摘要。")
     print(f"测试题：{question_file}")
     print(f"新产物目录：{output_dir}")
 
@@ -289,24 +334,30 @@ def run_light_test(args: argparse.Namespace) -> int:
         return code
     if args.no_replay:
         return 0
-    print("测试完成，正在打开独立保存的六组正式静态回放。")
+    print("测试完成；公开精简回放摘要保持不变。")
     return run_replay(port=int(args.port), no_open=False)
 
 
+def run_console(args: argparse.Namespace) -> int:
+    """O-13: serve the local research console (loopback only)."""
+
+    from optomind_portal.console import serve_research_console
+
+    run_dir = Path(args.run_dir).resolve() if args.run_dir else None
+    serve_research_console(
+        run_dir=run_dir,
+        output_root=Path(args.output_root).resolve(),
+        port=int(args.port),
+    )
+    return 0
+
+
 def run_doctor(args: argparse.Namespace) -> int:
-    formal_runs = [
-        "e2e-methane-swir-window-20260828-default4-w10800",
-        "e2e-uav-swir-window-20260829-default4-w10800",
-        "e2e-space-qkd-cband-window-20260829-default4-w10800",
-        "e2e-solarblind-uv-window-20260829-default4-w10800",
-        "e2e-fifth-dualgas-mwir-20260829-default4-w10800",
-        "e2e-sixth-combustion-co-20260829-default4-w10800",
-    ]
-    missing = [name for name in formal_runs if not (OUTPUT_ROOT / name).is_dir()]
-    if missing:
-        print("缺少正式回放目录：" + "、".join(missing))
+    replay_count = _public_replay_count()
+    if replay_count is None:
+        print("缺少公开回放摘要：replay_data/catalog.json")
         return 2
-    print("静态回放资产：6/6 组就绪。")
+    print(f"公开回放摘要：{replay_count} 组就绪。")
     try:
         credential_paths(Path(args.key_dir))
     except RuntimeError as exc:
@@ -317,6 +368,17 @@ def run_doctor(args: argparse.Namespace) -> int:
         "当前 Python 运行依赖："
         + ("已就绪。" if _runtime_ready(sys.executable) else "未安装；首次真实测试将自动安装。")
     )
+    # O-13: the confirmation inbox needs a writable confirmations directory.
+    try:
+        probe_dir = Path(args.key_dir).parent / "outputs" / "tmm_research_harness" / "_console_probe" / "confirmations"
+        probe_dir.mkdir(parents=True, exist_ok=True)
+        probe_file = probe_dir / ".probe"
+        probe_file.write_text("ok", encoding="utf-8")
+        probe_file.unlink()
+        print("确认门目录：可写（确认收件箱可用）。")
+    except OSError as exc:
+        print(f"确认门目录：不可写。{exc}")
+        return 2
     return 0
 
 
@@ -324,7 +386,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="OptoMind-Article 评审快捷入口")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    replay = subparsers.add_parser("replay", help="无需密钥，打开六组静态回放")
+    replay = subparsers.add_parser("replay", help="无需密钥，打开只读回放入口")
     replay.add_argument("--port", type=int, default=8765, help="监听端口；0 表示自动选择")
     replay.add_argument("--no-open", action="store_true", help="不自动打开浏览器")
 
@@ -345,6 +407,20 @@ def build_parser() -> argparse.ArgumentParser:
     test.add_argument("--no-replay", action="store_true", help="完成后不打开回放台")
     test.add_argument("--port", type=int, default=8765, help="完成后回放台端口")
 
+    console = subparsers.add_parser(
+        "console",
+        aliases=["research-console"],
+        help="O-13 研究控制台：状态/确认收件箱/事件流（127.0.0.1）",
+    )
+    console.add_argument(
+        "--run-dir", default="", help="绑定到某个 run 目录（含 EVENTS.jsonl）"
+    )
+    console.add_argument(
+        "--output-root", default=str(OUTPUT_ROOT),
+        help="run 列表根目录",
+    )
+    console.add_argument("--port", type=int, default=8766, help="监听端口")
+
     doctor = subparsers.add_parser("doctor", help="检查回放资产、密钥文件和运行依赖")
     doctor.add_argument("--key-dir", default=str(DEFAULT_KEY_DIR), help="密钥文件夹")
     return parser
@@ -358,6 +434,8 @@ def main(argv: list[str] | None = None) -> int:
             return run_replay(port=int(args.port), no_open=bool(args.no_open))
         if args.command in {"ui", "portal"}:
             return run_portal(args)
+        if args.command in {"console", "research-console"}:
+            return run_console(args)
         if args.command == "test":
             return run_light_test(args)
         return run_doctor(args)

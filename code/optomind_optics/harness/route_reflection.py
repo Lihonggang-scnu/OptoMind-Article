@@ -40,7 +40,7 @@ DEFAULT_REFLECTION_PROMPT = (
 # reflect_on_route(). Never pass a model name as that key: record_qwen_usage
 # auto-creates unknown buckets via dict.get(key, 0), so a wrong key silently
 # escapes every existing budget summary.
-REFLECTION_MODEL = "qwen3.5-flash"
+REFLECTION_MODEL = "qwen3.7-flash"
 
 
 class RouteReflection(BaseModel):

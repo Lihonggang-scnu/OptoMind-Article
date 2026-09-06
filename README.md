@@ -4,7 +4,30 @@ OptoMind-Article 是一个面向光学薄膜设计的可审计科学实验任务
 
 项目的当前验证范围是平面、各向同性、多层薄膜的频域传输矩阵法（TMM）设计。它面向计算科学实验与方案筛选，不替代真实制备、实验测量或超出 TMM 适用范围的全波求解器。
 
-**无需下载即可查看：** [打开六组端到端研究的在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。在线页面无需密钥，不重新调用模型或仿真器，可切换六组任务、比较路线、查看逐轮得分与反馈，并以最高 10 倍速度模拟播放原始事件时间线。
+**无需下载即可查看：** [打开端到端研究的在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。在线页面无需密钥，不重新调用模型或仿真器，可切换研究任务、比较路线、查看逐轮得分与反馈，并以最高 10 倍速度模拟播放事件时间线。
+
+## 研究闭环与可复核证据
+
+OptoMind-Article 把一次光学设计研究组织成一条可以回放的证据链：从自然语言需求、问题边界和评价指标开始，经过文献启发路线与独立对照路线的规划，生成可执行的 VeriTMM 任务，完成真实光学计算、候选验证、反馈迭代和最终比较。研究过程中的事件、预算、评分、路线来源、任务编译、物理证书和停止原因都会留下结构化记录。
+
+系统同时提供事件哈希链、冻结评分标准、行动效果账本、假设树搜索、提案门、人在回路确认、插件化运行内核、四态运行核验、梯度/灵敏度反馈和确定性运行记录。语言模型负责受约束的问题分析、研究假设和路线表达；任务校验、物理计算、证书签发、评分和产物索引由程序层完成。
+
+## 评审者如何真实运行
+
+评审者可以用自己的 Qwen 与 Semantic Scholar 密钥运行一条真实的、受边界约束的端到端测试：
+
+1. 将自己的 `qwen-api-key.txt` 和 `semantic-scholar-api-key.txt` 放入 `code/api_keys/`；仓库中的同名文件为空模板，不包含项目方密钥。
+2. 在仓库根目录运行 `python quickstart.py doctor`，检查 Python、材料、提示模板和凭证文件是否就绪。
+3. 运行 `python quickstart.py test`，执行一次有界的真实研究链路；Windows 用户也可以双击 `RUN_LIGHT_TEST.cmd`。
+4. 运行 `python quickstart.py ui` 查看本次运行产生的本地记录和证据。
+
+真实运行只监听本机回环地址，密钥不会写入提示词、启动命令或研究产物。没有密钥时，仍可直接阅读 `replay_data/` 中已保存的只读研究摘要，但摘要回放不会伪造新的模型或物理计算结果。
+
+## 精简研究记录
+
+仓库中的 `replay_data/` 保存了一组不依赖密钥的精简 JSON 研究摘要，覆盖短波红外、紫外、可见光吸收、中波红外、热发射率、LiDAR、RGB/NIR 分光和长波红外等工程主题。每条记录包含题面、问题边界、冻结评分、路线比较、逐轮事件时间线、候选摘要、遥测和证据索引；它不包含在线凭证、完整原始数组或本地绝对路径。
+
+这些记录既可以直接作为 JSON 阅读，也可以作为静态研究回放前端的数据源。静态回放只读取这些公开记录，不调用语言模型、文献服务或 VeriTMM，不会改变真实研究产物。
 
 ## 核心能力
 
@@ -43,243 +66,93 @@ VeriTMM 执行、物理证书与候选验证
 | 路径 | 内容 |
 |---|---|
 | `START_OPTOMIND.cmd` | Windows 统一入口：静态回放立即可用，连通检查通过后解锁真实提问。 |
-| `START_REPLAY.cmd` | Windows 双击启动六组只读静态回放，无需安装依赖和配置密钥。 |
+| `START_REPLAY.cmd` | Windows 双击启动只读回放入口；在线证据回放无需安装依赖和配置密钥。 |
 | `RUN_LIGHT_TEST.cmd` | Windows 双击执行一次有界的真实轻量研究测试。 |
 | `quickstart.py` | Windows、macOS 和 Linux 共用的评审快捷入口。 |
 | `code/` | 主 harness、配置、测试、工具和运行脚本。 |
-| `code/replay_ui/` | 六组完整运行的只读可视化静态回放前端。 |
+| `code/replay_ui/` | 公开研究记录的只读可视化静态回放前端。 |
 | `code/scripts/run_static_replay_ui.py` | 静态回放台本地启动入口。 |
 | `code/prompts/optical_harness/` | 运行时使用的结构化提示模板。 |
 | `veritmm/` | 与本项目同级挂载的 VeriTMM 物理执行引擎。 |
 | `accepted_examples/` | 验收与示例资产。 |
 | `article_memory/` | 文章链路使用的记忆边界和清单资产。 |
-| `code/outputs/tmm_research_harness/` | 六组未经改写的正式 E2E 原始记录。 |
+| `replay_data/` | 不含密钥的精简研究回放摘要，可供静态回放前端读取。 |
 | `AGENT_GUIDE.zh-CN.md` | 面向评委和 AI Agent 的快速运行与摸底指南。 |
 
 根目录的 Agent 指南是评测入口；面向普通使用者的项目说明以本 README 为准。运行时真正读取的是 `code/prompts/optical_harness/`，根目录不再保留历史 handoff 提示词目录。
 
-公开发布包聚焦 TMM 科研 Harness、随项目固定的 VeriTMM 执行组件和六组可回放运行记录；论文流水线历史资产与在线文献缓存不属于运行时必需内容。六组运行树中的题面、路线、迭代、仿真、证书、排名和最终结果保持原始记录，不依赖这些历史缓存。
+公开发布包聚焦 TMM 科研 Harness、随项目固定的 VeriTMM 执行组件和可复核的精简研究记录；论文流水线历史资产、完整原始数组和在线文献缓存不属于评审运行时必需内容。完整端到端运行仍可通过在线证据回放查看，新的公开摘要保存在 `replay_data/`。
 
-## 六次完整端到端运行成果
+## 端到端运行成果
 
-六组正式运行均从面向工程用户的自然语言题面开始，经过问题分析、动态指标选择、评分标准锁定、文献路线与记忆对照路线规划、TMM 任务编译、真实 VeriTMM 仿真、候选验证、反馈迭代、冻结排名和最终汇总，最终状态均为 `completed / finished`。以下结果直接取自六组运行目录中的 JSON、JSONL 和 Markdown 产物；原始记录保持原样，可沿每组的链接逐层回放。
+项目中的正式研究运行都从面向工程用户的自然语言题面开始，经过问题分析、动态指标选择、评分标准锁定、文献启发路线与独立对照路线规划、TMM 任务编译、真实光学仿真、候选验证、反馈迭代和最终比较，结果以结构化研究记录保存。
 
 ### 总体规模
 
-六次运行共同形成的研究与物理产物规模如下：
+当前公开精简记录汇总了 12 组跨主题运行：
 
-| 类别 | 指标 | 六组合计 | 说明 |
-|---|---:|---:|---|
-| 运行 | 完整端到端运行 | **6** | 六个独立的工程应用题面 |
-| 路线 | 路线臂 | **24** | 含文献规划路线与不接收文献输入的记忆对照路线 |
-| 迭代 | 迭代记录 | **126** | 每轮均有路线、编译、观测和反馈相关产物 |
-| 任务 | 编译任务记录 | **117** | 已生成 `COMPILED_TASK.json` 的迭代 |
-| 执行 | 完成的 TMM 迭代 | **105** | 形成 `FINAL_RESULT.json` 的迭代 |
-| 候选 | 物理有效候选 | **926** | 通过候选级物理与任务验证 |
-| 评分 | 可评分 / 已评分候选 | **829 / 829** | 能够按本次运行冻结标准直接比较 |
-| 证书 | 物理接受证书 | **1,413** | `PHYSICS_ACCEPTANCE_CERTIFICATE.json` 文件数 |
-| 计算 | 前向评估 | **101,711** | 由运行遥测记录的 TMM 前向计算 |
-| 计算 | 优化器运行 | **213** | 由运行遥测记录的优化器执行 |
-| 产物 | 原始文件总数 | **10,327** | 六个运行目录递归统计，包含中间记录与证书 |
+| 类别 | 指标 | 合计 |
+|---|---:|---:|
+| 运行 | 完整端到端运行 | **12** |
+| 路线 | 路线臂 | **52** |
+| 迭代 | 迭代记录 | **304** |
+| 执行 | 完成的 TMM 执行 | **271** |
+| 候选 | 物理有效候选 | **2,401** |
+| 计算 | 前向评估 | **155,856** |
+| 计算 | 优化器运行 | **547** |
+| 模型 | Qwen 调用 | **751 次** |
+| 模型 | 估算模型成本 | **¥44.80** |
 
-模型和计算投入如下：
+这些数字来自每组运行的只读摘要；模型调用、计算次数和估算成本是不同层面的计量，不能互相替代。
 
-| 指标 | 六组合计 |
-|---|---:|
-| Qwen 实际调用 | **314 次** |
-| 输入 Token | **2,082,999** |
-| 输出 Token | **2,267,021** |
-| Token 总量 | **4,350,020** |
-| 估算模型成本 | **¥18.32** |
-| 有效墙钟时间 | **33,709.24 秒，约 9 小时 21 分 49 秒** |
-| 使用模型 | `qwen3.5-plus`、`qwen3.7-flash` |
+### 12 组运行结果总览
 
-模型调用、Token 和成本均按运行遥测中的实际记录统计；成本是按当前配置计算的估算值。前向评估、优化器运行和原始文件数不等同于模型调用数，而是实验执行层的独立计量。
+每组运行在开始阶段根据对应题面固定自己的评分字段和公式。“冻结标准得分”只用于该组内部的候选与路线比较，不构成跨题面的统一排行榜。代表结构和指标详情可在 `replay_data/runs/` 中逐条查看。
 
-### 六组冻结结果总览
+| # | 研究主题 | 代表结构 | 冻结标准得分 | 迭代 | 估算成本 |
+|---:|---|---|---:|---:|---:|
+| 1 | 甲烷 SWIR 窗口 | 16 层 HfO₂/SiO₂；文献启发路线 | **1.8092** | 12 | ¥1.75 |
+| 2 | 星载 QKD C 波段接收 | 30 层 HfO₂/SiO₂；文献启发路线 | **1.9063** | 16 | ¥2.07 |
+| 3 | 甲烷 SWIR 梯度膜系 | 24 层 HfO₂/SiO₂；文献启发路线 | **1.9080** | 21 | ¥3.06 |
+| 4 | 太阳盲 UV 三指标滤光 | 29 层 HfO₂/MgF₂；独立记忆对照路线 | **2.2211** | 28 | ¥3.77 |
+| 5 | 可见光选择性吸收膜 | 13 层 HfO₂/SiO₂/Cr；独立记忆对照路线 | **1.3484** | 28 | ¥3.81 |
+| 6 | 热红外发射率调控 | 20 层 HfO₂/SiO₂；独立记忆对照路线 | **0.8591** | 21 | ¥3.20 |
+| 7 | QKD C 波段平均口径 | 24 层 HfO₂/SiO₂；文献启发路线 | **1.8995** | 24 | ¥3.93 |
+| 8 | 先进封装 UV 激发抑制 | 36 层 Ta₂O₅/SiO₂；文献启发路线 | **0.6444** | 36 | ¥6.50 |
+| 9 | 硅光双通信波段减反 | 10 层 Ta₂O₅/SiO₂；文献启发路线 | **−0.0012** | 22 | ¥2.91 |
+| 10 | LiDAR 1550 nm 窄带滤光 | 29 层 Ta₂O₅/SiO₂；独立记忆对照路线 | **2.9611** | 36 | ¥5.38 |
+| 11 | RGB/NIR 双波段分光 | 24 层 TiO₂/SiO₂；文献启发路线 | **1.9660** | 31 | ¥4.66 |
+| 12 | LWIR Ge 窗口 | 8 层 ZnSe/ZnS；文献启发路线 | **0.1884** | 29 | ¥3.76 |
 
-每个运行在实验开始阶段根据用户题面选择并锁定自己的评分字段与公式。表中的“冻结标准得分”是该运行的直接评分公式结果，因此只能在同一运行内部比较；不同题面的目标数量和公式不同，不能把六个得分当作跨任务的统一排行榜。
-
-| 组别与应用 | 本次冻结评分公式 | 冻结冠军 | 冻结标准得分 | 冠军指标分解 | 对照 − 文献 |
-|---|---|---|---:|---|---:|
-| 1 · 石化园区 / 海上风电甲烷巡检 SWIR | `mean_transmittance_1000_1700nm + mean_reflectance_300_450nm` | 记忆对照；24 层 HfO2/SiO2 | **1.776082** | T=0.918708；R=0.857374 | **+0.084438**，对照更高 |
-| 2 · 高空无人机 SWIR 遥感 | `mean_transmittance_800_1500nm + reflectance_stopband_200_400nm` | 文献路线；16 层 HfO2/SiO2 | **1.729851** | T=0.965155；R=0.764697 | **−0.064662**，文献更高 |
-| 3 · 星载量子密钥分发 C 波段接收 | `mean_transmittance_1530_1565nm + mean_reflectance_400_700nm` | 记忆对照；24 层 HfO2/SiO2 | **1.868417** | T=0.986861；R=0.881556 | **+0.029803**，对照更高 |
-| 4 · 低轨太阳盲紫外探测 | `mean_transmittance_255_280nm + reflectance_stopband_300_700nm + reflectance_stopband_700_1100nm` | 记忆对照；29 层 HfO2/MgF2 | **2.177978** | T=0.513988；R=0.790385；R=0.873605 | **+0.188864**，对照更高 |
-| 5 · 小卫星甲烷 / 二氧化碳双气体遥感 | `mean_transmittance_3250_3350nm + mean_transmittance_4200_4300nm + reflectance_stopband_2500_3100nm + reflectance_stopband_4450_5000nm` | 文献路线；23 层 Si/Al2O3 | **3.979005** | T=0.986448；T=0.997653；R=0.998391；R=0.996512 | **−0.327489**，文献更高 |
-| 6 · 燃气轮机 / 工业烟气 CO 在线监测 | `mean_transmittance_4150_4350nm + mean_transmittance_4550_4750nm + reflectance_stopband_3600_4000nm + reflectance_stopband_4850_5200nm` | 文献路线；20 层 Ge/ZnS | **3.909151** | T=0.985538；T=0.964043；R=0.988678；R=0.970892 | **−0.107807**，文献更高 |
-
-六组中，文献路线和记忆对照路线各获得 3 次冻结冠军；6/6 组的路线来源比较均有效。这个对照设计让“检索到的科学依据是否带来可观测收益”成为可测量问题，而不是预先假定文献路线一定优于模型记忆路线。
-
-### 六组运行的逐组记录
-
-#### 1. 甲烷泄漏巡检短波红外窗口
-
-题面：
-
-> 我负责一台用于石化园区和海上风电场甲烷泄漏巡检的短波红外成像相机前端防护窗口研发。为了在白天强太阳背景下提高甲烷吸收特征的信噪比，相机需要尽可能完整地接收 1000–1700 nm 波段的短波红外信号，同时尽可能反射 300–450 nm 波段的近紫外和蓝光杂散辐射，以降低太阳散射背景和探测器的杂散响应。请在空气入射、熔融石英基底的条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 30 层。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_1000_1700nm + mean_reflectance_300_450nm` |
-| 运行规模 | 4 条路线；20 条迭代记录；18 条已编译；17 条完成执行 |
-| 候选规模 | 142 个物理有效候选；129 个可评分候选 |
-| 计算投入 | 10,317 次前向评估；34 次优化器运行 |
-| 模型投入 | 51 次 Qwen 调用；输入 417,550 Token；输出 369,657 Token；估算成本 ¥3.0526 |
-| 墙钟时间 | 5,184.13 秒，约 1 小时 26 分 |
-| 冻结冠军 | `control_route_01`，候选 `opt_24layer_dual_band_high_R_low_R__172eaad160ed` |
-| 代表结构 | 24 层 HfO2 / SiO2 膜系，熔融石英基底 |
-| 冻结结果 | 得分 1.776082；1000–1700 nm 平均 T=0.918708；300–450 nm 平均 R=0.857374 |
-| 扰动鲁棒性 | 相对均匀扰动，扰动比例 0.5；16 个样本，0 次失败；运行汇总鲁棒性软分 0.699990，p10=0.695693，最差=0.695230 |
-| 物理证书 | `561e5a6cc5f8cf82050e87fc0a0ddc72499484f0adaf3389a4625d9d0dc8454c` |
-| 路线对照 | 对照路线 − 文献路线 = +0.084438 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-methane-swir-window-20260828-default4-w10800/RESEARCH_EVENTS.jsonl) |
-
-#### 2. 高空无人机短波红外遥感窗口
-
-题面：
-
-> 我负责一款用于高空无人机短波红外遥感相机的前端防护窗口研发。相机需要尽可能完整地接收 800–1500 nm 波段的短波红外目标信号，同时尽可能反射 200–400 nm 波段的紫外辐射，以减少太阳紫外杂散光进入探测器，并降低长期紫外辐照对探测器和后端光学组件的影响。请在空气入射、熔融石英基底的条件下设计一个平面多层介质膜。膜层材料仅允许使用 HfO2 和 SiO2，膜系总层数不超过 30 层。在这些材料和层数限制下，希望同时获得 800–1500 nm 波段的高透射率和 200–400 nm 波段的高反射率。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_800_1500nm + reflectance_stopband_200_400nm` |
-| 运行规模 | 3 条路线；16 条迭代记录；16 条已编译；15 条完成执行 |
-| 候选规模 | 135 个物理有效候选；120 个可评分候选 |
-| 计算投入 | 7,546 次前向评估；32 次优化器运行 |
-| 模型投入 | 35 次 Qwen 调用；输入 238,739 Token；输出 239,452 Token；估算成本 ¥1.9254 |
-| 墙钟时间 | 3,715.81 秒，约 1 小时 2 分 |
-| 冻结冠军 | `route_01` 文献路线，候选 `opt_16layer_hsfs_200_1500nm__gradi__8d43943f7ff0` |
-| 代表结构 | 16 层 HfO2 / SiO2 膜系，8 对周期结构，熔融石英基底 |
-| 冻结结果 | 得分 1.729851；800–1500 nm 平均 T=0.965155；200–400 nm 反射带平均 R=0.764697 |
-| 扰动鲁棒性 | 绝对正态扰动，σ=1 nm；16 个样本，0 次失败；运行汇总鲁棒性软分 0.461768，p10=0.461260，最差=0.460899 |
-| 物理证书 | `f12f7663e68b86fc864f754cee3705fe2a3b030ea36464ae2c3a2ea24d3e5127` |
-| 路线对照 | 对照路线 − 文献路线 = −0.064662 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-uav-swir-window-20260829-default4-w10800/RESEARCH_EVENTS.jsonl) |
-
-#### 3. 星载量子密钥分发 C 波段接收窗口
-
-题面：
-
-> 我负责星载量子密钥分发接收机前端防护窗口的研发。接收机需要尽可能完整地接收 1530–1565 nm 电信波段的单光子信号，同时尽可能反射 400–700 nm 波段的可见光太阳背景，以降低空间太阳散射和探测器杂散光对量子信号接收的影响。请在空气入射、熔融石英基底的条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 30 层。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_1530_1565nm + mean_reflectance_400_700nm` |
-| 运行规模 | 5 条路线；24 条迭代记录；24 条已编译；23 条完成执行 |
-| 候选规模 | 203 个物理有效候选；181 个可评分候选 |
-| 计算投入 | 57,549 次前向评估；47 次优化器运行 |
-| 模型投入 | 55 次 Qwen 调用；输入 277,989 Token；输出 402,980 Token；估算成本 ¥3.2319 |
-| 墙钟时间 | 5,944.24 秒，约 1 小时 39 分 |
-| 冻结冠军 | `control_route_01` 记忆对照，候选 `opt_24layer_dualband__gradient_thickness__01` |
-| 代表结构 | 24 层 HfO2 / SiO2 膜系，熔融石英基底 |
-| 冻结结果 | 得分 1.868417；1530–1565 nm 平均 T=0.986861；400–700 nm 平均 R=0.881556 |
-| 扰动鲁棒性 | 相对均匀扰动，扰动比例 0.15；16 个样本，0 次失败；运行汇总鲁棒性软分 0.484860，p10=0.477052，最差=0.466795 |
-| 物理证书 | `674b7735a6d791300c7b7b9e1afe4e49e9710f504307f4f8fcfeedfb817b5564` |
-| 路线对照 | 对照路线 − 文献路线 = +0.029803 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-space-qkd-cband-window-20260829-default4-w10800/RESEARCH_EVENTS.jsonl) |
-
-#### 4. 低轨太阳盲紫外探测滤光膜
-
-题面：
-
-> 我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_255_280nm + reflectance_stopband_300_700nm + reflectance_stopband_700_1100nm` |
-| 运行规模 | 4 条路线；20 条迭代记录；20 条已编译；19 条完成执行 |
-| 候选规模 | 169 个物理有效候选；151 个可评分候选 |
-| 计算投入 | 9,710 次前向评估；38 次优化器运行 |
-| 模型投入 | 48 次 Qwen 调用；输入 329,851 Token；输出 361,249 Token；估算成本 ¥2.9534 |
-| 墙钟时间 | 5,141.47 秒，约 1 小时 26 分 |
-| 冻结冠军 | `control_route_01` 记忆对照，候选 `optimize_29layer_hr_filter__gradie__1b3223328947` |
-| 代表结构 | 29 层 HfO2 / MgF2 膜系，熔融石英基底 |
-| 冻结结果 | 得分 2.177978；255–280 nm 平均 T=0.513988；300–700 nm 平均 R=0.790385；700–1100 nm 平均 R=0.873605 |
-| 扰动鲁棒性 | 绝对正态扰动，σ=1 nm；16 个样本，0 次失败；运行汇总鲁棒性软分 0.274695，p10=0.273405，最差=0.272490 |
-| 物理证书 | `d6c1cb59a226050b0930e803e9a4d03d067394383509d62e7e5ce2fb0fcd6918` |
-| 路线对照 | 对照路线 − 文献路线 = +0.188864 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-solarblind-uv-window-20260829-default4-w10800/RESEARCH_EVENTS.jsonl) |
-
-#### 5. 小卫星双气体中波红外遥感滤光膜
-
-题面：
-
-> 我正在为小卫星上的双气体遥感载荷设计共享前端滤光膜。传感器需要同时透过甲烷 3.25–3.35 μm 和二氧化碳 4.20–4.30 μm 两个窄波段的辐射，同时在 2.50–3.10 μm 和 4.45–5.00 μm 抑制太阳及地球背景。请在空气入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_3250_3350nm + mean_transmittance_4200_4300nm + reflectance_stopband_2500_3100nm + reflectance_stopband_4450_5000nm` |
-| 运行规模 | 4 条路线；22 条迭代记录；20 条已编译；16 条完成执行 |
-| 候选规模 | 142 个物理有效候选；128 个可评分候选 |
-| 计算投入 | 7,312 次前向评估；32 次优化器运行 |
-| 模型投入 | 59 次 Qwen 调用；输入 400,139 Token；输出 425,532 Token；估算成本 ¥3.3904 |
-| 墙钟时间 | 6,565.19 秒，约 1 小时 49 分 |
-| 冻结冠军 | `route_03` 文献路线，候选 `ir_dielectric_filter_opt__gradient_thickness__01` |
-| 代表结构 | 23 层 Si / Al2O3 双腔膜系，CaF2 基底 |
-| 冻结结果 | 得分 3.979005；3250–3350 nm 平均 T=0.986448；4200–4300 nm 平均 T=0.997653；2500–3100 nm 平均 R=0.998391；4450–5000 nm 平均 R=0.996512 |
-| 扰动鲁棒性 | 绝对正态扰动，σ=1 nm；16 个样本，0 次失败；`TOURNAMENT_SUMMARY.json` 运行汇总鲁棒性评分 0.722445；对应 `ROBUSTNESS.json` 的 mean soft=0.458122，保留各自原始口径 |
-| 物理证书 | `d4b5affd6030cb026f6e42e0a7a275619e9db34381318ae84d10c8753b975364` |
-| 路线对照 | 对照路线 − 文献路线 = −0.327489 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-fifth-dualgas-mwir-20260829-default4-w10800/RESEARCH_EVENTS.jsonl) |
-
-#### 6. 燃气轮机与工业烟气 CO 在线监测滤光膜
-
-题面：
-
-> 我正在为燃气轮机和工业烟气在线监测系统设计一个共享前端红外滤光膜。探测器需要同时通过一氧化碳 4.55–4.75 μm 和二氧化碳 4.15–4.35 μm 两个窄波段的辐射，并在 3.60–4.00 μm 以及 4.85–5.20 μm 范围内抑制背景和其他热辐射。请在空气正入射、CaF2 基底条件下，设计一个不含金属层、仅使用常规可沉积红外无机介质材料的平面多层膜，膜系总层数不超过 24 层。
-
-| 项目 | 实际记录 |
-|---|---|
-| 动态评分公式 | `mean_transmittance_4150_4350nm + mean_transmittance_4550_4750nm + reflectance_stopband_3600_4000nm + reflectance_stopband_4850_5200nm` |
-| 运行规模 | 4 条路线；24 条迭代记录；19 条已编译；15 条完成执行 |
-| 候选规模 | 135 个物理有效候选；120 个可评分候选 |
-| 计算投入 | 9,277 次前向评估；30 次优化器运行 |
-| 模型投入 | 66 次 Qwen 调用；输入 418,731 Token；输出 468,151 Token；估算成本 ¥3.7671 |
-| 墙钟时间 | 7,158.41 秒，约 1 小时 59 分 |
-| 冻结冠军 | `route_01` 文献路线，候选 `opt_ir_dbr_dual_pass_20l__gradient_thickness__01` |
-| 代表结构 | 20 层 Ge / ZnS 双通带膜系，CaF2 基底 |
-| 冻结结果 | 得分 3.909151；4150–4350 nm 平均 T=0.985538；4550–4750 nm 平均 T=0.964043；3600–4000 nm 平均 R=0.988678；4850–5200 nm 平均 R=0.970892 |
-| 扰动鲁棒性 | 绝对正态扰动，σ=1 nm；16 个样本，0 次失败；运行汇总鲁棒性软分 0.613521，p10=0.612116，最差=0.611392 |
-| 物理证书 | `6dc271cdad226e221bbb9e7dad44393b74975cab5f8a2f3c923afa54050a49` |
-| 路线对照 | 对照路线 − 文献路线 = −0.107807 |
-| 原始产物 | [题面](code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800/REQUEST.json) · [冻结排名](code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800/SCORING_RANKING.json) · [路线汇总](code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800/TOURNAMENT_SUMMARY.json) · [最终回答](code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800/FINAL_ANSWER.md) · [事件流](code/outputs/tmm_research_harness/e2e-sixth-combustion-co-20260829-default4-w10800/RESEARCH_EVENTS.jsonl) |
+这些运行覆盖环境监测、量子通信、空间探测、先进封装、热管理、硅光互连、激光雷达、多光谱成像和长波红外窗口等应用主题。文献路线与独立对照路线都在同一套冻结标准下接受比较，结果保留各自题面的物理含义。
 
 ### 端到端产物如何形成证据链
 
-六组目录保留了从题面到数值结果的完整文件链：
+精简回放数据把每组运行的关键证据压缩到一个只读 JSON 中，保留从科学问题到物理结果的可追踪关系：
 
-| 阶段 | 代表产物 | 记录内容 |
+| 证据阶段 | 回放字段 | 公开内容 |
 |---|---|---|
-| 用户输入 | `REQUEST.json` | 原始工程问题、运行 ID 和运行参数 |
-| 问题理解 | `PROBLEM_ANALYSIS.json` | 研究对象、波段、观测量、约束和能力边界 |
-| 指标选择 | `SCORING_STANDARD.json`、`SCORING_STANDARD.ATTESTATION.json` | 本次运行的动态指标、方向、波段和锁定公式 |
-| 方法检索 | `METHOD_RESEARCH.json` | 文献方法检索及其结构化结果 |
-| 路线规划 | `ROUTE_PLANNING.json`、`STRATEGY_PLAN.json` | 文献路线、记忆对照路线、路线假设和规划状态 |
-| 任务编译 | `iterations/iteration_XX/COMPILED_TASK.json` | 材料、波段、入射条件、膜层约束、目标和执行任务 |
-| 逐轮观测 | `ITERATION_OBSERVATION.json` | 本轮候选、测量值、物理检查和候选状态 |
-| 反馈再规划 | `FEEDBACK_DECISION.json`、`STRATEGY_REPLAN_*.json` | 真实仿真结果如何反馈到下一轮路线调整 |
-| 过程审计 | `ITERATION_HISTORY.json`、`ROUTE_TERMINATION_AUDIT.json`、`TOURNAMENT_STATE.json` | 迭代顺序、路线终止/继续状态和运行中的汇总状态 |
-| 仿真与证书 | `SIMULATION_RESULT.json`、`OBJECTIVE_REPORT.json`、`PHYSICS_ACCEPTANCE_CERTIFICATE.json`、`ROBUSTNESS.json` | 光谱结果、目标指标、物理可接受性和制造扰动采样 |
-| 排名汇总 | `SCORING_RANKING.json`、`TOURNAMENT_SUMMARY.json` | 冻结标准排名、路线对照、冠军候选和鲁棒性汇总 |
-| 最终交付 | `FINAL_ANSWER.md`、`RESEARCH_RESULT.json`、`RESEARCH_EVENTS.jsonl` | 面向阅读的结果、程序消费的状态和按时间排序的阶段事件 |
+| 问题与评分 | `problem`、`scoring` | 研究题面、波段、观测量、约束和本组冻结的评分口径 |
+| 路线与迭代 | `routes`、`event_timeline` | 文献启发路线、独立对照路线、逐轮状态、候选和反馈动作 |
+| 结果与比较 | `leaderboard`、`champion`、`source_comparison` | 路线排名、冠军候选、指标结果及同一口径下的路线比较 |
+| 物理与审计 | `evidence`、`telemetry` | 物理证书摘要、证据引用、执行统计和可复核的运行元数据 |
 
-这种目录结构支持两种使用方式：可以直接阅读 `FINAL_ANSWER.md` 和冻结排名，也可以沿 `REQUEST.json → SCORING_STANDARD.json → ROUTE_PLANNING.json → iterations/ → SCORING_RANKING.json` 的顺序回放每个决定是如何由真实实验产物支撑的。每组代表性冠军均带有物理接受证书；鲁棒性记录采用 16 个厚度扰动样本，失败次数也保存在原始 JSON 中。
+下载源码后进行的新运行会在本地生成更细的 `REQUEST.json`、`SCORING_STANDARD.json`、`iterations/`、物理证书和事件记录；公开仓库只携带上述无密钥摘要，因此下载体积保持适合评审使用。
 
 ## 两种评审方式
 
 ### 方式一：在线查看，不下载源码
 
-直接访问 [OptoMind 在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。页面由仓库中的六组正式端到端产物自动构建，展示原始题面、动态冻结评分、文献路线与独立对照路线、逐轮观测与反馈、冠军候选、物理证书和原始证据链接。在线版完全只读，不需要 Python、源码或服务密钥。
+直接访问 [OptoMind 在线证据回放](https://lihonggang-scnu.github.io/OptoMind-Article/)。页面面向公开研究记录，展示原始题面、动态冻结评分、文献路线与独立对照路线、逐轮观测与反馈、冠军候选、物理证书和证据链接。在线版完全只读，不需要 Python、源码或服务密钥。
 
 ### 方式二：下载源码，使用统一前端
 
 推荐使用 Python 3.11 或 3.12；Windows 安装 Python 时请勾选“Add Python to PATH”。
 
-1. 从 GitHub 下载并解压本仓库；Windows 用户双击根目录的 `START_OPTOMIND.cmd`。统一前端会自动打开，六组静态回放立即可用。
+1. 从 GitHub 下载并解压本仓库；Windows 用户双击根目录的 `START_OPTOMIND.cmd`。统一前端会自动打开，并提供回放入口与真实运行入口。
 2. 如需真实测试，将项目方私下提供的整个 `api_keys` 文件夹复制到 `code/api_keys`，覆盖其中两个同名空模板。密钥只保存在评委本机，不要上传到 GitHub。
 3. 在统一前端选择“真实提问”，点击“检查并准备真实运行”。程序会核对项目资产、准备隔离 Python 环境，并对 Qwen 和 Semantic Scholar 发起最小真实连通请求；只有全部通过后，问题输入框和运行按钮才会激活。
-4. 输入一个自然语言光学设计需求，选择“快速真实验证”或“完整自主研究”。当前任务的阶段事件和进度会显示在同一页面；运行完成后可直接切回回放台打开新结果。新记录保存在 Git 忽略的 `local_runs/`，不会覆盖六组正式档案。
+4. 输入一个自然语言光学设计需求，选择“快速真实验证”或“完整自主研究”。当前任务的阶段事件和进度会显示在同一页面；新记录保存在 Git 忽略的 `local_runs/`，不会改写公开回放数据。
 
 macOS、Linux 或希望使用终端的用户在仓库根目录执行：
 
@@ -303,11 +176,11 @@ api_keys/
 
 ## 可视化静态回放
 
-仓库内置只读的“静态研究回放台”，并通过 GitHub Pages 提供同一界面的在线版本。它由正式产物自动生成，不会调用语言模型、文献服务、优化器或 VeriTMM。评审者可以在不消耗密钥、无需重新计算的情况下查看：
+项目提供只读的“静态研究回放”数据，并通过 GitHub Pages 提供在线证据回放。在线页面和 `replay_data/` 都不会调用语言模型、文献服务、优化器或 VeriTMM；评审者可以在不消耗密钥、无需重新计算的情况下查看：
 
-- 六组原始工程题面与每组独立锁定的评分标准；
+- 公开工程题面与每组独立锁定的评分标准；
 - 文献启发路线和独立记忆对照路线的同标准比较；
-- 24 条路线、126 轮记录及其逐轮冻结得分曲线；
+- 52 条路线、304 轮记录及其逐轮冻结得分曲线；
 - 每轮任务状态、代表候选、观测值、反馈动作和异常记录；
 - 最终路线排名、冠军候选以及从结论返回原始 JSON、JSONL 和 Markdown 的证据链接；
 - 按每组 `RESEARCH_EVENTS.jsonl` 原始顺序进行的浏览器端模拟播放，速度可调至最高 10 倍。
@@ -328,11 +201,11 @@ START_OPTOMIND.cmd
 python quickstart.py ui
 ```
 
-程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python quickstart.py ui --port 0`。页面支持直接切换运行、以 1×、2×、5× 或 10× 模拟播放事件时间线、选择路线、打开逐轮详情并访问对应原始文件。模拟播放只改变浏览器中的展示进度，不会重新发起模型请求或仿真计算。仍可使用 `START_REPLAY.cmd` 或 `python quickstart.py replay` 启动纯回放模式。
+程序优先使用 `http://127.0.0.1:8765/`；如果默认端口不可用，会自动选择本机可用端口并在终端打印实际地址。也可以显式使用 `python quickstart.py ui --port 0`。页面支持直接切换运行、以 1×、2×、5× 或 10× 模拟播放事件时间线、选择路线、打开逐轮详情并访问对应原始文件。模拟播放只改变浏览器中的展示进度，不会重新发起模型请求或仿真计算。已有的 `START_REPLAY.cmd` 或 `python quickstart.py replay` 入口可用于具备完整历史回放资产的环境；当前公开精简记录由 `replay_data/` 提供，后续静态前端可以直接读取其 JSON 文件。
 
-完整科研链路仍可直接使用 `code/scripts/run_tmm_research_harness.py`；面向评委的 `RUN_LIGHT_TEST.cmd` 是该入口的有界封装。临时测试结果与六组正式样本完全分开。更多产物核验方法见 [AGENT_GUIDE.zh-CN.md](AGENT_GUIDE.zh-CN.md)。
+完整科研链路仍可直接使用 `code/scripts/run_tmm_research_harness.py`；面向评委的 `RUN_LIGHT_TEST.cmd` 是该入口的有界封装。临时测试结果与公开研究记录完全分开。更多产物核验方法见 [AGENT_GUIDE.zh-CN.md](AGENT_GUIDE.zh-CN.md)。
 
-六组正式运行已经随仓库保存于 `code/outputs/tmm_research_harness/`。
+公开研究摘要已经随仓库保存于 `replay_data/`；完整原始运行树不作为评审源码下载包的一部分。
 
 ## 运行产物
 

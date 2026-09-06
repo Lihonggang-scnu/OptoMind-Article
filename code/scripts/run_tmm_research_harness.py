@@ -112,6 +112,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Independent hard cap for each route lineage (default: 6)",
     )
     parser.add_argument(
+        "--research-mode",
+        choices=("bounded_design", "open_research"),
+        default="bounded_design",
+        help="O-08: bounded_design (tournament template) or open_research (hypothesis tree)",
+    )
+    parser.add_argument(
         "--minimum-rounds-before-llm-stop",
         type=int,
         default=2,
@@ -212,6 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         use_qwen_policy_inside_tmm=False,
         qwen_force_mock=True if args.force_mock else None,
         control_route_enabled=bool(args.control_route),
+        research_mode=args.research_mode,
     )
     task_compiler = QwenTMMTaskCompiler(
         client=ArticlePlusQwenClient(role=args.task_compiler_tier)
