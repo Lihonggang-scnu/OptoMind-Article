@@ -365,7 +365,14 @@ def _orientation_errors(
         metric = by_variable.get(variable)
         if metric is None or metric.sense == "report":
             continue
-        for probe in _ORIENTATION_PROBES:
+        probes = list(_ORIENTATION_PROBES)
+        # A small soft target can lie below every fixed probe. A distance-to-
+        # target formula then looks decreasing over those probes even though
+        # it rewards *increasing* a smaller value toward the target. Inspect
+        # the target itself as well, with adjacent values inside [0, 1].
+        if metric.target is not None and 0.0 <= float(metric.target) <= 1.0:
+            probes.append(float(metric.target))
+        for probe in dict.fromkeys(probes):
             base_values = {
                 name: (
                     _match_probe(by_variable.get(name), probe)
@@ -376,8 +383,10 @@ def _orientation_errors(
             }
             try:
                 base = formula.evaluate(base_values)
-                higher = formula.evaluate({**base_values, variable: probe + _ORIENTATION_DELTA})
-                lower = formula.evaluate({**base_values, variable: probe - _ORIENTATION_DELTA})
+                higher_probe = min(1.0, probe + _ORIENTATION_DELTA)
+                lower_probe = max(0.0, probe - _ORIENTATION_DELTA)
+                higher = formula.evaluate({**base_values, variable: higher_probe})
+                lower = formula.evaluate({**base_values, variable: lower_probe})
             except FormulaError:
                 # An expression that cannot be evaluated at a probe point is
                 # reported by the caller's own evaluation, not misattributed to
@@ -422,7 +431,7 @@ def _orientation_errors(
                     f"{variable} is a '{metric.sense}' metric, so a larger value must "
                     f"{expectation} the score, but the formula moves the other way "
                     f"(score {base:.6g} at {probe:g}, {higher:.6g} at "
-                    f"{probe + _ORIENTATION_DELTA:g}); "
+                    f"{higher_probe:g}); "
                     f"{'add' if metric.sense == 'maximize' else 'subtract'} the term"
                 )
                 break

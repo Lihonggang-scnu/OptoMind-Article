@@ -1207,15 +1207,16 @@ class TMMResearchHarness:
                     from .scoring_standard import ScoringStandard
 
                     rebuilt = ScoringStandard.model_validate(gated["standard"])
-                    standard = rebuilt
-                    envelope = dict(envelope)
-                    envelope["standard"] = rebuilt.model_dump(mode="json")
-                    envelope["human_modified"] = True
-                    path = self._write("SCORING_STANDARD.json", envelope)
-                    self._event(
-                        "scoring_standard_human_modified",
-                        formula=rebuilt.formula,
-                    )
+                    if rebuilt != standard:
+                        standard = rebuilt
+                        envelope = dict(envelope)
+                        envelope["standard"] = rebuilt.model_dump(mode="json")
+                        envelope["human_modified"] = True
+                        path = self._write("SCORING_STANDARD.json", envelope)
+                        self._event(
+                            "scoring_standard_human_modified",
+                            formula=rebuilt.formula,
+                        )
                 except Exception as exc:
                     self._event(
                         "scoring_standard_human_modified_invalid",
