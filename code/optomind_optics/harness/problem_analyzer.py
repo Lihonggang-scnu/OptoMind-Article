@@ -1082,6 +1082,14 @@ def _extract_polarizations(text: str) -> list[str]:
 def _scope_findings(text: str) -> tuple[list[str], list[str]]:
     incompatible: list[str] = []
     ambiguous: list[str] = []
+    # A prohibited alternative solver is not a requirement to use that solver.
+    # Only mask an explicit negative list of named solvers. Other unsupported
+    # physics and affirmative solver requirements still reach the scope gate.
+    solver = r"(?:RCWA|FDTD|FDFD|FEM)\b"
+    text = re.sub(
+        rf"\b(?:no|without)\s+{solver}(?:\s*(?:,|/|or|and|nor)\s*{solver})*",
+        lambda match: " " * len(match.group()), text, flags=re.I,
+    )
     for label, pattern in _INCOMPATIBLE_SCOPE_PATTERNS:
         if pattern.search(text):
             incompatible.append(label)

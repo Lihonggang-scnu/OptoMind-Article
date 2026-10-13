@@ -473,6 +473,19 @@ def test_sampling_interval_is_not_a_wavelength_constraint(grid):
     assert result.analysis.wavelengths_nm == [(450.0, 700.0)]
 
 
+@pytest.mark.parametrize("scope,expected", [
+    ("Use TMM only, with no RCWA, FDFD, learned surrogate or hardware.", "compatible"),
+    ("Use no RCWA but require FDTD.", "incompatible"),
+    ("Analyze a grating without RCWA or FEM.", "incompatible"),
+])
+def test_negative_solver_list_does_not_hide_positive_scope_requirements(scope, expected):
+    response = _analysis_payload(normalized_request_english="Analyze the requested optical stack.")
+    result = QwenTMMProblemAnalyzer(
+        client=_FakeQwenClient([response]), maximum_attempts=1
+    ).analyze(scope)
+    assert result.analysis.compatibility.value == expected
+
+
 def test_invented_incidence_angle_fails_closed():
     response = _analysis_payload(
         normalized_request_english=(
