@@ -17,7 +17,7 @@ from scipy.stats import norm
 from .adequacy import calibrate_adaptive_null, evaluate_adequacy
 from .contracts import (ResearchTask, ModelCandidate, DecisionContext, ExperimentProgram,
                         PredictionSpec, PredictionEvaluation, EvidenceUse,
-                        SelectedResearchResult, ScientificClaim, canonical_hash)
+                        SelectedResearchResult, ScientificClaim, AcquisitionIdentity, ResearchOutcome, canonical_hash)
 from .controller import MeasurementAction, decide_next, execute_round, route_research_state
 from .evidence_use import EvidenceUseGraph, EvidenceUseRecord
 from .identifiability import IdentifiabilityReport
@@ -203,7 +203,7 @@ class OpenResearchLoop:
         self.selected_result=None
         self._graph=EvidenceUseGraph()
         self._put(self.task)
-        runtime_files=("open_research_loop.py","open_research_cli.py","prefreeze_task_adoption.py","offline_method_config.py","joint_proposer.py","literature_request.py","literature_bridge.py","controller.py","model_search.py","model_compiler.py",
+        runtime_files=("open_research_loop.py","contracts.py","nested_contracts.py","prediction.py","world_client.py","method_lifecycle.py","open_research_cli.py","prefreeze_task_adoption.py","offline_method_config.py","joint_proposer.py","literature_request.py","literature_bridge.py","controller.py","model_search.py","model_compiler.py",
                        "inference.py","profile_identifiability.py","model_ir.py","operator_admission.py","operator_registry.py","operator_sandbox.py","model_equivalence.py","trace_extractor.py","method_runtime.py","method_assets.py","method_retriever.py","applicability.py","rollout.py","gaussian_terminal_value.py","robust_gaussian_value.py","robust_voi.py","action_value.py","terminal_optimization.py","typed_implication_runtime.py","compute_ledger.py","tempered_smc.py","likelihood_blocks.py","program_runner.py","program_search.py","polarization_provider.py","reference_calibration.py","program_compiler.py","terminal_problem.py","evsi.py")
         runtime_fingerprints={name:hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest() for name in runtime_files}
         protocol=DecisionContext(object_id=f"{config.run_id}:protocol",source_run_id=config.run_id,
@@ -451,8 +451,13 @@ class OpenResearchLoop:
         cfg=self.config;commits={};specs=[]
         artifact=self._put(ExperimentProgram(object_id="program:"+program.content_hash,source_run_id=cfg.run_id,
             objective_ref=self.task.ref(),protocol=asdict(program)))
+        frontend=self._context("frontend:bare",{"frontend_id":"bare","removable_layers":[],"role":"acquisition operator, independent of proposed sample model"})
         for node in program.nodes:
             if node.kind!="new_evidence":continue
+            identity=AcquisitionIdentity(program_ref=artifact.ref(),node_id=node.node_id,
+                sample_id=cfg.run_id+(":reference" if node.sample_id==cfg.reference_session else ":specimen"),
+                session_id=node.sample_id,frontend_ref=frontend.ref(),
+                conditions={"angle_deg":0.,"polarization":"unpolarized","coordinate_units":"nm"})
             coordinates=tuple(dict(node.arguments)["wavelengths_nm"]);predictions=[]
             for candidate in candidates or (None,):
                 name=candidate.content_hash if candidate else "prior"
@@ -472,10 +477,11 @@ class OpenResearchLoop:
                         radius=np.full(len(mean),norm.ppf(1-cfg.alpha/(2*len(mean)))*np.hypot(cfg.measurement_std,cfg.calibration_std))
                     spec=PredictionSpec(object_id=oid,source_run_id=cfg.run_id,
                         input_refs=(candidate.ref(),) if candidate else (),snapshot_id=self.repository.latest_snapshot().snapshot_id,
+                        candidate_ref=candidate.ref() if candidate else None,program_ref=artifact.ref(),
                         raw_channel="R",units="1",statistic="simultaneous_envelope",observable="reflectance",
                         tolerance_source="declared Gaussian acquisition noise; plug-in parameters; no global coverage guarantee",
                         lower=tuple(map(float,mean-radius)),upper=tuple(map(float,mean+radius)),coordinate=coordinates,
-                        grid={"session":node.sample_id,"program":program.content_hash},
+                        grid={"session":node.sample_id,"program":program.content_hash,"acquisition_identity":identity.model_dump(mode="json")},
                         distribution={"mean":list(map(float,mean)),"candidate_id":candidate.object_id if candidate else None,
                                       "parameter_uncertainty":"not included; final test is empirical scoped validation"})
                     commit_prediction(self.repository,spec,task_ref=self.task.ref(),evidence_cutoff="before:"+program.program_id)
@@ -513,7 +519,7 @@ class OpenResearchLoop:
             if not np.allclose(raw.covariance,expected_cov,rtol=1e-10,atol=1e-15) or raw.calibration_std!=cfg.calibration_std:
                 raise ValueError("purchased noise covariance differs from frozen predictive protocol")
             obs=self._put(receipt_to_observation(raw,object_id="observation:"+raw.acquisition_id,source_run_id=cfg.run_id,
-                                                objective_ref=self.task.ref()))
+                                                objective_ref=self.task.ref(),acquisition_identity=next(spec.grid.get("acquisition_identity") for nodeid,spec in specs if nodeid==node.node_id)))
             observations[node.node_id]=obs
         evaluations=[]
         for nodeid,spec in specs:
@@ -660,6 +666,26 @@ class OpenResearchLoop:
                 "terminal":asdict(solution),"weights_semantics":semantics,"action":asdict(action),
                 "scope":"one scalar first-grid-point Gaussian acquisition statistic; no unmodeled-structure probability"}
 
+    def _export_sequence_receipts(self, work_dir):
+        snapshots=[json.loads(row[0]) for row in self.repository.db.execute("SELECT payload FROM snapshots ORDER BY sequence")]
+        first={}
+        for snapshot in snapshots:
+            for ref in snapshot["object_refs"]:first.setdefault(ref["content_hash"],snapshot["committed_sequence"])
+        objects=[self.repository.load(ref) for ref in self.repository.latest_snapshot().object_refs]
+        observations=[obj for obj in objects if obj.schema_version=="observation.v2"]
+        predictions=[obj for obj in objects if isinstance(obj,PredictionSpec)]
+        rows=[]
+        for observation in observations:
+            identity=observation.binding.get("acquisition_identity")
+            bound=[spec for spec in predictions if identity is not None and spec.grid.get("acquisition_identity")==identity]
+            sequences={spec.object_id:first[spec.content_hash] for spec in bound}
+            rows.append({"acquisition_id":observation.acquisition_id,"observation_ref":observation.ref().model_dump(mode="json"),
+                "acquisition_sequence":first[observation.content_hash],"prediction_sequences":sequences,
+                "identity_state":observation.identity_state,"acquisition_identity":identity,
+                "all_predictions_precede_acquisition":all(seq<first[observation.content_hash] for seq in sequences.values()) if sequences else None})
+        atomic_write_json(work_dir/"SCIENCE_SNAPSHOTS.json",snapshots)
+        atomic_write_json(work_dir/"ACQUISITION_INDEX.json",rows)
+
     def run(self, work_dir):
         from .compute_ledger import active_compute_ledger
         with active_compute_ledger(self.compute_ledger):
@@ -675,6 +701,10 @@ class OpenResearchLoop:
             checkpoint=self._find(f"{cfg.run_id}:trajectory-export")
             if checkpoint is None:raise ValueError("selected result lacks its recoverable trajectory export checkpoint")
             atomic_write_json(work_dir/"SCIENCE_OPEN_TRAJECTORY.json",checkpoint.summary)
+            from .method_lifecycle import finalize_completed_research
+            lifecycle=finalize_completed_research(self.repository,task_ref=self.task.ref(),result_ref=old.ref())
+            atomic_write_json(work_dir/"METHOD_LIFECYCLE.json",lifecycle.model_dump(mode="json"))
+            self._export_sequence_receipts(work_dir)
             return old
         trajectory=[];unknown_spent=0;stop_reason="iteration_limit";committed_design=None
         train_program=self._program("initial",cfg.training_session)
@@ -682,7 +712,7 @@ class OpenResearchLoop:
         training=[observed["measure"]]
         current,fit,inference=self._fit(self.initial_model,training)
         initial_design=self._terminal(current,fit)[1].decision_id
-        all_predictions=[];negative_refs=[]
+        all_predictions=[];negative_refs=[];competition_pool=[(current,fit,inference)]
         for iteration in range(cfg.max_iterations):
             assessment=self._assess(current,fit,training)
             usage=sum(g.usage().get("cost",0.) for g in set(self.runner.gates.values()))
@@ -705,7 +735,8 @@ class OpenResearchLoop:
                 self._context(f"iteration:{iteration}:decision",decision,(current.ref(),inference.ref()))
             trajectory.append(decision)
             if decision["action"]=="stop":
-                stop_reason=assessment["route"]+":no_supported_positive_value";break
+                stop_reason=("unknown_exploration_not_authorized" if cfg.unknown_exploration_limit==0 else "unknown_exploration_budget_exhausted") if assessment["route"] in {"propose_structure","bounded_unknown_exploration"} else assessment["route"]+":no_supported_positive_value"
+                break
             structural=decision["action"]=="bounded_structure_search"
             if structural:
                 unknown_spent+=1
@@ -746,7 +777,7 @@ class OpenResearchLoop:
                 self._context(f"iteration:{iteration}:program-instantiation",{"receipt":self.method_provider.receipt_payload(instantiation),"program":asdict(program)})
             if self.proposal_provider is None and not self._can_execute(program,reserve=cfg.measurement_cost):
                 stop_reason="budget_reserved_for_independent_validation";break
-            candidates=[(current,fit,inference)]
+            candidates=list(competition_pool)
             if structural and cfg.model_expansion_enabled:
                 from .model_ir import model_ir_from_dict
                 parent=model_ir_from_dict(current.model_ir)
@@ -946,20 +977,41 @@ class OpenResearchLoop:
             likelihood=JointLikelihood(blocks_from_observations(selection))
             scores=[]
             from .model_ir import model_ir_from_dict
+            unique={model_ir_from_dict(c.model_ir).structural_hash:(c,f,state) for c,f,state in candidates}
+            candidates=list(unique.values())
             for candidate,candidate_fit,state in candidates:
                 for obs in selection:self._use(obs,candidate,"select")
                 residual=likelihood.residual(compile_model(model_ir_from_dict(candidate.model_ir)),candidate_fit.parameters)
-                score=float(residual@residual+len(candidate_fit.parameters)*np.log(len(residual)))
-                scores.append(score)
-            best=int(np.argmin(scores));current,fit,inference=candidates[best]
-            selection_context=self._context(f"iteration:{iteration}:selection",{"scores":scores,"candidate_ids":[c.object_id for c,_,_ in candidates],
-                "selected_id":current.object_id,"selection_evidence_is_not_independent_validation":True},
-                tuple(c.ref() for c,_,_ in candidates)+tuple(o.ref() for o in selection))
-            negative_refs.append(selection_context.ref())
-            # Adaptive selection evidence may subsequently train, but never becomes
-            # final validation; the untouched validation group is already frozen.
+                scores.append(float(residual@residual+len(candidate_fit.parameters)*np.log(len(residual))))
             training.extend(selection)
-            current,fit,inference=self._fit(model_ir_from_dict(current.model_ir),training)
+            refitted=[];refit_records=[];failed_candidates=[]
+            for candidate,candidate_fit,state in candidates:
+                try:
+                    child,child_fit,child_state=self._fit(model_ir_from_dict(candidate.model_ir),training)
+                except RuntimeError as exc:
+                    if not str(exc).startswith("all inference starts failed:"):raise
+                    refit_records.append({"source_candidate_id":candidate.object_id,"state":"numerical_failure","error":str(exc)})
+                    failed_candidates.append((candidate,candidate_fit,state))
+                    continue
+                n=sum(len(o.raw_blocks[0]["values"]) for o in training)
+                score=2*child_fit.loss+len(child_fit.parameters)*np.log(n)
+                refit_records.append({"source_candidate_id":candidate.object_id,"candidate_ref":child.ref().model_dump(mode="json"),
+                    "state":"converged" if child_fit.success else "numerical_failure","score":score,"fit":asdict(child_fit)})
+                refitted.append((child,child_fit,child_state))
+            converged=[item for item in refitted if item[1].success]
+            if not converged:raise RuntimeError("all competing mechanism refits failed; no mechanism is refuted")
+            current,fit,inference=min(converged,key=lambda item:2*item[1].loss+len(item[1].parameters)*np.log(n))
+            competition_pool=refitted+failed_candidates
+            selection_context=self._context(f"iteration:{iteration}:selection",{"scores":scores,"candidate_ids":[c.object_id for c,_,_ in candidates],
+                "prequential_selected_id":candidates[int(np.argmin(scores))][0].object_id,"selected_id":current.object_id,
+                "all_competition_refits":refit_records,"refit_score":"joint training+selection discrepancy plus parameter_count*log(n)",
+                "frozen_predictions_preserved":True,"selection_evidence_is_not_independent_validation":True,
+                "finite_search_not_global_mechanism_refutation":True},
+                tuple(c.ref() for c,_,_ in candidates)+tuple(c.ref() for c,_,_ in refitted)+tuple(o.ref() for o in selection))
+            negative_refs.append(selection_context.ref())
+        final_assessment=self._assess(current,fit,training)
+        adequacy_record=self._find("adequacy:"+current.content_hash)
+        unresolved_failure=final_assessment["state"]=="model_family_inadequate"
         problem,solution,semantics=self._terminal(current,fit)
         if committed_design is not None:
             index=problem.design_ids.index(committed_design)
@@ -992,7 +1044,7 @@ class OpenResearchLoop:
                 raise ValueError("final validation calibration group leaked into fitting or selection")
         self._use(final,current,"validate")
         independent_supported=all(e.metrics["state"]=="supported" for e in evals)
-        adoption_supported=independent_supported and fit.success
+        adoption_supported=independent_supported and fit.success and not unresolved_failure
         if self.operator_admission is not None:
             for node in current.model_ir["nodes"]:
                 if node["operator"]!="expression":continue
@@ -1027,7 +1079,7 @@ class OpenResearchLoop:
             selection_record=self.repository.load(ref)
             rejected=max(0,len(selection_record.summary["candidate_ids"])-1)
             claims.append(self._put(ScientificClaim(object_id=f"{cfg.run_id}:claim:selection:{index}",source_run_id=cfg.run_id,
-                statement=f"Iteration {index} retained one candidate and did not select {rejected} alternatives under the precommitted fresh-prediction discrepancy and complexity score.",
+                statement=f"Iteration {index} retained one candidate and did not select {rejected} alternatives after preserving frozen prediction scores and refitting every competitor on the combined evidence.",
                 evidence_refs=(ref,),status="supported",scope={"strength":"design","selection_evidence_only":True,
                 "not_independent_validation":True,"not_mechanism_refutation":True})))
         export_payload={"protocol":asdict(cfg),"iterations":trajectory,
@@ -1051,13 +1103,24 @@ class OpenResearchLoop:
         result=self._put(SelectedResearchResult(object_id=f"{cfg.run_id}:selected",source_run_id=cfg.run_id,
             input_refs=(commitment.ref(),validation.ref()),candidate_ref=adopted.ref(),inference_ref=inference.ref(),claim_refs=tuple(c.ref() for c in claims),
             asset_refs=(commitment.ref(),validation.ref(),final.ref(),*(e.ref() for e in evals)),
-            prediction_refs=tuple(all_predictions)+tuple(s.ref() for s in specs),negative_result_refs=tuple(negative_refs)+(() if independent_supported else (validation.ref(),)),
+            prediction_refs=tuple(all_predictions)+tuple(s.ref() for s in specs),negative_result_refs=tuple(negative_refs)+((adequacy_record.ref(),) if unresolved_failure else ())+(() if independent_supported else (validation.ref(),)),
             claim_strength="design",candidate_roles={"fitted_specimen":current.object_id,"terminal_choice":solution.decision_id,
-                "adoption_status":"proposed_design" if adoption_supported else ("withheld_after_numerical_failure" if not fit.success else "withheld_after_failed_validation"),
+                "adoption_status":"proposed_design" if adoption_supported else ("withheld_after_numerical_failure" if not fit.success else "withheld_after_failed_validation" if not independent_supported else "withheld_after_model_family_failure"),
                 "validation_state":validation.summary["state"],"evidence_tier":"V1_synthetic",
                 "stop_reason":stop_reason,"design_changed":initial_design!=solution.decision_id,
+                "unresolved_model_failure":unresolved_failure,
+                "research_outcome":ResearchOutcome(model_adequacy_state=final_assessment["state"],
+                    local_prediction_state=validation.summary["state"],identity_state="bound",
+                    numerical_state="valid" if fit.success else "failure",noise_state="calibrated",
+                    mechanism_state="model_set_inadequate" if unresolved_failure else "not_evaluated",
+                    unknown_exploration_state="not_authorized" if cfg.unknown_exploration_limit==0 else "budget_exhausted" if unknown_spent>=cfg.unknown_exploration_limit else "available",
+                    unresolved_failure_refs=(adequacy_record.ref(),) if unresolved_failure else ()).model_dump(mode="json"),
                 "independent_manufactured_design_validation":False}))
         self.selected_result=result
         atomic_write_json(work_dir/"SELECTED_RESEARCH_RESULT.json",result.model_dump(mode="json"))
         atomic_write_json(work_dir/"SCIENCE_OPEN_TRAJECTORY.json",export_payload)
+        from .method_lifecycle import finalize_completed_research
+        lifecycle=finalize_completed_research(self.repository,task_ref=self.task.ref(),result_ref=result.ref())
+        atomic_write_json(work_dir/"METHOD_LIFECYCLE.json",lifecycle.model_dump(mode="json"))
+        self._export_sequence_receipts(work_dir)
         return result
