@@ -1,0 +1,373 @@
+FFFFFFFFF                                                                [100%]
+================================== FAILURES ===================================
+_ test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_no_query] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_no_query', content = ''
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_same_query] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_same_query', content = ''
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_budget] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_budget', content = ''
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_no_new_content] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_no_new_content', content = ''
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_no_query] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_no_query', content = 'A supplied partial measurement.'
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_same_query] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_same_query', content = 'A supplied partial measurement.'
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_budget] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_budget', content = 'A supplied partial measurement.'
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+_ test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_no_new_content] _
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+stop = 'stopped_no_new_content', content = 'A supplied partial measurement.'
+
+    @pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
+    @pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
+    def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
+        config, need = case
+        journal = RetrievalJournal(config.journal_path)
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
+                        'status': 'partial', 'action': 'external_research', 'usable_content': content,
+                        'still_missing': need.question})
+        journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
+                        'status': stop, 'action': 'stop', 'usable_content': content,
+                        'still_missing': need.question, 'empty_rounds': 1})
+        original = config.journal_path.read_bytes()
+    
+        def unexpected(*args, **kwargs):
+            pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+    
+>       result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_retrieval_terminal_replay.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:673: in run_retrieval_loop
+    local = local_pass(need, round_index)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optomind_research\runtime\upgrade3\planning_retrieval_loop.py:558: in local_pass
+    return dict(local_triage(gap=gap, round_index=round_index))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ()
+kwargs = {'gap': LocalGap(gap_id='bounded-need', question='Which conditions remain unknown?', intended_use='mechanism', user_sc...pts=(), existing_handles=(), existing_paper_ids=(), current_source_handles=(), reusable_material=''), 'round_index': 3}
+
+    def unexpected(*args, **kwargs):
+>       pytest.fail('Ordinary terminal resume must not request another scientific or model round')
+E       Failed: Ordinary terminal resume must not request another scientific or model round
+
+tests\upgrade3\test_retrieval_terminal_replay.py:35: Failed
+______ test_fresh_no_query_stop_and_resume_return_same_partial_material _______
+
+case = (LoopConfig(index_path=WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1780/test...a=(), concepts=(), required_concepts=(), comparison_object='', round_specs=(), existing_handles=(), kind='supplement'))
+
+    def test_fresh_no_query_stop_and_resume_return_same_partial_material(case):
+        config, original = case
+        need = InformationNeed(original.need_id, original.question, owners=original.owners, round_specs=(
+            {'round': 1, 'targeted_queries': [{'query_type': 'keyword', 'query_text': 'measurement conditions'}]},
+        ))
+        calls = []
+    
+        def external(**kwargs):
+            calls.append(kwargs)
+            return {'status': 'partial', 'usable_content': 'A supplied partial measurement.', 'still_missing': need.question}
+    
+        first = run_retrieval_loop([need], config, external_closure=external)
+        saved = config.journal_path.read_bytes()
+        assert json.loads(saved.splitlines()[-1])['status'] == 'stopped_no_query'
+        second = run_retrieval_loop([need], config, external_closure=external)
+        for key in ('status', 'action', 'usable_content', 'still_missing', 'rounds', 'empty_rounds'):
+>           assert first['needs'][0][key] == second['needs'][0][key]
+E           assert 2 == 3
+
+tests\upgrade3\test_retrieval_terminal_replay.py:66: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_no_query]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_same_query]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_budget]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[-stopped_no_new_content]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_no_query]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_same_query]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_budget]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_terminal_journal_replay_preserves_material_status_and_stop[A supplied partial measurement.-stopped_no_new_content]
+FAILED tests/upgrade3/test_retrieval_terminal_replay.py::test_fresh_no_query_stop_and_resume_return_same_partial_material
+9 failed in 1.86s

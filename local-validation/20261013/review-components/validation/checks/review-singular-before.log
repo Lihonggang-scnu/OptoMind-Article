@@ -1,0 +1,110 @@
+F...                                                                     [100%]
+================================== FAILURES ===================================
+_______ test_singular_focus_and_integration_goal_reach_reader_and_cache _______
+
+    def test_singular_focus_and_integration_goal_reach_reader_and_cache():
+        request = {
+            'paper_id': 'source-one', 'source_handle': 'P0001',
+            'focus_area': 'Extract the assumptions and stated measurement conditions.',
+            'integration_goal': 'Support the chapter comparison with attributed conditions.',
+            'usage_constraints': 'Do not infer missing numerical measurements.',
+        }
+>       merged = p._merge_directed_tasks([request])[0]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\upgrade3\test_directed_request_singular_focus.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+optomind_research\runtime\upgrade3\progressive_review_plan.py:3409: in _merge_directed_tasks
+    requirements = _directed_task_requirements(raw)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+task = {'paper_id': 'source-one', 'source_handle': 'P0001', 'focus_area': 'Extract the assumptions and stated measurement conditions.', 'integration_goal': 'Support the chapter comparison with attributed conditions.', ...}
+
+    def _directed_task_requirements(task: Mapping[str, Any] | None) -> dict[str, Any]:
+        """Normalize the scientific request fields used to decide read reuse."""
+    
+        task = task if isinstance(task, Mapping) else {}
+        constraints = task.get("usage_constraints") or []
+        if isinstance(constraints, str):
+            constraints = [constraints]
+        if not isinstance(constraints, (list, tuple)) or any(not isinstance(item, str) for item in constraints):
+            raise ProgressivePlanError("directed_request_usage_constraints_invalid")
+        constraints = sorted({_text(item) for item in constraints if _text(item)})
+        gaps = task.get("knowledge_gaps") or task.get("knowledge_gap") or task.get("reasons") or task.get("reason") or []
+        if isinstance(gaps, str):
+            gaps = [gaps]
+        gaps = sorted({_text(value) for value in gaps if _text(value)})
+        raw_outputs = task.get("required_outputs") or []
+        if isinstance(raw_outputs, (str, Mapping)):
+            raw_outputs = [raw_outputs]
+        outputs: list[dict[str, Any]] = []
+        for index, raw in enumerate(raw_outputs, start=1):
+            item = dict(raw) if isinstance(raw, Mapping) else {"description": _text(raw)}
+            outputs.append({
+                "output_id": _text(item.get("output_id") or item.get("id")) or f"O{index:02d}",
+                "output_type": _text(item.get("output_type") or item.get("type") or "practical_material"),
+                "description": _text(item.get("description") or item.get("purpose") or item.get("required_output")),
+            })
+            if not outputs[-1]["description"]:
+                raise ProgressivePlanError(f"directed_request_output_description_missing:{index}")
+        explicit_outputs = bool(outputs)
+        output_ids = [row["output_id"] for row in outputs]
+        raw_questions = task.get("questions") or []
+        if not raw_questions and task.get("question"):
+            raw_questions = [task.get("question")]
+        if isinstance(raw_questions, (str, Mapping)):
+            raw_questions = [raw_questions]
+        focus = task.get("focus_areas") or task.get("focus") or []
+        if isinstance(focus, (str, Mapping)):
+            focus = [focus]
+        if not isinstance(raw_questions, (list, tuple)) or not isinstance(focus, (list, tuple)):
+            raise ProgressivePlanError("directed_request_questions_invalid")
+        raw_questions = list(raw_questions)
+        existing_questions = {_text(item.get("question") or item.get("ask") or item.get("what_to_extract"))
+                              if isinstance(item, Mapping) else _text(item) for item in raw_questions}
+        for item in focus:
+            question = _text(item.get("question") or item.get("description") or item.get("focus")) if isinstance(item, Mapping) else _text(item)
+            if question not in existing_questions:
+                raw_questions.append({**dict(item), "question": question} if isinstance(item, Mapping) else question)
+                existing_questions.add(question)
+        questions: list[dict[str, Any]] = []
+        for index, raw in enumerate(raw_questions, start=1):
+            item = dict(raw) if isinstance(raw, Mapping) else {"question": _text(raw)}
+            question = _text(item.get("question") or item.get("ask") or item.get("what_to_extract"))
+            if not question:
+                raise ProgressivePlanError(f"directed_request_question_missing:{index}")
+            purpose = _text(item.get("purpose") or item.get("use") or item.get("required_output") or question)
+            output_ids = item.get("required_output_ids") or item.get("output_ids") or []
+            if isinstance(output_ids, str):
+                output_ids = [output_ids]
+            output_ids = [_text(value) for value in output_ids if _text(value)]
+            if not output_ids:
+                if explicit_outputs:
+                    output_ids = [outputs[min(index - 1, len(outputs) - 1)]["output_id"]]
+                else:
+                    output_id = f"O{index:02d}"
+                    outputs.append({
+                        "output_id": output_id,
+                        "output_type": "practical_material",
+                        "description": _text(item.get("purpose") or item.get("required_output") or question),
+                    })
+                    output_ids.append(output_id)
+            questions.append({
+                "question_id": _text(item.get("question_id") or item.get("id")) or f"Q{index:02d}",
+                "question": question,
+                "purpose": purpose,
+                "gap_key": _text(item.get("gap_key") or item.get("knowledge_gap")) or "; ".join(gaps),
+                "required_output_ids": sorted(set(output_ids)),
+                **({"evidence_contract": dict(item["evidence_contract"])} if isinstance(item.get("evidence_contract"), Mapping) else {}),
+            })
+        if not questions:
+            question = _text(task.get("knowledge_gap") or task.get("reason")) or "; ".join(gaps) or "; ".join(row["description"] for row in outputs)
+            if not question:
+>               raise ProgressivePlanError("directed_request_question_missing")
+E               optomind_research.runtime.upgrade3.progressive_review_plan.ProgressivePlanError: directed_request_question_missing
+
+optomind_research\runtime\upgrade3\progressive_review_plan.py:3633: ProgressivePlanError
+=========================== short test summary info ===========================
+FAILED tests/upgrade3/test_directed_request_singular_focus.py::test_singular_focus_and_integration_goal_reach_reader_and_cache
+1 failed, 3 passed in 1.55s

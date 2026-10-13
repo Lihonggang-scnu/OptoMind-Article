@@ -1,0 +1,30 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+________ test_disabled_strengthening_exports_current_planning_feedback ________
+
+tmp_path = WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1782/test_disabled_strengthening_ex0')
+
+    def test_disabled_strengthening_exports_current_planning_feedback(tmp_path):
+        root, packet = fixture_root(tmp_path)
+        feedback = [{'chapter_id': 'CH01', 'feedback': 'Preserve supplied source usage restrictions'}]
+        packet['editorial_feedback_for_chapter'] = feedback
+        packet['chapter_feedback'] = feedback
+        pipeline._dump(root / 'writer_packets/CH01.json', packet)
+        result = cli.post_planning_handoff(argparse.Namespace(output_dir=root),
+            argparse.Namespace(outline_strengthening=False, stop_after=''), {'status': 'complete'})
+        exported = pipeline._load(Path(result['packet_root']) / 'writer_packets/CH01.json')
+        assert exported['editorial_feedback_for_chapter'] == feedback
+        assert exported['chapter_feedback'] == feedback
+        assert exported['chapter_plan'] == packet['chapter_plan']
+        # Preparing the separate autonomous feature still excludes manual controls.
+        _, autonomous = pipeline.load_complete_packets(root)
+>       assert autonomous['CH01']['editorial_feedback_for_chapter'] == []
+E       AssertionError: assert [{'chapter_id...estrictions'}] == []
+E         
+E         Left contains one more item: {'chapter_id': 'CH01', 'feedback': 'Preserve supplied source usage restrictions'}
+E         Use -v to get more diff
+
+tests\upgrade3\test_progressive_review_plan_outline_strengthening.py:33: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/upgrade3/test_progressive_review_plan_outline_strengthening.py::test_disabled_strengthening_exports_current_planning_feedback
+1 failed, 14 deselected in 2.00s

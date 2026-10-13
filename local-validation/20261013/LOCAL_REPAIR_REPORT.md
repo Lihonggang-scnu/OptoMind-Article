@@ -93,3 +93,5 @@ formal-04 的模型生成 limitations 文本仍包含未采用的 0.05 后续研
 失败复现：formal-01 使用接收后的 491d7dd 与记录 argv 可重现相应编译控制问题（模型内容会变动；固定回归夹具可确定性复现）；formal-03 的 SCORING_STANDARD.json 配合评分方向回归能确定性复现旧探针盲区。Review 原失败请求见历史快照与 provider REQUEST/RESPONSE；单数 focus 回归确定性复现。旧完整录制缺件仍需明确来源的真实第四项响应，不能制造。
 
 三个仓库仅提交必要源码、测试及本轮必要证据。完整现场仍保留在外部 `local-repair-validation\20261013`，数据库与旧材料未搬入源码树。最终本地提交号见外部 `DELIVERY_COMMITS.json`；Review 不推送，其他仓库也等待用户审阅再决定。
+
+最终本地交付提交（末次提交仅增加证据，不改变上表已测试源码）：Article `6ef6f06ee061c617195777d51fdf4324cca2114b`；Review `f30319eaefb7625081ee8a8a6a53df1208352899`；VeriTMM `681dcb8293a01cdac8c1cb07f8d52896b0f09385`。三工作树干净。VeriTMM 沿用原有 .gitattributes 将文本证据规范为 LF，外部原始字节保留；没有修改全局 Git 配置。

@@ -1,0 +1,662 @@
+diff --git a/optomind_research/runtime/upgrade3/planning_retrieval_loop.py b/optomind_research/runtime/upgrade3/planning_retrieval_loop.py
+index 8f754aa..cdae19f 100644
+--- a/optomind_research/runtime/upgrade3/planning_retrieval_loop.py
++++ b/optomind_research/runtime/upgrade3/planning_retrieval_loop.py
+@@ -664,6 +664,14 @@ def run_retrieval_loop(
+                     paper_owners.setdefault(handle, set()).update(need.owners)
+                 state.status = str(saved.get("status") or state.status)
+                 state.action = str(saved.get("action") or state.action)
++                state.empty_rounds = int(saved.get("empty_rounds", state.empty_rounds))
++                # Journal labels record why collection stopped; restore the
++                # same cumulative material state used by the live branches.
++                if state.action == "stop":
++                    if state.status in {"stopped_no_query", "stopped_same_query", "stopped_budget"}:
++                        state.status = "partial" if state.usable_content.strip() else "stopped"
++                    elif state.status == "stopped_no_new_content":
++                        state.status = "stopped"
+                 progressed = True
+                 if not retrying_terminal:
+                     continue
+diff --git a/optomind_research/runtime/upgrade3/progressive_review_plan.py b/optomind_research/runtime/upgrade3/progressive_review_plan.py
+index a09a95c..47e9ea1 100644
+--- a/optomind_research/runtime/upgrade3/progressive_review_plan.py
++++ b/optomind_research/runtime/upgrade3/progressive_review_plan.py
+@@ -142,7 +142,7 @@ def _material_content_signature(value: Any) -> str:
+ 
+ 
+ _MATERIAL_CONTENT_FIELDS = (
+-    "study_summary_A", "review_planning_B", "deep_read_material",
++    "study_summary_A", "review_planning_B", "usage_limits", "deep_read_material",
+     "local_passages", "supplement_gap_material", "supplement_gap_materials",
+     "supplement_material", "supplement_materials", "tool_materials", "tool_supplement_materials",
+     "deep_read_materials", "local_passages_variants", "usable_content", "material",
+@@ -158,6 +158,20 @@ def _material_content(value: Mapping[str, Any] | None) -> dict[str, Any]:
+     return {key: value[key] for key in _MATERIAL_CONTENT_FIELDS if key in value and value[key] not in (None, "", [], {})}
+ 
+ 
++def _card_usage_limits(card: Mapping[str, Any]) -> dict[str, Any]:
++    """Return the saved card's exact material-use contract without inventing rules."""
++
++    material = card.get("material") if isinstance(card, Mapping) else None
++    limits = material.get("usage_limits") if isinstance(material, Mapping) else None
++    if not isinstance(limits, Mapping):
++        return {}
++    return {
++        key: limits[key]
++        for key in ("allowed", "prohibited", "unknown_rule")
++        if key in limits
++    }
++
++
+ def _saved_card_identity_conflict(source: Mapping[str, Any], card: Mapping[str, Any]) -> Mapping[str, Any] | None:
+     """Legacy cards may omit identity; explicit contradictory identity is never borrowed."""
+     identities = [card, *[card[key] for key in ("paper_identity", "record_identity")
+@@ -200,6 +214,7 @@ def _refresh_local_material_snapshots(records: Sequence[Mapping[str, Any]]) -> l
+                 # sourced deep/supplement material remains available.
+                 source["study_summary_A"] = {}
+                 source["review_planning_B"] = {}
++                source.pop("usage_limits", None)
+                 source["material_identity_conflict"] = True
+                 source["material_identity_conflicts"] = [{
+                     "channel": "saved_card", "reason": "source_identity_conflict",
+@@ -218,12 +233,16 @@ def _refresh_local_material_snapshots(records: Sequence[Mapping[str, Any]]) -> l
+             if previously_conflicted:
+                 source["study_summary_A"] = {}
+                 source["review_planning_B"] = {}
++            source.pop("usage_limits", None)
+             a = card.get("general_understanding")
+             b = card.get("review_planning")
+             if isinstance(a, Mapping) and a:
+                 source["study_summary_A"] = dict(a)
+             if isinstance(b, Mapping) and b:
+                 source["review_planning_B"] = dict(b)
++            usage_limits = _card_usage_limits(card)
++            if usage_limits:
++                source["usage_limits"] = usage_limits
+     return refreshed
+ 
+ 
+@@ -300,12 +319,13 @@ def _recovery_outline_projection(outline: Any) -> Any:
+ def _recovery_pool_material(handle: str, row: Mapping[str, Any]) -> dict[str, Any]:
+     """Build the current pool's authoritative A/B view for one handle."""
+ 
+-    card = _card_for_candidate(row)
++    card, card_loaded = _card_for_candidate_with_status(row)
+     identity = card.get("paper_identity") if isinstance(card.get("paper_identity"), Mapping) else {}
+     a = card.get("general_understanding") if isinstance(card.get("general_understanding"), Mapping) else {}
+     b = card.get("review_planning") if isinstance(card.get("review_planning"), Mapping) else {}
++    usage_limits = _card_usage_limits(card)
+     planning = row.get("planning_view") if isinstance(row.get("planning_view"), Mapping) else {}
+-    return {
++    material = {
+         "source_handle": handle,
+         "paper_id": _text(row.get("_paper_id") or _canonical_paper_id(row)),
+         "card_path": _text(row.get("card_path")),
+@@ -321,6 +341,9 @@ def _recovery_pool_material(handle: str, row: Mapping[str, Any]) -> dict[str, An
+         "local_passages": row.get("local_passages") or {},
+         "planning_view": dict(planning),
+     }
++    if card_loaded:
++        material["usage_limits"] = usage_limits or {}
++    return material
+ 
+ 
+ def _refresh_owner_packet_materials(
+@@ -1369,9 +1392,10 @@ def _candidate_card_material(candidate: Mapping[str, Any]) -> tuple[dict[str, An
+     payload.
+     """
+ 
+-    card = _card_for_candidate(candidate)
++    card, card_loaded = _card_for_candidate_with_status(candidate)
+     a = card.get("general_understanding") if isinstance(card.get("general_understanding"), Mapping) else {}
+     b = card.get("review_planning") if isinstance(card.get("review_planning"), Mapping) else {}
++    usage_limits = _card_usage_limits(card)
+     planning = candidate.get("planning_view") if isinstance(candidate.get("planning_view"), Mapping) else {}
+     identity = planning.get("paper_identity") if isinstance(planning.get("paper_identity"), Mapping) else {}
+     source_identity = {**dict(identity), **{key: candidate[key] for key in ("paper_id", "canonical_paper_id", "doi") if candidate.get(key)}}
+@@ -1379,7 +1403,7 @@ def _candidate_card_material(candidate: Mapping[str, Any]) -> tuple[dict[str, An
+         source_identity["paper_id"] = candidate["_paper_id"]
+     conflict = _saved_card_identity_conflict(source_identity, card)
+     if conflict is not None:
+-        a, b = {}, {}
++        a, b, usage_limits, card_loaded = {}, {}, {}, False
+     return dict(a), dict(b), {
+         **({"material_identity_conflict": True,
+             "material_identity_conflicts": [{"channel": "saved_card", "reason": "source_identity_conflict",
+@@ -1393,6 +1417,8 @@ def _candidate_card_material(candidate: Mapping[str, Any]) -> tuple[dict[str, An
+             if isinstance(candidate.get("_b_summary"), Mapping)
+             else planning.get("declared_content_depth")
+         ),
++        "usage_limits": usage_limits,
++        "usage_limits_authoritative": bool(card_loaded),
+     }
+ 
+ 
+@@ -1429,6 +1455,8 @@ def build_local_material_payload(
+         "study_summary_A": a,
+         "review_planning_B": b,
+         "external_calls": 0,
++        **({"usage_limits": identity.get("usage_limits") or {}}
++           if identity.get("usage_limits_authoritative") or identity.get("usage_limits") else {}),
+         **{key: identity[key] for key in ("material_identity_conflict", "material_identity_conflicts") if key in identity},
+     }
+     # Supplement results are persisted on pool rows under the gap-specific
+@@ -1697,7 +1725,7 @@ def build_candidate_navigation(
+         "omitted_candidate_count": max(0, len(rows) - len(navigation)),
+         "local_search": search_meta,
+         "access_contract": {
+-            "material_fields": ["study_summary_A", "review_planning_B", "local_passages", "deep_read_material"],
++            "material_fields": ["study_summary_A", "review_planning_B", "usage_limits", "local_passages", "deep_read_material"],
+             "external_calls": 0,
+             "unassigned_material_is_optional": True,
+         },
+@@ -2766,6 +2794,13 @@ def _resolve_owner_source_materials(
+                 for key in plurals[1:]:
+                     if key in merged:
+                         merged[key] = values[1:]
++        if prefer_incoming and "usage_limits" in incoming:
++            # A refreshed card is authoritative for its use contract.  An
++            # empty value clears a stale contract from an older packet.
++            if incoming.get("usage_limits") in (None, "", [], {}):
++                merged.pop("usage_limits", None)
++            else:
++                merged["usage_limits"] = incoming["usage_limits"]
+         for key in ("tool_materials", "tool_supplement_materials"):
+             if key not in current and key not in incoming:
+                 continue
+@@ -2990,6 +3025,11 @@ def run_feedback_loop(
+     # runner.  This keeps identical retries from repeating paid actions while
+     # still invalidating the cache when a same-handle card changed.
+     probe_packet = dict(packet)
++    packet_source_rows = [dict(item) for item in (packet.get("source_materials") or ()) if isinstance(item, Mapping)]
++    refreshed_packet_sources: list[dict[str, Any]] | None = None
++    if packet_source_rows:
++        refreshed_packet = _refresh_local_material_snapshots([{"source_materials": packet_source_rows}])[0]
++        refreshed_packet_sources = refreshed_packet.get("source_materials") or packet_source_rows
+     previous_artifact = Path(str(previous_pointer.get("artifact_dir") or ""))
+     previous_packet_path = previous_artifact / "UPDATED_WRITER_PACKET.json"
+     if previous_packet_path.is_file():
+@@ -3096,6 +3136,11 @@ def run_feedback_loop(
+     staging_dir = target_dir / (resume_signature + ".staging")
+     staging_dir.mkdir(parents=True, exist_ok=True)
+     working_packet = dict(packet)
++    if refreshed_packet_sources is not None:
++        # The probe is also the authoritative local card snapshot for the
++        # actual owner call.  A changed card must reach the owner, not merely
++        # change the resume signature.
++        working_packet["source_materials"] = refreshed_packet_sources
+     action_result: dict[str, Any] = {}
+     material_changed = False
+     tool_materials: list[dict[str, Any]] = []
+@@ -3584,7 +3629,7 @@ def _directed_task_requirements(task: Mapping[str, Any] | None) -> dict[str, Any
+         raw_questions = [task.get("question")]
+     if isinstance(raw_questions, (str, Mapping)):
+         raw_questions = [raw_questions]
+-    focus = task.get("focus_areas") or task.get("focus") or []
++    focus = task.get("focus_areas") or task.get("focus") or task.get("focus_area") or []
+     if isinstance(focus, (str, Mapping)):
+         focus = [focus]
+     if not isinstance(raw_questions, (list, tuple)) or not isinstance(focus, (list, tuple)):
+@@ -3603,7 +3648,7 @@ def _directed_task_requirements(task: Mapping[str, Any] | None) -> dict[str, Any
+         question = _text(item.get("question") or item.get("ask") or item.get("what_to_extract"))
+         if not question:
+             raise ProgressivePlanError(f"directed_request_question_missing:{index}")
+-        purpose = _text(item.get("purpose") or item.get("use") or item.get("required_output") or question)
++        purpose = _text(item.get("purpose") or item.get("use") or item.get("required_output") or task.get("integration_goal") or question)
+         output_ids = item.get("required_output_ids") or item.get("output_ids") or []
+         if isinstance(output_ids, str):
+             output_ids = [output_ids]
+@@ -3616,7 +3661,7 @@ def _directed_task_requirements(task: Mapping[str, Any] | None) -> dict[str, Any
+                 outputs.append({
+                     "output_id": output_id,
+                     "output_type": "practical_material",
+-                    "description": _text(item.get("purpose") or item.get("required_output") or question),
++                    "description": _text(item.get("purpose") or item.get("required_output") or task.get("integration_goal") or question),
+                 })
+                 output_ids.append(output_id)
+         questions.append({
+@@ -3830,6 +3875,7 @@ class ProgressiveReviewPlanner:
+         # Material envelopes retain operational paths/timestamps. Protect their
+         # substantive children, rather than treating an entire envelope as science.
+         scientific_fields = {"study_summary_A", "review_planning_B", "B_review_planning",
++                             "usage_limits",
+                              "conditions", "finding", "findings", "content", "question_material",
+                              "paragraph_briefs", "required_outputs"}
+ 
+@@ -5897,6 +5943,12 @@ class ProgressiveReviewPlanner:
+                 if owner_record.get("status") == "complete" and owner_record.get("source_materials") is not None:
+                     packet = detail_by_id.get(_text(owner_record.get("chapter_id")))
+                     if packet is not None:
++                        # Keep the request that produced this accepted owner
++                        # result in the exported handoff, including cache reuse.
++                        owner_input = owner_record.get("cache_inputs") or {}
++                        for key in ("editorial_feedback_for_chapter", "chapter_feedback"):
++                            if key in owner_input:
++                                packet[key] = owner_input[key]
+                         packet["source_materials"] = owner_record["source_materials"]
+                         identity_map = dict(packet.get("source_identity_map") or {})
+                         for material in packet["source_materials"]:
+@@ -6234,6 +6286,7 @@ class ProgressiveReviewPlanner:
+                     "material_depth": item.get("material_depth"),
+                     "study_summary_A": item.get("study_summary_A") or {},
+                     "planning_material": item.get("review_planning_B"),
++                    **({"usage_limits": item["usage_limits"]} if item.get("usage_limits") else {}),
+                     "supplement_material": item.get("supplement_gap_material") or {},
+                     "supplement_materials": [
+                         dict(supplement) for supplement in (item.get("supplement_gap_materials") or [])
+@@ -7337,15 +7390,19 @@ def _attach_case_groups(
+     return result
+ 
+ 
+-def _card_for_candidate(candidate: Mapping[str, Any]) -> dict[str, Any]:
++def _card_for_candidate_with_status(candidate: Mapping[str, Any]) -> tuple[dict[str, Any], bool]:
+     path = Path(str(candidate.get("card_path") or ""))
+     if not path.is_file():
+-        return {}
++        return {}, False
+     try:
+         value = json.loads(path.read_text(encoding="utf-8-sig"))
+     except (OSError, UnicodeError, json.JSONDecodeError):
+-        return {}
+-    return dict(value) if isinstance(value, Mapping) else {}
++        return {}, False
++    return (dict(value), True) if isinstance(value, Mapping) else ({}, False)
++
++
++def _card_for_candidate(candidate: Mapping[str, Any]) -> dict[str, Any]:
++    return _card_for_candidate_with_status(candidate)[0]
+ 
+ 
+ def _supply_local_citation_identity(value: Any, identity_map: Mapping[str, Any]) -> Any:
+@@ -8903,7 +8960,7 @@ def _chapter_review_source_materials(
+                 "source_handle", "paper_id", "title", "doi", "year", "material_depth",
+                 "study_summary_A", "review_planning_B", "supplement_gap_material",
+                 "supplement_gap_materials", "supplement_material", "supplement_materials",
+-                "local_passages", "tool_materials", "tool_supplement_materials", "material_identity_conflict",
++                "usage_limits", "local_passages", "tool_materials", "tool_supplement_materials", "material_identity_conflict",
+             )
+             if key in item
+         }
+diff --git a/scripts/upgrade3/outline_strengthening_pipeline.py b/scripts/upgrade3/outline_strengthening_pipeline.py
+index 51dd18c..d6aa9a8 100644
+--- a/scripts/upgrade3/outline_strengthening_pipeline.py
++++ b/scripts/upgrade3/outline_strengthening_pipeline.py
+@@ -55,7 +55,7 @@ def _source_provenance() -> dict:
+     return {'git_commit': commit, 'executed_source_files_sha256': hashes, 'source_fingerprint': _hash(hashes)}
+ 
+ 
+-def load_complete_packets(packet_root: Path) -> tuple[dict, dict[str, dict]]:
++def load_complete_packets(packet_root: Path, *, prepare_strengthening: bool = True) -> tuple[dict, dict[str, dict]]:
+     """Use the exact planner manifest, never infer completeness from a group file."""
+     plan = _load(packet_root / 'DETAILED_REVIEW_PLAN.json')
+     descriptors = plan.get('writer_packets') or []
+@@ -80,8 +80,14 @@ def load_complete_packets(packet_root: Path) -> tuple[dict, dict[str, dict]]:
+         envelope = cli._payload(raw)
+         if not (envelope.get('chapter_plan') or {}).get('units'):
+             raise ValueError('complete_plan_chapter_tasks_required:' + chapter_id)
+-        packets[chapter_id] = {**copy.deepcopy(raw), **envelope}
+-        packets[chapter_id]['input_integrity'] = strengthening._input_integrity(packets[chapter_id])
++        if prepare_strengthening:
++            packets[chapter_id] = {**copy.deepcopy(raw), **envelope}
++            packets[chapter_id]['input_integrity'] = strengthening._input_integrity(packets[chapter_id])
++        else:
++            # A plain component handoff preserves the planner's request audit;
++            # it does not opt into the autonomous feature's empty-issue input.
++            packets[chapter_id] = copy.deepcopy(raw)
++            packets[chapter_id]['chapter_plan'] = copy.deepcopy(envelope['chapter_plan'])
+     declared = [str(row.get('chapter_id')) for row in plan.get('shared_outline') or [] if row.get('chapter_id')]
+     if declared and set(declared) != set(packets):
+         raise ValueError('complete_plan_packet_coverage_mismatch')
+diff --git a/scripts/upgrade3/progressive_review_plan.py b/scripts/upgrade3/progressive_review_plan.py
+index a0e865a..c81b66c 100644
+--- a/scripts/upgrade3/progressive_review_plan.py
++++ b/scripts/upgrade3/progressive_review_plan.py
+@@ -153,7 +153,7 @@ def post_planning_handoff(cfg, args, plan_result):
+     else:
+         # A partial scientific revision can still supply every valid chapter;
+         # genuinely missing chapters/tasks must not become a usable handoff.
+-        base_plan, packets = strengthening_pipeline.load_complete_packets(cfg.output_dir)
++        base_plan, packets = strengthening_pipeline.load_complete_packets(cfg.output_dir, prepare_strengthening=False)
+         output = cfg.output_dir.with_name(cfg.output_dir.name + ".unstrengthened")
+         target = strengthening_pipeline.export_complete_plan(base_plan, packets, output,
+             provenance={"status": "original_valid_plan", "groups": [], "outline_strengthening_enabled": False})
+diff --git a/tests/upgrade3/test_body04_owner_material_handoff.py b/tests/upgrade3/test_body04_owner_material_handoff.py
+index 0c94898..2f49925 100644
+--- a/tests/upgrade3/test_body04_owner_material_handoff.py
++++ b/tests/upgrade3/test_body04_owner_material_handoff.py
+@@ -192,3 +192,145 @@ def test_direct_ab_identity_rejects_foreign_card_but_not_cited_example(tmp_path,
+     assert refreshed['material_identity_conflict'] and 'FOREIGN_NESTED' not in json.dumps(refreshed)
+     card.write_text(json.dumps({'general_understanding':{'finding':'SAME_STUDY_FINDING', 'examples':[{'paper_identity':{'canonical_paper_id':'cited-original'},'finding':'Legitimate review account'}]}}))
+     assert p._owner_material_has_content(p.build_local_material_payload(raw))
++
++
++def test_card_usage_limits_survive_prompt_handoff_and_cache_contract(tmp_path):
++    usage_limits = {
++        'allowed': ['background_context', 'explicit_objectives', 'explicit_method_summaries',
++                    'explicit_reported_findings', 'explicit_leads'],
++        'prohibited': ['upgrade_abstract_or_snippet_to_fulltext',
++                       'infer_unstated_methods_controls_or_limitations',
++                       'treat_metadata_only_as_abstract', 'certify_semantic_truth_from_a_quote'],
++        'unknown_rule': 'A detail not stated in supplied material remains unknown; absence is not evidence of absence.',
++    }
++    card = tmp_path / 'card.json'
++    card.write_text(json.dumps({
++        'general_understanding': {'finding': 'A bounded source finding'},
++        'review_planning': {'planning_summary': 'Use the bounded source finding'},
++        'material': {'usage_limits': usage_limits},
++    }))
++    row = {'_paper_id': 'paper-P0001', '_source_handle': 'P0001', 'title': 'Study P0001',
++           'card_path': str(card)}
++    payload = p.build_local_material_payload(row)
++    assert payload['usage_limits'] == usage_limits
++
++    class Recorder:
++        model = 'offline-model'
++        chapter_model = 'offline-chapter'
++        output_tokens = 4096
++        thinking_budget = 0
++
++        def __init__(self):
++            self.calls = []
++
++        def __call__(self, stage, value):
++            assert stage == 'chapter_details'
++            self.calls.append(copy.deepcopy(value))
++            return {'chapter_plan': {'units': [{
++                'unit_id': 'CH01_U01',
++                'paragraph_briefs': [{'point': 'Use the bounded finding', 'source_handles': ['P0001']}],
++            }]}}
++
++    recorder = Recorder()
++    engine = p.ProgressiveReviewPlanner(p.ProgressivePlannerConfig(
++        topic_id='usage-limits', plan_path=tmp_path / 'PLAN.json', pool_path=tmp_path / 'POOL.jsonl',
++        output_dir=tmp_path / 'run', chapter_workers=1,
++    ), planner=recorder)
++    chapter = {'chapter_id': 'CH01', 'title': 'Bounded source', 'source_ids': ['paper-P0001']}
++    packets = engine._chapter_details(
++        chapters=[chapter], shared_outline=[chapter], topic='Bounded source',
++        candidates={'paper-P0001': row}, candidate_pool=[row], level1_tools={}, level2_tools={},
++        resume=False, state={},
++    )
++    assert recorder.calls[0]['source_materials'][0]['usage_limits'] == usage_limits
++    assert packets[0]['source_materials'][0]['usage_limits'] == usage_limits
++    handoff = p._chapter_review_source_materials(packets[0], include_deep_read=True)
++    assert handoff[0]['usage_limits'] == usage_limits
++
++    changed = copy.deepcopy(payload)
++    changed['usage_limits']['unknown_rule'] = 'Changed local contract remains unknown.'
++    assert engine._cache_contract('chapter_details', {'source_materials': [payload]}) != engine._cache_contract(
++        'chapter_details', {'source_materials': [changed]})
++
++
++def test_removed_card_usage_limits_clear_fresh_merge_and_recovery(tmp_path):
++    usage_limits = {
++        'allowed': ['background_context'],
++        'prohibited': ['infer_unstated_methods_controls_or_limitations'],
++        'unknown_rule': 'A detail not stated in supplied material remains unknown; absence is not evidence of absence.',
++    }
++    card = tmp_path / 'card.json'
++    card.write_text(json.dumps({
++        'general_understanding': {'finding': 'A bounded source finding'},
++        'review_planning': {'planning_summary': 'Use the bounded source finding'},
++        'material': {'usage_limits': usage_limits},
++    }))
++    raw = {'_paper_id': 'paper-P0001', '_source_handle': 'P0001', 'title': 'Study P0001',
++           'card_path': str(card)}
++    prior = {**p.build_local_material_payload(raw), 'card_path': str(card)}
++    assert prior['usage_limits'] == usage_limits
++
++    card.write_text(json.dumps({
++        'general_understanding': {'finding': 'A bounded source finding'},
++        'review_planning': {'planning_summary': 'Use the bounded source finding'},
++        'material': {},
++    }))
++    refreshed = p._refresh_local_material_snapshots([{'source_materials': [prior]}])[0]['source_materials'][0]
++    assert 'usage_limits' not in refreshed
++    rows, report = p._resolve_owner_source_materials(
++        source_materials=[prior], chapter_plan=plan('P0001'), pool_rows=[raw],
++    )
++    assert not report['unresolved']
++    assert not rows[0].get('usage_limits')
++    recovered = p._recovery_pool_material('P0001', raw)
++    assert recovered.get('usage_limits') == {}
++
++    engine = p.ProgressiveReviewPlanner(p.ProgressivePlannerConfig(
++        topic_id='usage-removal', plan_path=tmp_path / 'PLAN.json', pool_path=tmp_path / 'POOL.jsonl',
++        output_dir=tmp_path / 'run',
++    ), planner=lambda *_: {})
++    current = p.build_local_material_payload(raw)
++    assert current.get('usage_limits') == {}
++    assert engine._cache_contract('chapter_details', {'source_materials': [prior]}) != engine._cache_contract(
++        'chapter_details', {'source_materials': [current]})
++
++
++def test_changed_card_limits_reach_editorial_feedback_owner(tmp_path):
++    usage_limits = {
++        'allowed': ['background_context'],
++        'prohibited': ['infer_unstated_methods_controls_or_limitations'],
++        'unknown_rule': 'A detail not stated in supplied material remains unknown; absence is not evidence of absence.',
++    }
++    card = tmp_path / 'card.json'
++    card.write_text(json.dumps({
++        'general_understanding': {'finding': 'A refreshed bounded finding'},
++        'review_planning': {'planning_summary': 'A refreshed bounded plan'},
++        'material': {'usage_limits': usage_limits},
++    }))
++    packet_path = tmp_path / 'packet.json'
++    packet_path.write_text(json.dumps({
++        'chapter': {'chapter_id': 'CH01'},
++        'chapter_plan': plan('P0001'),
++        'source_materials': [{
++            'source_handle': 'P0001', 'paper_id': 'paper-P0001', 'title': 'Study P0001',
++            'card_path': str(card), 'study_summary_A': {'finding': 'Old packet finding'},
++        }],
++    }))
++    arrangement_path = tmp_path / 'arrangement.json'
++    arrangement_path.write_text(json.dumps({'issues': [{'action': 'chapter_owner', 'problem': 'Recheck the source limits'}]}))
++    owner_calls = []
++
++    def owner(stage, payload):
++        assert stage == 'affected_chapter_revision'
++        owner_calls.append(copy.deepcopy(payload))
++        assert payload['source_materials'][0]['usage_limits'] == usage_limits
++        return {'status': 'no_change', 'updated_plan': plan('P0001')}
++
++    result = p.run_feedback_loop(
++        packet_path=packet_path, arrangement_path=arrangement_path,
++        arrangement={'issues': [{'action': 'chapter_owner', 'problem': 'Recheck the source limits'}]},
++        owner_planner=owner, arrangement_runner=lambda *_: {'units': [{'unit_id': 'U1', 'source_handles': ['P0001']}]},
++        writer_runner=lambda *_: {'body_markdown': 'unused', 'complete': True}, output_dir=tmp_path / 'run',
++    )
++    assert result['status'] == 'reused'
++    assert len(owner_calls) == 1
+diff --git a/tests/upgrade3/test_directed_request_singular_focus.py b/tests/upgrade3/test_directed_request_singular_focus.py
+new file mode 100644
+index 0000000..bb9049c
+--- /dev/null
++++ b/tests/upgrade3/test_directed_request_singular_focus.py
+@@ -0,0 +1,29 @@
++"""Regression for real planning output using singular focus_area."""
++import pytest
++
++from optomind_research.runtime.upgrade3 import progressive_review_plan as p
++
++
++def test_singular_focus_and_integration_goal_reach_reader_and_cache():
++    request = {
++        'paper_id': 'source-one', 'source_handle': 'P0001',
++        'focus_area': 'Extract the assumptions and stated measurement conditions.',
++        'integration_goal': 'Support the chapter comparison with attributed conditions.',
++        'usage_constraints': 'Do not infer missing numerical measurements.',
++    }
++    merged = p._merge_directed_tasks([request])[0]
++    assert merged['questions'][0]['question'] == request['focus_area']
++    assert request['integration_goal'] in merged['questions'][0]['purpose']
++    assert request['usage_constraints'] in merged['questions'][0]['purpose']
++    assert merged['required_outputs'][0]['description'] == request['integration_goal']
++    assert p._directed_task_signature(merged) == p._directed_task_signature(request)
++    assert p._merge_directed_tasks([merged]) == [merged]
++    changed = {**request, 'integration_goal': 'Use only the explicitly compared conditions.'}
++    assert p._directed_task_signature(changed) != p._directed_task_signature(request)
++
++
++@pytest.mark.parametrize('focus', ['', {}, []])
++def test_empty_singular_focus_still_fails_without_invented_question(focus):
++    with pytest.raises(p.ProgressivePlanError, match='question_missing'):
++        p._merge_directed_tasks([{'paper_id': 'source-one', 'focus_area': focus,
++                                 'integration_goal': 'Chapter purpose alone is not a reading question.'}])
+diff --git a/tests/upgrade3/test_progressive_review_plan_outline_strengthening.py b/tests/upgrade3/test_progressive_review_plan_outline_strengthening.py
+index e3536eb..1bacdc8 100644
+--- a/tests/upgrade3/test_progressive_review_plan_outline_strengthening.py
++++ b/tests/upgrade3/test_progressive_review_plan_outline_strengthening.py
+@@ -2,6 +2,7 @@
+ from __future__ import annotations
+ 
+ import copy
++import argparse
+ import json
+ from pathlib import Path
+ 
+@@ -15,6 +16,24 @@ from optomind_research.runtime.upgrade3.module4.runtime import GlobalBudgetLedge
+ from test_outline_promotion_pipeline import fixture_root, fake_factory
+ 
+ 
++def test_disabled_strengthening_exports_current_planning_feedback(tmp_path):
++    root, packet = fixture_root(tmp_path)
++    packet.pop('autonomous_outline_strengthening')
++    feedback = [{'chapter_id': 'CH01', 'feedback': 'Preserve supplied source usage restrictions'}]
++    packet['editorial_feedback_for_chapter'] = feedback
++    packet['chapter_feedback'] = feedback
++    pipeline._dump(root / 'writer_packets/CH01.json', packet)
++    result = cli.post_planning_handoff(argparse.Namespace(output_dir=root),
++        argparse.Namespace(outline_strengthening=False, stop_after=''), {'status': 'complete'})
++    exported = pipeline._load(Path(result['packet_root']) / 'writer_packets/CH01.json')
++    assert exported['editorial_feedback_for_chapter'] == feedback
++    assert exported['chapter_feedback'] == feedback
++    assert exported['chapter_plan'] == packet['chapter_plan']
++    # Preparing the separate autonomous feature still excludes manual controls.
++    _, autonomous = pipeline.load_complete_packets(root)
++    assert autonomous['CH01']['editorial_feedback_for_chapter'] == []
++
++
+ def setup_cli(tmp_path, monkeypatch):
+     _, packet = fixture_root(tmp_path)
+     plan = tmp_path / 'PLAN.json'
+diff --git a/tests/upgrade3/test_progressive_review_plan_owner_recovery_contract.py b/tests/upgrade3/test_progressive_review_plan_owner_recovery_contract.py
+index 4cde700..8ce1ab1 100644
+--- a/tests/upgrade3/test_progressive_review_plan_owner_recovery_contract.py
++++ b/tests/upgrade3/test_progressive_review_plan_owner_recovery_contract.py
+@@ -54,7 +54,7 @@ class Boundary:
+         return {"status": "updated", "chapter_updates": [{"chapter_id": cid, "updated_plan": plan}]}
+ 
+ 
+-def review(root, packets, boundary, *, recovery_root=None, pool=(), resume=True, read_materials=None, planner_model="offline-owner-v1"):
++def review(root, packets, boundary, *, recovery_root=None, pool=(), resume=True, read_materials=None, planner_model="offline-owner-v1", editorial_feedback=None):
+     config = ProgressivePlannerConfig(topic_id="topic", pool_path=root / "unused-pool", plan_path=root / "unused-plan",
+                                       output_dir=root, planning_revision_enabled=True, chapter_workers=1, planner_model=planner_model)
+     planner = ProgressiveReviewPlanner(config, planner=boundary)
+@@ -67,7 +67,7 @@ def review(root, packets, boundary, *, recovery_root=None, pool=(), resume=True,
+         _atomic_json(root / "recovery_report.json", report)
+     output, improvement, _ = planner._post_case_review(root=root, topic="question", harmonized={"shared_outline": shared},
+         level1_outline={}, detail_records=packets, baseline_detail_records=packets, case_record={}, level1_tool_result={},
+-        level2_tool_result={}, chapter_tool_result={}, editorial_feedback={}, pool_rows=pool, resume=resume, state={})
++        level2_tool_result={}, chapter_tool_result={}, editorial_feedback=editorial_feedback or {}, pool_rows=pool, resume=resume, state={})
+     final = planner._assemble_final(topic="question", plan={}, pool_rows=pool, provisional={}, level1_outline={}, harmonized={},
+         chapters=[row["chapter"] for row in packets], chapter_records=output, level1_tools={}, level2_tools={}, improvement=improvement)
+     _atomic_json(root / "FINAL_FIXTURE.json", final)
+@@ -190,6 +190,20 @@ def test_no_owner_work_preserves_normal_plan(tmp_path):
+     assert not (tmp_path / "run/stages/affected_chapter_revision/CH01.json").exists()
+ 
+ 
++def test_current_editorial_feedback_survives_final_handoff_and_cached_owner(tmp_path):
++    item = packet()
++    item['editorial_feedback_for_chapter'] = [{'chapter_id': 'CH01', 'feedback': 'stale request'}]
++    boundary = Boundary(tmp_path / 'run', ['CH01'])
++    feedback = {'edits': [{'chapter_id': 'CH01', 'feedback': 'Keep source usage restrictions explicit'}]}
++    first = review(tmp_path / 'run', [item], boundary, editorial_feedback=feedback)
++    final_packet = first['chapters'][0]
++    assert final_packet['editorial_feedback_for_chapter'] == feedback['edits']
++    assert feedback['edits'][0] in final_packet['chapter_feedback']
++    second = review(tmp_path / 'run', [item], boundary, editorial_feedback=feedback)
++    assert second['chapters'][0]['editorial_feedback_for_chapter'] == feedback['edits']
++    assert len([stage for stage, _ in boundary.calls if stage == 'affected_chapter_revision']) == 1
++
++
+ @pytest.mark.parametrize("field", ["study_summary_A", "review_planning_B", "deep_read_material", "supplement_gap_material", "local_passages"])
+ def test_recovery_rejects_changes_in_every_consumed_material_channel(tmp_path, field):
+     material = {"source_handle": "P0001", "paper_id": "paper-1", field: {"text": "previous condition"}}
+diff --git a/tests/upgrade3/test_retrieval_terminal_replay.py b/tests/upgrade3/test_retrieval_terminal_replay.py
+new file mode 100644
+index 0000000..d9c4d81
+--- /dev/null
++++ b/tests/upgrade3/test_retrieval_terminal_replay.py
+@@ -0,0 +1,69 @@
++"""Resume preserves cumulative material status and the original stop decision."""
++import json
++
++import pytest
++
++from optomind_research.runtime.upgrade3.planning_material_search import PlanningMaterialIndex
++from optomind_research.runtime.upgrade3.planning_retrieval_loop import (
++    InformationNeed, LoopConfig, RetrievalJournal, _need_signature, run_retrieval_loop,
++)
++
++
++@pytest.fixture
++def case(tmp_path):
++    config = LoopConfig(index_path=tmp_path / 'index.sqlite', journal_path=tmp_path / 'journal.jsonl', max_rounds=3)
++    with PlanningMaterialIndex(config.index_path) as index:
++        index.commit()
++    need = InformationNeed('bounded-need', 'Which conditions remain unknown?', owners=('CH1',))
++    return config, need
++
++
++@pytest.mark.parametrize('stop', ['stopped_no_query', 'stopped_same_query', 'stopped_budget', 'stopped_no_new_content'])
++@pytest.mark.parametrize('content', ['', 'A supplied partial measurement.'])
++def test_terminal_journal_replay_preserves_material_status_and_stop(case, stop, content):
++    config, need = case
++    journal = RetrievalJournal(config.journal_path)
++    journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 1,
++                    'status': 'partial', 'action': 'external_research', 'usable_content': content,
++                    'still_missing': need.question})
++    journal.record({'need_id': need.need_id, 'need_signature': _need_signature(need), 'round': 2,
++                    'status': stop, 'action': 'stop', 'usable_content': content,
++                    'still_missing': need.question, 'empty_rounds': 1})
++    original = config.journal_path.read_bytes()
++
++    def unexpected(*args, **kwargs):
++        pytest.fail('Ordinary terminal resume must not request another scientific or model round')
++
++    result = run_retrieval_loop([need], config, local_triage=unexpected, external_closure=unexpected, refine_queries=unexpected)
++    expected = 'partial' if content and stop != 'stopped_no_new_content' else 'stopped'
++    state = result['needs'][0]
++    assert state['status'] == expected
++    assert state['action'] == 'stop'
++    assert state['usable_content'] == content
++    assert state['still_missing'] == need.question
++    assert state['rounds'] == 2
++    assert state['empty_rounds'] == 1
++    assert result['owner_content'][need.need_id]['CH1']['status'] == expected
++    assert config.journal_path.read_bytes() == original
++
++
++def test_fresh_no_query_stop_and_resume_return_same_partial_material(case):
++    config, original = case
++    need = InformationNeed(original.need_id, original.question, owners=original.owners, round_specs=(
++        {'round': 1, 'targeted_queries': [{'query_type': 'keyword', 'query_text': 'measurement conditions'}]},
++    ))
++    calls = []
++
++    def external(**kwargs):
++        calls.append(kwargs)
++        return {'status': 'partial', 'usable_content': 'A supplied partial measurement.', 'still_missing': need.question}
++
++    first = run_retrieval_loop([need], config, external_closure=external)
++    saved = config.journal_path.read_bytes()
++    assert json.loads(saved.splitlines()[-1])['status'] == 'stopped_no_query'
++    second = run_retrieval_loop([need], config, external_closure=external)
++    for key in ('status', 'action', 'usable_content', 'still_missing', 'rounds', 'empty_rounds'):
++        assert first['needs'][0][key] == second['needs'][0][key]
++    assert first['needs'][0]['status'] == 'partial'
++    assert len(calls) == 1
++    assert config.journal_path.read_bytes() == saved

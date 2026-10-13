@@ -1,0 +1,23 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+___ test_current_editorial_feedback_survives_final_handoff_and_cached_owner ___
+
+tmp_path = WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1778/test_current_editorial_feedbac0')
+
+    def test_current_editorial_feedback_survives_final_handoff_and_cached_owner(tmp_path):
+        item = packet()
+        item['editorial_feedback_for_chapter'] = [{'chapter_id': 'CH01', 'feedback': 'stale request'}]
+        boundary = Boundary(tmp_path / 'run', ['CH01'])
+        feedback = {'edits': [{'chapter_id': 'CH01', 'feedback': 'Keep source usage restrictions explicit'}]}
+        first = review(tmp_path / 'run', [item], boundary, editorial_feedback=feedback)
+        final_packet = first['chapters'][0]
+>       assert final_packet['editorial_feedback_for_chapter'] == feedback['edits']
+E       AssertionError: assert [{'chapter_id...ale request'}] == [{'chapter_id...ns explicit'}]
+E         
+E         At index 0 diff: {'chapter_id': 'CH01', 'feedback': 'stale request'} != {'chapter_id': 'CH01', 'feedback': 'Keep source usage restrictions explicit'}
+E         Use -v to get more diff
+
+tests\upgrade3\test_progressive_review_plan_owner_recovery_contract.py:200: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/upgrade3/test_progressive_review_plan_owner_recovery_contract.py::test_current_editorial_feedback_survives_final_handoff_and_cached_owner
+1 failed, 25 deselected in 1.35s

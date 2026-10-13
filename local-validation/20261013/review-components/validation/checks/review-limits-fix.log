@@ -1,0 +1,163 @@
+Review card usage_limits bounded repair
+Repository: D:\OptoMind-Article-3\repos\OptoMInd-Review
+Scope: progressive_review_plan.py + tests/upgrade3/test_body04_owner_material_handoff.py
+Network/API/full Review run: none
+
+PRE-FIX REGRESSION (expected failure before source repair)
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py::test_card_usage_limits_survive_prompt_handoff_and_cache_contract
+Observed: exit 1; KeyError: usage_limits at the new payload assertion.
+
+POST-FIX FOCUSED OWNER/CACHE
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py tests/upgrade3/test_progressive_review_plan_chapter_cache_contract.py
+...................................                                      [100%]
+35 passed in 0.96s
+
+POST-FIX RECORDED TRIAL HANDOFFS
+Command: python -m pytest -q tests/upgrade3/test_progressive_review_plan_trial_handoffs.py
+............                                                             [100%]
+12 passed in 2.23s
+
+POST-FIX NEW LOCAL READING HANDOFF
+Command: python -m pytest -q tests/upgrade3/test_body07_reading_owner_short_chain.py
+....                                                                     [100%]
+4 passed in 2.08s
+
+POST-FIX COMBINED COUNT
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py tests/upgrade3/test_progressive_review_plan_chapter_cache_contract.py tests/upgrade3/test_progressive_review_plan_trial_handoffs.py tests/upgrade3/test_body07_reading_owner_short_chain.py
+...................................................                      [100%]
+51 passed in 3.62s
+
+STATIC CHECKS
+Command: python -m py_compile optomind_research/runtime/upgrade3/progressive_review_plan.py tests/upgrade3/test_body04_owner_material_handoff.py
+Command: git diff --check
+
+FOLLOW-UP: AUTHORITATIVE CARD CONTRACT REMOVAL
+Source behavior: successful fresh card reads emit usage_limits={} when material.usage_limits is absent; invalid/missing cards emit no field.
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py::test_removed_card_usage_limits_clear_fresh_merge_and_recovery
+.                                                                        [100%]
+1 passed in 0.77s
+
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py tests/upgrade3/test_progressive_review_plan_chapter_cache_contract.py tests/upgrade3/test_progressive_review_plan_trial_handoffs.py
+....................................F......F.F..                         [100%]
+================================== FAILURES ===================================
+___ test_recorded_final_scope_preserves_three_scoped_chapters_and_identity ____
+
+    def test_recorded_final_scope_preserves_three_scoped_chapters_and_identity():
+        before = saved('harmonized_scope')
+        before['chapters'] = p.ProgressiveReviewPlanner._harmonized_chapters(before, saved('chapter_proposals'))
+        final = saved('finalize_chapter_scope')
+        result = p.ProgressiveReviewPlanner._finalized_scope(before, final)
+        assert [row['chapter_id'] for row in result['chapters']] == ['CH1', 'CH2', 'CH3']
+        assert result['shared_outline']['central_question'] == final['shared_outline']['central_question']
+        for actual, expected in zip(result['chapters'], final['chapters']):
+            assert actual['substantive_threads'] == expected['substantive_threads']
+            assert actual['scope'] == expected['scope']
+        partial = p.ProgressiveReviewPlanner._partial_result('Topic', {}, saved('provisional_scope'),
+            saved('level1_outline'), saved('level1_tools'), 'level2', harmonized=result,
+>           level2_tools=saved('level2_tools'), source_identity_map=identities())
+
+tests\upgrade3\test_progressive_review_plan_trial_handoffs.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\upgrade3\test_progressive_review_plan_trial_handoffs.py:20: in identities
+    pool = [json.loads(line) for line in (TRIAL / 'planning-pool/PLANNING_POOL.jsonl').read_text().splitlines() if line.strip()]
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/OptoMind-Article-3/repos/OptoMInd-Review/outputs/local-functional-trial/20261013/review/planning-pool/PLANNING_POOL.jsonl')
+encoding = 'locale', errors = None
+
+    def read_text(self, encoding=None, errors=None):
+        """
+        Open the file in text mode, read it, and close the file.
+        """
+        encoding = io.text_encoding(encoding)
+        with self.open(mode='r', encoding=encoding, errors=errors) as f:
+>           return f.read()
+E           UnicodeDecodeError: 'gbk' codec can't decode byte 0xa6 in position 7827: illegal multibyte sequence
+
+C:\Anaconda\Lib\pathlib.py:1028: UnicodeDecodeError
+______ test_invalid_supplements_and_conflicting_identity_fail_explicitly ______
+
+    def test_invalid_supplements_and_conflicting_identity_fail_explicitly():
+        with pytest.raises(p.ProgressivePlanError, match='supplement_request_question_missing'):
+            p._normalize_gaps([{'need_id': 'lost-need'}])
+        distinct = p._normalize_gaps([{'gap_id': 'same', 'question': 'One'}, {'gap_id': 'same', 'question': 'Two'}])
+        assert len(distinct) == 2 and distinct[0]['gap_id'] != distinct[1]['gap_id']
+        assert [row['gap_question'] for row in distinct] == ['One', 'Two']
+        with pytest.raises(p.ProgressivePlanError, match='evidence_source_identity_conflict'):
+>           p._bind_scope_source_identities({'evidence_base': [{'source_handle': 'P0001', 'paper_id': 'wrong'}]}, identities())
+
+tests\upgrade3\test_progressive_review_plan_trial_handoffs.py:117: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\upgrade3\test_progressive_review_plan_trial_handoffs.py:20: in identities
+    pool = [json.loads(line) for line in (TRIAL / 'planning-pool/PLANNING_POOL.jsonl').read_text().splitlines() if line.strip()]
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/OptoMind-Article-3/repos/OptoMInd-Review/outputs/local-functional-trial/20261013/review/planning-pool/PLANNING_POOL.jsonl')
+encoding = 'locale', errors = None
+
+    def read_text(self, encoding=None, errors=None):
+        """
+        Open the file in text mode, read it, and close the file.
+        """
+        encoding = io.text_encoding(encoding)
+        with self.open(mode='r', encoding=encoding, errors=errors) as f:
+>           return f.read()
+E           UnicodeDecodeError: 'gbk' codec can't decode byte 0xa6 in position 7827: illegal multibyte sequence
+
+C:\Anaconda\Lib\pathlib.py:1028: UnicodeDecodeError
+_____ test_recorded_stage_replay_runs_real_cli_and_preserves_stop_counts ______
+
+tmp_path = WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1774/test_recorded_stage_replay_run0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000020630378E60>
+capsys = <_pytest.capture.CaptureFixture object at 0x000002063037B170>
+
+    def test_recorded_stage_replay_runs_real_cli_and_preserves_stop_counts(tmp_path, monkeypatch, capsys):
+        from scripts.upgrade3 import progressive_review_plan as cli
+        from test_progressive_review_plan_outline_strengthening import setup_cli
+        argv, output, _, _ = setup_cli(tmp_path, monkeypatch)
+        plan = tmp_path / 'recorded-plan.json'
+        prior = json.loads((TRIAL / 'planning-02/PROGRESSIVE_REVIEW_PLAN.partial.json').read_text(encoding='utf-8'))
+        plan.write_text(json.dumps(prior['original_plan']), encoding='utf-8')
+        argv[argv.index('--plan') + 1] = str(plan)
+        relocated_pool = tmp_path / 'recorded-pool.jsonl'
+        rows = []
+>       for line in (TRIAL / 'planning-pool/PLANNING_POOL.jsonl').read_text().splitlines():
+
+tests\upgrade3\test_progressive_review_plan_trial_handoffs.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('D:/OptoMind-Article-3/repos/OptoMInd-Review/outputs/local-functional-trial/20261013/review/planning-pool/PLANNING_POOL.jsonl')
+encoding = 'locale', errors = None
+
+    def read_text(self, encoding=None, errors=None):
+        """
+        Open the file in text mode, read it, and close the file.
+        """
+        encoding = io.text_encoding(encoding)
+        with self.open(mode='r', encoding=encoding, errors=errors) as f:
+>           return f.read()
+E           UnicodeDecodeError: 'gbk' codec can't decode byte 0xa6 in position 7827: illegal multibyte sequence
+
+C:\Anaconda\Lib\pathlib.py:1028: UnicodeDecodeError
+=========================== short test summary info ===========================
+FAILED tests/upgrade3/test_progressive_review_plan_trial_handoffs.py::test_recorded_final_scope_preserves_three_scoped_chapters_and_identity
+FAILED tests/upgrade3/test_progressive_review_plan_trial_handoffs.py::test_invalid_supplements_and_conflicting_identity_fail_explicitly
+FAILED tests/upgrade3/test_progressive_review_plan_trial_handoffs.py::test_recorded_stage_replay_runs_real_cli_and_preserves_stop_counts
+3 failed, 45 passed in 1.50s
+
+Static checks: python -m py_compile ... ; git diff --check (pass)
+
+FOLLOW-UP UTF-8-CORRECTED TARGETED RUN
+The immediately preceding trial command omitted PYTHONUTF8 and reproduced the known cp936 fixture decode failures; rerun with PYTHONUTF8=1 is authoritative.
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py tests/upgrade3/test_progressive_review_plan_chapter_cache_contract.py tests/upgrade3/test_progressive_review_plan_trial_handoffs.py
+................................................                         [100%]
+48 passed in 2.40s
+
+FOLLOW-UP STATIC CHECKS
+Command: python -m py_compile optomind_research/runtime/upgrade3/progressive_review_plan.py tests/upgrade3/test_body04_owner_material_handoff.py
+Command: git diff --check
+
+FINAL POST-FIX TARGETED COUNT
+Command: python -m pytest -q tests/upgrade3/test_body04_owner_material_handoff.py tests/upgrade3/test_progressive_review_plan_chapter_cache_contract.py tests/upgrade3/test_progressive_review_plan_trial_handoffs.py tests/upgrade3/test_body07_reading_owner_short_chain.py
+....................................................                     [100%]
+52 passed in 3.64s
