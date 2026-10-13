@@ -116,6 +116,7 @@ from config.qwen_config import get_qwen_client
 # Upper bound on LLM-side worker threads inside one wave (reflections /
 # replanning). VeriTMM execution never enters this pool.
 MAX_CONCURRENT_LLM_WORKERS: int = 4
+_GRADIENT_ROUND_LOCK = threading.RLock()
 # Length of the recent-scores window fed to evaluate_stagnation.
 STAGNATION_WINDOW_ROUNDS: int = 3
 # Default hard cap of executed rounds per route lineage.
@@ -177,6 +178,11 @@ class RouteTrack:
     # The proposal gate checks duplicates against this set -- the pending
     # round's own hash must not count as "already tried".
     executed_hashes: set[str] = field(default_factory=set)
+    execution_signatures: set[str] = field(default_factory=set)
+    executed_history: tuple[str, ...] = ()
+    phase: str = "ready"
+    pending_iteration_id: str | None = None
+    pending_declarations: Dict[str, Any] = field(default_factory=dict)
 
 
 class ComponentProtocol(Protocol):
@@ -688,7 +694,7 @@ def _verify_workbench_run(execution_dir: Path) -> Dict[str, Any] | None:
     }
 
 
-def _compute_gradient_summary(compiled_payload: Mapping[str, Any]) -> Dict[str, Any]:
+def _compute_gradient_summary(compiled_payload: Mapping[str, Any], *, maximum_forward_evaluations=None) -> Dict[str, Any]:
     """Require an explicit adopted simulation and frozen objective binding."""
     from .science.observation_adapter import bound_gradient
     from .science.contracts import ObjectRef
@@ -698,23 +704,70 @@ def _compute_gradient_summary(compiled_payload: Mapping[str, Any]) -> Dict[str, 
     required = ("simulation", "candidate_ref", "objective_ref", "objective", "binding")
     if any(key not in binding for key in required):
         return {"status": "unavailable", "unavailable": "incomplete selected candidate gradient binding"}
-    return bound_gradient(dict(binding["simulation"]), candidate_ref=ObjectRef.model_validate(binding["candidate_ref"]), objective_ref=ObjectRef.model_validate(binding["objective_ref"]), objective=binding["objective"], binding=dict(binding["binding"]), provenance=binding.get("provenance"))
+    return bound_gradient(dict(binding["simulation"]), candidate_ref=ObjectRef.model_validate(binding["candidate_ref"]), objective_ref=ObjectRef.model_validate(binding["objective_ref"]), objective=binding["objective"], binding=dict(binding["binding"]), provenance=binding.get("provenance"), maximum_forward_evaluations=maximum_forward_evaluations)
 
 
 
-def _compute_budgeted_gradient(compiled_payload, run_payload, execution_dir, ledger_path, limits):
+def _reserve_round_gradient_budget(compiled_payload, run_payload, execution_dir):
+    from .budget import BudgetLimits, BudgetScheduler
+    limit = (compiled_payload.get("budget") or {}).get("maximum_forward_evaluations")
+    used = _forward_evaluations_used(run_payload)
+    if limit is None:
+        return None, None, None
+    if used is None:
+        return None, None, 0
+    execution_dir = Path(execution_dir)
+    execution_dir.mkdir(parents=True, exist_ok=True)
+    scheduler = BudgetScheduler(BudgetLimits(forward_evaluations=int(limit)),
+                                checkpoint_path=execution_dir / "GRADIENT_ROUND_BUDGET.json")
+    baseline = "run:" + stable_sha256({"compiled_task": compiled_payload, "run": run_payload})
+    actions = scheduler.snapshot()["actions"]
+    if actions and baseline not in actions:
+        raise ValueError("per-round gradient budget input identity changed")
+    if baseline not in actions:
+        scheduler.reserve(baseline, forward_evaluations=min(used, int(limit)))
+        scheduler.commit(baseline, forward_evaluations=used)
+    remaining = max(0, int(scheduler.remaining("forward_evaluations")))
+    if remaining == 0:
+        return scheduler, None, 0
+    attempt = f"gradient:{len(scheduler.snapshot()['actions'])}"
+    scheduler.reserve(attempt, forward_evaluations=remaining)
+    return scheduler, attempt, remaining
+
+
+def _compute_budgeted_gradient(compiled_payload, run_payload, execution_dir, ledger_path, limits, *, scoring_standard=None):
+    with _GRADIENT_ROUND_LOCK:
+        return _compute_gradient_under_budget(compiled_payload, run_payload, execution_dir, ledger_path, limits,
+                                              scoring_standard=scoring_standard)
+
+
+def _compute_gradient_under_budget(compiled_payload, run_payload, execution_dir, ledger_path, limits, *, scoring_standard=None):
     from .science.compute_ledger import ComputeLedger, active_compute_ledger
     from .science.gradient_binding import adopted_gradient_summary
     ledger = ComputeLedger(ledger_path, limits)
+    round_budget = None
     try:
+        round_budget, attempt, remaining = _reserve_round_gradient_budget(compiled_payload, run_payload, execution_dir)
         with active_compute_ledger(ledger):
-            if "gradient_binding" in compiled_payload:
-                result = _compute_gradient_summary(compiled_payload)
+            if remaining == 0:
+                result = {"status": "unavailable", "reason": "round_forward_budget_exhausted_or_unverified",
+                          "compute_cost": {"differentiable_forward_calls": 0, "solver_points": 0, "paid_calls": 0}}
+            elif "gradient_binding" in compiled_payload:
+                result = _compute_gradient_summary(compiled_payload, maximum_forward_evaluations=remaining)
             else:
-                result = adopted_gradient_summary(compiled_payload, run_payload, execution_dir)
-        return {**result, "compute_ledger":ledger.snapshot(), "compute_ledger_path":str(ledger_path)}
+                kwargs = {"scoring_standard": scoring_standard}
+                if remaining is not None:
+                    kwargs["maximum_forward_evaluations"] = remaining
+                result = adopted_gradient_summary(compiled_payload, run_payload, execution_dir, **kwargs)
+        if round_budget is not None:
+            actual = (result.get("compute_cost") or {}).get("differentiable_forward_calls")
+            if attempt is not None and type(actual) is int and actual >= 0:
+                round_budget.commit(attempt, forward_evaluations=actual)
+            result["round_budget"] = round_budget.snapshot()
+        return {**result, "compute_ledger": ledger.snapshot(), "compute_ledger_path": str(ledger_path)}
     finally:
         ledger.close()
+
 
 
 def _read_json_if_present(path: Path) -> Dict[str, Any] | None:
@@ -760,6 +813,121 @@ def _usage_rows(value: Any) -> list[dict[str, Any]]:
 def _route_hash(route: Mapping[str, Any]) -> str:
     request = " ".join(str(route.get("execution_request_english") or "").lower().split())
     return hashlib.sha256(request.encode("utf-8")).hexdigest()
+
+
+def canonical_execution_payload(task: Mapping[str, Any], *, scoring_standard=None) -> Dict[str, Any]:
+    from tmm_engine.schemas import dataclass_to_dict
+    from tmm_engine.task_io import optimization_task_from_dict, simulation_task_from_dict
+
+    def normalize(value):
+        if isinstance(value, Mapping):
+            return {key: normalize(item) for key, item in value.items()
+                    if key not in {"name", "label", "objective_id"}}
+        if isinstance(value, (list, tuple)):
+            return [normalize(item) for item in value]
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        return value
+
+    experiments = []
+    for experiment in task.get("experiments", []):
+        raw = dict(experiment.get("tmm_task") or {})
+        mode = str(experiment.get("mode") or "")
+        parser = optimization_task_from_dict if mode == "optimize" else simulation_task_from_dict
+        parsed = parser(raw)
+        engine = dataclass_to_dict(parsed)
+        simulation = parsed.simulation if mode == "optimize" else parsed
+        engine_simulation = engine["simulation"] if mode == "optimize" else engine
+        engine_simulation["spectrum"] = {"values_nm": simulation.spectrum.wavelengths_nm().tolist()}
+        experiments.append({"mode": mode, "tmm_task": normalize(engine),
+                            "objectives": normalize(experiment.get("objectives") or [])})
+    payload = {"experiments": experiments,
+               **{key: normalize(task.get(key)) for key in ("verification", "portfolio", "uncertainty", "budget")},
+               "optimizer_state": None}
+    if scoring_standard is not None:
+        import ast
+        frozen = _mapping(scoring_standard)
+        rows = [(row["variable"], normalize({key: row.get(key) for key in
+                 ("metric", "sense", "region", "target", "mean_reduction")})) for row in frozen["metrics"]]
+        rows.sort(key=lambda row: stable_sha256(row[1]))
+        names = {name: f"metric_{index}" for index, (name, _) in enumerate(rows)}
+        expression = ast.parse(frozen["formula"], mode="eval")
+        for node in ast.walk(expression):
+            if isinstance(node, ast.Name) and node.id in names:
+                node.id = names[node.id]
+        payload["frozen_objective"] = {"metrics": [row for _, row in rows], "formula": ast.dump(expression)}
+    return payload
+
+
+def canonical_execution_signature(task: Mapping[str, Any], *, scoring_standard=None) -> str:
+    return stable_sha256(canonical_execution_payload(task, scoring_standard=scoring_standard))
+
+
+def _forward_evaluations_used(run_payload):
+    budget = run_payload.get("budget_usage") or run_payload.get("budget") or {}
+    usage = budget.get("usage") or budget
+    value = usage.get("forward_evaluations")
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0:
+        return int(value)
+    return None
+
+
+def _execution_evidence(iteration_dir: Path, run_payload: Mapping[str, Any], *, gradient_summary=None) -> Dict[str, Any]:
+    execution_dir = iteration_dir / "tmm_run"
+    budget = _read_json_if_present(execution_dir / "BUDGET.json") or {}
+    allocations = []
+    for event in budget.get("events", []):
+        if not isinstance(event, Mapping):
+            continue
+        allocations.append({"action_id": event.get("action_id"),
+                            "event_type": event.get("event_type", event.get("type")),
+                            "reserved": (event.get("reserved_usage") or {}).get("forward_evaluations"),
+                            "actual": (event.get("actual_usage") or {}).get("forward_evaluations")})
+    optimizers = []
+    for path in sorted(execution_dir.glob("experiments/**/OPTIMIZER_*.json")):
+        payload = _read_json_if_present(path) or {}
+        audit = payload.get("audit") or {}
+        raw_audit = audit.get("raw_optimizer_audit") or audit
+        optimizers.append({"artifact": path.relative_to(iteration_dir).as_posix(),
+                           "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                           **{key: payload.get(key) for key in ("optimizer_id", "status", "evaluation_count", "stop_reason")},
+                           **{key: raw_audit.get(key) for key in ("maximum_forward_evaluations", "best_step", "budget_exhausted", "local_finish", "initialization")},
+                           "seed": audit.get("seed", raw_audit.get("seed"))})
+    search_allocations = []
+    for path in sorted(execution_dir.glob("experiments/**/SEARCH_ALLOCATION.json")):
+        payload = _read_json_if_present(path)
+        if payload is not None:
+            search_allocations.append({"artifact": path.relative_to(iteration_dir).as_posix(),
+                                       "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                                       "allocation": payload})
+    if gradient_summary is None:
+        gradient_summary = (_read_json_if_present(iteration_dir / "ITERATION_OBSERVATION.json") or {}).get("gradient_summary")
+    gradient_cost = (gradient_summary or {}).get("compute_cost") or {}
+    run_calls = _forward_evaluations_used(run_payload)
+    gradient_calls = gradient_cost.get("differentiable_forward_calls")
+    combined = run_calls + gradient_calls if run_calls is not None and gradient_calls is not None else None
+    round_budget = (gradient_summary or {}).get("round_budget") or {}
+    if round_budget:
+        combined = round_budget["usage"]["forward_evaluations"]
+    return {"run_status": run_payload.get("status"), "run_outcome": run_payload.get("outcome"),
+            "forward_evaluation_accounting": {"run_forward_evaluations": run_calls,
+                                              "gradient_forward_evaluations": gradient_calls,
+                                              "combined_forward_evaluations": combined,
+                                              "gradient_compute_cost": gradient_cost,
+                                              "round_budget_receipt": (gradient_summary or {}).get("round_budget")},
+            "search_allocations": search_allocations,
+            "budget_limits": budget.get("limits"), "budget_usage": run_payload.get("budget_usage", run_payload.get("budget")),
+            "allocation_events": allocations, "optimizers": optimizers}
+
+
+def _explicit_replicate_reason(task: Mapping[str, Any], route: Mapping[str, Any]) -> str:
+    declaration = (task.get("metadata") or {}).get("replicate")
+    if isinstance(declaration, Mapping) and declaration.get("explicit") is True:
+        return str(declaration.get("reason") or "").strip()
+    reason = str(route.get("revision_reason") or "").strip()
+    if reason.lower().startswith("replicate:"):
+        return reason.partition(":")[2].strip()
+    return ""
 
 
 def _terminal_route_failures(tracks: Iterable[RouteTrack]) -> list[Dict[str, Any]]:
@@ -1901,7 +2069,7 @@ class TMMResearchHarness:
             directives=self._track_directives.get(track.route_id, ()),
             budget_approved=self._budget_remaining(observation_count),
             has_attestation_channel=bool(pre_declarations),
-            override=self._track_gate_override.get(track.route_id, False),
+            override=self._track_gate_override.get(track.route_id, False) or bool(_explicit_replicate_reason({}, route)),
         )
         # One-shot: the override adjudicated exactly one retry round.
         self._track_gate_override.pop(track.route_id, None)
@@ -1915,6 +2083,22 @@ class TMMResearchHarness:
             )
             return decision
         return decision
+
+    def _set_track_phase(self, track: RouteTrack, phase: str, iteration_id: str | None = None) -> None:
+        with self._state_lock:
+            track.phase = phase
+            track.pending_iteration_id = iteration_id
+            tracks = dict(self.tournament_tracks)
+            tracks[track.route_id] = track
+            atomic_write_json(self.work_dir / "CONTINUATION_STATE.json", {
+                "schema_version": "research-continuation.v1",
+                "tracks": {key: {"phase": item.phase, "pending_iteration_id": item.pending_iteration_id,
+                                  "current_route": item.current_route,
+                                  "pending_declarations": item.pending_declarations,
+                                  "executed_hashes": sorted(item.executed_hashes),
+                                  "execution_signatures": sorted(item.execution_signatures)}
+                           for key, item in tracks.items()},
+            })
 
     def _prepare_track_round(
         self,
@@ -1932,6 +2116,10 @@ class TMMResearchHarness:
         route = track.current_route
         iteration_id = f"iteration_{iteration_index:02d}"
         iteration_dir = self.work_dir / "iterations" / iteration_id
+        while iteration_dir.exists():
+            iteration_index += 1
+            iteration_id = f"iteration_{iteration_index:02d}"
+            iteration_dir = self.work_dir / "iterations" / iteration_id
         iteration_dir.mkdir(parents=True, exist_ok=False)
         route_path = iteration_dir / "ROUTE.json"
         atomic_write_json(route_path, route)
@@ -2039,6 +2227,25 @@ class TMMResearchHarness:
                 }
                 atomic_write_json(iteration_dir / "TASK_COMPILATION.json", compilation_payload)
                 self._event("task_contract_rejected", route_id=route_id, iteration_id=iteration_id, reason=str(exc))
+        execution_signature = None
+        replicate_reason = ""
+        if task is not None and compilation_status == "compiled":
+            execution_signature = canonical_execution_signature(task.model_dump(mode="json"), scoring_standard=self.scoring_standard)
+            replicate_reason = _explicit_replicate_reason(task.model_dump(mode="json"), route)
+            if execution_signature in track.execution_signatures and not replicate_reason:
+                compilation_status = "duplicate_execution"
+                compilation_payload = {**compilation_payload, "status": compilation_status,
+                                       "rationale": "Unintentional deterministic replay rejected before solver execution.",
+                                       "validation_errors": ["Change the physical execution, initializer, optimizer or resource policy; an explicit replicate requires a reason."]}
+                atomic_write_json(iteration_dir / "TASK_COMPILATION.json", compilation_payload)
+                atomic_write_json(iteration_dir / "REJECTED_EXECUTION.json", {
+                    "execution_signature": execution_signature, "scientific_round_consumed": False,
+                    "reason": compilation_payload["rationale"],
+                })
+                self._event("duplicate_execution_rejected", route_id=route_id, iteration_id=iteration_id,
+                            execution_signature=execution_signature, scientific_round_consumed=False)
+            else:
+                self._set_track_phase(track, "executing", iteration_id)
         if task is not None and compilation_status == "compiled":
             task_file = iteration_dir / "COMPILED_TASK.json"
             atomic_write_json(task_file, task.model_dump(mode="json"))
@@ -2143,6 +2350,8 @@ class TMMResearchHarness:
             "task": task,
             "compilation_status": compilation_status,
             "compilation_payload": compilation_payload,
+            "execution_signature": execution_signature,
+            "replicate_reason": replicate_reason,
         }
 
     def _run_tmm_serial_fallback(
@@ -2265,6 +2474,11 @@ class TMMResearchHarness:
             scoring_standard=self.scoring_standard,
         )
         observation = observation.model_copy(update={"route_snapshot": json.loads(json.dumps(route))})
+        if compilation_status == "duplicate_execution":
+            return {"track": track, "iteration_id": pre_ctx["iteration_id"], "iteration_dir": iteration_dir,
+                    "observation": observation, "run_payload": {}, "compilation_payload": compilation_payload,
+                    "duplicate_execution": True, "gate_rejected": True}
+
         # Per-chain ledgers live on the track. These three appends carry NO
         # lock by R-06 invariant: they execute on the main thread only (Phase
         # 1a/1c are serial; the concurrent phases never touch foreign tracks).
@@ -2285,6 +2499,7 @@ class TMMResearchHarness:
             )
         track.rounds_used += 1
         track.executed_hashes.add(_route_hash(track.current_route))
+
         # O-02: attach the engine's independent four-state verification and
         # the run-level evidence ledger to this round's observation record.
         # Purely additive keys: existing observation keys are untouched, the
@@ -2339,7 +2554,7 @@ class TMMResearchHarness:
                     (self.work_dir / task_path).read_text(encoding="utf-8")
                 )
                 gradient_summary = _compute_budgeted_gradient(compiled_payload, run_payload, execution_dir,
-                    self.work_dir / "GRADIENT_COMPUTE.sqlite", self.config.gradient_compute_limits)
+                    self.work_dir / "GRADIENT_COMPUTE.sqlite", self.config.gradient_compute_limits, scoring_standard=self.scoring_standard)
             except Exception as exc:
                 gradient_summary = {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:200]}
         certificate_payload = _read_json_if_present(
@@ -2376,6 +2591,18 @@ class TMMResearchHarness:
             partial = _verify_workbench_run(execution_dir)
             if partial is not None:
                 observation_payload["verification_partial"] = partial
+        signature = pre_ctx.get("execution_signature")
+        if signature and run_payload:
+            track.execution_signatures.add(signature)
+            record = {
+                "iteration_id": pre_ctx["iteration_id"], "route_id": route_id,
+                "execution_signature": signature, "replicate_reason": pre_ctx.get("replicate_reason") or "",
+                "execution": canonical_execution_payload(task.model_dump(mode="json"), scoring_standard=self.scoring_standard),
+                "evidence": _execution_evidence(iteration_dir, run_payload, gradient_summary=gradient_summary),
+                "decision_score": observation.decision_score,
+            }
+            track.executed_history += (json.dumps(record, sort_keys=True),)
+            atomic_write_json(iteration_dir / "EXECUTION_RECORD.json", record)
         from .science.migration import commit_legacy_observation
         request_payload = self._load_json_path(self.work_dir / "REQUEST.json")
         with self._state_lock:
@@ -2419,6 +2646,7 @@ class TMMResearchHarness:
             iteration_dir / "ITERATION_OBSERVATION.json",
             observation_payload,
         )
+        self._set_track_phase(track, "reflect", pre_ctx["iteration_id"])
         self._event(
             "route_completed",
             wave=wave_index,
@@ -2533,6 +2761,9 @@ class TMMResearchHarness:
                        "score_basis_fingerprint", "score_available", "candidate_summaries"}
         })
         observation_dump["rounds_executed"] = track.rounds_used
+        history = [json.loads(row) for row in track.executed_history]
+        if history:
+            observation_dump["execution_evidence"] = history[-1]["evidence"]
         def save_context(payload):
             if scientific_ref is not None:
                 from .science.migration import commit_legacy_context
@@ -2559,6 +2790,7 @@ class TMMResearchHarness:
                 score_history=list(track.score_history),
                 epsilon=epsilon,
                 force_mock=self.config.qwen_force_mock,
+                executed_history=history,
             )
             reflection_available = reflection.degraded_reason == ""
             self._event(
@@ -2603,6 +2835,7 @@ class TMMResearchHarness:
             route_id=track.route_id,
             reflection_available=reflection_available,
         )
+        self._set_track_phase(track, "decide", ctx["iteration_id"])
         return {
             "reflection": reflection,
             "reflection_available": reflection_available,
@@ -2626,6 +2859,12 @@ class TMMResearchHarness:
         """
         track: RouteTrack = ctx["track"]
         observation: ResearchIterationObservation = ctx["observation"]
+        if ctx.get("duplicate_execution"):
+            reason = "Unintentional repeated execution rejected; no additional scientific round consumed."
+            self._set_track_phase(track, "replan", track.pending_iteration_id)
+            return {"status": TRACK_ERROR_UNRECOVERABLE, "termination_reason": reason,
+                    "decision": ResearchFeedbackDecision(action="stop_best_effort", reason=reason),
+                    "directives": (), "replan_mode": None, "halt_run": False, "disagreement": None}
         reflection = refl_info["reflection"]
         reflection_available = refl_info["reflection_available"]
         epsilon = refl_info["epsilon"]
@@ -2719,6 +2958,7 @@ class TMMResearchHarness:
             and stop_basis
             in {"search_exhausted", "marginal_gains_too_low"}
             and stop_rationale
+            and (not track.execution_signatures or len(track.execution_signatures) >= minimum_rounds)
         )
         early_llm_stop = bool(
             reflection_available
@@ -2930,7 +3170,7 @@ class TMMResearchHarness:
         expected_rows = track.current_route.get("expected_observations") or ()
         confidence_before = self._track_confidence.get(track.route_id, 0.5)
         entry = build_ledger_entry(
-            action_id=f"{track.route_id}:r{rounds_used}:{ctx['iteration_id']}",
+            action_id=f"{track.route_id}:r{rounds_used}:{ctx.get('decision_id', ctx['iteration_id'])}",
             hypothesis_id=track.route_id,
             rounds_used=rounds_used,
             best_score_before=score_before,
@@ -2962,6 +3202,8 @@ class TMMResearchHarness:
             **entry_to_event_payload(entry),
         )
 
+        if hasattr(self, "_state_lock"):
+            self._set_track_phase(track, "replan" if replan_mode or status in {TRACK_STOPPED_BUDGET, TRACK_STOPPED_ROUND_LIMIT} else "complete", ctx["iteration_id"])
         return {
             "status": status,
             "termination_reason": termination_reason,
@@ -2995,6 +3237,8 @@ class TMMResearchHarness:
             for row in list(self._observations)
             if str(row.route_id) == track.route_id
         ]
+        executed = {row["iteration_id"]: row for row in (json.loads(item) for item in track.executed_history)}
+        own_rows = [{**row, "executed_record": executed.get(row.get("iteration_id"))} for row in own_rows]
         # O-05: the Robin-style appendage re-flows THIS chain's verified
         # results (deltas, mechanical insights, exclusions) into the next
         # candidate generation. Template-generated; no LLM-authored numbers.
@@ -3078,7 +3322,6 @@ class TMMResearchHarness:
                 with self._state_lock:
                     if (
                         renamed_id in pre_declarations
-                        and track.route_id not in pre_declarations
                     ):
                         pre_declarations[track.route_id] = pre_declarations[renamed_id]
                 revised = candidate
@@ -3106,7 +3349,6 @@ class TMMResearchHarness:
                 with self._state_lock:
                     if (
                         renamed_id in pre_declarations
-                        and track.route_id not in pre_declarations
                     ):
                         pre_declarations[track.route_id] = pre_declarations[renamed_id]
                 revised = best
@@ -3119,17 +3361,17 @@ class TMMResearchHarness:
                 ),
             }
         digest = _route_hash(revised)
-        if digest in track.version_hashes:
+        if digest in track.version_hashes and not _explicit_replicate_reason({}, revised):
             return {
                 "ok": False,
                 "reason": (
                     "revision is substantively duplicated (route_hash matches an "
-                    "earlier version of this chain); retry the current route "
-                    "within its hard round budget"
+                    "earlier version of this chain); revise before another execution"
                 ),
                 "duplicate": True,
-                "retry_existing": True,
+                "retry_existing": False,
             }
+        track.pending_declarations = json.loads(json.dumps(pre_declarations.get(track.route_id, {})))
         return {"ok": True, "revised": revised, "digest": digest}
 
     def _write_tournament_state(
@@ -3166,6 +3408,11 @@ class TMMResearchHarness:
                     "score_basis_fingerprint": t.score_basis_fingerprint,
                     "best_candidate_ids": list(t.best_candidate_ids),
                     "current_route": dict(t.current_route),
+                    "phase": t.phase,
+                    "pending_iteration_id": t.pending_iteration_id,
+                    "pending_declarations": t.pending_declarations,
+                    "executed_hashes": sorted(t.executed_hashes),
+                    "execution_signatures": sorted(t.execution_signatures),
                 }
                 for t in sorted(ordered_tracks, key=lambda item: item.route_id)
             ],
@@ -3371,6 +3618,9 @@ class TMMResearchHarness:
 
         state = self._load_json_path(self.work_dir / "TOURNAMENT_STATE.json")
         raw_tracks = list(state.get("tracks") or [])
+        continuation = _read_json_if_present(self.work_dir / "CONTINUATION_STATE.json") or {}
+        pending_tracks = continuation.get("tracks") or {}
+        raw_tracks = [{**row, **pending_tracks.get(str(row.get("route_id")), {})} for row in raw_tracks]
         route_sources = dict(strategy_envelope.get("route_sources") or {})
         tracks: Dict[str, RouteTrack] = {}
         ordered_track_ids: list[str] = []
@@ -3382,6 +3632,11 @@ class TMMResearchHarness:
             version_hashes: set[str] = set()
             lineage_round = 0
             lineage_parent_sha: str | None = None
+            executed_hashes: set[str] = set()
+            execution_signatures: set[str] = set()
+            executed_history: list[str] = []
+            latest_iteration_id = None
+            latest_route_hash = None
             for iteration_dir in sorted(iteration_root.glob("iteration_*")):
                 route_path = iteration_dir / "ROUTE.json"
                 if route_path.exists():
@@ -3391,6 +3646,10 @@ class TMMResearchHarness:
                         route_payload = {}
                     if str(route_payload.get("route_id") or "") == route_id:
                         version_hashes.add(_route_hash(route_payload))
+                        if any(row.iteration_id == iteration_dir.name and row.route_id == route_id for row in observations):
+                            latest_iteration_id = iteration_dir.name
+                            latest_route_hash = _route_hash(route_payload)
+                            executed_hashes.add(latest_route_hash)
                 compiled_path = iteration_dir / "COMPILED_TASK.json"
                 if compiled_path.exists():
                     try:
@@ -3407,6 +3666,21 @@ class TMMResearchHarness:
                         lineage_parent_sha = hashlib.sha256(
                             compiled_path.read_bytes()
                         ).hexdigest()
+                        if observation.run_status != "not_run":
+                            compiled = self._load_json_path(compiled_path)
+                            signature = canonical_execution_signature(compiled, scoring_standard=self.scoring_standard)
+                            record = _read_json_if_present(iteration_dir / "EXECUTION_RECORD.json")
+                            if record is None:
+                                run = _read_json_if_present(iteration_dir / "tmm_run" / "FINAL_RESULT.json") or {"status": observation.run_status, "budget_usage": dict(observation.budget_usage)}
+                                record = {"iteration_id": iteration_dir.name, "route_id": route_id,
+                                          "execution_signature": signature, "replicate_reason": "",
+                                          "execution": canonical_execution_payload(compiled, scoring_standard=self.scoring_standard),
+                                          "evidence": _execution_evidence(iteration_dir, run),
+                                          "decision_score": observation.decision_score}
+                            elif record.get("execution_signature") != signature:
+                                raise ValueError("checkpoint execution record disagrees with compiled execution")
+                            execution_signatures.add(signature)
+                            executed_history.append(json.dumps(record, sort_keys=True))
             if not version_hashes:
                 version_hashes.add(_route_hash(current_route))
             track = RouteTrack(
@@ -3434,7 +3708,15 @@ class TMMResearchHarness:
                 lineage_round=lineage_round,
                 lineage_parent_sha=lineage_parent_sha,
                 version_hashes=version_hashes,
+                executed_hashes=executed_hashes,
+                execution_signatures=execution_signatures,
+                executed_history=tuple(executed_history),
+                phase=str(raw_track.get("phase") or ("ready" if latest_route_hash != _route_hash(current_route) else "reflect")),
+                pending_iteration_id=raw_track.get("pending_iteration_id") or latest_iteration_id,
+                pending_declarations=dict(raw_track.get("pending_declarations") or {}),
             )
+            if track.phase == "ready" and track.pending_declarations:
+                pre_declarations[route_id] = json.loads(json.dumps(track.pending_declarations))
             tracks[route_id] = track
             ordered_track_ids.append(route_id)
         if not tracks:
@@ -3463,6 +3745,8 @@ class TMMResearchHarness:
             track = tracks[route_id]
             if track.rounds_used >= int(self.config.max_rounds_per_route):
                 continue
+            if track.phase == "complete":
+                track.phase = "reflect"
             track.status = TRACK_RACING
             track.termination_reason = ""
             self._event(
@@ -3489,7 +3773,8 @@ class TMMResearchHarness:
                 "parent_checkpoint": str(checkpoint),
                 "prior_iterations": len(observations),
                 "reactivated_routes": sorted(selected_ids),
-                "policy": "reactivate literature routes below cap; ignore early LLM stop votes",
+                "policy": "complete pending decisions and validate a changed execution before spending another solver round",
+                "recovery_scope": "completed-round observation, reflection and replanning; no mid-optimizer state restoration",
             },
         )
         self.tournament_tracks = tracks
@@ -3514,6 +3799,75 @@ class TMMResearchHarness:
             feedback_history,
             start_wave=int(state.get("wave") or 0),
         )
+
+    def _resume_pending_decision(self, track, problem, merged_research, pre_declarations, observations, feedback_history, wave_index):
+        if track.phase == "ready":
+            return None
+        latest = next((row for row in reversed(observations)
+                       if row.route_id == track.route_id and
+                       (track.pending_iteration_id is None or row.iteration_id == track.pending_iteration_id)), None)
+        if latest is None:
+            track.status = TRACK_ERROR_UNRECOVERABLE
+            track.termination_reason = "Pending continuation has no completed observation; execution will not be replayed."
+            return None
+        source_dir = (self.work_dir / latest.work_dir).resolve()
+        if not source_dir.is_relative_to(self.work_dir):
+            raise ValueError("checkpoint observation directory escapes the copied checkpoint")
+        if not (source_dir / "ROUTE.ATTESTATION.json").is_file():
+            source_dir = self.work_dir / "iterations" / latest.iteration_id
+        safe_run = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in self.run_id)
+        safe_route = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in track.route_id)
+        target_root = self.work_dir / "continuations" / safe_run / safe_route
+        target_dir = target_root / latest.iteration_id
+        attempt = 1
+        while target_dir.exists():
+            attempt += 1
+            target_dir = target_root / f"{latest.iteration_id}_attempt_{attempt}"
+        target_dir.mkdir(parents=True, exist_ok=False)
+        attestation = source_dir / "ROUTE.ATTESTATION.json"
+        if attestation.exists():
+            shutil.copy2(attestation, target_dir / attestation.name)
+        observation_payload = _read_json_if_present(source_dir / "ITERATION_OBSERVATION.json") or latest.model_dump(mode="json")
+        run_payload = _read_json_if_present(source_dir / "tmm_run" / "FINAL_RESULT.json") or {"status": latest.run_status}
+        ctx = {"track": track, "iteration_id": latest.iteration_id, "iteration_dir": target_dir,
+               "decision_id": f"{latest.iteration_id}:resume:{safe_run}:{attempt}", "observation": latest,
+               "observation_payload": observation_payload, "run_payload": run_payload,
+               "compilation_payload": _read_json_if_present(source_dir / "TASK_COMPILATION.json") or {},
+               "gradient_summary": observation_payload.get("gradient_summary"), "wave_index": wave_index}
+        self._event("resume_pending_decision_started", route_id=track.route_id,
+                    iteration_id=latest.iteration_id, phase=track.phase)
+        saved = _read_json_if_present(source_dir / "ROUTE.REFLECTION.json") or {}
+        try:
+            if not saved.get("reflection_available") or not attestation.exists() or saved.get("attestation_sha256") != hashlib.sha256(attestation.read_bytes()).hexdigest():
+                raise ValueError("Saved reflection lacks a valid attestation binding")
+            reflection = RouteReflection.model_validate({key: value for key, value in saved.items() if key in RouteReflection.model_fields})
+        except Exception:
+            reflection = RouteReflection.degraded("Saved reflection was missing or invalid")
+        if reflection.degraded_reason:
+            info = self._reflect_track(ctx, pre_declarations)
+        else:
+            atomic_write_json(target_dir / "ROUTE.REFLECTION.json", saved)
+            info = {"reflection": reflection, "reflection_available": True,
+                    "epsilon": DEFAULT_MINIMUM_SCORE_IMPROVEMENT}
+        verdict = self._resolve_track_verdict(ctx, info, self._budget_remaining(len(observations)))
+        feedback_history.append(verdict["decision"])
+        atomic_write_json(target_dir / "FEEDBACK_DECISION.json", verdict["decision"].model_dump(mode="json"))
+        if verdict["status"] is not None:
+            track.status = verdict["status"]
+            track.termination_reason = verdict["termination_reason"]
+            return verdict["decision"]
+        outcome = self._improve_track(track, problem, merged_research, verdict["directives"], wave_index, pre_declarations)
+        if not outcome.get("ok"):
+            track.status = TRACK_ERROR_UNRECOVERABLE
+            track.termination_reason = "Pending replan did not produce a changed executable proposal: " + str(outcome.get("reason") or "unavailable")
+            self._event("resume_pending_replan_blocked", route_id=track.route_id, reason=track.termination_reason)
+            return ResearchFeedbackDecision(action="stop_best_effort", reason=track.termination_reason,
+                                            preserve_candidate_ids=tuple(track.best_candidate_ids))
+        track.current_route = outcome["revised"]
+        track.version_hashes.add(outcome["digest"])
+        self._set_track_phase(track, "ready")
+        self._event("resume_pending_replan_completed", route_id=track.route_id, iteration_id=latest.iteration_id)
+        return verdict["decision"]
 
     def _resume_tournament(
         self,
@@ -3582,6 +3936,12 @@ class TMMResearchHarness:
             for track in list(racing()):
                 if not self._budget_remaining(len(observations)):
                     break
+                pending = self._resume_pending_decision(track, problem, merged_research, pre_declarations,
+                                                        observations, feedback_history, wave_index)
+                if pending is not None:
+                    final_decision = pending
+                if track.status != TRACK_RACING or not self._budget_remaining(len(observations)):
+                    continue
                 ctx = self._execute_track_round(
                     track,
                     wave_index,
@@ -3590,7 +3950,9 @@ class TMMResearchHarness:
                 )
                 ctx["wave_index"] = wave_index
                 try:
-                    refl_info = self._reflect_track(ctx, pre_declarations)
+                    refl_info = ({"reflection": RouteReflection.degraded("Execution rejected before solver"),
+                                  "reflection_available": False, "epsilon": DEFAULT_MINIMUM_SCORE_IMPROVEMENT}
+                                 if ctx.get("duplicate_execution") else self._reflect_track(ctx, pre_declarations))
                 except Exception as exc:
                     refl_info = {
                         "reflection": RouteReflection.degraded(
@@ -3635,6 +3997,7 @@ class TMMResearchHarness:
                 if outcome.get("ok"):
                     track.current_route = outcome["revised"]
                     track.version_hashes.add(outcome["digest"])
+                    self._set_track_phase(track, "ready")
                     self._event(
                         "route_revised",
                         wave=wave_index,
@@ -3646,6 +4009,15 @@ class TMMResearchHarness:
                     )
                     continue
                 reason = str(outcome.get("reason") or "replanning failed")
+                if track.execution_signatures:
+                    track.status = TRACK_ERROR_UNRECOVERABLE
+                    track.termination_reason = "Replanning failed before a new execution; deterministic replay is not a recovery action. " + str(outcome.get("reason") or "")
+                    self._set_track_phase(track, "replan", track.pending_iteration_id)
+                    final_decision = ResearchFeedbackDecision(action="stop_best_effort", reason=track.termination_reason,
+                                                            preserve_candidate_ids=tuple(track.best_candidate_ids))
+                    feedback_history.append(final_decision)
+                    self._event("route_replan_blocked", route_id=track.route_id, reason=track.termination_reason)
+                    continue
                 can_retry = (
                     int(track.rounds_used) < int(self.config.max_rounds_per_route)
                     and self._budget_remaining(len(observations))
@@ -4874,6 +5246,7 @@ class TMMResearchHarness:
                     revised = outcome["revised"]
                     track.current_route = revised
                     track.version_hashes.add(outcome["digest"])
+                    self._set_track_phase(track, "ready")
                     any_replan_ok = True
                     self._event(
                         "route_revised",
@@ -4909,6 +5282,15 @@ class TMMResearchHarness:
                 # retry the current executable route until the hard round or
                 # wall-time boundary. This is what makes a compile/replan
                 # failure recoverable from a checkpoint instead of terminal.
+                if track.execution_signatures:
+                    track.status = TRACK_ERROR_UNRECOVERABLE
+                    track.termination_reason = "Replanning failed before a new execution; deterministic replay is not a recovery action. " + str(outcome.get("reason") or "")
+                    self._set_track_phase(track, "replan", track.pending_iteration_id)
+                    final_decision = ResearchFeedbackDecision(action="stop_best_effort", reason=track.termination_reason,
+                                                            preserve_candidate_ids=tuple(track.best_candidate_ids))
+                    feedback_history.append(final_decision)
+                    self._event("route_replan_blocked", route_id=track.route_id, reason=track.termination_reason)
+                    continue
                 can_retry = (
                     int(track.rounds_used) < int(self.config.max_rounds_per_route)
                     and self._budget_remaining(len(observations))

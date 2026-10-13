@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any, Literal, Mapping, Protocol
 
@@ -46,11 +47,11 @@ REFLECTION_MODEL = "qwen3.7-flash"
 class RouteReflection(BaseModel):
     """Structured LLM reflection on a completed route."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, str_max_length=8000)
 
     observed_vs_expected: str
     deviation_mechanism: str
-    continue_recommended: bool
+    continue_recommended: bool = Field(strict=True)
     continue_rationale: str
     insight_for_next: str
     insight_grounding: str
@@ -81,6 +82,21 @@ class RouteReflection(BaseModel):
             }
         return value
 
+    @model_validator(mode="after")
+    def validate_decision_consistency(self) -> "RouteReflection":
+        if self.degraded_reason:
+            return self
+        if not self.continue_rationale.strip():
+            raise ValueError("a recommendation requires its rationale")
+        if self.continue_recommended:
+            if self.stop_basis:
+                raise ValueError("continuation cannot carry a stop basis")
+            if not self.insight_for_next.strip() or not self.insight_grounding.strip():
+                raise ValueError("continuation requires an executable insight and its grounding")
+        elif self.insight_for_next.strip():
+            raise ValueError("a stop recommendation cannot also propose a next action")
+        return self
+
     @classmethod
     def degraded(cls, reason: str) -> "RouteReflection":
         """Fallback when LLM output is invalid — never crash the tournament."""
@@ -108,16 +124,18 @@ class ReflectionClient(Protocol):
 
 def _safe_json(text: str) -> dict[str, Any]:
     text = str(text or "").strip()
+    if len(text) > 65536:
+        return {}
     try:
         value = json.loads(text)
         return value if isinstance(value, dict) else {}
-    except json.JSONDecodeError:
+    except (ValueError, RecursionError):
         start, end = text.find("{"), text.rfind("}")
         if start >= 0 and end > start:
             try:
                 value = json.loads(text[start : end + 1])
                 return value if isinstance(value, dict) else {}
-            except json.JSONDecodeError:
+            except (ValueError, RecursionError):
                 pass
     return {}
 
@@ -128,12 +146,21 @@ def _build_reflection_payload(
     score_history: list[float],
     epsilon: float,
     charter: Mapping[str, Any] | None = None,
+    executed_history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Build the user payload for the reflection prompt."""
     from .research_feedback import decision_score
     from .science.observation_adapter import reflection_evidence
     return {
         "immutable_research_charter": dict(charter or {}),
+        "executed_history": json.loads(json.dumps(executed_history or [])),
+        "execution_evidence": observation.get("execution_evidence", {}),
+        "history_interpretation": (
+            "Execution records are immutable measured history. Equal execution signatures "
+            "are deterministic repeats, not independent evidence of search exhaustion. "
+            "Nominal budget limits are not optimizer allocations. A budget termination "
+            "does not establish convergence or a local optimum."
+        ),
         "scientific_evidence": reflection_evidence(observation),
         "pre_declarations": {
             "expected_observations": list(pre_declarations.get("expected_observations") or []),
@@ -173,6 +200,7 @@ def reflect_on_route(
     force_mock: bool | None = None,
     context_sink=None,
     charter: Mapping[str, Any] | None = None,
+    executed_history: list[dict[str, Any]] | None = None,
 ) -> RouteReflection:
     """Call LLM to reflect on a completed route.
 
@@ -190,7 +218,8 @@ def reflect_on_route(
         if the LLM response is invalid (never raises).
     """
     system_prompt = DEFAULT_REFLECTION_PROMPT.read_text(encoding="utf-8")
-    user_payload = _build_reflection_payload(pre_declarations, observation, score_history, epsilon, charter)
+    system_prompt += "\nReturn a JSON object satisfying this schema; do not nest prose fields: " + json.dumps(RouteReflection.model_json_schema())
+    user_payload = _build_reflection_payload(pre_declarations, observation, score_history, epsilon, charter, executed_history)
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -209,19 +238,22 @@ def reflect_on_route(
         return RouteReflection.degraded(f"LLM call failed: {type(exc).__name__}")
 
     # Record token usage — accept both DashScope and OpenAI key spellings.
-    usage = dict(response.get("_llm_usage") or {})
-    input_tokens = int(
-        usage.get("input_tokens")
-        or usage.get("prompt_tokens")
-        or usage.get("estimated_input_tokens")
-        or 0
-    )
-    output_tokens = int(
-        usage.get("output_tokens")
-        or usage.get("completion_tokens")
-        or usage.get("estimated_output_tokens")
-        or 0
-    )
+    if not isinstance(response, Mapping):
+        return RouteReflection.degraded("Invalid response envelope")
+    usage = response.get("_llm_usage") or {}
+    if not isinstance(usage, Mapping):
+        return RouteReflection.degraded("Invalid usage envelope")
+    def token_count(*keys):
+        for key in keys:
+            value = usage.get(key)
+            if value is not None:
+                try:
+                    return max(0, int(value))
+                except (TypeError, ValueError, OverflowError):
+                    return 0
+        return 0
+    input_tokens = token_count("input_tokens", "prompt_tokens", "estimated_input_tokens")
+    output_tokens = token_count("output_tokens", "completion_tokens", "estimated_output_tokens")
     if input_tokens or output_tokens:
         # D-2 (R-04-FIX): meter into the existing "turbo" budget bucket (the
         # feedback/compilation light-task tier per qwen_config.py). The first
@@ -236,9 +268,21 @@ def reflect_on_route(
         return RouteReflection.degraded("Empty or non-JSON response")
 
     try:
-        return RouteReflection.model_validate(parsed)
+        reflection = RouteReflection.model_validate(parsed)
+        history = executed_history or []
+        signatures = [row.get("execution_signature") for row in history if row.get("execution_signature")]
+        if (not reflection.continue_recommended
+                and reflection.stop_basis in {"search_exhausted", "marginal_gains_too_low"}
+                and len(signatures) >= 2 and len(set(signatures)) == 1):
+            raise ValueError("deterministic repeats do not establish independent search exhaustion")
+        prose = " ".join((reflection.observed_vs_expected, reflection.deviation_mechanism,
+                          reflection.continue_rationale)).lower()
+        optimum_claim = re.search(r"(?:reached|converged to|is at|at a) (?:a |the )?local (?:optimum|minimum)", prose)
+        if optimum_claim:
+            raise ValueError("local-optimum claims require evidence outside the reflection contract")
+        return reflection
     except Exception as exc:
-        return RouteReflection.degraded(f"Validation failed: {type(exc).__name__}")
+        return RouteReflection.degraded(f"Validation failed: {type(exc).__name__}: {str(exc)[:500]}")
 
 
 def write_reflection_sidecar(

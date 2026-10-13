@@ -122,14 +122,14 @@ def test_original_pilot_request_preserves_arithmetic_through_saved_csv_and_ranki
         assert row["observed"] == pytest.approx(expected, abs=1e-15)
         assert row["mean_reduction"] == "sample_mean"
     assert optimized.target_attainment["min_mean_reflectance"]["observed"] == pytest.approx(expected, abs=1e-15)
-    assert optimized.target_attainment["min_mean_reflectance"]["loss_semantics"] == "sample_mean_squared_directional_error_surrogate"
+    assert optimized.target_attainment["min_mean_reflectance"]["loss_semantics"] == "requested_statistic"
     assert restored.score(declared).value == pytest.approx(-expected, abs=1e-15)
     integral = evaluate_declared_objectives([metric.objective_preference().model_copy(update={"mean_reduction": "wavelength_integral_mean"})], result)
     assert integral.target_attainment[metric.objective_id]["observed"] == pytest.approx(0.018838106091412923, abs=1e-15)
     assert not restored.score(integral).ok
 
 
-def test_optimizer_reporting_uses_explicit_reducer_without_changing_surrogate():
+def test_optimizer_reporting_uses_explicit_reducer_for_requested_statistic():
     draft = json.loads((FIXTURE / "compiler_response.json").read_text())
     task = optimization_task_from_dict(draft["experiments"][0]["tmm_task"])
     result = result_for([450, 500, 700], [0, 0, 0.9])
@@ -137,7 +137,7 @@ def test_optimizer_reporting_uses_explicit_reducer_without_changing_surrogate():
         changed = replace(task, targets=(replace(task.targets[0], mean_reduction=reduction),))
         report = evaluate_optimization_objectives(changed, result)
         assert report.target_attainment["min_mean_reflectance"]["observed"] == pytest.approx(expected)
-        assert report.weighted_directional_loss == pytest.approx(0.27)
+        assert report.weighted_directional_loss == pytest.approx(0.27 if reduction is None else expected)
 
 
 def test_explicit_reduction_changes_rank_and_rejects_unannotated_measurement():

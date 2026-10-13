@@ -32,7 +32,7 @@ def test_long_candidate_ids_are_compacted_stably_for_windows_artifact_paths() ->
 
 
 def test_deep_run_root_uses_short_reversible_artifact_directories(tmp_path) -> None:
-    deep_root = tmp_path / ("audit_segment_" + "x" * 44)
+    deep_root = tmp_path / ("x" * max(1, 155 - len(str(tmp_path))))
     orchestrator = TMMHarnessOrchestrator(
         deep_root,
         run_id="deep_path_policy",
@@ -73,7 +73,7 @@ def test_forward_dev_task_runs_without_qwen_and_writes_verified_portfolio(tmp_pa
     assert "report_stopband" in objective["target_attainment"]
     assert json.loads((tmp_path / "FINAL_RESULT.json").read_text(encoding="utf-8"))["status"] == "completed"
     cost = json.loads((tmp_path / "COST.json").read_text(encoding="utf-8"))
-    assert cost["forward_evaluations"] == 5
+    assert cost["forward_evaluations"] == 10
     assert cost["qwen_calls"] == 0
     assert cost["qwen_model_constraint"] == "qwen3.7-flash"
     events = [
@@ -347,7 +347,7 @@ def test_abrupt_interruption_recovers_in_isolated_attempt_with_remaining_budget(
     assert report["qwen_disabled_in_recovery"] is True
     assert report["child_status"] == "completed"
     assert (tmp_path / "recovery_attempts" / "attempt_001" / "FINAL_RESULT.json").exists()
-    assert resumed.budget["usage"]["forward_evaluations"] == 5
+    assert resumed.budget["usage"]["forward_evaluations"] == 10
     assert resumed.budget["overrun"] is False
     replay = replay_completed_run(tmp_path)
     assert replay.success is True
@@ -418,6 +418,7 @@ def test_finite_gradient_budget_includes_baseline_and_candidate_certification(
     optimizer_results = list(tmp_path.rglob("OPTIMIZER_gradient_thickness.json"))
     assert len(optimizer_results) == 1
     optimizer = json.loads(optimizer_results[0].read_text())
-    assert optimizer["status"] == "best_effort"
+    assert optimizer["status"] in {"best_effort", "completed"}
     assert optimizer["evaluation_count"] <= 64 - 5
-    assert optimizer["audit"]["raw_optimizer_audit"]["budget_exhausted"]
+    assert optimizer["audit"]["raw_optimizer_audit"]["budget_exhausted"] == (optimizer["status"] == "best_effort")
+    assert optimizer["audit"]["raw_optimizer_audit"]["local_finish_forward_evaluations"] > 0

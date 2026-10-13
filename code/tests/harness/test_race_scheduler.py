@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import threading
 import time
@@ -246,7 +247,13 @@ def _stub_compiler_factory():
 
     class _StubCompiler:
         def compile(self, question, *, benchmark=None, force_mock=None):
-            return _StubCompilation()
+            compiled = _StubCompilation()
+            if "Revised context:" in question:
+                payload = design_task.model_dump(mode="json")
+                offset = int(hashlib.sha256(question.encode()).hexdigest()[:12], 16) / (16 ** 12)
+                payload["experiments"][0]["tmm_task"]["stack"]["layers"][0]["thickness_nm"] += 1 + 20 * offset
+                compiled.task = OpticalDesignTask.model_validate(payload)
+            return compiled
 
     return _StubCompiler()
 
@@ -377,6 +384,8 @@ def _build(
         "qwen_force_mock": True,
         "maximum_initial_routes": max(len(routes), 1),
         "maximum_iterations": 8,
+        "route_planning_enabled": False,
+        "confirmation_gates": [],
     }
     config_fields.update(config_kwargs or {})
     config = TMMResearchHarnessConfig(**config_fields)
@@ -546,7 +555,7 @@ def test_revision_reusing_track_id_keeps_ledgers(tmp_path):
     assert len(track.version_hashes) >= 2
 
 
-def test_duplicate_revision_hash_is_retried_until_hard_round_limit(tmp_path):
+def test_duplicate_revision_hash_is_blocked_before_another_solver_round(tmp_path):
     base_plan = _plan(_route("route_01"))
     # The scripted replan ECHOES the original request: identical _route_hash.
     harness, _plus, _turbo, _factory = _build(
@@ -556,15 +565,15 @@ def test_duplicate_revision_hash_is_retried_until_hard_round_limit(tmp_path):
     )
     harness.run("Design a broadband mirror from 500-600 nm")
     track = harness.tournament_tracks["route_01"]
-    assert track.status == "stopped_round_limit"
-    assert track.rounds_used == DEFAULT_MAX_ROUNDS_PER_ROUTE
-    assert "round limit" in track.termination_reason.casefold() or "cap" in track.termination_reason.casefold()
-    # The echoed revision is recorded as a retry, not as scientific defeat.
+    assert track.status == "error_unrecoverable"
+    assert track.rounds_used == 1
+    assert "deterministic replay" in track.termination_reason.casefold()
+    assert track.status != "eliminated_physics"
     events = [
         json.loads(line)
         for line in (tmp_path / "RESEARCH_EVENTS.jsonl").read_text(encoding="utf-8").splitlines()
     ]
-    assert any(event["event_type"] == "route_retry_scheduled" for event in events)
+    assert any(event["event_type"] == "route_replan_blocked" for event in events)
     # The first per-iteration decision still records the continuation decision
     # made at that point in history.
     decision = json.loads(
@@ -633,7 +642,7 @@ def test_resume_from_checkpoint_reactivates_selected_route_without_overwrite(tmp
     child, _plus2, _turbo2, _factory2 = _build(
         child_dir,
         routes=base_plan["routes"],
-        planner_payloads=[base_plan, _revised(base_plan, "checkpoint continuation")],
+        planner_payloads=[_revised(base_plan, "checkpoint continuation")],
         config_kwargs={
             "maximum_iterations": 2,
             "max_rounds_per_route": 2,
@@ -701,15 +710,15 @@ def test_physics_rejected_is_the_only_elimination_status(tmp_path):
 
 def test_engine_error_never_maps_to_eliminated(tmp_path):
     track = _single_track_with_outcome(tmp_path, "engine_error")
-    assert track.status == "stopped_round_limit"
-    assert track.rounds_used == DEFAULT_MAX_ROUNDS_PER_ROUTE
+    assert track.status == "error_unrecoverable"
+    assert track.rounds_used == 1
     assert track.status != "eliminated_physics"
 
 
 def test_budget_blocked_maps_to_stopped_budget(tmp_path):
     track = _single_track_with_outcome(tmp_path, "budget_blocked")
-    assert track.status == "stopped_round_limit"
-    assert track.rounds_used == DEFAULT_MAX_ROUNDS_PER_ROUTE
+    assert track.status == "error_unrecoverable"
+    assert track.rounds_used == 1
     assert track.status != "eliminated_physics"
 
 
@@ -743,6 +752,8 @@ def test_round_limit_and_stagnation_stop_statuses(tmp_path):
             factory_score_plan,
             _revised(factory_score_plan, "attempt two"),
             _revised(factory_score_plan, "attempt three"),
+            _revised(factory_score_plan, "attempt four"),
+            _revised(factory_score_plan, "attempt five"),
         ],
         config_kwargs={"max_rounds_per_route": 5},
     )

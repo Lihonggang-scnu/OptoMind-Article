@@ -1025,6 +1025,17 @@ def test_explicit_no_benefit_stop_is_honored_only_after_two_rounds(tmp_path):
             "max_rounds_per_route": 5,
         },
     )
+    original_compile = harness.task_compiler.compile
+    compile_calls = 0
+    def changed_initialization(*args, **kwargs):
+        nonlocal compile_calls
+        compiled = original_compile(*args, **kwargs)
+        payload = compiled.task.model_dump(mode="json")
+        payload["experiments"][0]["tmm_task"]["stack"]["layers"][0]["thickness_nm"] += 10 * compile_calls
+        compile_calls += 1
+        compiled.task = type(compiled.task).model_validate(payload)
+        return compiled
+    harness.task_compiler.compile = changed_initialization
     harness.run("Design a broadband mirror from 500-600 nm")
     track = harness.tournament_tracks["route_01"]
     assert track.status == "stopped_llm_advice"
@@ -1262,8 +1273,13 @@ def test_renamed_revision_keeps_declarations_and_score_history(tmp_path):
             }
 
     class _StubCompiler:
+        calls = 0
+
         def compile(self, question, *, benchmark=None, force_mock=None):
-            return _StubCompilation(design_task)
+            payload = design_task.model_dump(mode="json")
+            payload["experiments"][0]["tmm_task"]["stack"]["layers"][0]["thickness_nm"] += 10 * self.calls
+            self.calls += 1
+            return _StubCompilation(OpticalDesignTask.model_validate(payload))
 
     # Round 1: LLM stop with open gates -> grace round -> refine_route.
     llm_stop_payload = {

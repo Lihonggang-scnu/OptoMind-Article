@@ -330,6 +330,7 @@ class TMMHarnessOrchestrator:
         self.state = HarnessStateMachine(self.work_dir, self.run_id, resume=self.resume)
         self.provenance = ArtifactLineageStore(self.work_dir, resume=self.resume)
         self._budget: BudgetScheduler | None = None
+        self._robustness_reservations: list[str] = []
         self._qwen_usage: list[Dict[str, Any]] = []
         self._diagnostic_records: list[Dict[str, Any]] = []
         self._material_scenarios: Dict[str, tuple[MaterialScenario, ...]] = {}
@@ -1134,10 +1135,32 @@ class TMMHarnessOrchestrator:
         producing_node: str | None = None,
     ) -> Dict[str, Any]:
         assert self._budget is not None
-        self._budget.reserve(action_id, forward_evaluations=5)
-        certified = self.solver_adapter.run(simulation, _acceptance_settings(verification))
-        actual = _certificate_evaluation_count(certified.certificate)
-        self._budget.commit(action_id, forward_evaluations=actual)
+        settings = _acceptance_settings(verification)
+        minimum = 1 + int(settings.require_spectral_convergence) + int(settings.require_independent_solver)
+        available = self._budget.remaining("forward_evaluations")
+        probes_per_round = 1 + int(len(simulation.spectrum.wavelengths_nm()) > 1) + int(len(simulation.illumination.angles_deg) > 1)
+        ceiling = 2 + (probes_per_round * int(settings.convergence.max_refinements) if settings.require_spectral_convergence else 0) + int(settings.require_independent_solver)
+        allocation = ceiling if available is None else min(ceiling, int(available))
+        if allocation < minimum:
+            raise BudgetOversubscriptionError("insufficient budget for nominal and required independent verification")
+        self._budget.reserve(action_id, forward_evaluations=allocation)
+        workbench = self.solver_adapter.workbench
+        original_simulate = workbench.simulate
+        actual = 0
+
+        def metered_simulate(*args, **kwargs):
+            nonlocal actual
+            if actual >= allocation:
+                raise BudgetOversubscriptionError("certification forward-evaluation allocation exhausted")
+            actual += 1
+            return original_simulate(*args, **kwargs)
+
+        workbench.simulate = metered_simulate
+        try:
+            certified = self.solver_adapter.run(simulation, settings)
+        finally:
+            workbench.simulate = original_simulate
+            self._budget.commit(action_id, forward_evaluations=actual)
         directory.mkdir(parents=True, exist_ok=True)
         atomic_write_json(directory / "PHYSICS_ACCEPTANCE_CERTIFICATE.json", certified.certificate)
         result_artifact_id: str | None = None
@@ -1232,14 +1255,32 @@ class TMMHarnessOrchestrator:
             rows: list[Dict[str, Any]] = []
             candidate_limit = self.config.maximum_candidates_per_experiment
             remaining = self._budget.remaining("forward_evaluations")
+            robustness_reserve = 0
             if remaining is not None:
-                candidate_limit = min(candidate_limit, max(0, (int(remaining) - 1) // 5))
+                robustness_cost = int(task.uncertainty.thickness_samples) + 1
+                if int(remaining) >= 2 * (robustness_cost + 5):
+                    robustness_reserve = robustness_cost
+                    reservation = f"robustness_allowance:{spec.experiment_id}"
+                    self._budget.reserve(reservation, forward_evaluations=robustness_reserve)
+                    self._robustness_reservations.append(reservation)
+                searchable = int(remaining) - robustness_reserve
+                candidate_limit = min(candidate_limit, max(1, searchable // 20), max(0, (searchable - 1) // 5))
                 if candidate_limit == 0:
                     output[spec.experiment_id] = []
                     continue
                 verification_id = f"candidate_verification:{spec.experiment_id}"
                 self._budget.reserve(verification_id, forward_evaluations=5 * candidate_limit)
                 verification_reservations.append(verification_id)
+            allocation = {
+                "schema_version": "tmm-search-allocation.v1",
+                "remaining_before_search": remaining,
+                "survivor_limit": candidate_limit,
+                "verification_allowance": 5 * candidate_limit,
+                "robustness_allowance": robustness_reserve,
+                "gradient_accounting": "separate_gradient_compute_ledger",
+                "primary_allocated": 0,
+                "global_allocated": 0,
+            }
             primary = self.optimizers.select(optimization)
             if primary is not None and self._budget.can_reserve(f"optimizer:{spec.experiment_id}:primary", optimizer_runs=1):
                 estimate = min(
@@ -1251,12 +1292,17 @@ class TMMHarnessOrchestrator:
                     self._budget.reserve(action_id, optimizer_runs=1, forward_evaluations=estimate)
                     node = self._graph_node(spec.experiment_id, ActionType.run_optimizer, {"optimizer_id": primary.descriptor.optimizer_id})
                     self.graph.set_status(node, ExperimentStatus.running)
+                    committed = False
                     try:
+                        allocation["primary_allocated"] = estimate
                         # Pass the forward-evaluation budget so adapters that
                         # require it (e.g. DifferentialEvolution) receive a
                         # concrete cap derived from the budget scheduler.
                         result = primary.optimize(optimization, maximum_forward_evaluations=estimate)
                         self._budget.commit(action_id, optimizer_runs=1, forward_evaluations=int(result.evaluation_count))
+                        committed = True
+                        allocation["primary_used"] = int(result.evaluation_count)
+                        allocation["primary_stop_reason"] = result.stop_reason
                         optimizer_path = self._experiment_directory(
                             spec.experiment_id
                         ) / f"OPTIMIZER_{result.optimizer_id}.json"
@@ -1282,7 +1328,12 @@ class TMMHarnessOrchestrator:
                         rows.extend(new_rows)
                         self.graph.set_status(node, ExperimentStatus.candidate)
                     except Exception as exc:
-                        self._budget.release(action_id)
+                        if not committed:
+                            charged = max(0, int(getattr(exc, "evaluation_count", estimate)))
+                            self._budget.commit(action_id, optimizer_runs=1, forward_evaluations=charged)
+                            allocation["primary_used"] = charged
+                            allocation["primary_usage_basis"] = "measured_failed_dispatches" if hasattr(exc, "evaluation_count") else "conservative_failed_allocation"
+                            allocation["primary_stop_reason"] = type(exc).__name__
                         self.graph.set_status(node, ExperimentStatus.failed, error_type=type(exc).__name__)
                         self._record_failure(
                             FailureRecord(
@@ -1302,13 +1353,22 @@ class TMMHarnessOrchestrator:
                 remaining = self._budget.remaining("forward_evaluations")
                 available = self.config.global_optimizer_forward_evaluations if remaining is None else min(self.config.global_optimizer_forward_evaluations, int(remaining))
                 action_id = f"optimizer:{spec.experiment_id}:global"
-                if available > 0 and self._budget.can_reserve(action_id, optimizer_runs=1, forward_evaluations=available):
+                dimensions = sum(bool(layer.optimizable) for layer in optimization.simulation.stack.layers)
+                minimum_global = 1 + max(5, int(getattr(recovery, "population_size", 5)) * max(1, dimensions))
+                allocation["global_minimum_useful_evaluations"] = minimum_global
+                allocation["global_skip_reason"] = "insufficient_budget_for_initial_population" if available < minimum_global else None
+                if available >= minimum_global and self._budget.can_reserve(action_id, optimizer_runs=1, forward_evaluations=available):
+                    allocation["global_allocated"] = available
                     self._budget.reserve(action_id, optimizer_runs=1, forward_evaluations=available)
                     node = self._graph_node(spec.experiment_id, ActionType.run_optimizer, {"optimizer_id": recovery.descriptor.optimizer_id, "purpose": "global_diversity"})
                     self.graph.set_status(node, ExperimentStatus.running)
+                    committed = False
                     try:
                         result = recovery.optimize(optimization, maximum_forward_evaluations=available)
                         self._budget.commit(action_id, optimizer_runs=1, forward_evaluations=int(result.evaluation_count))
+                        committed = True
+                        allocation["global_used"] = int(result.evaluation_count)
+                        allocation["global_stop_reason"] = result.stop_reason
                         optimizer_path = self._experiment_directory(
                             spec.experiment_id
                         ) / f"OPTIMIZER_{result.optimizer_id}.json"
@@ -1334,7 +1394,12 @@ class TMMHarnessOrchestrator:
                         rows.extend(new_rows)
                         self.graph.set_status(node, ExperimentStatus.candidate)
                     except Exception as exc:
-                        self._budget.release(action_id)
+                        if not committed:
+                            charged = max(0, int(getattr(exc, "evaluation_count", available)))
+                            self._budget.commit(action_id, optimizer_runs=1, forward_evaluations=charged)
+                            allocation["global_used"] = charged
+                            allocation["global_usage_basis"] = "measured_failed_dispatches" if hasattr(exc, "evaluation_count") else "conservative_failed_allocation"
+                            allocation["global_stop_reason"] = type(exc).__name__
                         self.graph.set_status(node, ExperimentStatus.failed, error_type=type(exc).__name__)
                         self._record_failure(
                             FailureRecord(
@@ -1347,6 +1412,10 @@ class TMMHarnessOrchestrator:
                             stage="searching",
                             action_id=action_id,
                         )
+            allocation_path = self._experiment_directory(spec.experiment_id) / "SEARCH_ALLOCATION.json"
+            atomic_write_json(allocation_path, allocation)
+            self._register_artifact(allocation_path, artifact_type="search_allocation",
+                producing_action="allocate_search_resources", input_artifact_ids=["TASK.json"])
             spans = [
                 max(
                     layer.bounds_nm(optimization.optimizer.thickness_window_nm)[1]
@@ -1588,6 +1657,13 @@ class TMMHarnessOrchestrator:
             )
             for proposal in proposals.get(spec.experiment_id, []):
                 candidate_id = str(proposal["candidate_id"])
+                minimum = 1 + int(task.verification.require_spectral_convergence) + int(task.verification.require_independent_solver)
+                if not self._budget.can_reserve(f"verify:{candidate_id}", forward_evaluations=minimum):
+                    self._record_failure(FailureRecord(FailureCode.BUDGET_EXHAUSTED,
+                        "remaining budget cannot independently verify another survivor", False),
+                        experiment_id=spec.experiment_id, stage="candidate_verification",
+                        action_id=f"verify:{candidate_id}")
+                    break
                 directory = self._candidate_directory(
                     spec.experiment_id,
                     candidate_id,
@@ -1888,6 +1964,9 @@ class TMMHarnessOrchestrator:
 
     def _run_robustness(self, task: OpticalDesignTask, parsed: Iterable[tuple[Any, EngineMode, Any]], verified: Dict[str, List[Dict[str, Any]]]) -> None:
         assert self._budget is not None
+        for reservation in self._robustness_reservations:
+            self._budget.release(reservation)
+        self._robustness_reservations.clear()
         parsed_map = {spec.experiment_id: parsed_task for spec, mode, parsed_task in parsed if mode == EngineMode.optimize}
         for experiment_id, rows in verified.items():
             optimization = parsed_map.get(experiment_id)
@@ -2067,13 +2146,29 @@ class TMMHarnessOrchestrator:
         stop_decision: Dict[str, Any],
     ) -> TMMHarnessRunResult:
         assert self._budget is not None
+        for reservation in self._robustness_reservations:
+            self._budget.release(reservation)
+        self._robustness_reservations.clear()
         budget_snapshot = self._budget.snapshot()
+        categories = {"baseline_verification": 0, "search": 0, "candidate_verification": 0, "uncertainty": 0, "other": 0}
+        for event in budget_snapshot.get("events", []):
+            if event.get("event_type") != "commit":
+                continue
+            action = str(event.get("action_id", ""))
+            category = ("baseline_verification" if action.startswith("baseline:")
+                        else "search" if action.startswith("optimizer:")
+                        else "candidate_verification" if action.startswith("verify:")
+                        else "uncertainty" if action.startswith(("robustness:", "material_uncertainty:")) else "other")
+            categories[category] += int(event.get("actual_usage", {}).get("forward_evaluations", 0))
         cost_path = self.work_dir / "COST.json"
         atomic_write_json(
             cost_path,
             {
                 "schema_version": "tmm-harness-cost.v1",
                 "run_id": self.run_id,
+                "forward_evaluation_categories": categories,
+                "gradient_accounting": "excluded_here; see GRADIENT_COMPUTE ledger when requested",
+                "verification_counting": "actual workbench dispatches including probes, refinements and independent solver",
                 "wall_seconds": float(time.perf_counter() - started),
                 "forward_evaluations": int(
                     budget_snapshot.get("usage", {}).get(

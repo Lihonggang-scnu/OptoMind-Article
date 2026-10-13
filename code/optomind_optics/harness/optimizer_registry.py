@@ -17,6 +17,7 @@ import numpy as np
 
 from tmm_engine import MaterialRegistry, OptimizationTask, TMMWorkbench
 from tmm_engine.optimization import DifferentiableThicknessOptimizer
+from tmm_engine.spectral_reduction import reduce_spectral_mean
 
 
 _SUPPORTED_VARIABLE_TYPES = frozenset(
@@ -390,10 +391,17 @@ def _objective_from_forward(
             errors = (1.0 - values) ** 2
         else:
             errors = values**2
-        term = float(np.max(errors) if target.aggregation == "worst_case" else np.mean(errors))
+        if target.mean_reduction is not None:
+            observed = reduce_spectral_mean(wavelengths_nm[mask], values, target.mean_reduction)
+            term = float((observed - float(target.target)) ** 2 if target.constraint == "match"
+                         else 1.0 - observed if target.constraint == "at_least" else observed)
+        else:
+            term = float(np.max(errors) if target.aggregation == "worst_case" else np.mean(errors))
         weighted_loss += float(target.weight) * term
         total_weight += float(target.weight)
-        metrics[_target_key(target, index)] = float(np.mean(values))
+        metrics[_target_key(target, index)] = float(reduce_spectral_mean(
+            wavelengths_nm[mask], values, target.mean_reduction or "sample_mean"
+        ))
     loss = weighted_loss / max(total_weight, 1e-12)
     return (float(loss) if np.isfinite(loss) else float("inf")), metrics
 
@@ -511,9 +519,13 @@ class GradientThicknessAdapter:
             self.material_registry,
             device=self.device,
         )
-        raw_result = optimizer.optimize(
-            task, maximum_forward_evaluations=maximum_forward_evaluations
-        )
+        try:
+            raw_result = optimizer.optimize(
+                task, maximum_forward_evaluations=maximum_forward_evaluations
+            )
+        except Exception as exc:
+            exc.evaluation_count = optimizer.evaluation_count
+            raise
         raw_audit = dict(getattr(raw_result, "audit", {}) or {})
         raw_evaluation_count = getattr(raw_result, "evaluation_count", None)
         if raw_evaluation_count is None:
@@ -737,6 +749,9 @@ class DifferentialEvolutionThicknessAdapter:
             )
         except _BudgetExhausted:
             budget_hit = True
+        except Exception as exc:
+            exc.evaluation_count = evaluation_count
+            raise
 
         if best_values is None:
             # The budget is positive and SciPy normally evaluates at least one

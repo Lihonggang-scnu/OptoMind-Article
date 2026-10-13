@@ -200,9 +200,9 @@ def _preference_score(preference: ObjectivePreference, observed: float) -> tuple
     if preference.sense == "report":
         return None, 0.0
     if preference.sense == "maximize":
-        return float(np.clip(observed, 0.0, 1.0)), float((1.0 - observed) ** 2)
+        return float(np.clip(observed, 0.0, 1.0)), float(1.0 - observed if preference.mean_reduction else (1.0 - observed) ** 2)
     if preference.sense == "minimize":
-        return float(np.clip(1.0 - observed, 0.0, 1.0)), float(observed**2)
+        return float(np.clip(1.0 - observed, 0.0, 1.0)), float(observed if preference.mean_reduction else observed**2)
     assert preference.target is not None
     score = _continuous_score(observed, float(preference.target), "match", None)
     return score, float((observed - float(preference.target)) ** 2)
@@ -321,7 +321,7 @@ def evaluate_declared_objectives(
             "sense": preference.sense,
             "weight": float(preference.weight),
             "soft_score": soft_score,
-            "loss_semantics": "squared_reduced_directional_error" if soft_score is not None else None,
+            "loss_semantics": ("requested_statistic" if preference.mean_reduction else "squared_reduced_directional_error") if soft_score is not None else None,
             "role": "report_only" if soft_score is None else "soft_scoring_objective",
             "region": dict(preference.region),
             "channel_observations": channel_observations,
@@ -374,12 +374,13 @@ def evaluate_optimization_objectives(
             observed = reduce_spectral_mean(
                 wavelengths[mask], selected, target.mean_reduction or "sample_mean"
             )
-        if target.constraint == "match":
-            loss = float(np.mean((selected - float(target.target)) ** 2))
-        elif target.constraint == "at_least":
-            loss = float(np.mean((1.0 - selected) ** 2))
+        if target.mean_reduction is not None:
+            loss = float((observed - float(target.target)) ** 2 if target.constraint == "match"
+                         else 1.0 - observed if target.constraint == "at_least" else observed)
         else:
-            loss = float(np.mean(selected**2))
+            errors = ((selected - float(target.target)) ** 2 if target.constraint == "match"
+                      else (1.0 - selected) ** 2 if target.constraint == "at_least" else selected ** 2)
+            loss = float(np.max(errors) if target.aggregation == "worst_case" else np.mean(errors))
         score = _continuous_score(observed, float(target.target), str(target.constraint), target.tolerance)
         name = _target_name(target, index)
         attainment[name] = {
@@ -390,7 +391,7 @@ def evaluate_optimization_objectives(
             "aggregation": str(target.aggregation),
             "mean_reduction": (target.mean_reduction or "sample_mean")
             if target.aggregation == "mean" else None,
-            "loss_semantics": "sample_mean_squared_directional_error_surrogate",
+            "loss_semantics": "requested_statistic" if target.mean_reduction else "pointwise_squared_directional_error_surrogate",
             "weight": float(target.weight),
             "tolerance": target.tolerance,
             "soft_score": score,

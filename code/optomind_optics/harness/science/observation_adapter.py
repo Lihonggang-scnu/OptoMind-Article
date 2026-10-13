@@ -48,8 +48,8 @@ def reflection_evidence(observation: Mapping[str, Any]):
     }
 
 
-def bound_gradient(simulation: dict, *, candidate_ref: ObjectRef, objective_ref: ObjectRef, objective, binding: dict, provenance=None):
+def bound_gradient(simulation: dict, *, candidate_ref: ObjectRef, objective_ref: ObjectRef, objective, binding: dict, provenance=None, maximum_forward_evaluations=None):
     """Differentiate only a verified adopted candidate and explicitly frozen loss."""
     from .gradient_binding import compute_bound_gradient
     return compute_bound_gradient(simulation, candidate_ref=candidate_ref, objective_ref=objective_ref,
-                                  objective=objective, binding=binding, provenance=provenance)
+                                  objective=objective, binding=binding, provenance=provenance, maximum_forward_evaluations=maximum_forward_evaluations)

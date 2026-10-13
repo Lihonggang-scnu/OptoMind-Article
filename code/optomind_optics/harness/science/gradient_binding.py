@@ -21,22 +21,128 @@ def _engine():
     return tmm_engine, gradient_api, optimization, differentiable, task_io, MaterialRegistry
 
 
+def _frozen_standard_targets(simulation, payload):
+    from ..scoring_standard import ScoringStandard
+    from ..metric_catalog import METRIC_CATALOG
+    standard = ScoringStandard.model_validate(payload)
+    if not standard.locked:
+        raise ValueError("objective_unsupported: scoring standard is not locked")
+    standard.compiled()
+    targets = []
+    illumination = simulation.get("illumination") or {}
+    available_angles = illumination.get("angles_deg", [0.0])
+    available_polarizations = illumination.get("polarizations", ["unpolarized"])
+    for metric in standard.metrics:
+        spec = METRIC_CATALOG.get(metric.metric)
+        if spec is None or spec.reduction not in {"band_mean", "band_worst_case"} or len(spec.observables) != 1 or spec.observables[0] not in {"R", "T", "A"}:
+            raise ValueError(f"objective_unsupported: frozen metric {metric.metric}")
+        angles = metric.region.get("angle_deg", available_angles)
+        if not isinstance(angles, (list, tuple)):
+            angles = [angles]
+        polarizations = [metric.region["polarization"]] if metric.region.get("polarization") else available_polarizations
+        if any(float(angle) not in available_angles for angle in angles) or any(pol not in available_polarizations for pol in polarizations):
+            raise ValueError("objective_unsupported: frozen metric channel is not simulated")
+        lower, upper = metric.region["wavelength_nm"]
+        for angle in angles:
+            for polarization in polarizations:
+                targets.append({"name": metric.variable, "observable": spec.observables[0],
+                    "target": float(metric.target or 0.0), "wavelength_min_nm": lower,
+                    "wavelength_max_nm": upper, "angle_deg": angle, "polarization": polarization,
+                    "constraint": {"minimize": "at_most", "maximize": "at_least", "match": "match"}[metric.sense],
+                    "aggregation": "mean" if spec.reduction == "band_mean" else "worst_case",
+                    "mean_reduction": (metric.mean_reduction or "wavelength_integral_mean") if spec.reduction == "band_mean" else None})
+    return standard, targets
+
+
+def _frozen_formula_value(node, environment, torch):
+    import ast
+    import operator
+    if isinstance(node, ast.Constant):
+        return next(iter(environment.values())).new_tensor(float(node.value))
+    if isinstance(node, ast.Name):
+        return environment[node.id]
+    if isinstance(node, ast.UnaryOp):
+        value = _frozen_formula_value(node.operand, environment, torch)
+        return -value if isinstance(node.op, ast.USub) else value
+    if isinstance(node, ast.BinOp):
+        left = _frozen_formula_value(node.left, environment, torch)
+        right = _frozen_formula_value(node.right, environment, torch)
+        return {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+                ast.Div: operator.truediv, ast.Pow: operator.pow}[type(node.op)](left, right)
+    if isinstance(node, ast.Call):
+        values = torch.stack([_frozen_formula_value(arg, environment, torch) for arg in node.args])
+        if node.func.id == "abs":
+            if abs(float(values[0].detach())) <= 1e-12:
+                raise ValueError("nondifferentiable_objective: absolute-value formula at zero")
+            return values[0].abs()
+        selected = values.min() if node.func.id == "min" else values.max()
+        if int(torch.sum(torch.abs(values - selected) <= 1e-12)) > 1:
+            raise ValueError("nondifferentiable_objective: tied formula branches")
+        return selected
+    raise ValueError("objective_unsupported: frozen formula node")
+
+
+def _frozen_objective_value(task, optimizer, nk, objective):
+    import ast
+    from ..scoring_standard import ScoringStandard
+    from tmm_engine.gradient_api import _make_objective_value, ObjectiveSpec
+    standard = ScoringStandard.model_validate(objective["scoring_standard"])
+    tree = ast.parse(standard.compiled().text, mode="eval").body
+    torch = optimizer.torch
+    functions = {}
+    for target in task.targets:
+        def reduce(obs, target=target):
+            mask = (obs["wavelengths_nm"] >= target.wavelength_min_nm) & (obs["wavelengths_nm"] <= target.wavelength_max_nm)
+            values = obs[target.observable][torch.tensor(mask, dtype=torch.bool)]
+            if not values.numel():
+                raise ValueError("target band outside grid")
+            if target.aggregation == "mean":
+                if target.mean_reduction == "wavelength_integral_mean" and values.numel() > 1:
+                    band = torch.as_tensor(obs["wavelengths_nm"][mask], dtype=values.dtype)
+                    return torch.trapezoid(values, band) / (band[-1] - band[0])
+                return values.mean()
+            criteria = -values if target.constraint == "at_least" else values if target.constraint == "at_most" else (values - target.target).abs()
+            if int(torch.sum((criteria - criteria.max()).abs() <= 1e-12)) > 1:
+                raise ValueError("nondifferentiable_objective: tied worst-case wavelengths")
+            return values[torch.argmax(criteria)]
+        function = _make_objective_value(optimizer, task.simulation, nk,
+            ObjectiveSpec("custom", None, "custom", True), target.angle_deg, target.polarization, reduce)
+        functions.setdefault(target.name, []).append((target, function))
+
+    def value(row):
+        environment = {}
+        for variable, group in functions.items():
+            values = torch.stack([function(row) for _, function in group])
+            target = group[0][0]
+            if target.aggregation == "mean":
+                environment[variable] = values.mean()
+            else:
+                criteria = -values if target.constraint == "at_least" else values if target.constraint == "at_most" else (values - target.target).abs()
+                if int(torch.sum((criteria - criteria.max()).abs() <= 1e-12)) > 1:
+                    raise ValueError("nondifferentiable_objective: tied worst-case channels")
+                environment[variable] = values[torch.argmax(criteria)]
+        return _frozen_formula_value(tree, environment, torch)
+    return value
+
+
 def _resolve(simulation, objective):
     engine, api, opt, diff, task_io, registry_cls = _engine()
-    if not isinstance(objective, dict) or objective.get("kind") not in {"veritmm_nominal_loss", "optomind_soft_score"}:
+    if not isinstance(objective, dict) or objective.get("kind") not in {"veritmm_nominal_loss", "optomind_soft_score", "optomind_frozen_score"}:
         raise ValueError("objective_unsupported: requires an explicit supported loss/score")
-    if set(objective) - {"kind", "targets", "robustness"}:
+    frozen = objective["kind"] == "optomind_frozen_score"
+    if set(objective) - ({"kind", "scoring_standard"} if frozen else {"kind", "targets", "robustness"}):
         raise ValueError("objective_unsupported: unrecognized objective fields")
     if objective.get("robustness"):
         raise ValueError("objective_unsupported: robust objective is not nominal loss")
-    if not objective.get("targets"):
+    targets = _frozen_standard_targets(simulation, objective.get("scoring_standard"))[1] if frozen else objective.get("targets")
+    if not targets:
         raise ValueError("objective_unsupported: explicit targets required")
     from dataclasses import fields
     from tmm_engine.schemas import SpectralTarget
     allowed_target_fields={field.name for field in fields(SpectralTarget)}
-    if any(not isinstance(target,dict) or set(target)-allowed_target_fields for target in objective["targets"]):
+    if any(not isinstance(target,dict) or set(target)-allowed_target_fields for target in targets):
         raise ValueError("objective_unsupported: unrecognized target formula fields")
-    task = task_io.optimization_task_from_dict({"simulation":simulation,"targets":objective["targets"]})
+    task = task_io.optimization_task_from_dict({"simulation":simulation,"targets":targets})
     if task.simulation.solver != "smatrix":
         raise ValueError("solver_unsupported: differentiable binding requires smatrix")
     indices = api._validate_task(task.simulation, None)
@@ -45,8 +151,9 @@ def _resolve(simulation, objective):
     optimizer = opt.DifferentiableThicknessOptimizer(registry, device="cpu")
     nk, provenance = optimizer._build_nk_stack(task.simulation)
     from .. import objectives as scoring
+    from .. import scoring_standard as frozen_scoring
     source = {module.__name__:hashlib.sha256(Path(inspect.getfile(module)).read_bytes()).hexdigest()
-              for module in (api,opt,diff,task_io,scoring)}
+              for module in (api,opt,diff,task_io,scoring,frozen_scoring)}
     source[__name__]=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     runtime = {"veritmm":engine.__version__,"torch":optimizer.torch.__version__,"sources":source,
                "solver":"smatrix","dtype":"float64/complex128","device":"cpu"}
@@ -59,7 +166,7 @@ def _resolve(simulation, objective):
 
 
 
-def _meter_gradient_solver(optimizer, counts):
+def _meter_gradient_solver(optimizer, counts, maximum_forward_evaluations=None):
     from .compute_ledger import computational_event, compute_scope
     base_solver = optimizer._solver_class
 
@@ -67,6 +174,8 @@ def _meter_gradient_solver(optimizer, counts):
         def forward(self, thicknesses, nk_stack, wavelengths, *args, **kwargs):
             batch = int(thicknesses.shape[0])
             points = batch * int(wavelengths.numel())
+            if maximum_forward_evaluations is not None and counts["differentiable_forward_calls"] + batch > maximum_forward_evaluations:
+                raise ValueError("round_forward_evaluation_budget_exhausted")
             with compute_scope("bound_gradient"):
                 with computational_event("model_predictions", batch):
                     with computational_event("solver_points", points):
@@ -78,6 +187,8 @@ def _meter_gradient_solver(optimizer, counts):
 
 
 def _objective_value(task, optimizer, nk, objective):
+    if objective["kind"] == "optomind_frozen_score":
+        return _frozen_objective_value(task, optimizer, nk, objective)
     if objective["kind"] == "veritmm_nominal_loss":
         return lambda row: optimizer._loss_for_thicknesses(task,row.reshape(1,-1),nk)[0][0]
     # The simulator and differentiation remain VeriTMM's. Only the explicitly
@@ -91,7 +202,12 @@ def _objective_value(task, optimizer, nk, objective):
             mask=(obs["wavelengths_nm"]>=target.wavelength_min_nm)&(obs["wavelengths_nm"]<=target.wavelength_max_nm)
             values=obs[target.observable][torch.tensor(mask,dtype=torch.bool)]
             if not values.numel(): raise ValueError("target band outside grid")
-            if target.aggregation == "mean": observed=values.mean()
+            if target.aggregation == "mean":
+                if target.mean_reduction == "wavelength_integral_mean" and values.numel() > 1:
+                    band = torch.as_tensor(obs["wavelengths_nm"][mask], dtype=values.dtype)
+                    observed = torch.trapezoid(values, band) / (band[-1] - band[0])
+                else:
+                    observed=values.mean()
             elif target.constraint == "at_least": observed=values.min()
             elif target.constraint == "at_most": observed=values.max()
             else: observed=values[torch.argmax(torch.abs(values-float(target.target)))]
@@ -105,6 +221,8 @@ def _objective_value(task, optimizer, nk, objective):
 
 
 def _check_smoothness(task, optimizer, nk, objective, x):
+    if objective["kind"] == "optomind_frozen_score":
+        return
     from tmm_engine.gradient_api import _make_objective_value, ObjectiveSpec
     torch=optimizer.torch
     for target in task.targets:
@@ -153,7 +271,7 @@ def make_gradient_binding(simulation, *, candidate, objective_task, sample):
             "objective_task":objective_task.model_dump(mode="json"),"sample":sample,**identities}}
 
 
-def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objective, binding, provenance=None):
+def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objective, binding, provenance=None, maximum_forward_evaluations=None):
     from .observation_adapter import BINDING_FIELDS, evidence_binding
     if set(binding) != set(BINDING_FIELDS):
         raise ValueError("gradient requires complete identity binding")
@@ -177,7 +295,22 @@ def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objectiv
                                     objective_version=task_object.ref().model_dump(),**identities)
         if expected != binding or any(canonical_hash(provenance.get(k)) != canonical_hash(v) for k,v in identities.items()):
             raise ValueError("material/grid/polarization/solver/runtime identity mismatch")
-        _meter_gradient_solver(optimizer, base["compute_cost"])
+        target_count = len(task.targets)
+        if objective["kind"] == "optomind_frozen_score":
+            required = target_count * (1 + 2 * len(indices))
+        elif objective["kind"] == "veritmm_nominal_loss":
+            groups = len({(target.angle_deg, target.polarization) for target in task.targets})
+            required = target_count + groups * (1 + 2 * len(indices))
+        else:
+            required = target_count * (2 + 2 * len(indices))
+        if maximum_forward_evaluations is not None:
+            if isinstance(maximum_forward_evaluations, bool) or int(maximum_forward_evaluations) != maximum_forward_evaluations or maximum_forward_evaluations < 0:
+                raise ValueError("gradient forward budget must be a nonnegative integer")
+            base["remaining_round_forward_evaluations"] = int(maximum_forward_evaluations)
+            if required > maximum_forward_evaluations:
+                return {**base, "status": "unavailable", "reason": "insufficient remaining round budget for gradient and finite-difference verification",
+                        "required_forward_evaluations": required}
+        _meter_gradient_solver(optimizer, base["compute_cost"], maximum_forward_evaluations)
         torch = optimizer.torch
         x = torch.tensor([[float(layer.thickness_nm) for layer in task.simulation.stack.layers]],
                          dtype=optimizer.real_dtype,requires_grad=True)
@@ -200,7 +333,7 @@ def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objectiv
         if not math.isfinite(float(scalar.detach())) or not verification["passed"]:
             return {**base,"status":"unavailable","reason":"finite_difference_verification_failed","verification":verification}
         return {**base,"status":"available","method":"autodiff","backend":"torch",
-                "metric_value":float(scalar.detach()),"objective_semantics":("native weighted nominal optimizer loss; minimize" if objective["kind"] == "veritmm_nominal_loss" else "harness aggregate_soft_score; maximize"),
+                "metric_value":float(scalar.detach()),"objective_semantics":("native weighted nominal optimizer loss; minimize" if objective["kind"] == "veritmm_nominal_loss" else "frozen scoring-standard formula; maximize" if objective["kind"] == "optomind_frozen_score" else "harness aggregate_soft_score; maximize"),
                 "constraints":task_object.constraints,"constraint_semantics":"preserved separately; derivative is not feasibility/attainment proof",
                 "layer_gradients":rows,"verification":verification,"check_ref":canonical_hash(verification),
                 "top_influential_layers":sorted(rows,key=lambda r:-abs(r["gradient_per_nm"])),
@@ -210,7 +343,7 @@ def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objectiv
         return {**base,"status":"unavailable","reason":f"{type(exc).__name__}: {exc}"}
 
 
-def adopted_gradient_summary(compiled_payload, run_payload, execution_dir):
+def adopted_gradient_summary(compiled_payload, run_payload, execution_dir, *, scoring_standard=None, maximum_forward_evaluations=None):
     """Legacy producer: bind the explicitly selected best-target candidate receipt.
 
     A certificate task hash must prove reconstruction at the adopted thicknesses;
@@ -220,12 +353,21 @@ def adopted_gradient_summary(compiled_payload, run_payload, execution_dir):
     import json
     unavailable=lambda reason:{"status":"unavailable","reason":reason}
     try:
+        from ..scoring_standard import ScoringStandard
+        standard = None if scoring_standard is None else ScoringStandard.model_validate(scoring_standard)
         choices=[]
         for experiment in run_payload.get("experiment_results",[]):
             portfolio=experiment.get("portfolio") or {}
             selected=(portfolio.get("selected_roles") or {}).get("best_target_score")
             for row in portfolio.get("candidates",[]):
-                if row.get("candidate_id")==selected and row.get("physically_admissible") and row.get("target_score") is not None:
+                if not row.get("physically_admissible"):
+                    continue
+                if standard is not None:
+                    report = row.get("objective_report") or (row.get("metadata") or {}).get("objective_report") or {}
+                    outcome = standard.score(report)
+                    if outcome.ok and outcome.value is not None:
+                        choices.append((float(outcome.value),experiment["experiment_id"],row))
+                elif row.get("candidate_id")==selected and row.get("target_score") is not None:
                     choices.append((float(row["target_score"]),experiment["experiment_id"],row))
         if not choices: return unavailable("no adopted best-target candidate receipt")
         choices.sort(key=lambda row:row[0],reverse=True)
@@ -264,7 +406,8 @@ def adopted_gradient_summary(compiled_payload, run_payload, execution_dir):
             return unavailable("adopted candidate material provenance missing or changed")
         # This differentiates exactly the nominal score used by this portfolio;
         # robustness and fabrication scores are intentionally separate outputs.
-        objective={"kind":"optomind_soft_score","targets":copy.deepcopy(native["targets"])}
+        objective = ({"kind": "optomind_frozen_score", "scoring_standard": standard.model_dump(mode="json")}
+                     if standard is not None else {"kind":"optomind_soft_score","targets":copy.deepcopy(native["targets"])})
         run_id=str(run_payload.get("run_id") or compiled_payload.get("task_id") or "legacy")
         candidate=ModelCandidate(object_id=str(row["candidate_id"]),source_run_id=run_id,
             model_ir={"simulation":simulation},parameter_values={"thicknesses_nm":thicknesses})
@@ -274,12 +417,21 @@ def adopted_gradient_summary(compiled_payload, run_payload, execution_dir):
         request=make_gradient_binding(simulation,candidate=candidate,objective_task=task,
             sample={"candidate_id":row["candidate_id"],"certificate_id":row["certificate_id"],"task_sha256":certificate["task_sha256"]})
         from .contracts import ObjectRef
+        cap = (compiled_payload.get("budget") or {}).get("maximum_forward_evaluations")
+        used = ((run_payload.get("budget") or {}).get("usage") or {}).get("forward_evaluations", 0)
+        remaining = None if cap is None else max(0, int(cap) - int(used))
+        if maximum_forward_evaluations is not None:
+            remaining = int(maximum_forward_evaluations) if remaining is None else min(remaining, int(maximum_forward_evaluations))
         result=compute_bound_gradient(simulation,candidate_ref=ObjectRef.model_validate(request["candidate_ref"]),
             objective_ref=ObjectRef.model_validate(request["objective_ref"]),objective=objective,
-            binding=request["binding"],provenance=request["provenance"])
+            binding=request["binding"],provenance=request["provenance"], maximum_forward_evaluations=remaining)
+        result["combined_round_forward_evaluations"] = int(used) + int(result.get("compute_cost", {}).get("differentiable_forward_calls", 0))
         if result["status"]=="available" and not math.isclose(result["metric_value"],score,rel_tol=1e-7,abs_tol=1e-9):
-            return unavailable("recomputed objective differs from adopted score; material/runtime/objective provenance cannot be reused")
-        return {**result,"selection_role":"best_target_score","candidate_id":row["candidate_id"],
+            return {**result, "status": "unavailable", "reason": "recomputed objective differs from adopted score; material/runtime/objective provenance cannot be reused"}
+        from ..research_feedback import _fingerprint
+        return {**result,"selection_role":"best_frozen_score" if standard is not None else "best_target_score",
+                "score_basis_fingerprint": _fingerprint(standard.model_dump(mode="json")) if standard is not None else None,
+                "adopted_score": score, "candidate_id":row["candidate_id"],
                 "experiment_id":experiment_id,"frozen_request":request}
     except Exception as exc:
         return unavailable(f"{type(exc).__name__}: {exc}")
