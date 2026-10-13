@@ -460,6 +460,19 @@ def test_invented_wavelength_interval_fails_closed():
     assert any("900" in item and "not explicit" in item for item in result.validation_warnings)
 
 
+@pytest.mark.parametrize("grid", ["at 5 nm spacing", "with a step size of 5 nm", "with sampling interval = 5 nm"])
+def test_sampling_interval_is_not_a_wavelength_constraint(grid):
+    response = _analysis_payload(
+        normalized_request_english=f"Analyze reflectance from 450 to 700 nm {grid}.",
+        wavelengths_nm=[[450, 700]],
+    )
+    result = QwenTMMProblemAnalyzer(
+        client=_FakeQwenClient([response]), maximum_attempts=1
+    ).analyze(f"Analyze reflectance from 450 to 700 nm {grid}.")
+    assert result.status == "analyzed"
+    assert result.analysis.wavelengths_nm == [(450.0, 700.0)]
+
+
 def test_invented_incidence_angle_fails_closed():
     response = _analysis_payload(
         normalized_request_english=(

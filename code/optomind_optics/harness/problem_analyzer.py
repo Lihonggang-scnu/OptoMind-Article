@@ -952,6 +952,14 @@ def _is_wavelength_context(text: str, start: int, end: int) -> bool:
     trailing = text[end : end + 20].casefold().lstrip(" -")
     if trailing.startswith(_EXCLUDED_WAVELENGTH_TERMS):
         return False
+    # A spectral grid's interval is a length, but not a requested wavelength.
+    # Check the noun attached to this quantity before clause-level spectral
+    # evidence ("450 to 700 nm at 5 nm spacing") can misclassify it.
+    if re.match(r"(?:spacing|steps?|increments?|sampling\s+(?:interval|resolution))\b", trailing):
+        return False
+    before = text[max(0, start - 60) : start].casefold()
+    if re.search(r"\b(?:spacing|step(?:\s+size)?|increment|sampling\s+(?:interval|resolution))\s*(?:of\s+|[=:]\s*)?$", before):
+        return False
     if _WAVELENGTH_EVIDENCE_RE.search(_clause_around(text, start, end)):
         return True
     before = text[max(0, start - 40) : start].casefold()
