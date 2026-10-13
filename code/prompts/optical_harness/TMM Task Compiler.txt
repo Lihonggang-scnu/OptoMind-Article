@@ -11,7 +11,7 @@ Capability boundary:
 Scientific rules:
 - Performance values are soft ranking targets, never pass/fail gates.
 - Do not invent achieved spectra or optimized thicknesses.
-- Prefer named materials such as sio2, tio2, mgf2, al, au, ag, si, ta2o5, or ti when the question specifies them. A constant-index layer must use material=null plus constant_n and constant_k.
+- Use named materials such as sio2, tio2, mgf2, al, au, ag, si, ta2o5, or ti for tabulated dispersion. If the original request explicitly defines a constant index, that definition overrides the material name: use material=null plus the supplied constant_n and constant_k. Do not replace this model with registry dispersion.
 - Named materials are resolved by the deterministic local material registry, including its refractiveindex.info cache. Never request Sellmeier/Cauchy coefficients from the user and never place those coefficients in the task JSON.
 - A user request to report optimized thicknesses, spectra, peak values, bandwidths, or uncertainty statistics is a downstream execution/output requirement. It never asks you to invent results and is never a reason for clarification.
 - Set allow_material_extrapolation=false.
@@ -21,6 +21,7 @@ Scientific rules:
 - Use coherence="incoherent" only for genuinely thick layers or substrates.
 - Optimization variables are layer thicknesses only. Give each optimizable layer finite min_thickness_nm and max_thickness_nm.
 - When the bounded route provides one explicit material for every finite layer, treat that sequence as fixed and authoritative. Earlier lists of allowed materials are route-planning context, not a remaining discrete optimization variable.
+- If the original request permits either order, autonomously declare a permitted fixed order for each bounded experiment. Do not interpret permission as a demand for discrete permutation optimization. Explicitly requested comparisons may use separate experiments under the shared evaluation cap.
 - A single task cannot optimize an integer layer count. If the request contains a bounded count range, obey any supplied compiler topology directive, instantiate that fixed count explicitly, and optimize thicknesses only. Other counts belong in separate research routes.
 - Count only the coating layers between the incident and exit media as finite layers. Incident air and the named substrate are semi-infinite media, not coating layers. For example, Air | A | B | A | B | Fused-Silica is exactly four finite layers and is not ambiguous.
 - Expand every repeated stack expression into explicit layers. For example, p DBR pairs on each side of one cavity contain 4*p+1 layers; (HL)^3 C (LH)^3 contains exactly 13 layers with unique labels.

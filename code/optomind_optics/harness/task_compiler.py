@@ -850,9 +850,10 @@ def _bounded_compiler_question(question: str) -> str:
         )
     directives.extend(
         [
-            "Resolve every named material through the local material registry; ignore any request to manually supply Cauchy or Sellmeier coefficients.",
+            "Resolve tabulated materials through the local material registry; ignore any request to manually supply Cauchy or Sellmeier coefficients. Explicit original constant-index definitions take precedence over material names: represent those layers with material=null and the supplied constant_n/constant_k, never substitute registry dispersion.",
             "A request to report simulated or optimized results is a downstream output requirement, not a request for the compiler to invent results.",
             "If this bounded route declares an explicit material for every finite layer, that fixed sequence is authoritative. Do not request discrete material-choice optimization even if earlier background text lists additional allowed materials.",
+            "When the original request permits either layer order, choose and declare a permitted fixed order per bounded experiment; permission is not a requirement for discrete permutation optimization. An explicitly requested comparison may use separate experiments within the shared total evaluation cap.",
             "Compile independent bounded relative thickness tolerance into the uncertainty policy; downstream deterministic code computes center transmittance and passband-width statistics.",
             "Map TE to s polarization and TM to p polarization for planar incidence.",
             "Count only coating layers between the incident and exit media as finite layers. Incident air and the named substrate are semi-infinite media, never coating layers. If an explicit sequence contains exactly the declared number of materials between those media, compile it without requesting clarification.",
@@ -881,6 +882,7 @@ def _clarification_is_policy_resolvable(rationale: str) -> bool:
             "fixed topology",
             "finite layer",
             "layer sequence",
+            "stack sequence",
             "incident medium",
             "exit medium",
             "optimal p",
@@ -3087,8 +3089,12 @@ class QwenTMMTaskCompiler:
             raise TMMTaskCompilationError("a non-empty question is required")
         prompt = self.prompt_path.read_text(encoding="utf-8")
         benchmark_id = benchmark.id if benchmark is not None else None
+        from .research_charter import build_research_charter, check_frozen_task_constraints
+
+        original_charter = build_research_charter(_original_request_source(source_question), {})
         input_payload: dict[str, Any] = {
             "question": _bounded_compiler_question(source_question),
+            "original_request_constraints": original_charter,
             "benchmark": None
             if benchmark is None
             else {
@@ -3138,6 +3144,7 @@ class QwenTMMTaskCompiler:
                     "question": input_payload["question"],
                     "benchmark": input_payload["benchmark"],
                     "fixed_rules": input_payload["fixed_rules"],
+                    "original_request_constraints": input_payload["original_request_constraints"],
                     "existing_draft": existing_draft,
                     "repair_request": {
                         "validation_errors": list(errors),
@@ -3428,6 +3435,10 @@ class QwenTMMTaskCompiler:
                 )
                 if semantic_errors:
                     raise ValueError("; ".join(semantic_errors))
+                # The existing one-repair loop must see physical drift before
+                # the outer research loop rejects a whole execution round.
+                # Return diagnostics to the model; never rewrite its physics.
+                check_frozen_task_constraints(task.model_dump(mode="json"), original_charter)
                 return TaskCompilationResult(
                     status="compiled",
                     benchmark_id=benchmark_id,
