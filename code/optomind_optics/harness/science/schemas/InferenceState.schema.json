@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "inference-state.v1",
+      "default": "inference-state.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "candidate_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Candidate Refs",
+      "type": "array"
+    },
+    "observation_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Observation Refs",
+      "type": "array"
+    },
+    "representation": {
+      "default": "not_recorded",
+      "enum": [
+        "conditional_bayes",
+        "predictive_ensemble",
+        "scenario_set",
+        "ambiguity_set",
+        "not_recorded"
+      ],
+      "title": "Representation",
+      "type": "string"
+    },
+    "weights_semantics": {
+      "default": "not_recorded",
+      "title": "Weights Semantics",
+      "type": "string"
+    },
+    "calibration_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {},
+        "not_recorded": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "noise_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "derived_views": {},
+        "not_recorded": {},
+        "shared_calibration": {},
+        "type": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "evidence_uses": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Evidence Uses",
+      "type": "array"
+    },
+    "posterior": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "covariance": {},
+        "not_recorded": {},
+        "parameter_order": {},
+        "parameters": {},
+        "samples": {},
+        "weights": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "diagnostics": {
+      "additionalProperties": true,
+      "title": "Diagnostics",
+      "type": "object"
+    },
+    "belief_scope": {
+      "default": "not_recorded",
+      "enum": [
+        "model_pool_conditional",
+        "scenario",
+        "ambiguity_set",
+        "not_recorded"
+      ],
+      "title": "Belief Scope",
+      "type": "string"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id"
+  ],
+  "title": "InferenceState",
+  "type": "object"
+}

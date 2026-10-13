@@ -20,12 +20,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Iterable, Literal, Mapping, Protocol, Sequence, runtime_checkable
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator, model_serializer
 
 from config.qwen_config import get_cost_tracker
 
 from .problem_analyzer import ArticlePlusQwenClient
 from .text_safety import repair_scientific_payload
+from .science.literature_bridge import ResearchBrief, build_research_brief
 
 
 class MethodPurpose(str, Enum):
@@ -293,6 +294,7 @@ class MethodResearchReport(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     problem_id: str
+    research_brief: ResearchBrief | None = None
     queries: list[MethodResearchQuery] = Field(default_factory=list)
     evidence: list[MethodEvidence] = Field(default_factory=list)
     method_findings: list[MethodFinding] = Field(default_factory=list)
@@ -300,6 +302,13 @@ class MethodResearchReport(BaseModel):
     telemetry: MethodResearchTelemetry = Field(default_factory=MethodResearchTelemetry)
     status: MethodResearchStatus = MethodResearchStatus.unavailable
     reasons: list[str] = Field(default_factory=list)
+
+    @model_serializer(mode="wrap")
+    def _serialize_optional_brief(self, handler):
+        payload = handler(self)
+        if self.research_brief is None:
+            payload.pop("research_brief", None)
+        return payload
 
     @field_validator("problem_id")
     @classmethod
@@ -2493,6 +2502,13 @@ def research_tmm_methods(
     online_client: MethodResearchOnlineClient | Any | None = None,
     online: bool | None = None,
     synthesis_callback: Callable[..., Any] | None = None,
+    evidence_bundle: Any | None = None,
+    evidence_request: Any | None = None,
+    evidence_index: Any | None = None,
+    evidence_source_resolver: Any | None = None,
+    evidence_directed_reader: Any | None = None,
+    research_task_ref: Any | None = None,
+    citation_namespace: str | None = None,
     **adapter_options: Any,
 ) -> MethodResearchReport:
     """Convenience entry point for a future research-design loop."""
@@ -2504,7 +2520,21 @@ def research_tmm_methods(
         synthesis_callback=synthesis_callback,
         **adapter_options,
     )
-    return adapter.research(problem, explicit_queries)
+    report = adapter.research(problem, explicit_queries)
+    if evidence_request is not None:
+        if evidence_bundle is not None:
+            raise ValueError("supply an evidence request or frozen bundle, not both")
+        if evidence_index is None or evidence_source_resolver is None:
+            raise ValueError("evidence request requires explicit local index and source resolver")
+        from optomind_research.runtime.upgrade3.article_evidence import collect_evidence
+        evidence_bundle = collect_evidence(evidence_request, index=evidence_index,
+            source_resolver=evidence_source_resolver, directed_reader=evidence_directed_reader)
+    if evidence_bundle is not None:
+        if research_task_ref is None or citation_namespace is None:
+            raise ValueError("evidence compilation requires task ref and citation namespace")
+        brief = build_research_brief(evidence_bundle, task_ref=research_task_ref, citation_namespace=citation_namespace)
+        report = MethodResearchReport.model_validate({**report.model_dump(mode="json"), "research_brief": brief.model_dump(mode="json")})
+    return report
 
 
 __all__ = [

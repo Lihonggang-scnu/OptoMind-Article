@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "prediction-spec.v1",
+      "default": "prediction-spec.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "candidate_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "snapshot_id": {
+      "default": "not_recorded",
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "program_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "raw_channel": {
+      "default": "not_recorded",
+      "title": "Raw Channel",
+      "type": "string"
+    },
+    "units": {
+      "default": "not_recorded",
+      "title": "Units",
+      "type": "string"
+    },
+    "statistic": {
+      "default": "not_recorded",
+      "title": "Statistic",
+      "type": "string"
+    },
+    "tolerance_source": {
+      "default": "not_recorded",
+      "title": "Tolerance Source",
+      "type": "string"
+    },
+    "lower": {
+      "default": [],
+      "items": {
+        "type": "number"
+      },
+      "title": "Lower",
+      "type": "array"
+    },
+    "upper": {
+      "default": [],
+      "items": {
+        "type": "number"
+      },
+      "title": "Upper",
+      "type": "array"
+    },
+    "coordinate": {
+      "default": [],
+      "items": {
+        "type": "number"
+      },
+      "title": "Coordinate",
+      "type": "array"
+    },
+    "invalid_conditions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Invalid Conditions",
+      "type": "array"
+    },
+    "observable": {
+      "title": "Observable",
+      "type": "string"
+    },
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "angle_deg": {},
+        "angles_deg": {},
+        "coordinate": {},
+        "coordinate_units": {},
+        "not_recorded": {},
+        "polarization": {},
+        "polarizations": {},
+        "program": {},
+        "session": {},
+        "support": {},
+        "wavelength_units": {},
+        "wavelengths_nm": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {},
+        "kernel": {},
+        "mean": {},
+        "not_recorded": {},
+        "parameter_uncertainty": {},
+        "world_ids": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "observable"
+  ],
+  "title": "PredictionSpec",
+  "type": "object"
+}

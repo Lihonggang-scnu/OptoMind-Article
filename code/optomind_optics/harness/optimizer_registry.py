@@ -623,7 +623,11 @@ class DifferentialEvolutionThicknessAdapter:
         maximum_forward_evaluations: Optional[int] = None,
         *,
         max_forward_evaluations: Optional[int] = None,
+        objective_callback=None,
+        objective_ref: Optional[str] = None,
     ) -> AdapterOptimizationResult:
+        if objective_callback is not None and not objective_ref:
+            raise ValueError("custom posterior objective requires versioned objective_ref")
         budget = self._resolve_budget(
             maximum_forward_evaluations,
             max_forward_evaluations,
@@ -685,9 +689,15 @@ class DifferentialEvolutionThicknessAdapter:
             # Fixed entries are copied from the task once and are never handed
             # back to SciPy as variables.
             evaluation_count += 1
-            simulation = _simulation_with_thicknesses(task, full_values)
-            forward = workbench.simulate(simulation)
-            loss, metrics = _objective_from_forward(task, forward)
+            if objective_callback is None:
+                simulation = _simulation_with_thicknesses(task, full_values)
+                forward = workbench.simulate(simulation)
+                loss, metrics = _objective_from_forward(task, forward)
+            else:
+                loss = float(objective_callback(tuple(float(v) for v in full_values)))
+                metrics = {}
+                if np.isnan(loss):
+                    raise ValueError("custom posterior objective returned NaN")
             evaluations.append((full_values.copy(), float(loss), dict(metrics), evaluation_count))
             if np.isfinite(loss) and float(loss) < best_loss:
                 best_loss = float(loss)
@@ -763,6 +773,8 @@ class DifferentialEvolutionThicknessAdapter:
             "best_effort" if np.isfinite(best_loss) else "failed"
         )
         audit: Dict[str, Any] = {
+            "objective_ref": objective_ref,
+            "objective_evaluation_semantics": "posterior callback; physical calls metered by caller" if objective_callback else "one nominal forward per evaluation",
             "capability_assessment": assessment.to_dict(),
             "backend": "scipy.optimize.differential_evolution",
             "seed": int(task.optimizer.seed),

@@ -169,6 +169,8 @@ class ProductionAssemblyConfig(_StrictModel):
     planner_maximum_tokens: int = 4000
     available_stages: Tuple[str, ...] = Field(default_factory=tuple)
     budget: Dict[str, Any] = Field(default_factory=_default_budget)
+    release_state_root: Optional[str] = None
+    release_runtime_versions: Dict[str, str] = Field(default_factory=dict)
 
     @field_validator("work_root")
     @classmethod
@@ -251,6 +253,7 @@ class ArticlePipelineAssembly:
         strategy_planner: Any,
         director: Any,
         planner: Any,
+        release_binding: Optional[Any] = None,
     ) -> None:
         self.pipeline = pipeline
         self.request = request
@@ -266,12 +269,27 @@ class ArticlePipelineAssembly:
         self.strategy_planner = strategy_planner
         self.director = director
         self.planner = planner
+        self.release_binding = release_binding
+
+    def _run_bound(self, *, resume: bool) -> ArticlePipelineResult:
+        if self.release_binding is not None:
+            self.release_binding.before_run(self.request.work_dir)
+        result = self.pipeline.resume(self.request) if resume else self.pipeline.run(self.request)
+        if self.release_binding is not None:
+            self.release_binding.after_run(self.request.work_dir, result)
+        return result
+
+    def scientific_authoring_source(self):
+        """Resolve the actual canonical research selection for existing authoring."""
+        loader=getattr(self.pipeline.science_policy,"authoring_source",None)
+        if not callable(loader):raise PipelineAssemblyIntegrityError("assembly has no canonical open-research authoring source")
+        return loader(self.request.work_dir)
 
     def run(self) -> ArticlePipelineResult:
-        return self.pipeline.run(self.request)
+        return self._run_bound(resume=False)
 
     def resume(self) -> ArticlePipelineResult:
-        return self.pipeline.resume(self.request)
+        return self._run_bound(resume=True)
 
 
 class ProductionArticlePipelineFactory:
@@ -325,6 +343,9 @@ class ProductionArticlePipelineFactory:
         research_online_client: Optional[Any] = None,
         synthesis_callback: Optional[Callable[..., Any]] = None,
         research_options: Optional[Mapping[str, Any]] = None,
+        science_policy: Optional[Any] = None,
+        open_research_builder: Optional[Callable[..., Any]] = None,
+        science_shadow_spec: Optional[Mapping[str, Any]] = None,
         scheduler: Optional[BudgetScheduler] = None,
         budget_limits: Optional[BudgetLimits | Mapping[str, Any]] = None,
         harness_factory: Optional[Callable[[Path, str], Any]] = None,
@@ -332,6 +353,24 @@ class ProductionArticlePipelineFactory:
         compile_assets: Optional[Callable[..., Any]] = None,
     ) -> ArticlePipelineAssembly:
         """Assemble the pipeline and trusted local runtime components."""
+
+        if science_policy is not None and open_research_builder is not None:
+            raise PipelineAssemblyIntegrityError("choose one explicit scientific policy or open research builder")
+        release_binding = None
+        if self.config.release_state_root is not None:
+            from .science.release_manifest import ProductionReleaseBinding
+            release_binding = ProductionReleaseBinding(
+                self.config.release_state_root, self.config.release_runtime_versions,
+                shadow_spec=science_shadow_spec,
+            )
+            mode = release_binding.selection["mode"]
+            if mode == "active" and science_policy is None and open_research_builder is None:
+                raise PipelineAssemblyIntegrityError("active release requires an explicit scientific execution policy")
+            if mode in {"legacy", "shadow"}:
+                science_policy = None
+                open_research_builder = None
+        elif self.config.release_runtime_versions or science_shadow_spec is not None:
+            raise PipelineAssemblyIntegrityError("release versions/shadow comparison require a committed release selection")
 
         if task_compiler is not None and task_compiler_client is not None:
             raise PipelineAssemblyIntegrityError(
@@ -380,7 +419,9 @@ class ProductionArticlePipelineFactory:
                 harness_factory=harness_factory,
             )
             coordinator = ArticleExecutionCoordinator(
-                gateway=gateway, adapter=adapter
+                gateway=gateway, adapter=adapter,
+                science_root=Path(self.request.work_dir) / "science",
+                science_task_request={"run_id": self.request.run_id, "question": self.request.question},
             )
         except (ArticleExecutionError, ValidationError, ValueError) as exc:
             raise PipelineAssemblyIntegrityError(
@@ -564,6 +605,10 @@ class ProductionArticlePipelineFactory:
                 authority=self.authority,
             )
 
+        if open_research_builder is not None:
+            from .science.pipeline_adapter import OpenResearchPipelinePolicy
+            science_policy=OpenResearchPipelinePolicy(coordinator=coordinator,loop_builder=open_research_builder,article_request=self.request)
+
         pipeline = build_default_pipeline(
             analyze=analyze,
             research=research,
@@ -574,6 +619,7 @@ class ProductionArticlePipelineFactory:
             execute=execute,
             compile_assets=compile_assets_impl,
             authority=self.authority,
+            science_policy=science_policy,
         )
         return ArticlePipelineAssembly(
             pipeline=pipeline,
@@ -590,6 +636,7 @@ class ProductionArticlePipelineFactory:
             strategy_planner=strategy_planner,
             director=director,
             planner=planner,
+            release_binding=release_binding,
         )
 
     def _route_binding_from_compilation(

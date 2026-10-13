@@ -336,6 +336,7 @@ def _compact_method_research(report: Mapping[str, Any]) -> Dict[str, Any]:
         ][:8],
         "evidence": compact_evidence,
         "method_findings": findings,
+        **({"research_brief": report["research_brief"]} if report.get("research_brief") is not None else {}),
         "unresolved_questions": [
             str(item) for item in report.get("unresolved_questions", []) or []
         ][:8],

@@ -31,7 +31,8 @@ Boundaries:
 - ``ArticleBudgetAdapter``/``BudgetScheduler`` is the only budget authority:
   reservation happens before any run under ``request.budget_lease_id`` (or
   ``request.request_id``); resolver failure, invalid task, harness exception,
-  and rejected runs release; completed runs commit measured usage extracted
+  and rejected runs before provider execution release; unknown outcomes retain
+  reservations, and terminal runs commit measured usage extracted
   from the trusted TMM result.  Missing or malformed usage is a hard adapter
   failure.  Count resources must be integers before reservation.
 - ``ObservationCard`` status/metrics are derived only from
@@ -380,7 +381,7 @@ class ArticleTMMExecutionAdapter:
             harness = self.harness_factory(run_dir, self.run_id)
             raw_result = harness.run(task)
         except Exception as exc:
-            self._release(lease)
+            # Unknown provider outcome retains the reservation until reconciliation.
             raise HarnessExecutionError(
                 f"TMM harness failed: {exc}"
             ) from exc
@@ -392,20 +393,23 @@ class ArticleTMMExecutionAdapter:
                 else TMMHarnessRunResult.model_validate(raw_result)
             )
         except ValidationError as exc:
-            self._release(lease)
+            # Invalid receipts cannot establish that no resources were consumed.
             raise HarnessExecutionError(
                 f"TMM harness returned an invalid result: {exc}"
             ) from exc
 
         if result.run_id != self.run_id:
-            self._release(lease)
+            # Preserve reservation for an identity-mismatched outcome.
+            pass
             raise HarnessExecutionError(
                 f"TMM result run_id {result.run_id!r} does not match "
                 f"adapter run_id {self.run_id!r}"
             )
 
         if result.status != "completed":
-            self._release(lease)
+            # Failed/cancelled work still incurs measured execution cost.
+            usage = _extract_measured_usage(result)
+            self.budget_adapter.commit(lease, **dict(usage))
             atomic_write_json(
                 marker,
                 {
@@ -421,10 +425,10 @@ class ArticleTMMExecutionAdapter:
             usage = _extract_measured_usage(result)
             self.budget_adapter.commit(lease, **dict(usage))
         except UsageMalformedError:
-            self._release(lease)
+            # Unknown cost must not be refunded.
             raise
         except Exception as exc:
-            self._release(lease)
+            # Keep the reservation when settlement fails.
             raise UsageMalformedError(
                 f"measured usage could not be committed: {exc}"
             ) from exc
@@ -440,6 +444,18 @@ class ArticleTMMExecutionAdapter:
         return self._receipt(request, run_dir, result, replayed=False)
 
     # -- helpers ------------------------------------------------------------
+
+    def reconcile_completed_request(self, request):
+        """Read a matching completed provider receipt, without rerunning the tool."""
+        try:
+            result = self._existing_completed_run(request, self.run_dir_for(request))
+            if result is None:
+                return {"state": "unknown_outcome"}
+            raw = self._receipt(request, self.run_dir_for(request), result, replayed=True)
+            receipt = ArticleToolGateway._normalize_adapter_result(request, raw)
+            return {"state": "completed", "adapter_result": receipt.model_dump(mode="json"), "cost": dict(_extract_measured_usage(result))}
+        except ArticleExecutionError as exc:
+            return {"state": "unknown_outcome", "reason": str(exc)}
 
     def _validate_task_binding(
         self,
@@ -565,6 +581,7 @@ class ArticleTMMExecutionAdapter:
                 "task_hash": request.task_hash,
                 "request_id": request.request_id,
                 "run_id": self.run_id,
+                "measured_usage": dict(_extract_measured_usage(result)),
                 "raw_status": result.status,
                 "replayed": bool(replayed),
             },
@@ -851,13 +868,36 @@ class ArticleExecutionCoordinator:
         *,
         gateway: ArticleToolGateway,
         adapter: ArticleTMMExecutionAdapter,
+        execution_gate=None,
+        prediction_commit=None,
+        science_repository=None,
+        science_task_ref=None,
+        science_root=None,
+        science_task_request=None,
     ) -> None:
         self.gateway = gateway
         self.adapter = adapter
+        self.execution_gate = execution_gate
+        self.prediction_commit = prediction_commit
+        self.science_repository = science_repository
+        self.science_task_ref = science_task_ref
+        self.science_root = science_root
+        self.science_task_request = science_task_request
+        if execution_gate is not None and not prediction_commit:
+            raise ValueError("durable execution requires a pre-execution prediction commitment")
 
     def execute(self, request: CompiledExperimentRequest) -> ArticleExecutionResult:
+        if self.science_root is not None:
+            source = self.science_task_request
+            if not isinstance(source, dict) or source.get("run_id") != request.run_id or not isinstance(source.get("question"), str) or not source["question"]:
+                raise ValueError("canonical execution requires the original bound task request")
         run_dir = self.adapter.run_dir_for(request)
-        receipt = self.gateway.execute(request, self.adapter)
+        if self.execution_gate is None:
+            receipt = self.gateway.execute(request, self.adapter)
+        else:
+            job = self.gateway.execute_durable(request, self.adapter, gate=self.execution_gate, prediction_commit=self.prediction_commit)
+            raw = job.provider_receipt.get("adapter_result")
+            receipt = GatewayAdapterResult.model_validate(raw) if raw else GatewayRejection(request_id=request.request_id, category="adapter_failure", reason=f"durable job outcome: {job.state}; recovery must query before retry")
         final_path = run_dir / "FINAL_RESULT.json"
         if isinstance(receipt, GatewayAdapterResult):
             result_payload = None
@@ -881,6 +921,28 @@ class ArticleExecutionCoordinator:
                 if isinstance(receipt, GatewayRejection)
                 else dict(receipt),
             )
+        if self.science_repository is not None:
+            from .science.migration import migrate_observation_v1, legacy_observation_projection
+            scientific, report = migrate_observation_v1(observation.model_dump(mode="json"), source_run_id=request.run_id)
+            latest = self.science_repository.latest_snapshot()
+            if latest is None or scientific.ref() not in latest.object_refs:
+                self.science_repository.commit([scientific], task_ref=self.science_task_ref, evidence_cutoff=request.request_id, expected_sequence=latest.committed_sequence if latest else 0)
+            scientific = self.science_repository.load(scientific.ref())
+            observation = ObservationCard.model_validate(legacy_observation_projection(self.science_repository, scientific.ref()))
+            atomic_write_json(run_dir / "OBSERVATION_V2.json", scientific.model_dump(mode="json"))
+            atomic_write_json(run_dir / "MIGRATION_REPORT.json", report.model_dump(mode="json"))
+        elif self.science_root is not None:
+            from .science.migration import commit_legacy_observation
+            from .science.repository import ScienceRepository
+            source = self.science_task_request
+            projection, ref, snapshot, report = commit_legacy_observation(self.science_root,
+                source_run_id=request.run_id, question=source["question"], payload=observation.model_dump(mode="json"))
+            observation = ObservationCard.model_validate(projection)
+            repository = ScienceRepository(self.science_root, read_only=True)
+            try: scientific = repository.load(ref)
+            finally: repository.close()
+            atomic_write_json(run_dir / "OBSERVATION_V2.json", scientific.model_dump(mode="json"))
+            atomic_write_json(run_dir / "MIGRATION_REPORT.json", report.model_dump(mode="json"))
         return ArticleExecutionResult(
             request_id=request.request_id,
             task_hash=request.task_hash,

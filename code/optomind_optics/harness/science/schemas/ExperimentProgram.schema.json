@@ -1,0 +1,181 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "experiment-program.v1",
+      "default": "experiment-program.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "candidate_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "objective_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "protocol": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "initial_samples": {},
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "arguments": {},
+                  "channel": {},
+                  "condition": {},
+                  "correlation_group": {},
+                  "estimate": {},
+                  "inputs": {},
+                  "kind": {},
+                  "node_id": {},
+                  "required_state": {},
+                  "resulting_state": {},
+                  "sample_id": {}
+                },
+                "required": [
+                  "node_id",
+                  "kind"
+                ]
+              }
+            },
+            "program_id": {},
+            "revision": {}
+          },
+          "required": [
+            "program_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "experiment_id": {},
+            "mode": {},
+            "schema_version": {
+              "const": "legacy-tmm-experiment.v1"
+            },
+            "source_task_hash": {},
+            "tmm_task": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "schema_version",
+            "tmm_task"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "angle": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "angle"
+          ]
+        }
+      ],
+      "x-consumed-contract": "science-nested-contracts.v1"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "protocol"
+  ],
+  "title": "ExperimentProgram",
+  "type": "object"
+}

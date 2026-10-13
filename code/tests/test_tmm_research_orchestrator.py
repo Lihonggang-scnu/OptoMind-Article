@@ -188,7 +188,8 @@ def test_two_planned_routes_are_executed_and_reported(tmp_path):
         ),
         task_compiler=_Compiler(),
         tmm_harness_factory=lambda path, run_id: _Harness(next(payloads)),
-        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0),
+        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0, max_rounds_per_route=1,
+            scoring_standard_enabled=False, route_planning_enabled=False, qwen_force_mock=True, confirmation_gates=[]),
     ).run("Design a reflector")
     assert result.status == "completed"
     assert len(result.iterations) == 2
@@ -222,7 +223,8 @@ def test_failed_chain_leaves_race_recorded_and_candidates_preserved(tmp_path):
         strategy_planner=planner,
         task_compiler=_Compiler(),
         tmm_harness_factory=lambda path, run_id: _Harness(next(payloads)),
-        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0),
+        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0, max_rounds_per_route=1,
+            scoring_standard_enabled=False, route_planning_enabled=False, qwen_force_mock=True, confirmation_gates=[]),
     )
     result = harness.run("Design a reflector")
     # No global re-research round: failures are chain-local now.
@@ -282,6 +284,11 @@ def test_research_loop_reaches_real_tmm_optimizer_and_physics_verifier(tmp_path)
             maximum_initial_routes=1,
             maximum_iterations=1,
             maximum_refinement_rounds=0,
+            max_rounds_per_route=1,
+            scoring_standard_enabled=False,
+            route_planning_enabled=False,
+            qwen_force_mock=True,
+            confirmation_gates=[],
             online_method_research=False,
         ),
     ).run("Design a single-layer antireflection coating")
@@ -296,9 +303,9 @@ def test_compiler_exception_records_failure_and_completes_best_effort(tmp_path):
     """R-06 equivalent of the deleted
     test_compiler_exception_becomes_feedback_and_scientific_research_query.
 
-    A compilation exception is an ENGINE fault, never a physics refutation:
-    the chain must leave the race as error_unrecoverable (red line 7), the
-    failure stays fully recorded, and the run still completes best-effort.
+    A compilation exception is an ENGINE fault, never a physics refutation.
+    The explicitly single-round fixture exhausts its retry budget, retains
+    the original failure and still completes best-effort.
     The old global re-research/replan recovery is not part of the tournament
     scheduler; repair belongs to the engine layer (R-03 diagnostics)."""
     import json
@@ -322,7 +329,8 @@ def test_compiler_exception_records_failure_and_completes_best_effort(tmp_path):
         strategy_planner=planner,
         task_compiler=FlakyCompiler(),
         tmm_harness_factory=lambda path, run_id: _Harness(_run_payload(True, 0.66)),
-        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0),
+        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0, max_rounds_per_route=1,
+            scoring_standard_enabled=False, route_planning_enabled=False, qwen_force_mock=True, confirmation_gates=[]),
     )
     result = harness.run("Design a reflector")
 
@@ -333,15 +341,17 @@ def test_compiler_exception_records_failure_and_completes_best_effort(tmp_path):
     # ...and the run still terminates best-effort instead of crashing.
     assert result.status == "completed_best_effort_no_verified_candidate"
     track = harness.tournament_tracks["r1"]
-    assert track.status == "error_unrecoverable"
+    assert track.status == "stopped_round_limit"
+    assert track.rounds_used == 1
+    assert "temporary compiler failure" in str(result.iterations[0].compilation_errors)
     assert track.status != "eliminated_physics"
-    assert "compilation failed" in track.termination_reason.casefold()
+    assert "per-route cap of 1 executed rounds" in track.termination_reason.casefold()
     decision = json.loads(
         (tmp_path / "run" / "iterations" / "iteration_01" / "FEEDBACK_DECISION.json")
         .read_text(encoding="utf-8")
     )
     assert decision["action"] == "stop_best_effort"
-    assert "error_unrecoverable" in decision["reason"]
+    assert "stopped_round_limit" in decision["reason"]
 
 
 def test_tmm_execution_exception_is_recorded_and_next_route_continues(tmp_path):
@@ -359,7 +369,8 @@ def test_tmm_execution_exception_is_recorded_and_next_route_continues(tmp_path):
         ),
         task_compiler=_Compiler(),
         tmm_harness_factory=lambda path, run_id: next(harnesses),
-        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0),
+        config=TMMResearchHarnessConfig(maximum_refinement_rounds=0, max_rounds_per_route=1,
+            scoring_standard_enabled=False, route_planning_enabled=False, qwen_force_mock=True, confirmation_gates=[]),
     ).run("Design a reflector")
 
     assert result.status == "completed"
@@ -405,6 +416,11 @@ def test_full_research_loop_generalizes_across_frozen_development_tasks(
             maximum_initial_routes=1,
             maximum_iterations=1,
             maximum_refinement_rounds=0,
+            max_rounds_per_route=1,
+            scoring_standard_enabled=False,
+            route_planning_enabled=False,
+            qwen_force_mock=True,
+            confirmation_gates=[],
             online_method_research=False,
         ),
     ).run(task.user_request_original)

@@ -215,6 +215,31 @@ class ArticleToolGateway:
             )
         return self._normalize_adapter_result(compiled, raw_result)
 
+    def execute_durable(self, request, adapter, *, gate, prediction_commit):
+        """Authorize first, then submit through the durable C03 job ledger.
+
+        Adapters may implement query_receipt(key) for recovery. Without it,
+        ambiguous outcomes remain reserved and cannot repeat side effects.
+        """
+        compiled = self.authorize(request)
+        gateway = self
+        class Provider:
+            def submit(self, key, payload):
+                raw = adapter.execute(compiled)
+                normalized = gateway._normalize_adapter_result(compiled, raw)
+                receipt = normalized.model_dump(mode="json")
+                measured = dict(raw.get("telemetry", {}).get("measured_usage") or {})
+                uncertain = any(name in normalized.reason for name in ("HarnessExecutionError", "UsageMalformedError", "RunCollisionError"))
+                result = {"state": "completed" if normalized.status == "adapter_completed" else ("unknown_outcome" if uncertain else "failed"), "adapter_result": receipt}
+                if measured: result["cost"] = measured
+                return result
+            def status(self, key):
+                reconcile = getattr(adapter, "reconcile_completed_request", None)
+                if callable(reconcile): return reconcile(compiled)
+                query = getattr(adapter, "query_receipt", None)
+                return query(key) if callable(query) else {"state": "unknown_outcome"}
+        return gate.execute(Provider(), compiled.request_id, compiled.model_dump(mode="json"), estimate=dict(compiled.requested_budget), prediction_commit=prediction_commit)
+
     def reject_raw_model_envelope(
         self,
         envelope: Mapping[str, Any],

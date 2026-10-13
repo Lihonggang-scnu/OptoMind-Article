@@ -63,6 +63,9 @@ class ArticleIntegrationOptions(_StrictModel):
     resume: bool = False
     force_mock: Optional[bool] = None
     online_research: bool = False
+    release_state_root: Optional[str] = None
+    release_runtime_versions: dict[str, str] = Field(default_factory=dict)
+    science_shadow_spec: Optional[dict[str, Any]] = None
 
     @field_validator("question", "run_id", "branch_id", "work_dir", "execution_root")
     @classmethod
@@ -547,6 +550,7 @@ def execute_article_pipeline_integration(
     synthesizer_factory: Callable[..., Any] = QwenMethodFindingSynthesizer,
     online_client_factory: Callable[..., Any] = DefaultMethodResearchOnlineClient,
     clock: Callable[[], float] = time.monotonic,
+    science_policy: Optional[Any] = None,
 ) -> ArticleIntegrationExecution:
     """Validate, assemble, run/resume, and summarize one real integration."""
 
@@ -586,14 +590,23 @@ def execute_article_pipeline_integration(
         work_root=str(Path(opts.execution_root).resolve()),
         review_kb_paths=tuple(str(path) for path in kb_paths),
         online_research=opts.online_research,
+        release_state_root=opts.release_state_root,
+        release_runtime_versions=opts.release_runtime_versions,
     )
     authority = ArticleCompilationAuthority(authority_key)
     synthesis_callback = synthesizer_factory(force_mock=opts.force_mock)
     online_client = online_client_factory() if opts.online_research else None
     factory = factory_type(request=request, authority=authority, config=config)
+    assembly_options = {}
+    if science_policy is not None:
+        assembly_options["science_policy"] = science_policy
+    if opts.science_shadow_spec is not None:
+        from .science.release_manifest import compile_shadow_spec
+        assembly_options["science_shadow_spec"] = compile_shadow_spec(opts.science_shadow_spec)
     assembly = factory.assemble(
         research_online_client=online_client,
         synthesis_callback=synthesis_callback,
+        **assembly_options,
     )
 
     started = clock()

@@ -1,0 +1,299 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "observation.v2",
+      "default": "observation.v2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "acquisition_id": {
+      "title": "Acquisition Id",
+      "type": "string"
+    },
+    "candidate_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "objective_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "sample_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ObjectRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate": {},
+        "conditions": {},
+        "dataset_hash": {},
+        "evaluator_version": {},
+        "grid": {},
+        "manual_return": {},
+        "materials": {},
+        "measurement_receipt_id": {},
+        "not_recorded": {},
+        "objective": {},
+        "objective_version": {},
+        "polarization": {},
+        "preexecution_receipt_hash": {},
+        "program_ref": {},
+        "protocol_hash": {},
+        "sample": {},
+        "source_version": {},
+        "split": {},
+        "task_id": {},
+        "tool_version": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "raw_blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "block_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "angle_deg": {},
+          "artifact_ref": {},
+          "block_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "calibration_group": {},
+          "calibration_std": {},
+          "channel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coordinate": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "coordinate_units": {
+            "type": "string",
+            "minLength": 1
+          },
+          "covariance": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          },
+          "derived_from": {},
+          "gaussian_validated": {
+            "type": "boolean"
+          },
+          "polarization": {
+            "enum": [
+              "s",
+              "p",
+              "unpolarized",
+              "TE",
+              "TM",
+              "te",
+              "tm"
+            ]
+          },
+          "sample_id": {},
+          "source_file": {},
+          "source_hash": {},
+          "units": {
+            "type": "string",
+            "minLength": 1
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "wavelengths_nm": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "x-consumed-contract": "science-nested-contracts.v1"
+      }
+    },
+    "derived_features": {
+      "additionalProperties": true,
+      "title": "Derived Features",
+      "type": "object"
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "V4_accepted": {
+          "type": "boolean"
+        },
+        "V5_accepted": {
+          "type": "boolean"
+        },
+        "acquisition_cost": {},
+        "audit_binding": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "conditions": {},
+        "controls_audit": {},
+        "cross_block_noise_model": {},
+        "evidence_level": {},
+        "evidence_tier": {},
+        "execution": {},
+        "execution_status": {},
+        "explanation": {},
+        "independent_measurement_purchase": {
+          "type": "boolean"
+        },
+        "independent_quality_audit": {},
+        "menu_access_cost": {},
+        "new_physical_measurement": {
+          "type": "boolean"
+        },
+        "noise_validated": {
+          "type": "boolean"
+        },
+        "not_recorded": {},
+        "numerical_valid": {
+          "type": "boolean"
+        },
+        "objective": {},
+        "physical_provenance": {},
+        "physical_range_violations": {},
+        "physics": {},
+        "quality_audit": {},
+        "validation_scope": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "cost_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Cost Refs",
+      "type": "array"
+    },
+    "artifact_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "not_recorded_fields": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Not Recorded Fields",
+      "type": "array"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "acquisition_id"
+  ],
+  "title": "Observation",
+  "type": "object"
+}

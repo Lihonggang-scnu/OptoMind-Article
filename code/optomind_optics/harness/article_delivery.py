@@ -3319,3 +3319,11 @@ def package_delivery(
         zip_path=zip_path,
         warnings=warnings_out,
     )
+
+
+def deliver_selected_research_article(**kwargs: Any) -> dict[str, Any]:
+    """Complete scientific manuscript adapter to the shared checker and publication."""
+    from .science.article_bridge import deliver_selected_article, deliver_repository_article
+    if "repository" in kwargs:
+        return deliver_repository_article(**kwargs)
+    return deliver_selected_article(**kwargs)

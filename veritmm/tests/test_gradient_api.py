@@ -292,3 +292,15 @@ def test_cli_gradient_and_sensitivity_end_to_end(tmp_path) -> None:
     blocked = tmp_path / "blocked.json"
     blocked.write_text(json.dumps(no_optimizable), encoding="utf-8")
     assert main(["gradient", str(blocked), "--json"]) == 2
+
+
+@pytest.mark.parametrize("angles,polarizations", [((0.,30.),("s",)),((0.,),("s","p"))])
+def test_scalar_api_rejects_ambiguous_multichannel_objective(angles,polarizations):
+    from dataclasses import replace
+    task=replace(_quarter_wave_dbr(),illumination=IlluminationSpec(angles,polarizations))
+    with pytest.raises(GradientRequestError) as caught:
+        compute_gradient(task,objective="mean_R")
+    assert caught.value.code=="multichannel_objective_unsupported"
+    with pytest.raises(GradientRequestError) as caught:
+        compute_sensitivity(task,objective="mean_T")
+    assert caught.value.code=="multichannel_objective_unsupported"

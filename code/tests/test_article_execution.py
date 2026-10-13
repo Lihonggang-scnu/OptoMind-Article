@@ -363,7 +363,7 @@ def test_reserve_rejection_prevents_run(tmp_path) -> None:
     assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 1
 
 
-def test_harness_exception_releases_budget(tmp_path) -> None:
+def test_harness_exception_preserves_unknown_budget(tmp_path) -> None:
     request = _request()
     harness = FakeHarness(_run_result(), raise_exc=RuntimeError("boom"))
     stack = _stack(tmp_path, harness=harness)
@@ -373,7 +373,7 @@ def test_harness_exception_releases_budget(tmp_path) -> None:
     assert "boom" in result.receipt["reason"]
     assert result.observation.status == ExperimentStatus.failed
     assert any("boom" in str(item) for item in result.observation.failure_records)
-    assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 0
+    assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 20000
 
 
 def test_malformed_or_missing_usage_is_hard_failure(tmp_path) -> None:
@@ -390,7 +390,7 @@ def test_malformed_or_missing_usage_is_hard_failure(tmp_path) -> None:
         assert result.receipt["status"] == "adapter_rejected"
         assert "UsageMalformedError" in result.receipt["reason"]
         assert harness.calls == [stack["registry"].resolve(request).task]
-        assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 0
+        assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 20000
 
     request = _request(proposal_id="proposal-missing-usage")
     harness = FakeHarness(_run_result(usage={}))
@@ -415,7 +415,7 @@ def test_completed_without_physically_valid_candidates_is_rejected_physics(
     assert stack["scheduler"].snapshot()["committed"]["forward_evaluations"] == 40
 
 
-def test_needs_higher_fidelity_releases_budget(tmp_path) -> None:
+def test_needs_higher_fidelity_settles_measured_budget(tmp_path) -> None:
     request = _request()
     harness = FakeHarness(_run_result(status="needs_higher_fidelity"))
     stack = _stack(tmp_path, harness=harness)
@@ -423,7 +423,7 @@ def test_needs_higher_fidelity_releases_budget(tmp_path) -> None:
     result = stack["coordinator"].execute(request)
     assert result.observation.status == ExperimentStatus.needs_higher_fidelity
     assert result.observation.metrics["run_status"] == "needs_higher_fidelity"
-    assert stack["scheduler"].snapshot()["committed"]["forward_evaluations"] == 0
+    assert stack["scheduler"].snapshot()["committed"]["forward_evaluations"] == 40
     assert stack["scheduler"].snapshot()["reserved"]["forward_evaluations"] == 0
 
 
@@ -639,7 +639,7 @@ def test_result_run_id_mismatch_rejected_before_commit(tmp_path) -> None:
     assert harness.calls == [stack["registry"].resolve(request).task]
     snapshot = stack["scheduler"].snapshot()
     assert snapshot["committed"]["forward_evaluations"] == 0
-    assert snapshot["reserved"]["forward_evaluations"] == 0
+    assert snapshot["reserved"]["forward_evaluations"] == 20000
 
 
 @pytest.mark.parametrize(

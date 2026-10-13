@@ -64,7 +64,9 @@ def test_completed_run_replays_in_a_fresh_python_process(tmp_path: Path) -> None
 
 def test_replay_rejects_tampered_source_before_recomputation(tmp_path: Path) -> None:
     source = _source_run(tmp_path)
-    simulation = next((source / "experiments").rglob("SIMULATION_RESULT.json"))
+    paths = _logical_scientific_paths(source, _load_experiment_path_index(source))
+    simulation = next(path for _, path in paths.values()
+                      if path.name == "SIMULATION_RESULT.json")
     simulation.write_text("{}", encoding="utf-8")
 
     with pytest.raises(ArtifactTamperedError):
@@ -390,9 +392,9 @@ def test_replay_routes_to_locked_interpreter_fresh_subprocess(
     monkeypatch.setattr(
         replay_module,
         "_validate_locked_interpreter",
-        lambda locked_value, source_dir: Path(locked_value).resolve(
-            strict=False
-        ),
+        # Keep the frozen virtualenv launcher rather than dereferencing its
+        # symlink into a different base-Python dependency environment.
+        lambda locked_value, source_dir: Path(locked_value).absolute(),
     )
     monkeypatch.setattr(replay_module.subprocess, "run", recording_run)
 
@@ -1017,3 +1019,17 @@ def test_replay_candidate_identity_rejects_malformed_json(
     index = _load_experiment_path_index(root)
     with pytest.raises(ValueError, match="is malformed"):
         _load_candidate_identity(root, index)
+
+
+def test_distinct_virtualenv_launchers_are_not_the_same_frozen_environment(tmp_path):
+    if os.name == "nt":
+        pytest.skip("POSIX virtualenv symlink identity regression")
+    first = tmp_path / "first" / "bin" / "python"
+    second = tmp_path / "second" / "bin" / "python"
+    for launcher in (first, second):
+        launcher.parent.mkdir(parents=True)
+        launcher.symlink_to(sys.executable)
+    assert first.resolve() == second.resolve()
+    assert replay_module._same_interpreter(str(first), str(first))
+    assert not replay_module._same_interpreter(str(first), str(second))
+    assert not replay_module._same_interpreter(str(first), str(first.resolve()))

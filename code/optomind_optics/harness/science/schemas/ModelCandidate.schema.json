@@ -1,0 +1,212 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "model-candidate.v1",
+      "default": "model-candidate.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "model_ir": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "domain_nm": {},
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "attributes": {},
+                  "complex_convention": {},
+                  "coordinate": {},
+                  "inputs": {},
+                  "node_id": {},
+                  "operator": {},
+                  "unit": {}
+                },
+                "required": [
+                  "node_id",
+                  "operator"
+                ]
+              }
+            },
+            "output": {},
+            "parameters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "initial": {},
+                  "lower": {},
+                  "name": {},
+                  "namespace": {},
+                  "unit": {},
+                  "upper": {}
+                },
+                "required": [
+                  "name",
+                  "lower",
+                  "upper",
+                  "initial"
+                ]
+              }
+            },
+            "version": {
+              "const": "optical-ir/1"
+            }
+          },
+          "required": [
+            "nodes",
+            "output"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "candidate_id": {},
+            "exit_medium": {},
+            "incident_medium": {},
+            "layer_labels": {},
+            "layer_materials": {},
+            "schema_version": {
+              "const": "legacy-candidate.v1"
+            }
+          },
+          "required": [
+            "schema_version"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "simulation": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "simulation"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "fixture",
+                "finite_fixture"
+              ]
+            },
+            "name": {}
+          },
+          "required": [
+            "kind"
+          ]
+        }
+      ],
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "parameter_values": {
+      "additionalProperties": true,
+      "title": "Parameter Values",
+      "type": "object"
+    },
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "interpretation": {},
+        "not_recorded": {},
+        "provenance": {},
+        "selection": {},
+        "support": {},
+        "task": {},
+        "wavelength_nm": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "model_ir"
+  ],
+  "title": "ModelCandidate",
+  "type": "object"
+}

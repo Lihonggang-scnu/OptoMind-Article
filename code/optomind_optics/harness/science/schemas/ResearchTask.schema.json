@@ -1,0 +1,132 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "research-task.v1",
+      "default": "research-task.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "objective": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "design_pool_nm": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "kind": {},
+        "loss": {},
+        "loss_transform": {},
+        "risk_aversion": {
+          "type": "number"
+        },
+        "robustness": {},
+        "target_R": {
+          "type": "number"
+        },
+        "targets": {},
+        "wavelength_nm": {
+          "type": "number"
+        }
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "angle_deg": {},
+        "evidence_tier": {},
+        "initial_model_hash": {},
+        "max_total_nm": {},
+        "not_recorded": {},
+        "open_research_config": {},
+        "paid_network_calls": {},
+        "robustness": {},
+        "scope": {},
+        "source_task": {},
+        "thickness_max_nm": {},
+        "thickness_min_nm": {},
+        "wavelength_nm": {}
+      },
+      "x-consumed-contract": "science-nested-contracts.v1"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "question"
+  ],
+  "title": "ResearchTask",
+  "type": "object"
+}

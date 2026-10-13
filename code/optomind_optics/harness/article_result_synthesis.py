@@ -46,6 +46,8 @@ from optomind_optics.harness.article_claims import (
 )
 from optomind_optics.harness.article_contracts import (
     ArticleStage,
+    ClaimStatus,
+    ClaimStrength,
     ObservationCard,
 )
 from optomind_optics.harness.article_director import (
@@ -228,6 +230,7 @@ class ResultSynthesisProviderInput(_StrictModel):
     artifacts: List[ArtifactView] = Field(default_factory=list)
     trusted_values: List[TrustedValueView] = Field(default_factory=list)
     literature_context: Optional[Dict[str, Any]] = None
+    scientific_selection: Optional[Dict[str, Any]] = None
 
 
 class ResultSynthesisProviderResult(_StrictModel):
@@ -275,6 +278,7 @@ class ArticleResultSynthesisResult(_StrictModel):
     status: Literal["ready", "partial", "unavailable", "invalid"]
     result_id: str = ""
     source_plan_id: str = ""
+    scientific_selection: Optional[Dict[str, Any]] = None
     derived_plan: Optional[ArticleDirectorPlan] = None
     observations: Tuple[ObservationCard, ...] = Field(default_factory=tuple)
     feedback_results: Tuple[ArticleFeedbackResult, ...] = Field(default_factory=tuple)
@@ -293,8 +297,9 @@ ResultSynthesisProvider = Callable[
 
 
 def _canonical_json(value: Any) -> str:
+    from .science.authoring_selection import optional_authoring_identity
     return json.dumps(
-        value,
+        optional_authoring_identity(value),
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -580,11 +585,12 @@ def _build_alias_manifest(
     observations: Mapping[str, ObservationCard],
     assets: Mapping[str, ArticleAssetCompilationResult],
     literature_context: Optional[Dict[str, Any]] = None,
+    scientific_selection: Optional[Dict[str, Any]] = None,
 ) -> tuple[Dict[str, SynthesisAliasRecord], Dict[str, ResultSynthesisProviderInput]]:
     manifest: Dict[str, SynthesisAliasRecord] = {}
     payloads: Dict[str, ResultSynthesisProviderInput] = {}
     candidate_aliases = _global_candidate_aliases(assets)
-    global_roles = _global_candidate_roles(assets)
+    global_roles = {} if scientific_selection is not None else _global_candidate_roles(assets)
     for row_index, row in enumerate(rows, start=1):
         if row.status != "ready" or row.request is None:
             continue
@@ -1429,9 +1435,14 @@ def synthesize_article_results(
     provider: Optional[ResultSynthesisProvider] = None,
     run_id: str = "",
     literature_supplement: Optional[Any] = None,
+    scientific_selection: Optional[Dict[str, Any]] = None,
 ) -> ArticleResultSynthesisResult:
     """Synthesize source-bound findings and run feedback/claims over them."""
 
+    from .science.authoring_source import ScientificAuthoringPlanning
+    scientific_source = isinstance(planning, ScientificAuthoringPlanning)
+    if scientific_source and scientific_selection is None:
+        return _invalid_result(["scientific source requires immutable adopted selection"], [])
     errors: List[str] = []
     warnings: List[str] = []
     try:
@@ -1442,7 +1453,7 @@ def synthesize_article_results(
         )
         planning_model = (
             planning
-            if isinstance(planning, ArticleExperimentPlanningResult)
+            if isinstance(planning, (ArticleExperimentPlanningResult, ScientificAuthoringPlanning))
             else ArticleExperimentPlanningResult.model_validate(planning)
         )
     except ValidationError as exc:
@@ -1500,20 +1511,20 @@ def synthesize_article_results(
         if (
             row.request.task_digest != asset.task_digest
             or row.request.run_id != asset.run_id
-            or asset.observation.experiment_id != row.request.experiment.experiment_id
+            or (not scientific_source and asset.observation.experiment_id != row.request.experiment.experiment_id)
         ):
             errors.append(
                 f"asset compilation {asset.request_id} identity fields do not "
                 "match its planning row request"
             )
             continue
-        if row.proposal is None:
+        if row.proposal is None and not scientific_source:
             errors.append(
                 f"planning row {row.route_id} is ready without a proposal; "
                 "cannot derive canonical coverage route"
             )
             continue
-        coverage_route = _COVERAGE_ROUTE_BY_STAGE.get(row.proposal.stage)
+        coverage_route = row.coverage_route if scientific_source else _COVERAGE_ROUTE_BY_STAGE.get(row.proposal.stage)
         if coverage_route is None or coverage_route not in coverage_route_ids:
             errors.append(
                 f"planning row route {row.route_id!r} proposal stage "
@@ -1599,7 +1610,7 @@ def synthesize_article_results(
         and row.request.request_id in usable
     ]
     coverage_route_by_observation = {
-        asset.observation.observation_id: _COVERAGE_ROUTE_BY_STAGE[row.proposal.stage]
+        asset.observation.observation_id: (row.coverage_route if scientific_source else _COVERAGE_ROUTE_BY_STAGE[row.proposal.stage])
         for _, (asset, row) in usable.items()
     }
     literature_context = (
@@ -1613,7 +1624,11 @@ def synthesize_article_results(
         observations,
         {request_id: item for request_id, (item, _) in usable.items()},
         literature_context=literature_context,
+        scientific_selection=scientific_selection,
     )
+    if scientific_selection is not None:
+        from .science.authoring_selection import scope_synthesis_payloads
+        manifest, payloads = scope_synthesis_payloads(manifest, payloads, scientific_selection)
     if provider is None:
         unavailable = ArticleResultSynthesisResult(
             status="unavailable",
@@ -1641,6 +1656,8 @@ def synthesize_article_results(
     for request_id, (asset, row) in sorted(usable.items()):
         payload = payloads.get(request_id)
         if payload is None:
+            if scientific_selection is not None:
+                continue  # Deliberately excluded non-adopted route, not provider failure.
             route_unavailable.append(row.route_id)
             warnings.append(
                 f"route {row.route_id}: no provider payload was built; skipped"
@@ -1670,8 +1687,18 @@ def synthesize_article_results(
         allowlist = _structural_number_allowlist(plan_model, row)
         local_manifest = _local_manifest(manifest, payload.route_alias)
         descriptor_ids = {item.artifact_id for item in asset.descriptors}
+        provider_findings = provider_result.findings
+        if scientific_selection is not None:
+            from .science.authoring_selection import filter_adopted_findings
+            provider_findings = filter_adopted_findings(provider_findings, local_manifest, scientific_selection, warnings)
+            # Exact adopted statements can include source-record identifiers or
+            # counts without pretending those literals are measured values.
+            # The immutable statement filter above and below prevents reuse
+            # of this allowlist to invent quantitative claims.
+            for claim in scientific_selection["scientific_claims"]:
+                allowlist.update(float(m.group(0)) for m in _NUMBER_RE.finditer(claim["statement"]))
         validated = _validated_findings(
-            provider_result.findings,
+            provider_findings,
             observation=asset.observation,
             route_id=row.route_id,
             manifest=local_manifest,
@@ -1679,6 +1706,10 @@ def synthesize_article_results(
             allowlist=allowlist,
             warnings=warnings,
         )
+        if scientific_selection is not None:
+            approved_by_statement = {c["statement"]: c["object_id"] for c in scientific_selection["scientific_claims"]}
+            normalized = [{**item, "scientific_claim_id": approved_by_statement.get(_resolve_tokens(item["statement_with_value_tokens"], local_manifest))} for item in validated]
+            validated = filter_adopted_findings(normalized, local_manifest, scientific_selection, warnings)
         for index, item in enumerate(validated, start=1):
             finding_id = _stable_digest(
                 asset.observation.observation_id,
@@ -1736,6 +1767,13 @@ def synthesize_article_results(
             update={"result_id": compute_result_synthesis_id(unavailable)}
         )
 
+    if scientific_selection is not None:
+        rendered_findings = {_resolve_tokens(f.statement_with_value_tokens, _local_manifest(manifest, _route_alias_by_route_id(manifest).get(f.route_id, ""))) for f in findings}
+        missing_negative_claims = [c["object_id"] for c in scientific_selection["scientific_claims"]
+            if c["status"] != "supported" and c["statement"] not in rendered_findings]
+        if missing_negative_claims:
+            return _invalid_result(["adopted negative/unknown claims omitted: " + ", ".join(missing_negative_claims)], warnings,
+                                   source_plan_id=plan_model.plan_id)
     derived_plan, plan_warnings = _derive_plan(
         plan_model,
         findings,
@@ -1759,11 +1797,16 @@ def synthesize_article_results(
             )
         },
     )
-    feedback = ArticleFeedbackController().update(
-        derived_plan,
-        cloned_observations,
-        run_id=run_id,
-    )
+    if scientific_source:
+        from .science.authoring_source import scientific_source_feedback
+        # Legacy partial-support hints are not observations of physics. Import
+        # only the canonical scientific ledger's already-adjudicated status.
+        cloned_observations = tuple(o.model_copy(update={"hypothesis_updates": []}) for o in cloned_observations)
+        feedback = scientific_source_feedback(derived_plan, cloned_observations, findings, manifest, scientific_selection)
+    else:
+        feedback = ArticleFeedbackController().update(
+            derived_plan, cloned_observations, run_id=run_id,
+        )
     if feedback.validation_errors:
         return _invalid_result(
             [*feedback.validation_errors, "feedback rejected synthesized updates"],
@@ -1790,10 +1833,26 @@ def synthesize_article_results(
         refs = value_lineage.get(hypothesis_id) or []
         contract = synthesis_contracts.get(hypothesis_id)
         metadata = dict(claim.metadata)
+        if scientific_selection is not None:
+            finding = next((f for f in findings if f.synthesized_hypothesis_id == hypothesis_id), None)
+            if finding is not None:
+                statement = _resolve_tokens(finding.statement_with_value_tokens, _local_manifest(manifest, _route_alias_by_route_id(manifest).get(finding.route_id, "")))
+                approved = next((c for c in scientific_selection["scientific_claims"] if c["statement"] == statement), None)
+                if approved:
+                    metadata["adopted_result_ref"] = scientific_selection["adopted_result_ref"]
+                    metadata["scientific_claim_ref"] = {key:approved[key] for key in ("object_id", "revision", "content_hash")}
+                    metadata["scientific_status"] = approved["status"]
+                    metadata["scientific_scope"] = approved["scope"]
+                    metadata["claim_strength"] = scientific_selection["claim_strength"]
+        if scientific_selection is not None and "scientific_claim_ref" not in metadata:
+            continue
         if refs and not metadata.get("value_lineage"):
             metadata["value_lineage"] = refs
         if contract is not None:
             metadata["synthesis_contract"] = contract
+        if metadata.get("scientific_status") in {"unknown", "proposed", "refuted"}:
+            claim = claim.model_copy(update={"status": ClaimStatus.refuted if metadata["scientific_status"] == "refuted" else ClaimStatus.draft,
+                                             "strength": ClaimStrength.unrated})
         if metadata != claim.metadata:
             claim = claim.model_copy(
                 update={
@@ -1811,6 +1870,8 @@ def synthesize_article_results(
     claims_by_id = {claim.claim_id: claim for claim in ledger.claims}
     enriched_facts = []
     for fact in ledger.facts:
+        if scientific_selection is not None and fact.metadata.get("claim_id") not in claims_by_id:
+            continue
         refs = lineage_by_claim.get(fact.metadata.get("claim_id")) or []
         claim = claims_by_id.get(fact.metadata.get("claim_id"))
         metadata = dict(fact.metadata)
@@ -1827,6 +1888,10 @@ def synthesize_article_results(
         enriched_facts.append(fact)
     if enriched_facts != list(ledger.facts):
         ledger = ledger.model_copy(update={"facts": enriched_facts})
+    if scientific_selection is not None:
+        allowed_claim_ids = {c.claim_id for c in ledger.claims}
+        rows = [row.model_copy(update={"claim_ids": [cid for cid in row.claim_ids if cid in allowed_claim_ids]}) for row in ledger.audit.rows]
+        ledger = ledger.model_copy(update={"audit": ledger.audit.model_copy(update={"rows": rows})})
     status: Literal["ready", "partial", "unavailable", "invalid"] = (
         "partial" if route_unavailable or warnings else "ready"
     )
@@ -1835,6 +1900,7 @@ def synthesize_article_results(
         result_id="",
         source_plan_id=plan_model.plan_id,
         derived_plan=derived_plan,
+        scientific_selection=scientific_selection,
         observations=cloned_observations,
         feedback_results=(feedback,),
         ledger=ledger,

@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {
+      "minLength": 1,
+      "title": "Object Id",
+      "type": "string"
+    },
+    "revision": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "content_hash": {
+      "default": "",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "source_run_id": {
+      "minLength": 1,
+      "title": "Source Run Id",
+      "type": "string"
+    },
+    "input_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Input Refs",
+      "type": "array"
+    },
+    "unconsumed_metadata": {
+      "additionalProperties": true,
+      "title": "Unconsumed Metadata",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "evidence-use.v1",
+      "default": "evidence-use.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "observation_ref": {
+      "$ref": "#/$defs/ObjectRef"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "raw_block_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Raw Block Ids",
+      "type": "array"
+    },
+    "derived_view": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Derived View"
+    },
+    "likelihood_count": {
+      "default": 0,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Likelihood Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "object_id",
+    "source_run_id",
+    "observation_ref",
+    "purpose"
+  ],
+  "title": "EvidenceUse",
+  "type": "object"
+}

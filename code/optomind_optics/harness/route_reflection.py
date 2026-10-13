@@ -115,7 +115,9 @@ def _build_reflection_payload(
     epsilon: float,
 ) -> dict[str, Any]:
     """Build the user payload for the reflection prompt."""
+    from .science.observation_adapter import reflection_evidence
     return {
+        "scientific_evidence": reflection_evidence(observation),
         "pre_declarations": {
             "expected_observations": list(pre_declarations.get("expected_observations") or []),
             "stop_conditions": list(pre_declarations.get("stop_conditions") or []),
@@ -145,6 +147,7 @@ def reflect_on_route(
     score_history: list[float],
     epsilon: float = 1e-4,
     force_mock: bool | None = None,
+    context_sink=None,
 ) -> RouteReflection:
     """Call LLM to reflect on a completed route.
 
@@ -164,12 +167,16 @@ def reflect_on_route(
     system_prompt = DEFAULT_REFLECTION_PROMPT.read_text(encoding="utf-8")
     user_payload = _build_reflection_payload(pre_declarations, observation, score_history, epsilon)
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
+    ]
+    if context_sink is not None:
+        from .science.contracts import canonical_hash
+        context_sink({"actual_messages": messages, "context_hash": canonical_hash(messages)})
     try:
         response = client.call(
-            [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
-            ],
+            messages,
             max_tokens=4000,
             force_mock=force_mock,
         )

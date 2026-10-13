@@ -103,6 +103,10 @@ from optomind_optics.harness.article_writing import (
 from optomind_research.runtime.cost_ledger import estimate_call_cost_cny
 
 
+from .science.authoring_selection import AuthoringSelection, resolve_authoring_selection, missing_negative_claims
+from .science.contracts import ObjectRef
+
+
 CONTINUATION_SCHEMA_VERSION = "article-continuation.v1"
 CONTINUATION_REQUEST_SCHEMA_VERSION = "article-continuation-request.v1"
 CONTINUATION_RECEIPT_SCHEMA_VERSION = "continuation-stage-receipt.v1"
@@ -161,6 +165,8 @@ class ContinuationRequest(_StrictModel):
     work_dir: str
     selected_story_id: str = ""
     literature_supplement_path: str = ""
+    scientific_selection: Optional[AuthoringSelection] = None
+    source_kind: Literal["legacy_pipeline", "scientific_result"] = "legacy_pipeline"
 
     @field_validator("run_id", "source_pipeline_dir", "work_dir")
     @classmethod
@@ -183,6 +189,7 @@ class ContinuationStageReceipt(_StrictModel):
     errors: Tuple[str, ...] = Field(default_factory=tuple)
     payload_digest: str = ""
     hard_failure: bool = False
+    adopted_result_ref: Optional[ObjectRef] = None
 
 
 class ContinuationEvent(_StrictModel):
@@ -196,6 +203,7 @@ class ContinuationEvent(_StrictModel):
     errors: Tuple[str, ...] = Field(default_factory=tuple)
     payload_digest: str = ""
     hard_failure: bool = False
+    adopted_result_ref: Optional[ObjectRef] = None
     event_id: str = ""
 
 
@@ -279,11 +287,14 @@ class SourcePipelineBundle:
     source_digest: str
     literature_supplement: Optional[LiteratureSupplement] = None
     literature_supplement_digest: str = ""
+    scientific_selection: Optional[Dict[str, Any]] = None
+    source_kind: str = "pipeline"
 
 
 def _canonical_json(value: Any) -> str:
+    from .science.authoring_selection import optional_authoring_identity
     return json.dumps(
-        value,
+        optional_authoring_identity(value),
         ensure_ascii=False,
         allow_nan=False,
         sort_keys=True,
@@ -389,6 +400,7 @@ def _event_from_receipt(receipt: ContinuationStageReceipt) -> ContinuationEvent:
         errors=receipt.errors,
         payload_digest=receipt.payload_digest,
         hard_failure=receipt.hard_failure,
+        adopted_result_ref=receipt.adopted_result_ref,
         event_id="",
     )
     return model.model_copy(update={"event_id": _event_id(model)})
@@ -432,7 +444,7 @@ def _verify_snapshot(
 
 def _stage_input_ids(bundle: SourcePipelineBundle) -> Tuple[str, ...]:
     return (
-        f"pipeline:{bundle.result.result_id}",
+        f"{getattr(bundle, 'source_kind', 'pipeline')}:{bundle.result.result_id}",
         f"planning:{_short_digest(bundle.planning.model_dump(mode='json'))}",
     )
 
@@ -441,6 +453,19 @@ def _stage_output_id(stage: str, payload: Any) -> Tuple[str, ...]:
     if payload is None:
         return ()
     return (f"{stage}:{_short_digest(_payload_dump(payload))}",)
+
+
+def load_continuation_source(request: ContinuationRequest, source_dir: str | Path):
+    """Explicit scientific source never falls back to historical pipeline assets."""
+    if request.source_kind == "scientific_result":
+        if request.scientific_selection is None:
+            raise ContinuationIntegrityError("scientific_result source requires an adopted scientific selection")
+        from .science.authoring_source import load_scientific_authoring_source
+        try:
+            return load_scientific_authoring_source(source_dir, request.scientific_selection)
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            raise ContinuationIntegrityError(f"scientific source validation failed: {exc}") from exc
+    return load_source_pipeline(source_dir)
 
 
 def load_source_pipeline(source_dir: str | Path) -> SourcePipelineBundle:
@@ -741,6 +766,12 @@ def _contracted_inventory(
         value_by_key[key]
         for key in sorted(value_by_key, key=lambda item: (item[0], item[1]))
     )
+    if bundle.scientific_selection is not None:
+        context = bundle.scientific_selection
+        allowed_artifacts = set(context["allowed_artifact_ids"])
+        allowed_values = {(v["artifact_id"], v["field"]) for v in context["verified_value_bindings"]}
+        descriptors = tuple(d for d in descriptors if d.artifact_id in allowed_artifacts)
+        values = tuple(v for v in values if (v.artifact_id, v.field) in allowed_values)
     return descriptors, values
 
 
@@ -1073,6 +1104,7 @@ class _ContinuationRunner:
             errors=tuple(dict.fromkeys(errors)),
             payload_digest=payload_digest,
             hard_failure=False,
+            adopted_result_ref=(self.request.scientific_selection.selected_result_ref if self.request.scientific_selection else None),
         )
         snapshot_name = f"{sequence:02d}-{stage}.json"
         snapshot_path = self.work_dir / snapshot_name
@@ -1188,6 +1220,7 @@ class _ContinuationRunner:
                 provider=self.continuation.result_synthesis_provider,
                 run_id=self.request.run_id,
                 literature_supplement=self.bundle.literature_supplement,
+                scientific_selection=self.bundle.scientific_selection,
             )
         except Exception as exc:  # noqa: BLE001 - provider soft failure
             self._record_attempt(
@@ -1275,6 +1308,7 @@ class _ContinuationRunner:
                 descriptors,
                 architecture_provider=self.continuation.architecture_provider,
                 value_shapes=value_field_shapes(values),
+                scientific_selection=self.bundle.scientific_selection,
             )
         except Exception as exc:  # noqa: BLE001 - provider soft failure
             self._record_attempt(
@@ -1319,6 +1353,12 @@ class _ContinuationRunner:
         chosen, rationale, candidates = _select_story(
             architecture, self.selected_story_id, selection_errors
         )
+        if chosen and self.bundle.scientific_selection is not None:
+            story = next(s for s in architecture.stories if s.story_id == chosen)
+            missing = missing_negative_claims(synthesis.ledger, [b.claim_id for section in story.section_contracts for b in section.claim_bindings])
+            if missing:
+                selection_errors.append("adopted negative/unknown claims omitted by architecture: " + ", ".join(missing))
+                chosen = ""
         if not chosen:
             self._record_attempt(
                 2,
@@ -1393,6 +1433,7 @@ class _ContinuationRunner:
                 values,
                 section_writer=self.continuation.section_writer,
                 format_repair=self.continuation.format_repair,
+                scientific_selection=self.bundle.scientific_selection,
                 literature_context=(
                     build_literature_provider_context(self.bundle.literature_supplement)
                     if self.bundle.literature_supplement is not None
@@ -1417,6 +1458,10 @@ class _ContinuationRunner:
             )
             self._mark_skipped_from(3, "writing provider unavailable")
             return False
+        if self.bundle.scientific_selection is not None:
+            missing = missing_negative_claims(synthesis.ledger, [cid for row in bundle.source_ledger for cid in row.claim_ids])
+            if missing:
+                bundle = bundle.model_copy(update={"errors": [*bundle.errors, "adopted negative/unknown claims omitted by writing: " + ", ".join(missing)]})
         if bundle.errors:
             self._record_attempt(
                 3,
@@ -1600,6 +1645,10 @@ class _ContinuationRunner:
             values,
             output_dir=manuscript_dir,
         )
+        if self.bundle.scientific_selection is not None:
+            missing = missing_negative_claims(synthesis.ledger, [cid for row in package.source_map for cid in row.claim_ids])
+            if missing:
+                package = package.model_copy(update={"errors": [*package.errors, "adopted negative/unknown claims omitted by manuscript: " + ", ".join(missing)]})
         if package.errors:
             self._record_attempt(
                 5,
@@ -1760,6 +1809,11 @@ class ArticleContinuation:
         self.author_reviser = author_reviser
         self.fault_hook = fault_hook
 
+    def deliver_complete_manuscript(self, **kwargs: Any) -> dict[str, Any]:
+        """Continue a completed author-chain draft through the shared delivery path."""
+        from .article_delivery import deliver_selected_research_article
+        return deliver_selected_research_article(**kwargs)
+
     def run(
         self, request: ContinuationRequest | Mapping[str, Any]
     ) -> "ContinuationResult":
@@ -1827,11 +1881,18 @@ class ArticleContinuation:
             )
         try:
             try:
-                bundle = load_source_pipeline(source_dir)
+                bundle = load_continuation_source(request_model, source_dir)
             except ContinuationIntegrityError as exc:
                 return self._failed_result(
                     request_model, [f"source pipeline validation failed: {exc}"]
                 )
+            if request_model.scientific_selection is not None:
+                try:
+                    selection_context = resolve_authoring_selection(request_model.scientific_selection, bundle.assets)
+                except (ValueError, KeyError, TypeError, OSError) as exc:
+                    return self._failed_result(request_model, [f"scientific selection validation failed: {exc}"])
+                bundle = replace(bundle, scientific_selection=selection_context,
+                    source_digest=_digest(bundle.source_digest, selection_context))
             if request_model.literature_supplement_path:
                 supplement_dir = Path(
                     request_model.literature_supplement_path
@@ -2039,7 +2100,8 @@ def _checkpoint_record_valid(
         return False
     expected_event = _event_from_receipt(record.receipt)
     actual_event = events[expected_event_index]
-    if actual_event != expected_event.model_dump(mode="json"):
+    from .science.authoring_selection import optional_authoring_identity
+    if optional_authoring_identity(actual_event) != optional_authoring_identity(expected_event.model_dump(mode="json")):
         errors.append(
             f"continuation checkpoint {record.stage} event does not match "
             "its receipt"

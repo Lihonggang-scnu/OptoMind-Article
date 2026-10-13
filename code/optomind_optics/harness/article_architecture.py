@@ -1939,6 +1939,7 @@ def build_article_architecture(
     graph: ExperimentGraph | None = None,
     run_id: Optional[str] = None,
     journal_path: str | Path | None = None,
+    scientific_selection: Optional[Mapping[str, Any]] = None,
 ) -> ArticleArchitectureResult:
     errors: List[str] = []
     warnings: List[str] = []
@@ -1995,6 +1996,8 @@ def build_article_architecture(
                 manifest,
                 value_shapes=context["value_shapes"],
             )
+            if scientific_selection is not None:
+                payloads = [{**payload, "scientific_selection": dict(scientific_selection)} for payload in payloads]
             results = list(architecture_provider(payloads))
             if len(results) != len(payloads):
                 warnings.append(

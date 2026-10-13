@@ -549,7 +549,10 @@ def _normalized_interpreter(value: str) -> str:
     path = Path(expanded).expanduser()
     if path.is_absolute():
         try:
-            return os.path.normcase(str(path.resolve(strict=False)))
+            # A virtualenv executable commonly symlinks to the base Python.
+            # Dereferencing it merges distinct dependency environments and can
+            # incorrectly accept a caller outside the frozen environment.
+            return os.path.normcase(os.path.abspath(path))
         except OSError:
             return os.path.normcase(str(path))
     return os.path.normcase(str(path))

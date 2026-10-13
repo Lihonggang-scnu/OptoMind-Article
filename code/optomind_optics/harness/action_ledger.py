@@ -145,20 +145,21 @@ def _gradient_basis_text(summary: Any) -> str:
 
     if not isinstance(summary, Mapping):
         return ""
-    layers = summary.get("top_influential_layers")
-    if not layers:
-        return ""
+    if summary.get("status") != "available":
+        return "gradient unavailable: " + str(summary.get("reason") or summary.get("unavailable") or "unverified binding")
+    if not summary.get("check_ref") or not (summary.get("verification") or {}).get("passed"):
+        return "gradient unavailable: finite-difference verification not recorded"
+    layers = summary.get("top_influential_layers") or []
     try:
         rows = [
-            f"layer {item.get('layer_index')} (sensitivity {float(item.get('sensitivity')):.4g})"
+            f"layer {item['layer_index']} (signed derivative {float(item['gradient_per_nm']):+.4g}/nm)"
             for item in layers[:3]
-            if isinstance(item, Mapping) and item.get("layer_index") is not None
         ]
-    except (TypeError, ValueError):
-        return ""
+    except (KeyError, TypeError, ValueError):
+        return "gradient unavailable: signed derivatives missing"
     if not rows:
-        return ""
-    return "gradient sensitivity: " + ", ".join(rows) + " most influence the objective"
+        return "gradient unavailable: signed derivatives missing"
+    return str(summary.get("objective_semantics") or "bound objective") + ": " + ", ".join(rows)
 
 
 def build_ledger_entry(

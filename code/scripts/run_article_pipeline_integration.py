@@ -54,6 +54,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--force-mock", action="store_true")
     parser.add_argument("--online-research", action="store_true")
+    parser.add_argument("--release-state-root", type=Path, help="Optional verified C22 release selection directory")
+    parser.add_argument("--release-runtime-versions", type=Path, help="JSON object with exact Article, Review and VeriTMM runtime revisions")
+    parser.add_argument("--science-shadow-spec", type=Path, help="Optional bounded data-only shadow controller JSON; no extra acquisitions")
     return parser
 
 
@@ -91,6 +94,9 @@ def main(argv: list[str] | None = None) -> int:
                 resume=args.resume,
                 force_mock=True if args.force_mock else None,
                 online_research=args.online_research,
+                release_state_root=str(args.release_state_root) if args.release_state_root else None,
+                release_runtime_versions=json.loads(args.release_runtime_versions.read_text(encoding="utf-8")) if args.release_runtime_versions else {},
+                science_shadow_spec=json.loads(args.science_shadow_spec.read_text(encoding="utf-8")) if args.science_shadow_spec else None,
             )
         )
     except (ArticleIntegrationError, ValueError) as exc:

@@ -428,6 +428,7 @@ class TMMResearchHarnessConfig(BaseModel):
     # O-12: the budget gate fires when the pre-run estimate exceeds this
     # many CNY (the O-14 per-run hard top is 30; warn at 25).
     budget_gate_threshold_cny: float = 25.0
+    gradient_compute_limits: Dict[str, int] = Field(default_factory=lambda: {"model_predictions":100000,"solver_points":100000000})
     research_mode: str = "bounded_design"
     num_drafts: int = 3
     debug_prob: float = 0.5
@@ -677,34 +678,32 @@ def _verify_workbench_run(execution_dir: Path) -> Dict[str, Any] | None:
 
 
 def _compute_gradient_summary(compiled_payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """O-10: top influential layers for the compiled task, via the engine's
-    gradient API. Evidence for "which layer is worth moving" -- it never
-    gates acceptance."""
+    """Require an explicit adopted simulation and frozen objective binding."""
+    from .science.observation_adapter import bound_gradient
+    from .science.contracts import ObjectRef
+    binding = compiled_payload.get("gradient_binding")
+    if not isinstance(binding, Mapping):
+        return {"status": "unavailable", "unavailable": "selected candidate and frozen objective binding not recorded"}
+    required = ("simulation", "candidate_ref", "objective_ref", "objective", "binding")
+    if any(key not in binding for key in required):
+        return {"status": "unavailable", "unavailable": "incomplete selected candidate gradient binding"}
+    return bound_gradient(dict(binding["simulation"]), candidate_ref=ObjectRef.model_validate(binding["candidate_ref"]), objective_ref=ObjectRef.model_validate(binding["objective_ref"]), objective=binding["objective"], binding=dict(binding["binding"]), provenance=binding.get("provenance"))
 
-    from optomind_optics.harness.veritmm_adapter import _ensure_real_veritmm_import
 
-    _ensure_real_veritmm_import()
-    from tmm_engine import gradient_api
-    from tmm_engine.task_io import simulation_task_from_dict
 
-    experiments = compiled_payload.get("experiments") or []
-    for experiment in experiments:
-        raw_task = dict(experiment.get("tmm_task") or {})
-        simulation = dict(raw_task.get("simulation") or raw_task)
-        if not simulation.get("stack"):
-            continue
-        task = simulation_task_from_dict(simulation)
-        result = gradient_api.compute_sensitivity(task)
-        summary = result.to_dict() if hasattr(result, "to_dict") else {}
-        return {
-            "objective": summary.get("objective"),
-            "method": summary.get("method"),
-            "metric_value": summary.get("metric_value"),
-            "top_influential_layers": list(
-                summary.get("top_influential_layers") or ()
-            )[:4],
-        }
-    return {"unavailable": "no simulation stack in the compiled task"}
+def _compute_budgeted_gradient(compiled_payload, run_payload, execution_dir, ledger_path, limits):
+    from .science.compute_ledger import ComputeLedger, active_compute_ledger
+    from .science.gradient_binding import adopted_gradient_summary
+    ledger = ComputeLedger(ledger_path, limits)
+    try:
+        with active_compute_ledger(ledger):
+            if "gradient_binding" in compiled_payload:
+                result = _compute_gradient_summary(compiled_payload)
+            else:
+                result = adopted_gradient_summary(compiled_payload, run_payload, execution_dir)
+        return {**result, "compute_ledger":ledger.snapshot(), "compute_ledger_path":str(ledger_path)}
+    finally:
+        ledger.close()
 
 
 def _read_json_if_present(path: Path) -> Dict[str, Any] | None:
@@ -2197,9 +2196,6 @@ class TMMResearchHarness:
             )
         track.rounds_used += 1
         track.executed_hashes.add(_route_hash(track.current_route))
-        with self._state_lock:
-            observations.append(observation)
-            self._observations = observations
         # O-02: attach the engine's independent four-state verification and
         # the run-level evidence ledger to this round's observation record.
         # Purely additive keys: existing observation keys are untouched, the
@@ -2245,7 +2241,7 @@ class TMMResearchHarness:
         # layer is worth moving" becomes a computation, not a guess) and the
         # energy-ledger summary from the physics certificate. Both are
         # capability-gated and never touch acceptance semantics.
-        gradient_summary = None
+        gradient_summary = {"status": "unavailable", "reason": "gradient capability or compiled task unavailable"}
         energy_summary = None
         capabilities = probe_engine_capabilities()
         if capabilities.gradient and task_path is not None:
@@ -2253,9 +2249,10 @@ class TMMResearchHarness:
                 compiled_payload = json.loads(
                     (self.work_dir / task_path).read_text(encoding="utf-8")
                 )
-                gradient_summary = _compute_gradient_summary(compiled_payload)
+                gradient_summary = _compute_budgeted_gradient(compiled_payload, run_payload, execution_dir,
+                    self.work_dir / "GRADIENT_COMPUTE.sqlite", self.config.gradient_compute_limits)
             except Exception as exc:
-                gradient_summary = {"unavailable": f"{type(exc).__name__}: {exc}"[:200]}
+                gradient_summary = {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:200]}
         certificate_payload = _read_json_if_present(
             iteration_dir / "tmm_run" / "PHYSICS_ACCEPTANCE_CERTIFICATE.json"
         )
@@ -2290,6 +2287,21 @@ class TMMResearchHarness:
             partial = _verify_workbench_run(execution_dir)
             if partial is not None:
                 observation_payload["verification_partial"] = partial
+        from .science.migration import commit_legacy_observation
+        request_payload = self._load_json_path(self.work_dir / "REQUEST.json")
+        with self._state_lock:
+            observation_payload, scientific_ref, science_snapshot, migration_report = commit_legacy_observation(
+                self.work_dir / "science", source_run_id=self.run_id,
+                question=str(request_payload["question"]), payload=observation_payload)
+            observation = ResearchIterationObservation.model_validate({
+                key: value for key, value in observation_payload.items()
+                if key in ResearchIterationObservation.model_fields})
+            observations.append(observation)
+            self._observations = observations
+        atomic_write_json(iteration_dir / "SCIENCE_PROJECTION.json", {
+            "observation_ref": scientific_ref.model_dump(mode="json"),
+            "snapshot_id": science_snapshot.snapshot_id,
+            "migration_report": migration_report.model_dump(mode="json")})
         self._event(
             "round_observed",
             route_id=route_id,
@@ -2365,6 +2377,8 @@ class TMMResearchHarness:
             "run_payload": run_payload,
             "verification": verification,
             "gradient_summary": gradient_summary,
+            "observation_payload": observation_payload,
+            "scientific_observation_ref": scientific_ref,
         }
 
     def _execute_track_round(
@@ -2410,7 +2424,21 @@ class TMMResearchHarness:
         observation: ResearchIterationObservation = ctx["observation"]
         pre_decl = pre_declarations.get(track.route_id, {})
         epsilon = DEFAULT_MINIMUM_SCORE_IMPROVEMENT
-        observation_dump = observation.model_dump(mode="json")
+        observation_dump = dict(ctx.get("observation_payload") or observation.model_dump(mode="json"))
+        scientific_ref = ctx.get("scientific_observation_ref")
+        if scientific_ref is not None:
+            from .science.repository import ScienceRepository
+            from .science.migration import legacy_observation_projection
+            repository = ScienceRepository(self.work_dir / "science", read_only=True)
+            try: observation_dump = legacy_observation_projection(repository, scientific_ref)
+            finally: repository.close()
+        def save_context(payload):
+            if scientific_ref is not None:
+                from .science.migration import commit_legacy_context
+                with self._state_lock:
+                    payload = commit_legacy_context(self.work_dir / "science",
+                        observation_ref=scientific_ref, source_run_id=self.run_id, payload=payload)
+            atomic_write_json(ctx["iteration_dir"] / "DECISION_CONTEXT.json", payload)
         self._event(
             "prompt_assembled",
             route_id=track.route_id,
@@ -2425,6 +2453,7 @@ class TMMResearchHarness:
                 self._reflection_client,
                 pre_declarations=pre_decl,
                 observation=observation_dump,
+                context_sink=save_context,
                 score_history=list(track.score_history),
                 epsilon=epsilon,
                 force_mock=self.config.qwen_force_mock,

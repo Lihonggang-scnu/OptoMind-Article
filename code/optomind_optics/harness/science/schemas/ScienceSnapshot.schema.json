@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "ObjectRef": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "revision": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "content_hash"
+      ],
+      "title": "ObjectRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "science-snapshot.v2",
+      "enum": [
+        "science-snapshot.v1",
+        "science-snapshot.v2"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshot_id": {
+      "title": "Snapshot Id",
+      "type": "string"
+    },
+    "committed_sequence": {
+      "minimum": 1,
+      "title": "Committed Sequence",
+      "type": "integer"
+    },
+    "task_ref": {
+      "$ref": "#/$defs/ObjectRef"
+    },
+    "object_refs": {
+      "items": {
+        "$ref": "#/$defs/ObjectRef"
+      },
+      "title": "Object Refs",
+      "type": "array"
+    },
+    "evidence_cutoff": {
+      "title": "Evidence Cutoff",
+      "type": "string"
+    }
+  },
+  "required": [
+    "snapshot_id",
+    "committed_sequence",
+    "task_ref",
+    "object_refs",
+    "evidence_cutoff"
+  ],
+  "title": "ScienceSnapshot",
+  "type": "object"
+}

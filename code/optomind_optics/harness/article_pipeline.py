@@ -389,6 +389,7 @@ class ArticlePipeline:
         execute: ExecuteAdapter,
         compile_assets: CompileAssetsAdapter,
         authority: Optional[ArticleCompilationAuthority] = None,
+        science_policy=None,
     ) -> None:
         adapters = {
             "analyze": analyze,
@@ -414,6 +415,7 @@ class ArticlePipeline:
         self.execute = execute
         self.compile_assets = compile_assets
         self.authority = authority
+        self.science_policy = science_policy
 
     def run(
         self,
@@ -2246,6 +2248,17 @@ class _PipelineRunner:
             Tuple[CompiledExperimentRequest, ArticleExecutionResult]
         ] = list(self.executions)
         soft_failures: List[str] = []
+        science_policy = self.pipeline.science_policy
+        if science_policy is not None:
+            try:
+                selected_ids = set(science_policy.plan([row.request for row in ready_rows], self.work_dir))
+            except Exception as exc:
+                self._mark_failed_stage(7, "execution", input_ids=input_ids, errors=(f"scientific policy commitment failed: {exc}",), warnings=warnings, payload=executed, hard=True)
+                return
+            for row in ready_rows:
+                if row.request.request_id not in selected_ids:
+                    warnings.append(f"route {row.route_id} deliberately omitted by committed scientific policy; see SCIENCE_DECISION.json")
+            ready_rows = [row for row in ready_rows if row.request.request_id in selected_ids]
         for row in ready_rows:
             request_model = row.request
             route_key = (
@@ -2257,7 +2270,7 @@ class _PipelineRunner:
             try:
                 raw = _invoke(
                     "execution",
-                    self.pipeline.execute,
+                    science_policy.execute if science_policy is not None else self.pipeline.execute,
                     request_model,
                 )
                 execution_model = _normalize(
@@ -2322,6 +2335,12 @@ class _PipelineRunner:
             )
             self.execution_committed_keys.add(route_key)
         self.executions = executed
+        if science_policy is not None and not soft_failures:
+            try:
+                science_policy.finalize(executed, self.work_dir)
+            except Exception as exc:
+                self._mark_failed_stage(7, "execution", input_ids=input_ids, errors=(f"scientific continuation failed: {exc}",), warnings=warnings, payload=executed, hard=True)
+                return
         status = "completed" if not soft_failures else "partial"
         warnings.extend(soft_failures)
         self._record_stage(
@@ -2564,6 +2583,7 @@ def build_default_pipeline(
     execute: ExecuteAdapter,
     compile_assets: CompileAssetsAdapter,
     authority: Optional[ArticleCompilationAuthority] = None,
+    science_policy=None,
 ) -> ArticlePipeline:
     """Wire caller-supplied adapters into an ArticlePipeline.
 
@@ -2581,6 +2601,7 @@ def build_default_pipeline(
         execute=execute,
         compile_assets=compile_assets,
         authority=authority,
+        science_policy=science_policy,
     )
 
 

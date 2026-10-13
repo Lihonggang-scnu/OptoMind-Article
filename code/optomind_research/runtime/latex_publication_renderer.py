@@ -1531,7 +1531,7 @@ def _render_main_tex(
 \usepackage{booktabs,longtable}
 \usepackage{array}
 \usepackage{calc}
-\usepackage{siunitx}
+\IfFileExists{siunitx.sty}{\usepackage{siunitx}}{}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[unicode,hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
@@ -1558,7 +1558,7 @@ def _render_main_tex(
 \usepackage{booktabs,longtable}
 \usepackage{array}
 \usepackage{calc}
-\usepackage{siunitx}
+\IfFileExists{siunitx.sty}{\usepackage{siunitx}}{}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[unicode,hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
@@ -1583,7 +1583,7 @@ def _render_main_tex(
 \usepackage{booktabs,longtable}
 \usepackage{array}
 \usepackage{calc}
-\usepackage{siunitx}
+\IfFileExists{siunitx.sty}{\usepackage{siunitx}}{}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}

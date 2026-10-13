@@ -1049,6 +1049,7 @@ def _build_section_request(
     value_records_by_key: Mapping[Tuple[str, str], TrustedValueRecord],
     fact_by_claim: Mapping[str, Any],
     literature_context: Optional[Mapping[str, Any]] = None,
+    scientific_selection: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     claims_by_id = {claim.claim_id: claim for claim in ledger.claims}
     section_claim_ids = sorted({item.claim_id for item in section.claim_bindings})
@@ -1213,6 +1214,7 @@ def _build_section_request(
             "figure_aliases": figure_aliases,
         },
         "claims": claims,
+        **({"scientific_selection": dict(scientific_selection)} if scientific_selection is not None else {}),
         "figures": figures,
         "values": value_tokens,
         "other_sections_outline": other_sections,
@@ -1917,6 +1919,7 @@ def _process_section(
     writer_provider: Optional[SectionWriterProvider],
     repair_provider: Optional[FormatRepairProvider],
     literature_context: Optional[Mapping[str, Any]] = None,
+    scientific_selection: Optional[Mapping[str, Any]] = None,
 ) -> ArticleSectionDraft:
     request = _build_section_request(
         plan=plan,
@@ -1928,6 +1931,7 @@ def _process_section(
         value_records_by_key=value_records_by_key,
         fact_by_claim=fact_by_claim,
         literature_context=literature_context,
+        scientific_selection=scientific_selection,
     )
     if writer_provider is None:
         return _blocked_section(
@@ -2110,6 +2114,7 @@ def build_article_draft_bundle(
     run_id: Optional[str] = None,
     journal_path: str | Path | None = None,
     literature_context: Optional[Mapping[str, Any]] = None,
+    scientific_selection: Optional[Mapping[str, Any]] = None,
     literature_evidence_alias_map: Optional[Mapping[str, str]] = None,
 ) -> ArticleDraftBundle:
     errors: List[str] = []
@@ -2195,6 +2200,7 @@ def build_article_draft_bundle(
                 writer_provider=section_writer,
                 repair_provider=format_repair,
                 literature_context=literature_context,
+                scientific_selection=scientific_selection,
             )
         )
 
