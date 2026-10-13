@@ -42,6 +42,47 @@ class ProgramTemplateAsset(MethodAsset):
             raise ValueError("program template requires its committed source and exact distinct slot provenance")
         return self
 
+class ProgramParameterSlot(StrictModel):
+    name: Literal["wavelengths_nm"]
+    node_ids: tuple[str, ...] = Field(min_length=1)
+    lower: float = Field(gt=0, allow_inf_nan=False)
+    upper: float = Field(gt=0, allow_inf_nan=False)
+    max_points: int = Field(ge=1, le=4096)
+
+    @model_validator(mode="after")
+    def bounded(self):
+        if self.lower > self.upper or len(set(self.node_ids)) != len(self.node_ids):
+            raise ValueError("invalid parameter slot domain")
+        return self
+
+
+class ResearchMethodAsset(ProgramTemplateAsset):
+    schema_version: Literal["research-method-asset.v1"] = "research-method-asset.v1"
+    parameter_slots: tuple[ProgramParameterSlot, ...] = ()
+    domain_evidence_refs: tuple[ObjectRef, ...] = Field(min_length=1)
+    source_layer_count: int = Field(ge=1)
+    applicability_basis: Literal["sample_independent_acquisition_topology"] = "sample_independent_acquisition_topology"
+    failure_branches: tuple[Literal["outside_domain", "budget_exhausted", "execution_unresolved", "prediction_not_evaluable", "model_set_inadequate"], ...]
+    stop_conditions: tuple[Literal["completed_program", "independent_validation_required"], ...] = ("completed_program", "independent_validation_required")
+
+    @model_validator(mode="after")
+    def parameterized_source(self):
+        program = compile_payload("program", self.payload)
+        nodes = {node.node_id: node for node in program.nodes}
+        if len({slot.name for slot in self.parameter_slots}) != len(self.parameter_slots):
+            raise ValueError("duplicate parameter slot")
+        for slot in self.parameter_slots:
+            for node_id in slot.node_ids:
+                if node_id not in nodes or nodes[node_id].kind != "new_evidence":
+                    raise ValueError("parameter slot must bind an existing acquisition")
+                values = dict(nodes[node_id].arguments).get(slot.name)
+                if not values or len(values) > slot.max_points or any(not slot.lower <= x <= slot.upper for x in values):
+                    raise ValueError("source acquisition exceeds parameter slot domain")
+        required = {"outside_domain", "budget_exhausted", "execution_unresolved", "prediction_not_evaluable", "model_set_inadequate"}
+        if set(self.failure_branches) != required or len(self.failure_branches) != len(required):
+            raise ValueError("research method requires all bounded failure branches")
+        return self
+
 class AssetCalibrationReceipt(ScientificObject):
     """Committed task-specific evidence gate, not a caller's claimed hash."""
     schema_version: Literal["asset-calibration-receipt.v1"] = "asset-calibration-receipt.v1"
@@ -68,6 +109,19 @@ def _verify_execution_evidence(asset, facts, *, repository=None, calibration_ref
         from dataclasses import asdict
         if canonical_hash(asdict(normalized))!=canonical_hash(asset.payload):
             raise ValueError("program template changed non-identity source semantics")
+        if isinstance(asset,ResearchMethodAsset):
+            from .contracts import PredictionSpec,ResearchTask
+            from .method_lifecycle import derive_program_domain
+            prediction=next((repository.load(ref) for ref in asset.input_refs
+                             if isinstance(repository.load(ref),PredictionSpec)),None)
+            task=repository.load(source.objective_ref) if source.objective_ref else None
+            if prediction is None or not isinstance(task,ResearchTask):
+                raise ValueError("research method lacks canonical source task and prediction")
+            domain=derive_program_domain(repository,prediction,source,task)
+            if (asset.parameter_slots!=domain['parameter_slots'] or asset.domain_evidence_refs!=domain['domain_evidence_refs']
+                    or asset.source_layer_count!=domain['source_layer_count']
+                    or asset.applicability_predicates!=domain['predicates']):
+                raise ValueError("research method domain differs from its executable source")
     if asset.dependencies and repository is None:
         raise ValueError("asset dependencies require an authoritative repository")
     for ref in asset.dependencies:
@@ -179,6 +233,7 @@ class MethodRegistry:
 
 OBJECT_TYPES["method-asset.v1"] = MethodAsset
 OBJECT_TYPES["program-template-asset.v1"] = ProgramTemplateAsset
+OBJECT_TYPES["research-method-asset.v1"] = ResearchMethodAsset
 OBJECT_TYPES["asset-calibration-receipt.v1"] = AssetCalibrationReceipt
 
 

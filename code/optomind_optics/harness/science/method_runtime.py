@@ -176,7 +176,7 @@ class FrozenMethodProvider:
             prepared.append(PreparedMethod(ref,kind,compiled,receipt))
         return tuple(prepared)
 
-    def instantiate_program(self, asset_ref, *, program_id, sample_bindings):
+    def instantiate_program(self, asset_ref, *, program_id, sample_bindings, parameter_bindings=None):
         """Rename explicit sample slots and execution/correlation identity only.
 
         Node topology, channel, coordinates, costs, state and branch logic stay
@@ -200,12 +200,59 @@ class FrozenMethodProvider:
                             correlation_group=groups.get(node.correlation_group,'')) for node in program.nodes)
         instantiated=replace(program,program_id=program_id,nodes=nodes,
                              initial_samples=tuple((sample_bindings[s],state) for s,state in program.initial_samples))
+        if parameter_bindings:
+            from .method_assets import ResearchMethodAsset
+            import math
+            if not isinstance(asset, ResearchMethodAsset):
+                raise ValueError('parameter bindings require a qualified research method')
+            slots={slot.name:slot for slot in asset.parameter_slots}
+            if set(parameter_bindings)-set(slots):
+                raise ValueError('undeclared method parameter slot')
+            for name,values in parameter_bindings.items():
+                slot=slots[name]
+                if (not isinstance(values,(list,tuple)) or not 1<=len(values)<=slot.max_points
+                        or any(isinstance(v,bool) or not isinstance(v,(int,float)) or not math.isfinite(v)
+                               or not slot.lower<=v<=slot.upper for v in values)
+                        or any(a>=b for a,b in zip(values,values[1:]))):
+                    raise ValueError('method parameter binding outside declared domain')
+            nodes=[]
+            for node in instantiated.nodes:
+                arguments=dict(node.arguments)
+                for name,values in parameter_bindings.items():
+                    if node.node_id in slots[name].node_ids:
+                        arguments[name]=tuple(float(v) for v in values)
+                nodes.append(replace(node,arguments=tuple(arguments.items())))
+            instantiated=replace(instantiated,nodes=tuple(nodes))
         receipt=MethodConsumptionReceipt(library_snapshot=self.library_snapshot,target_task_ref=self.task_ref,
             asset_ref=asset_ref,kind='program',transfer_mode=asset.transfer_mode,facts_hash=canonical_hash(self.facts),
             payload_hash=canonical_hash(asset.payload),compiled_identity=instantiated.content_hash,
             status='instantiated_not_executed',sample_bindings=tuple(sorted(sample_bindings.items())))
         self.receipts.append(receipt)
         return instantiated,receipt
+
+    def execute_program(self, asset_ref, *, program_id, sample_bindings, capabilities,
+                        limits, runner, freeze_predictions, parameter_bindings=None):
+        from .program_compiler import compile_program
+        from .method_assets import ResearchMethodAsset
+        asset=self._asset(asset_ref)
+        if not isinstance(asset,ResearchMethodAsset):
+            raise ValueError('qualified research method required')
+        try:
+            program,prepared=self.instantiate_program(asset_ref,program_id=program_id,
+                sample_bindings=sample_bindings,parameter_bindings=parameter_bindings)
+        except ValueError as exc:
+            return {'status':'outside_domain','error':str(exc),'executed':False},None
+        try:
+            plan=compile_program(program,capabilities=capabilities,limits=limits)
+        except ValueError as exc:
+            reason='budget_exhausted' if 'budget' in str(exc) or 'resource' in str(exc) else 'outside_domain'
+            return {'status':reason,'error':str(exc),'executed':False},None
+        commits=freeze_predictions(program)
+        executed=runner.run(plan,prediction_commits=commits)
+        status='executed' if executed.state=='completed' else 'execution_unresolved'
+        receipt=prepared.model_copy(update={'status':status,'output_hash':canonical_hash(_jsonable(executed))})
+        self.receipts.append(receipt)
+        return {'status':status,'executed':True,'program':program,'execution':executed},receipt
 
     def consume(self, asset_ref, **context):
         asset=self._asset(asset_ref)
@@ -220,3 +267,34 @@ class FrozenMethodProvider:
         receipt=prepared.receipt.model_copy(update={'status':'executed','output_hash':canonical_hash(_jsonable(result))})
         self.receipts.append(receipt)
         return result,receipt
+
+
+def diagnostic_action_from_method(provider, asset_ref, *, program_id, sample_id, session_id, wavelengths_nm=None):
+    from .contracts import PredictionSpec
+    from .diagnostic_design import DiagnosticAction,DiagnosticFrontEnd,ReferenceLayer
+    asset=provider._asset(asset_ref)
+    program,receipt=provider.instantiate_program(asset_ref,program_id=program_id,
+        sample_bindings={'sample':sample_id},parameter_bindings={'wavelengths_nm':tuple(wavelengths_nm)} if wavelengths_nm is not None else None)
+    measured=[node for node in program.nodes if node.kind=='new_evidence']
+    if len(measured)!=1 or any(node.kind=='state_transition' for node in program.nodes):
+        raise ValueError('diagnostic adapter requires one non-destructive sample acquisition')
+    node=measured[0];arguments=dict(node.arguments)
+    source_prediction=next((provider.registry.repository.load(ref) for ref in asset.input_refs
+                           if isinstance(provider.registry.repository.load(ref),PredictionSpec)),None)
+    identity=source_prediction.grid.get('acquisition_identity',{}) if source_prediction else {}
+    conditions=identity.get('conditions',{})
+    frontend=DiagnosticFrontEnd('bare')
+    if 'frontend_hash' in arguments:
+        if not identity.get('frontend_ref'):
+            raise ValueError('diagnostic method lacks its source front end')
+        source=provider.registry.repository.load(ObjectRef.model_validate(identity['frontend_ref']))
+        raw=source.summary['frontend']
+        frontend=DiagnosticFrontEnd(**{**raw,'layers':tuple(ReferenceLayer(**layer) for layer in raw['layers'])})
+        if frontend.content_hash!=arguments['frontend_hash']:
+            raise ValueError('diagnostic method front-end identity mismatch')
+    total=dict(node.estimate).get('cost',0.)
+    action=DiagnosticAction(program_id+':'+node.node_id,frontend,tuple(arguments['wavelengths_nm']),
+        float(arguments.get('angle_deg',0.)),arguments.get('polarization','s'),
+        float(conditions.get('bandwidth_nm',0.)),float(conditions.get('angular_spread_deg',0.)),
+        sample_id,session_id,total-frontend.mounting_cost,node.channel)
+    return action,program,receipt
