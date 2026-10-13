@@ -368,3 +368,57 @@ F3_SELECTED = json.loads(r'''{
 
 
 F3_ADEQUACY = json.loads(r'''{"object_id":"adequacy:a6d7466c8de53204a4d74695b8753b7da5988e252fba3365148a97b46c4d425f","revision":1,"content_hash":"ed744afb34d71dd67f9e8435e48db6796190068a1e0d042e44588ed638ac7b26","source_run_id":"e03-out-f3-s2718","input_refs":[{"object_id":"candidate:44dee7d70ff29173f883d6a35d26f64012a6f0574750fb3b44af258014478e90","revision":1,"content_hash":"a6d7466c8de53204a4d74695b8753b7da5988e252fba3365148a97b46c4d425f"}],"unconsumed_metadata":{},"schema_version":"decision-context.v1","observation_refs":[],"summary":{"state":"model_family_inadequate","audits":["identity_passed","numerical_passed","noise_validated","parameter_refit_completed","frozen_family_refit_bootstrap_calibrated"],"calibration_version":"39309f9b0721de66e5639771f8bea7898e5c3a3cae7063065695815946a75c87","p_value":0.05,"unknown_risk":true,"task_impact":"unknown","route":"propose_structure","null_refit_count":19,"null_nfev":206,"null_model_predict_calls_known":619,"null_predict_call_count_incomplete":false,"cost_scope":"nfev counts optimizer residual steps only; model_predict_calls includes inference numerical derivative probes; non-inference forwards are separate","calibration_scope":"plug-in frozen-family refit bootstrap only; search-wide false-rejection risk remains unknown","discovery_claim":false,"training_discrepancy":44.49577944536407},"feature_view":{},"raw_view":{},"actual_messages":[],"context_hash":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}''')
+
+
+def frozen_standard_payload():
+    from optomind_optics.harness.scoring_standard import FixedScoreMetric, ScoringStandard
+    return ScoringStandard(metrics=(FixedScoreMetric(variable='r', canonical_id='mean_reflectance@450-700nm',
+        metric='mean_reflectance', sense='minimize', mean_reduction='sample_mean',
+        region={'wavelength_nm': [450., 700.], 'angle_deg': 0., 'polarization': 's'}),), formula='-r').model_dump(mode='json')
+
+
+def test_frozen_scoring_objective_is_typed_locked_and_hash_preserving():
+    objective = {'kind': 'optomind_frozen_score', 'scoring_standard': frozen_standard_payload()}
+    task = ResearchTask(object_id='frozen', source_run_id='test', question='frozen score', objective=objective)
+    assert task.objective == objective
+    assert parse_object(task.model_dump(mode='json')).content_hash == task.content_hash
+    jsonschema = pytest.importorskip('jsonschema')
+    jsonschema.validate(task.model_dump(mode='json'), ResearchTask.model_json_schema())
+
+
+@pytest.mark.parametrize('mutation', ['unlocked', 'unsafe_formula', 'unsupported_metric', 'other_kind', 'extra_targets', 'missing_standard', 'invalid_region'])
+def test_frozen_scoring_contract_fails_closed(mutation):
+    standard = frozen_standard_payload()
+    objective = {'kind': 'optomind_frozen_score', 'scoring_standard': standard}
+    if mutation == 'unlocked':
+        standard['locked'] = False
+    elif mutation == 'unsafe_formula':
+        standard['formula'] = '__import__("os")'
+    elif mutation == 'unsupported_metric':
+        standard['metrics'][0]['metric'] = 'polarization_channels'
+        standard['metrics'][0]['mean_reduction'] = None
+    elif mutation == 'other_kind':
+        objective['kind'] = 'optomind_soft_score'
+    elif mutation == 'extra_targets':
+        objective['targets'] = []
+    elif mutation == 'missing_standard':
+        objective.pop('scoring_standard')
+    elif mutation == 'invalid_region':
+        standard['metrics'][0]['region']['wavelength_nm'] = [700., 450.]
+    with pytest.raises(ValueError):
+        ResearchTask(object_id='invalid-frozen', source_run_id='test', question='invalid', objective=objective)
+
+
+def test_frozen_scoring_json_schema_keeps_kind_boundary():
+    jsonschema = pytest.importorskip('jsonschema')
+    task = ResearchTask(object_id='frozen', source_run_id='test', question='frozen score', objective={
+        'kind': 'optomind_frozen_score', 'scoring_standard': frozen_standard_payload()})
+    schema = ResearchTask.model_json_schema()
+    payload = task.model_dump(mode='json')
+    payload['objective']['kind'] = 'optomind_soft_score'
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(payload, schema)
+    payload['objective']['kind'] = 'optomind_frozen_score'
+    payload['objective']['targets'] = []
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(payload, schema)

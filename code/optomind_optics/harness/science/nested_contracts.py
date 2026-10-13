@@ -70,6 +70,50 @@ def validate_acquisition_identity(value):
     AcquisitionIdentity.model_validate(value)
 
 
+def validate_frozen_scoring_objective(value):
+    from ..scoring_standard import ScoringStandard, SCORING_STANDARD_SCHEMA_VERSION
+    from ..metric_catalog import METRIC_CATALOG, CATALOG_SCHEMA_VERSION
+    _keys(value, {'kind', 'scoring_standard'}, 'optomind_frozen_score objective')
+    standard = ScoringStandard.model_validate(value.get('scoring_standard'))
+    if standard.locked is not True:
+        raise ValueError('frozen scoring standard must be locked')
+    if standard.schema_version != SCORING_STANDARD_SCHEMA_VERSION or standard.catalog_schema_version != CATALOG_SCHEMA_VERSION:
+        raise ValueError('unsupported frozen scoring standard version')
+    names = [metric.variable for metric in standard.metrics]
+    if len(names) != len(set(names)):
+        raise ValueError('frozen scoring metric variables must be unique')
+    standard.compiled()
+    if standard.formula_variables and set(standard.formula_variables) != set(names):
+        raise ValueError('frozen scoring formula_variables differ from declared metrics')
+    for metric in standard.metrics:
+        spec = METRIC_CATALOG.get(metric.metric)
+        if spec is None or spec.reduction not in {'band_mean', 'band_worst_case'} or len(spec.observables) != 1 or spec.observables[0] not in {'R', 'T', 'A'}:
+            raise ValueError('unsupported frozen scoring R/T/A statistic: ' + metric.metric)
+        if metric.sense not in {'minimize', 'maximize', 'match'} or (metric.sense == 'match' and metric.target is None):
+            raise ValueError('frozen scoring metric requires a supported sense and match target')
+        if metric.target is not None:
+            _finite(metric.target, 'frozen scoring target')
+        _keys(metric.region, {'wavelength_nm', 'angle_deg', 'polarization'}, 'frozen scoring region')
+        band = metric.region.get('wavelength_nm')
+        if not isinstance(band, (list, tuple)) or len(band) != 2:
+            raise ValueError('frozen scoring wavelength_nm requires two bounds')
+        for bound in band:
+            _finite(bound, 'frozen scoring wavelength bound')
+        if not 0 < band[0] <= band[1]:
+            raise ValueError('frozen scoring wavelength bounds must be positive and ordered')
+        if 'angle_deg' in metric.region:
+            angles = metric.region['angle_deg']
+            angles = angles if isinstance(angles, (list, tuple)) else (angles,)
+            if not angles:
+                raise ValueError('frozen scoring angle selection cannot be empty')
+            for angle in angles:
+                _finite(angle, 'frozen scoring angle_deg')
+                if not 0 <= angle < 90:
+                    raise ValueError('frozen scoring angle_deg must be in [0,90)')
+        if 'polarization' in metric.region and metric.region['polarization'] not in {'s', 'p', 'unpolarized'}:
+            raise ValueError('unsupported frozen scoring polarization')
+
+
 def validate_raw_block(raw):
     _keys(raw, RAW_FIELDS, 'raw_block')
     if not isinstance(raw.get('block_id'),str) or not raw['block_id']:
@@ -141,9 +185,13 @@ def validate_program_payload(payload):
 
 def validate_nested_payload(schema, payload):
     for field,allowed in FIELDS.get(schema,{}).items():
+        if schema=='research-task.v1' and field=='objective' and isinstance(payload.get(field), Mapping) and payload[field].get('kind')=='optomind_frozen_score':
+            allowed=allowed | {'scoring_standard'}
         if field in payload:_keys(payload[field],allowed,schema+'.'+field)
     if schema=='research-task.v1':
         objective=payload.get('objective') or {}
+        if objective.get('kind')=='optomind_frozen_score':
+            validate_frozen_scoring_objective(objective)
         for key in ('wavelength_nm','target_R','risk_aversion'):
             if key in objective:_finite(objective[key],key)
         if 'design_pool_nm' in objective:
@@ -232,6 +280,29 @@ def consumed_json_schemas(schema):
     if schema=='research-task.v1':
         for key in ('wavelength_nm','target_R','risk_aversion'):result['objective']['properties'][key]={'type':'number'}
         result['objective']['properties']['design_pool_nm']={'type':'array','items':{'type':'number'}}
+        from ..scoring_standard import ScoringStandard, SCORING_STANDARD_SCHEMA_VERSION
+        from ..metric_catalog import METRIC_CATALOG, CATALOG_SCHEMA_VERSION
+        standard_schema=ScoringStandard.model_json_schema()
+        definitions=standard_schema.get('$defs',{})
+        def inline(value):
+            if isinstance(value,list):return [inline(item) for item in value]
+            if not isinstance(value,dict):return value
+            if '$ref' in value:return inline(definitions[value['$ref'].removeprefix('#/$defs/')])
+            return {key:inline(item) for key,item in value.items() if key!='$defs'}
+        standard_schema=inline(standard_schema)
+        standard_schema['properties']['locked']={'const':True}
+        standard_schema['properties']['schema_version']={'const':SCORING_STANDARD_SCHEMA_VERSION}
+        standard_schema['properties']['catalog_schema_version']={'const':CATALOG_SCHEMA_VERSION}
+        standard_schema['properties']['metrics']['minItems']=1
+        standard_schema['properties']['metrics']['items']['properties']['metric']={'enum':[
+            name for name,spec in METRIC_CATALOG.items() if spec.reduction in {'band_mean','band_worst_case'}
+            and len(spec.observables)==1 and spec.observables[0] in {'R','T','A'}]}
+        objective=result['objective']
+        objective['properties']['scoring_standard']=standard_schema
+        objective['if']={'properties':{'kind':{'const':'optomind_frozen_score'}},'required':['kind']}
+        objective['then']={'required':['scoring_standard'],'properties':{
+            key:False for key in objective['properties'] if key not in {'kind','scoring_standard'}}}
+        objective['else']={'properties':{'scoring_standard':False}}
     def obj(keys, required=()):
         return {'type':'object','additionalProperties':False,'properties':{key:{} for key in sorted(keys)},'required':list(required)}
     if schema=='model-candidate.v1':
