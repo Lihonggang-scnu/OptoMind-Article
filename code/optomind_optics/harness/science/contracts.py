@@ -22,6 +22,70 @@ class ObjectRef(StrictModel):
     content_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+class AcquisitionIdentity(StrictModel):
+    schema_version: Literal["acquisition-identity.v1"] = "acquisition-identity.v1"
+    program_ref: ObjectRef
+    node_id: str = Field(min_length=1)
+    sample_id: str = Field(min_length=1)
+    session_id: str = Field(min_length=1)
+    frontend_ref: ObjectRef
+    conditions: dict[str, Any]
+
+    @model_validator(mode="after")
+    def validate_conditions(self):
+        from .nested_contracts import validate_acquisition_conditions
+        validate_acquisition_conditions(self.conditions)
+        return self
+
+    @classmethod
+    def model_json_schema(cls, *args, **kwargs):
+        schema = super().model_json_schema(*args, **kwargs)
+        schema["required"] = ["schema_version", *schema.get("required", [])]
+        schema["properties"]["conditions"] = {
+            "type": "object", "additionalProperties": False,
+            "required": ["angle_deg", "polarization", "coordinate_units"],
+            "properties": {
+                "angle_deg": {"type": "number", "minimum": 0, "exclusiveMaximum": 90},
+                "polarization": {"enum": ["s", "p", "unpolarized", "TE", "TM", "te", "tm"]},
+                "coordinate_units": {"type": "string", "minLength": 1},
+                "bandwidth_nm": {"type": "number", "minimum": 0},
+                "angular_spread_deg": {"type": "number", "minimum": 0},
+                "coherence": {"enum": ["coherent", "incoherent", "partial"]},
+            },
+        }
+        return schema
+
+
+class ResearchOutcome(StrictModel):
+    schema_version: Literal["research-outcome.v1"] = "research-outcome.v1"
+    model_adequacy_state: str = Field(default="not_recorded", min_length=1)
+    local_prediction_state: str = Field(default="not_recorded", min_length=1)
+    identity_state: Literal["bound", "identity_failure", "legacy_unbound", "not_recorded"] = "legacy_unbound"
+    numerical_state: Literal["valid", "failure", "not_recorded"] = "not_recorded"
+    noise_state: Literal["calibrated", "not_calibrated", "not_recorded"] = "not_recorded"
+    mechanism_state: Literal["distinguished", "confounded", "model_set_inadequate", "not_evaluated", "not_recorded"] = "not_recorded"
+    unknown_exploration_state: Literal["not_authorized", "budget_exhausted", "available", "not_needed", "not_recorded"] = "not_recorded"
+    unresolved_failure_refs: tuple[ObjectRef, ...] = ()
+
+    @property
+    def state(self) -> str:
+        if self.identity_state == "identity_failure" or self.model_adequacy_state == "identity_invalid":
+            return "identity_failure"
+        if self.numerical_state == "failure" or self.model_adequacy_state == "numerical_failure":
+            return "numerical_failure"
+        if self.noise_state == "not_calibrated" or self.model_adequacy_state in {"noise_unvalidated", "uncalibrated"}:
+            return "noise_uncalibrated"
+        if self.model_adequacy_state == "model_family_inadequate" or self.mechanism_state == "model_set_inadequate":
+            return "model_family_inadequate"
+        if self.mechanism_state == "confounded":
+            return "mechanism_confounded"
+        if self.unknown_exploration_state in {"not_authorized", "budget_exhausted"}:
+            return "unknown_exploration_" + self.unknown_exploration_state
+        if self.local_prediction_state in {"supported", "supported_within_frozen_noise_envelope"}:
+            return "local_prediction_supported"
+        return self.local_prediction_state
+
+
 class ScientificObject(StrictModel):
     object_id: str = Field(min_length=1)
     revision: int = Field(default=1, ge=1)
@@ -101,7 +165,20 @@ class Observation(ScientificObject):
         ids = [block.get("block_id") for block in self.raw_blocks]
         if None in ids or len(set(ids)) != len(ids):
             raise ValueError("raw blocks require unique block_id values")
+        identity = self.acquisition_identity
+        if identity is not None and "program_ref" in self.binding:
+            if ObjectRef.model_validate(self.binding["program_ref"]) != identity.program_ref:
+                raise ValueError("observation program_ref conflicts with acquisition identity")
         return self
+
+    @property
+    def acquisition_identity(self) -> AcquisitionIdentity | None:
+        value = self.binding.get("acquisition_identity")
+        return AcquisitionIdentity.model_validate(value) if value is not None else None
+
+    @property
+    def identity_state(self) -> str:
+        return "bound" if self.acquisition_identity is not None else "legacy_unbound"
 
 
 class InferenceState(ScientificObject):
@@ -134,6 +211,26 @@ class PredictionSpec(ScientificObject):
     observable: str
     grid: dict[str, Any] = Field(default_factory=dict)
     distribution: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_acquisition_binding(self):
+        identity = self.acquisition_identity
+        if identity is not None and self.program_ref != identity.program_ref:
+            raise ValueError("prediction program_ref conflicts with acquisition identity")
+        return self
+
+    @property
+    def acquisition_identity(self) -> AcquisitionIdentity | None:
+        value = self.grid.get("acquisition_identity")
+        return AcquisitionIdentity.model_validate(value) if value is not None else None
+
+    @property
+    def identity_state(self) -> str:
+        return "bound" if self.acquisition_identity is not None else "legacy_unbound"
+
+    @property
+    def model_ref(self) -> ObjectRef | None:
+        return self.candidate_ref if self.acquisition_identity is not None else None
 
 
 class PredictionEvaluation(ScientificObject):
@@ -200,6 +297,34 @@ class SelectedResearchResult(ScientificObject):
     asset_refs: tuple[ObjectRef, ...] = ()
     claim_strength: Literal["design", "prediction", "mechanism"] = "design"
 
+    @property
+    def research_outcome(self) -> ResearchOutcome:
+        value = self.candidate_roles.get("research_outcome")
+        if value is not None:
+            return ResearchOutcome.model_validate(value)
+        return ResearchOutcome(local_prediction_state=self.candidate_roles.get("validation_state", "not_recorded"))
+
+    @property
+    def outcome_state(self) -> str:
+        return self.research_outcome.state
+
+    def project_research_outcome(self, *, model_adequacy_state: str | None = None,
+                                 unknown_exploration_limit: int | None = None,
+                                 unknown_exploration_used: int = 0,
+                                 unresolved_failure_refs: tuple[ObjectRef, ...] | None = None) -> ResearchOutcome:
+        payload = self.research_outcome.model_dump(mode="json")
+        if model_adequacy_state is not None:
+            payload["model_adequacy_state"] = model_adequacy_state
+        if unknown_exploration_limit is not None:
+            if (type(unknown_exploration_limit) is not int or type(unknown_exploration_used) is not int
+                    or unknown_exploration_limit < 0 or not 0 <= unknown_exploration_used <= unknown_exploration_limit):
+                raise ValueError("unknown exploration budget must be nonnegative integers with usage within limit")
+            payload["unknown_exploration_state"] = ("not_authorized" if unknown_exploration_limit == 0 else
+                "budget_exhausted" if unknown_exploration_used == unknown_exploration_limit else "available")
+        if unresolved_failure_refs is not None:
+            payload["unresolved_failure_refs"] = [ref.model_dump(mode="json") for ref in unresolved_failure_refs]
+        return ResearchOutcome.model_validate(payload)
+
 
 class ScienceSnapshot(StrictModel):
     schema_version: Literal["science-snapshot.v1", "science-snapshot.v2"] = "science-snapshot.v2"
@@ -231,7 +356,7 @@ OBJECT_TYPES = {cls.model_fields["schema_version"].default: cls for cls in (Rese
 
 
 def parse_object(payload: dict) -> ScientificObject:
-    if payload.get("schema_version") in {"method-asset.v1", "program-template-asset.v1", "asset-calibration-receipt.v1"}:
+    if payload.get("schema_version") in {"method-asset.v1", "program-template-asset.v1", "research-method-asset.v1", "asset-calibration-receipt.v1"}:
         from . import method_assets
     if payload.get("schema_version") == "transfer-evaluation.v1":
         from . import promotion

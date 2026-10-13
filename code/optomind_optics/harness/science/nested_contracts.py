@@ -17,14 +17,14 @@ FIELDS = {
   'constraints': {'open_research_config','initial_model_hash','evidence_tier','paid_network_calls','source_task','robustness','scope','max_total_nm','thickness_max_nm','thickness_min_nm','angle_deg','wavelength_nm','not_recorded'}},
  'model-candidate.v1': {'domain': {'wavelength_nm','provenance','support','task','selection','interpretation','not_recorded'}},
  'observation.v2': {
-  'binding': {'candidate','sample','objective','objective_version','grid','polarization','materials','tool_version','measurement_receipt_id','task_id','evaluator_version','program_ref','dataset_hash','split','conditions','protocol_hash','preexecution_receipt_hash','manual_return','source_version','not_recorded'},
+  'binding': {'candidate','sample','objective','objective_version','grid','polarization','materials','tool_version','measurement_receipt_id','task_id','evaluator_version','program_ref','acquisition_identity','dataset_hash','split','conditions','protocol_hash','preexecution_receipt_hash','manual_return','source_version','not_recorded'},
   'quality': {'audit_binding','independent_quality_audit','execution','physics','objective','explanation','execution_status','numerical_valid','noise_validated','conditions','cross_block_noise_model','evidence_tier','evidence_level','independent_measurement_purchase','new_physical_measurement','physical_range_violations','acquisition_cost','menu_access_cost','physical_provenance','quality_audit','controls_audit','V4_accepted','V5_accepted','validation_scope','not_recorded'}},
  'inference-state.v1': {
   'calibration_scope': {'description','not_recorded'},
   'noise_model': {'type','shared_calibration','derived_views','not_recorded'},
   'posterior': {'parameter_order','parameters','samples','weights','covariance','not_recorded'}},
  'prediction-spec.v1': {
-  'grid': {'angle_deg','angles_deg','polarization','polarizations','coordinate_units','wavelength_units','support','session','program','wavelengths_nm','coordinate','not_recorded'},
+  'grid': {'angle_deg','angles_deg','polarization','polarizations','coordinate_units','wavelength_units','support','session','program','acquisition_identity','wavelengths_nm','coordinate','not_recorded'},
   'distribution': {'world_ids','kernel','mean','candidate_id','parameter_uncertainty','not_recorded'}},
 }
 RAW_FIELDS = {'polarization','block_id','channel','wavelengths_nm','coordinate','coordinate_units','units','values','covariance','calibration_group','calibration_std','gaussian_validated','angle_deg','derived_from','sample_id','source_file','source_hash','artifact_ref'}
@@ -40,6 +40,34 @@ def _keys(value, allowed, label):
 def _finite(value, label):
     if isinstance(value, bool) or not isinstance(value, (int,float)) or not math.isfinite(value):
         raise ValueError(label + ' must be finite numeric')
+
+
+def validate_acquisition_conditions(value):
+    required = {'angle_deg', 'polarization', 'coordinate_units'}
+    _keys(value, required | {'bandwidth_nm', 'angular_spread_deg', 'coherence'}, 'acquisition conditions')
+    if not required <= set(value):
+        raise ValueError('acquisition conditions require angle_deg, polarization and coordinate_units')
+    _finite(value['angle_deg'], 'acquisition angle_deg')
+    if not 0 <= value['angle_deg'] < 90:
+        raise ValueError('acquisition angle_deg must be in [0,90)')
+    if value['polarization'] not in {'s', 'p', 'unpolarized', 'TE', 'TM', 'te', 'tm'}:
+        raise ValueError('unknown acquisition polarization')
+    if not isinstance(value['coordinate_units'], str) or not value['coordinate_units']:
+        raise ValueError('acquisition coordinate_units must be nonempty')
+    for key in ('bandwidth_nm', 'angular_spread_deg'):
+        if key in value:
+            _finite(value[key], 'acquisition ' + key)
+            if value[key] < 0:
+                raise ValueError('acquisition ' + key + ' must be nonnegative')
+    if 'coherence' in value and value['coherence'] not in {'coherent', 'incoherent', 'partial'}:
+        raise ValueError('unknown acquisition coherence')
+
+
+def validate_acquisition_identity(value):
+    from .contracts import AcquisitionIdentity
+    if not isinstance(value, Mapping) or value.get('schema_version') != 'acquisition-identity.v1':
+        raise ValueError('explicit acquisition identity schema_version required')
+    AcquisitionIdentity.model_validate(value)
 
 
 def validate_raw_block(raw):
@@ -130,6 +158,9 @@ def validate_nested_payload(schema, payload):
     elif schema=='model-candidate.v1':validate_model_payload(payload.get('model_ir') or {},payload.get('parameter_values') or {})
     elif schema=='experiment-program.v1':validate_program_payload(payload.get('protocol') or {})
     elif schema=='observation.v2':
+        binding=payload.get('binding') or {}
+        if 'acquisition_identity' in binding:
+            validate_acquisition_identity(binding['acquisition_identity'])
         for block in payload.get('raw_blocks') or ():validate_raw_block(block)
         for key,value in (payload.get('quality') or {}).items():
             if key in BOOL_QUALITY and type(value) is not bool:raise ValueError('quality '+key+' must be boolean')
@@ -142,11 +173,18 @@ def validate_nested_payload(schema, payload):
             IndependentQualityAudit.model_validate_json(__import__('json').dumps(quality['independent_quality_audit']),strict=True)
     elif schema=='prediction-spec.v1':
         grid=payload.get('grid') or {}
+        if 'acquisition_identity' in grid:
+            validate_acquisition_identity(grid['acquisition_identity'])
         if 'angle_deg' in grid:_finite(grid['angle_deg'],'grid angle_deg')
         for angle in grid.get('angles_deg',()):_finite(angle,'grid angles_deg')
         for key in ('polarization','coordinate_units','wavelength_units'):
             if key in grid and not isinstance(grid[key],str):raise ValueError(key+' must be string')
         if 'polarizations' in grid and (not isinstance(grid['polarizations'],(list,tuple)) or any(not isinstance(p,str) for p in grid['polarizations'])):raise ValueError('polarizations must be strings')
+    elif schema=='selected-research-result.v1':
+        roles=payload.get('candidate_roles') or {}
+        if 'research_outcome' in roles:
+            from .contracts import ResearchOutcome
+            ResearchOutcome.model_validate(roles['research_outcome'])
     elif schema=='inference-state.v1':
         posterior=payload.get('posterior') or {}
         for key in ('parameters',):
@@ -172,6 +210,13 @@ def nested_json_schema(schema, field):
 
 def consumed_json_schemas(schema):
     result={field:nested_json_schema(schema,field) for field in FIELDS.get(schema,{})}
+    if schema in {'observation.v2', 'prediction-spec.v1'}:
+        from .contracts import AcquisitionIdentity
+        field='binding' if schema=='observation.v2' else 'grid'
+        result[field]['properties']['acquisition_identity']=AcquisitionIdentity.model_json_schema()
+    if schema=='selected-research-result.v1':
+        from .contracts import ResearchOutcome
+        result['candidate_roles']={'type':'object','properties':{'research_outcome':ResearchOutcome.model_json_schema()}}
     if schema=='observation.v2':
         result['raw_blocks']={'type':'array','items':{'type':'object','required':['block_id'],
             'additionalProperties':False,'properties':{key:{} for key in sorted(RAW_FIELDS)},'x-consumed-contract':VERSION}}

@@ -54,9 +54,10 @@ class WorldClient:
         return response
 
 
-def receipt_to_observation(receipt, *, object_id, source_run_id, candidate_ref=None, objective_ref=None):
+def receipt_to_observation(receipt, *, object_id, source_run_id, candidate_ref=None, objective_ref=None,
+                           sample_ref=None, acquisition_identity=None):
     """Bind a paid raw receipt into the shared observation contract, preserving correlation."""
-    from .contracts import Observation
+    from .contracts import AcquisitionIdentity, Observation
     import numpy as np
     from .likelihood_blocks import LikelihoodBlock
     if receipt.evaluator_version not in {"planar-independent/1", "multilayer-byrnes/1"} or receipt.channel not in {"R", "T", "A"}:
@@ -70,7 +71,26 @@ def receipt_to_observation(receipt, *, object_id, source_run_id, candidate_ref=N
     coordinate = np.asarray(receipt.wavelengths_nm, dtype=float)
     if not np.isfinite(coordinate).all() or np.any(coordinate <= 0) or np.any(np.diff(coordinate) <= 0):
         raise ValueError("invalid synthetic receipt wavelength coordinate")
-    return Observation(object_id=object_id, source_run_id=source_run_id, acquisition_id=receipt.acquisition_id, candidate_ref=candidate_ref, objective_ref=objective_ref, binding={"measurement_receipt_id": receipt.receipt_id, "task_id": receipt.task_id, "evaluator_version": receipt.evaluator_version}, raw_blocks=({"block_id": receipt.channel, "channel": receipt.channel, "wavelengths_nm": receipt.wavelengths_nm, "coordinate": receipt.wavelengths_nm, "coordinate_units": "nm", "units": "1", "values": receipt.values, "covariance": receipt.covariance, "calibration_group": receipt.calibration_group, "calibration_std": receipt.calibration_std, "gaussian_validated": True},), quality={"evidence_tier": "V1_synthetic", "independent_measurement_purchase": True, "execution_status": "completed", "numerical_valid": True, "noise_validated": True, "validation_scope": receipt.evaluator_version + " synthetic Gaussian intensity acquisition"}, cost_refs=(receipt.request_id,))
+    binding = {"measurement_receipt_id": receipt.receipt_id, "task_id": receipt.task_id, "evaluator_version": receipt.evaluator_version}
+    block = {"block_id": receipt.channel, "channel": receipt.channel, "wavelengths_nm": receipt.wavelengths_nm,
+             "coordinate": receipt.wavelengths_nm, "coordinate_units": "nm", "units": "1", "values": receipt.values,
+             "covariance": receipt.covariance, "calibration_group": receipt.calibration_group,
+             "calibration_std": receipt.calibration_std, "gaussian_validated": True}
+    if acquisition_identity is not None:
+        identity = AcquisitionIdentity.model_validate(acquisition_identity)
+        if identity.session_id != receipt.task_id:
+            raise ValueError("receipt task differs from acquisition session identity")
+        if identity.conditions["coordinate_units"] != "nm":
+            raise ValueError("synthetic receipt coordinate units must be nm")
+        binding.update(program_ref=identity.program_ref.model_dump(mode="json"),
+                       acquisition_identity=identity.model_dump(mode="json"), conditions=dict(identity.conditions))
+        block.update({key: identity.conditions[key] for key in ("angle_deg", "polarization")})
+    return Observation(object_id=object_id, source_run_id=source_run_id, acquisition_id=receipt.acquisition_id,
+        candidate_ref=candidate_ref, objective_ref=objective_ref, sample_ref=sample_ref, binding=binding,
+        raw_blocks=(block,), quality={"evidence_tier": "V1_synthetic", "independent_measurement_purchase": True,
+            "execution_status": "completed", "numerical_valid": True, "noise_validated": True,
+            "validation_scope": receipt.evaluator_version + " synthetic Gaussian intensity acquisition"},
+        cost_refs=(receipt.request_id,))
 
 
 class SyntheticMeasurementProvider:

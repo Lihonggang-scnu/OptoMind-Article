@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .contracts import ObjectRef, Observation, PredictionSpec
+from .contracts import ExperimentProgram, ModelCandidate, ObjectRef, Observation, PredictionSpec
 from .repository import ScienceRepository
 
 
@@ -24,6 +24,8 @@ class PredictionVerdict:
     observation_ref: ObjectRef
     statistic: float | None = None
     violating_indices: tuple[int, ...] = ()
+    identity_state: str = 'legacy_unbound'
+    failure_kind: str | None = None
 
 
 def commit_prediction(repository: ScienceRepository, spec: PredictionSpec, *, task_ref: ObjectRef,
@@ -41,6 +43,24 @@ def commit_prediction(repository: ScienceRepository, spec: PredictionSpec, *, ta
         raise ValueError('prediction channel, units, statistic and tolerance provenance required')
     if spec.statistic != 'simultaneous_envelope':
         raise ValueError('unsupported statistic; do not silently reinterpret prediction')
+    identity = spec.acquisition_identity
+    if identity is not None:
+        program = repository.load(identity.program_ref)
+        if not isinstance(program, ExperimentProgram):
+            raise ValueError('acquisition identity must reference an experiment program')
+        nodes = [node for node in program.protocol.get('nodes', ()) if node.get('node_id') == identity.node_id]
+        if len(nodes) != 1 or nodes[0].get('kind') != 'new_evidence':
+            raise ValueError('acquisition identity must name one new-evidence program node')
+        if nodes[0].get('channel') != spec.raw_channel:
+            raise ValueError('prediction channel differs from acquisition program node')
+        arguments = dict(nodes[0].get('arguments', ()))
+        if 'wavelengths_nm' in arguments and not np.array_equal(arguments['wavelengths_nm'], coordinate):
+            raise ValueError('prediction coordinates differ from acquisition program node')
+        for key, value in identity.conditions.items():
+            if key in arguments and arguments[key] != value:
+                raise ValueError('prediction conditions differ from acquisition program node: ' + key)
+        if spec.model_ref is not None and not isinstance(repository.load(spec.model_ref), ModelCandidate):
+            raise ValueError('prediction model_ref must reference a model candidate version')
     committed = repository.commit([spec], task_ref=task_ref, evidence_cutoff=evidence_cutoff,
                                    expected_sequence=latest.committed_sequence)
     return PredictionCommit(spec.ref(), latest.snapshot_id, committed.snapshot_id, committed.committed_sequence)
@@ -65,14 +85,26 @@ def evaluate_prediction(repository: ScienceRepository, commit: PredictionCommit,
 def compare_bound_observation(spec: PredictionSpec, observation: Observation) -> PredictionVerdict:
     spec = PredictionSpec.model_validate(spec.model_dump(mode='json'))
     observation = Observation.model_validate(observation.model_dump(mode='json'))
-    def verdict(state, reason, statistic=None, indices=()):
-        return PredictionVerdict(state, reason, spec.ref(), observation.ref(), statistic, indices)
+    expected_identity = spec.acquisition_identity
+    actual_identity = observation.acquisition_identity
+    identity_state = 'legacy_unbound'
+    def verdict(state, reason, statistic=None, indices=(), failure_kind=None):
+        return PredictionVerdict(state, reason, spec.ref(), observation.ref(), statistic, indices,
+                                 'identity_failure' if failure_kind == 'identity_failure' else identity_state, failure_kind)
     if observation.quality.get('execution_status', 'unknown') not in {'complete', 'completed', 'success'}:
-        return verdict('not_evaluable', 'execution did not produce a completed acquisition')
-    if spec.candidate_ref is not None and spec.candidate_ref != observation.candidate_ref:
-        return verdict('not_evaluable', 'candidate identity differs')
-    if spec.program_ref is not None and observation.binding.get('program_ref') != spec.program_ref.model_dump(mode='json'):
-        return verdict('not_evaluable', 'experiment program differs')
+        return verdict('not_evaluable', 'execution did not produce a completed acquisition', failure_kind='execution_failure')
+    if expected_identity is not None or actual_identity is not None:
+        if expected_identity is None or actual_identity is None:
+            return verdict('not_evaluable', 'versioned acquisition identity is missing on one side', failure_kind='identity_failure')
+        for field in ('program_ref', 'node_id', 'sample_id', 'session_id', 'frontend_ref', 'conditions'):
+            if getattr(expected_identity, field) != getattr(actual_identity, field):
+                return verdict('not_evaluable', 'acquisition identity differs: ' + field, failure_kind='identity_failure')
+        identity_state = 'bound'
+    else:
+        if spec.candidate_ref is not None and spec.candidate_ref != observation.candidate_ref:
+            return verdict('not_evaluable', 'candidate identity differs', failure_kind='identity_failure')
+        if spec.program_ref is not None and observation.binding.get('program_ref') != spec.program_ref.model_dump(mode='json'):
+            return verdict('not_evaluable', 'experiment program differs', failure_kind='identity_failure')
     active_conditions = set(observation.quality.get('conditions', []))
     if active_conditions.intersection(spec.invalid_conditions):
         return verdict('not_evaluable', 'preregistered invalid condition occurred')
@@ -80,19 +112,34 @@ def compare_bound_observation(spec: PredictionSpec, observation: Observation) ->
     if len(blocks) != 1:
         return verdict('not_evaluable', 'raw channel absent or ambiguous')
     block = blocks[0]
-    conditions = observation.binding.get('conditions') or {}
+    conditions = dict(actual_identity.conditions) if actual_identity is not None else {}
+    recorded_conditions = observation.binding.get('conditions') or {}
+    if actual_identity is not None:
+        for key, value in recorded_conditions.items():
+            if key in conditions and conditions[key] != value:
+                return verdict('not_evaluable', 'observation conditions conflict with acquisition identity: ' + key, failure_kind='identity_failure')
+        if 'sample_id' in block and block['sample_id'] != actual_identity.sample_id:
+            return verdict('not_evaluable', 'raw sample differs from acquisition identity', failure_kind='identity_failure')
+    conditions.update(recorded_conditions)
+    grid = dict(expected_identity.conditions) if expected_identity is not None else {}
+    for key, value in spec.grid.items():
+        if key in grid and grid[key] != value:
+            return verdict('not_evaluable', 'prediction grid conflicts with acquisition identity: ' + key, failure_kind='identity_failure')
+        grid[key] = value
     for key, aliases in {'angle_deg':('angle_deg','angles_deg'), 'polarization':('polarization','polarizations'),
-                         'coordinate_units':('coordinate_units','wavelength_units')}.items():
+                         'coordinate_units':('coordinate_units','wavelength_units'),
+                         'bandwidth_nm':('bandwidth_nm',), 'angular_spread_deg':('angular_spread_deg',),
+                         'coherence':('coherence',)}.items():
         for alias in aliases:
-            if alias not in spec.grid:
+            if alias not in grid:
                 continue
-            expected = spec.grid[alias]
+            expected = grid[alias]
             if isinstance(expected, (list, tuple)):
                 if len(expected) != 1:
                     return verdict('not_evaluable', 'ambiguous multi-condition prediction for one raw block')
                 expected = expected[0]
             actual = block.get(key, conditions.get(key, conditions.get(alias)))
-            if key == 'angle_deg':
+            if key in {'angle_deg', 'bandwidth_nm', 'angular_spread_deg'}:
                 try:
                     matches = float(actual) == float(expected) and np.isfinite(float(actual))
                 except (TypeError, ValueError):
@@ -100,15 +147,17 @@ def compare_bound_observation(spec: PredictionSpec, observation: Observation) ->
             else:
                 matches = actual is not None and actual == expected
             if not matches:
-                return verdict('not_evaluable', 'declared acquisition condition differs or is missing: '+key)
+                return verdict('not_evaluable', 'declared acquisition condition differs or is missing: '+key, failure_kind='identity_failure')
     values = np.asarray(block.get('values', []), dtype=float)
     coordinates = np.asarray(block.get('coordinate', []), dtype=float)
     if block.get('units') != spec.units or values.shape != (len(spec.lower),) or not np.array_equal(coordinates, spec.coordinate):
-        return verdict('not_evaluable', 'units or acquisition coordinates differ')
+        return verdict('not_evaluable', 'units or acquisition coordinates differ', failure_kind='identity_failure')
     if not np.isfinite(values).all():
-        return verdict('not_evaluable', 'nonfinite acquisition')
-    if observation.quality.get('numerical_valid') is not True or observation.quality.get('noise_validated') is not True:
-        return verdict('inconclusive', 'numerical or noise adequacy is not established')
+        return verdict('not_evaluable', 'nonfinite acquisition', failure_kind='numerical_failure')
+    if observation.quality.get('numerical_valid') is not True:
+        return verdict('inconclusive', 'numerical or noise adequacy is not established', failure_kind='numerical_failure')
+    if observation.quality.get('noise_validated') is not True:
+        return verdict('inconclusive', 'numerical or noise adequacy is not established', failure_kind='noise_uncalibrated')
     lower, upper = np.asarray(spec.lower), np.asarray(spec.upper)
     distance = np.maximum(lower - values, values - upper)
     bad = tuple(int(i) for i in np.flatnonzero(distance > 0))
