@@ -13,6 +13,24 @@ from typing import Callable, Iterable
 from .contracts import ScientificObject, ObjectRef, ScienceSnapshot, ResearchTask, parse_object, canonical_hash
 
 
+def _publish_artifact(temporary, destination):
+    """Publish flushed bytes before SQLite authority, using the native OS API."""
+    if os.name != "nt":
+        os.replace(temporary, destination)
+        return
+    # Windows cannot open a directory through the POSIX CRT for fsync. Use a
+    # write-through rename instead; propagate any error before SQLite commit.
+    # This is not a claim of tested filesystem/power-loss durability.
+    import ctypes
+    from ctypes import wintypes
+    from optomind_research.runtime.artifact_store import _native_long_path
+    move = ctypes.WinDLL("kernel32", use_last_error=True).MoveFileExW
+    move.argtypes = (wintypes.LPCWSTR, wintypes.LPCWSTR, wintypes.DWORD)
+    move.restype = wintypes.BOOL
+    if not move(_native_long_path(temporary), _native_long_path(destination), 0x1 | 0x8):
+        raise ctypes.WinError(ctypes.get_last_error())
+
+
 class ScienceRepository:
     def __init__(self, root, *, read_only=False, fault_hook: Callable[[str], None] | None = None):
         self.root = Path(root)
@@ -121,17 +139,18 @@ CREATE TABLE IF NOT EXISTS snapshots(sequence INTEGER PRIMARY KEY AUTOINCREMENT,
                 relative = f"objects/{obj.content_hash}.json"
                 fd, tmp = tempfile.mkstemp(dir=self.root / "objects", prefix=".pending-")
                 try:
-                    with os.fdopen(fd, "w") as stream:
+                    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as stream:
                         stream.write(obj.model_dump_json())
                         stream.flush()
                         os.fsync(stream.fileno())
-                    os.replace(tmp, self.root / relative)
+                    _publish_artifact(tmp, self.root / relative)
                 finally:
                     if os.path.exists(tmp): os.unlink(tmp)
                 self.db.execute("INSERT INTO objects VALUES(?,?,?,?)", (obj.object_id, obj.revision, obj.content_hash, relative))
-            directory_fd = os.open(self.root / "objects", os.O_RDONLY)
-            try: os.fsync(directory_fd)
-            finally: os.close(directory_fd)
+            if os.name != "nt":
+                directory_fd = os.open(self.root / "objects", os.O_RDONLY)
+                try: os.fsync(directory_fd)
+                finally: os.close(directory_fd)
             self.fault_hook("after_artifacts")
             all_refs = {ref.object_id: ref for ref in (latest.object_refs if latest else ())}
             all_refs.update({obj.object_id: obj.ref() for obj in objects})
