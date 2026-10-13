@@ -386,6 +386,20 @@ def test_planner_realizes_unresolved_ellipsis_topology_before_compilation():
     assert any("starting hypothesis" in item for item in result.normalization_warnings)
 
 
+def test_wavelength_grid_ellipsis_preserves_explicit_two_layer_topology():
+    topology = "Air | SiO2 | TiO2 | Glass (exactly 2 finite layers)"
+    route = _route(
+        route_kind="optimize_existing_stack", proposed_topology=topology,
+        execution_request_english="Optimize the two thicknesses at wavelengths 450, 455, ..., 700 nm.",
+    )
+    result = QwenTMMStrategyPlanner(client=_FakeClient([_plan(route)])).plan(
+        {"problem_id": "p1"}, {"evidence": [{"evidence_id": "ev_1"}]},
+    )
+    assert result.status == "planned"
+    assert result.plan.routes[0].proposed_topology == topology
+    assert "Topology realization override" not in result.plan.routes[0].execution_request_english
+
+
 def test_planner_accepts_a_route_that_names_the_refractive_index():
     """``n`` is the refractive index, not an unresolved repeat count.
 

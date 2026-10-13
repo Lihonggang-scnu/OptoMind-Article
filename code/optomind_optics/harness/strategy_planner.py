@@ -988,7 +988,17 @@ def _enforce_requested_layer_count_portfolio(
     return plan.model_copy(update={"routes": tuple(routes)}), tuple(warnings)
 
 
+def _without_spectral_grid_ellipsis(text: str) -> str:
+    # Enumerated wavelength samples do not leave the layer sequence unbound.
+    return re.sub(
+        r"\bwavelengths?\s+\d+(?:\.\d+)?\s*,(?:\s*\d+(?:\.\d+)?\s*,)*\s*(?:\.\.\.|\u2026)\s*,?\s*\d+(?:\.\d+)?\s*nm\b",
+        lambda match: match.group().replace("...", " ").replace("\u2026", " "),
+        text, flags=re.I,
+    )
+
+
 def _has_symbolic_topology(text: str) -> bool:
+    text = _without_spectral_grid_ellipsis(text)
     return bool(
         re.search(r"\.\.\.|\u2026", text)
         or re.search(r"\[[^\]]+\]\s*[_^]?\s*[Nn]\b", text)
@@ -1394,7 +1404,7 @@ def _validate_executable_topologies(plan: StrategyPlan) -> tuple[str, ...]:
         ),
     )
     for route in plan.routes:
-        combined = f"{route.proposed_topology}\n{route.execution_request_english}"
+        combined = _without_spectral_grid_ellipsis(f"{route.proposed_topology}\n{route.execution_request_english}")
         has_realization_override = (
             "topology realization override:" in combined.casefold()
         )
