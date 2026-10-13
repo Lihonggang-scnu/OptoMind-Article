@@ -8,6 +8,7 @@ from typing import Any, Dict, Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from tmm_engine.spectral_reduction import MeanReduction
 from tmm_engine.task_io import optimization_task_from_dict, simulation_task_from_dict
 
 
@@ -34,6 +35,11 @@ SUPPORTED_OBJECTIVE_METRICS = frozenset(
         "opaque_stack_rta",
     }
 )
+MEAN_OBJECTIVE_METRICS = frozenset({
+    "mean_reflectance", "band_reflectance", "mean_transmittance", "mean_absorption",
+    "mean_emissivity", "reflectance_stopband", "emissivity_spectrum",
+    "band_emissivity_contrast", "mixed_coherence_RTA", "opaque_stack_rta",
+})
 _BAND_METRICS = SUPPORTED_OBJECTIVE_METRICS - {"band_emissivity_contrast"}
 _REPORT_ONLY_METRICS = frozenset(
     {
@@ -63,6 +69,7 @@ class ObjectivePreference(BaseModel):
     sense: Literal["minimize", "maximize", "match", "report"]
     weight: float = 1.0
     target: Optional[float] = None
+    mean_reduction: Optional[MeanReduction] = None
     region: Dict[str, Any] = Field(default_factory=dict)
     admission_role: Literal["score_only"] = "score_only"
 
@@ -92,6 +99,8 @@ class ObjectivePreference(BaseModel):
 
     @model_validator(mode="after")
     def _validate_semantics(self) -> "ObjectivePreference":
+        if self.mean_reduction is not None and self.metric not in MEAN_OBJECTIVE_METRICS:
+            raise ValueError("mean_reduction is only valid for band-mean metrics")
         if self.sense == "match" and self.target is None:
             raise ValueError("match objectives require a target")
         if self.metric in _REPORT_ONLY_METRICS and self.sense != "report":

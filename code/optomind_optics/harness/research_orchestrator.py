@@ -45,6 +45,7 @@ from .research_feedback import (
     ResearchFeedbackDecision,
     ResearchIterationObservation,
     observation_from_run_result,
+    acceptance_summary,
 )
 from .research_report import DeterministicTMMResearchReporter, TMMResearchAnswer
 from .lineage_writer import LINEAGE_FILENAME, LineageRecord, write_lineage
@@ -93,6 +94,7 @@ from .action_ledger import (
     entry_to_event_payload,
 )
 from tmm_engine.hashing import stable_sha256
+from .research_charter import build_research_charter, charter_digest
 from .strategy_planner import DesignRoute
 from .tournament_summary import summarize_tournament
 from .task_compiler import ArticleTurboQwenClient, QwenTMMTaskCompiler
@@ -490,6 +492,9 @@ class TMMResearchHarnessResult(BaseModel):
     schema_version: str = "tmm-research-harness-result.v1"
     run_id: str
     status: str
+    acceptance_status: str = "unverified"
+    failed_iteration_ids: Tuple[str, ...] = ()
+    route_failures: Tuple[Dict[str, Any], ...] = ()
     stage: str
     question: str
     problem_analysis: Dict[str, Any] = Field(default_factory=dict)
@@ -516,6 +521,10 @@ def _build_intent_equivalence_certificate(
     from tmm_engine import intent as engine_intent
     from tmm_engine import schemas as engine_schemas
 
+    for experiment in task_payload.get("experiments") or []:
+        for target in (experiment.get("tmm_task") or {}).get("targets") or []:
+            if target.get("mean_reduction") not in {None, "sample_mean"}:
+                return None
     stack_payload = None
     targets_payload = []
     for experiment in task_payload.get("experiments") or []:
@@ -751,6 +760,23 @@ def _route_hash(route: Mapping[str, Any]) -> str:
     return hashlib.sha256(request.encode("utf-8")).hexdigest()
 
 
+def _terminal_route_failures(tracks: Iterable[RouteTrack]) -> list[Dict[str, Any]]:
+    return [
+        {"route_id": track.route_id, "status": track.status, "reason": track.termination_reason}
+        for track in tracks
+        if track.status == TRACK_ERROR_UNRECOVERABLE
+        or "replan failure" in track.termination_reason.lower()
+    ]
+
+
+def _execution_failure_category(error_type: str, message: str) -> str:
+    if "CHARTER_DRIFT_ERROR" in message or (error_type in {"ValueError", "CompileFailure"} and "contract" in message.lower()):
+        return "contract_violation"
+    if error_type in {"ValueError", "ValidationError", "CompileFailure"}:
+        return "invalid_input"
+    return "runtime_environment"
+
+
 def _scientific_followup_queries(
     problem: Mapping[str, Any],
     observation: ResearchIterationObservation,
@@ -881,6 +907,7 @@ class TMMResearchHarness:
         # back to copying the first route's objectives onto the others.
         self.scoring_standard_builder = scoring_standard_builder
         self.scoring_standard: ScoringStandard | None = None
+        self.research_charter: Dict[str, Any] | None = None
         self.route_planner = route_planner
         self.control_route_planner = control_route_planner
         self.route_literature_client = route_literature_client
@@ -1551,12 +1578,17 @@ class TMMResearchHarness:
         lowered below the configured value.
         """
 
+        original_cap = ((self.research_charter or {}).get("frozen_constraints") or {}).get("maximum_research_rounds")
         if not self.config.per_route_round_quota_enabled:
+            if original_cap is not None:
+                self._iteration_ceiling = min(self._iteration_ceiling, int(original_cap))
             return
         rounds = int(self.config.max_rounds_per_route)
         ceiling = max(
             int(self.config.maximum_iterations), max(0, int(route_count)) * rounds
         )
+        if original_cap is not None:
+            ceiling = min(ceiling, int(original_cap), int(self.config.maximum_iterations))
         self._iteration_ceiling = ceiling
         self._event(
             "budget_changed",
@@ -1690,6 +1722,7 @@ class TMMResearchHarness:
                 force_mock=self.config.qwen_force_mock,
                 chain_id=chain_id,
                 insight_appendage=insight_appendage,
+                charter=self.research_charter,
             )
             # R-04: StrategyPlanningResult now has pre_declarations field
             pre_decls = getattr(result, "pre_declarations", {})
@@ -1927,6 +1960,12 @@ class TMMResearchHarness:
         # O-03: a round's execution begins with its compilation prompt; the
         # inputs are hashed here so the prompt is rebuildable from events.
         prompt_question = str(route["execution_request_english"])
+        if self.research_charter is not None:
+            prompt_question += (
+                "\n\nImmutable original user request (overrides conflicting route proposals):\n"
+                + str(self.research_charter["question"])
+                + "\nPreserve its physical constraints. Performance targets remain soft objectives."
+            )
         self._event(
             "round_started",
             route_id=route_id,
@@ -1943,8 +1982,13 @@ class TMMResearchHarness:
         )
         compilation: Any | None = None
         try:
+            if self.research_charter is not None:
+                from .strategy_planner import _check_charter_drift
+                _check_charter_drift({"routes": [{
+                    key: route[key] for key in ("route_id", "proposed_topology", "execution_request_english") if key in route
+                }]}, self.research_charter)
             compilation = self.task_compiler.compile(
-                str(route["execution_request_english"]),
+                prompt_question,
                 force_mock=self.config.qwen_force_mock,
             )
             with self._state_lock:
@@ -1958,10 +2002,12 @@ class TMMResearchHarness:
                 status=str(compilation_payload.get("status") or ""),
             )
         except Exception as exc:
+            contract_rejected = "CHARTER_DRIFT_ERROR" in str(exc)
             compilation_payload = {
-                "status": "unavailable",
+                "status": "contract_rejected" if contract_rejected else "unavailable",
+                "failure_category": "contract_violation" if contract_rejected else "compilation_unavailable",
                 "task": None,
-                "rationale": "Task compilation raised a recorded exception.",
+                "rationale": "The proposed route violates the immutable original request." if contract_rejected else "Task compilation raised a recorded exception.",
                 "validation_errors": [f"{type(exc).__name__}: {exc}"],
                 "usage": [],
             }
@@ -1972,6 +2018,24 @@ class TMMResearchHarness:
 
             task = OpticalDesignTask.model_validate(compilation_payload["task"])
         compilation_status = str(compilation_payload.get("status") or "invalid")
+        if task is not None and compilation_status == "compiled" and self.research_charter is not None:
+            from .task_compiler import CompileFailure, _check_task_spec_charter_drift
+            try:
+                _check_task_spec_charter_drift(
+                    {"task": task.model_dump(mode="json"), "route_id": route_id},
+                    self.research_charter,
+                )
+            except (CompileFailure, ValueError) as exc:
+                compilation_status = "contract_rejected"
+                compilation_payload = {
+                    **compilation_payload,
+                    "status": compilation_status,
+                    "rationale": "The compiled proposal violates the immutable original request.",
+                    "validation_errors": [*compilation_payload.get("validation_errors", []), str(exc)],
+                    "failure_category": "contract_violation",
+                }
+                atomic_write_json(iteration_dir / "TASK_COMPILATION.json", compilation_payload)
+                self._event("task_contract_rejected", route_id=route_id, iteration_id=iteration_id, reason=str(exc))
         if task is not None and compilation_status == "compiled":
             task_file = iteration_dir / "COMPILED_TASK.json"
             atomic_write_json(task_file, task.model_dump(mode="json"))
@@ -1996,9 +2060,16 @@ class TMMResearchHarness:
                 try:
                     certificate_payload = _build_intent_equivalence_certificate(
                         task.model_dump(mode="json"),
-                        source_clause=str(route.get("execution_request_english") or ""),
+                        source_clause=str((self.research_charter or {}).get("question") or route.get("execution_request_english") or ""),
                     )
                     if certificate_payload is not None:
+                        certificate_payload["equivalence_scope"] = "compiled_task_intent_round_trip"
+                        certificate_payload["original_request_contract"] = {
+                            "status": "extracted_constraints_validated" if self.research_charter is not None else "unavailable",
+                            "scope": "explicit structured constraints extracted from the original request; not general prose equivalence",
+                            "enforced_constraints": (self.research_charter or {}).get("frozen_constraints", {}),
+                            "charter_sha256": charter_digest(self.research_charter) if self.research_charter is not None else None,
+                        }
                         atomic_write_json(
                             iteration_dir / "COMPILED_TASK_EQUIVALENCE.json",
                             certificate_payload,
@@ -2109,7 +2180,7 @@ class TMMResearchHarness:
                 "experiment_results": [],
                 "diagnoses": [
                     {
-                        "category": "runtime_environment",
+                        "category": _execution_failure_category(type(exc).__name__, str(exc)),
                         "recoverable_with_tmm": False,
                         "allowed_actions": ["stop"],
                         "explanation": "The TMM execution raised a recorded exception.",
@@ -2166,6 +2237,11 @@ class TMMResearchHarness:
             compiled_file = iteration_dir / "COMPILED_TASK.json"
             if task is not None and compilation_status == "compiled" and compiled_file.exists():
                 task_path = compiled_file.relative_to(self.work_dir).as_posix()
+        if compilation_status == "contract_rejected":
+            run_payload = {
+                "status": "contract_rejected",
+                "diagnoses": [{"category": "contract_violation"}],
+            }
         observation = observation_from_run_result(
             iteration_id=pre_ctx["iteration_id"],
             route_id=route_id,
@@ -2184,6 +2260,7 @@ class TMMResearchHarness:
                 task.model_dump(mode="json") if task is not None else None
             ),
         )
+        observation = observation.model_copy(update={"route_snapshot": json.loads(json.dumps(route))})
         # Per-chain ledgers live on the track. These three appends carry NO
         # lock by R-06 invariant: they execute on the main thread only (Phase
         # 1a/1c are serial; the concurrent phases never touch foreign tracks).
@@ -2454,6 +2531,7 @@ class TMMResearchHarness:
                 pre_declarations=pre_decl,
                 observation=observation_dump,
                 context_sink=save_context,
+                charter=self.research_charter,
                 score_history=list(track.score_history),
                 epsilon=epsilon,
                 force_mock=self.config.qwen_force_mock,
@@ -3187,6 +3265,17 @@ class TMMResearchHarness:
 
         problem_envelope = self._load_json_path(self.work_dir / "PROBLEM_ANALYSIS.json")
         problem = dict(problem_envelope.get("analysis") or problem_envelope)
+        charter_path = self.work_dir / "RESEARCH_CHARTER.json"
+        charter_attestation = self.work_dir / "RESEARCH_CHARTER.ATTESTATION.json"
+        if charter_path.exists() and charter_attestation.exists():
+            attestation = self._load_json_path(charter_attestation)
+            if attestation.get("artifact_sha256") != hashlib.sha256(charter_path.read_bytes()).hexdigest():
+                raise ValueError("checkpoint Charter does not match its immutable attestation")
+        self.research_charter = self._load_json_path(charter_path) if charter_path.exists() else build_research_charter(resumed_question, problem)
+        if self.research_charter.get("source_sha256") != hashlib.sha256(resumed_question.encode("utf-8")).hexdigest():
+            raise ValueError("checkpoint Charter does not match the original request")
+        if not charter_path.exists():
+            self._write("RESEARCH_CHARTER.json", self.research_charter)
         method_envelope = self._load_json_path(self.work_dir / "METHOD_RESEARCH.json")
         merged_research = dict(method_envelope.get("report") or method_envelope)
         # The parent telemetry below already contains the historical method
@@ -3206,6 +3295,7 @@ class TMMResearchHarness:
             ResearchIterationObservation.model_validate(item)
             for item in (raw_observations if isinstance(raw_observations, list) else [])
         ]
+        observations = [self._bind_saved_route(row) for row in observations]
         if not observations:
             raise ValueError("checkpoint has no iteration history to resume")
         raw_feedback = self._load_json_path(self.work_dir / "FEEDBACK_HISTORY.json")
@@ -3574,7 +3664,7 @@ class TMMResearchHarness:
                         else TRACK_STOPPED_ROUND_LIMIT
                     )
                     track.termination_reason = (
-                        self._budget_termination_reason()
+                        self._budget_termination_reason() + f"; terminal replan failure: {reason}"
                         if track.status == TRACK_STOPPED_BUDGET
                         else (
                             f"replan failure reached the per-route cap of "
@@ -3618,6 +3708,21 @@ class TMMResearchHarness:
             feedback_history=feedback_history,
             final_decision=final_decision,
         )
+
+    def _bind_saved_route(self, observation: ResearchIterationObservation) -> ResearchIterationObservation:
+        if observation.route_snapshot:
+            return observation
+        route_path = self.work_dir / observation.work_dir / "ROUTE.json"
+        if route_path.is_file() and route_path.resolve().is_relative_to(self.work_dir):
+            attestation_path = route_path.with_name("ROUTE.ATTESTATION.json")
+            if attestation_path.exists():
+                attestation = self._load_json_path(attestation_path)
+                if attestation.get("artifact_sha256") != hashlib.sha256(route_path.read_bytes()).hexdigest():
+                    raise ValueError("checkpoint route does not match its pre-execution attestation")
+            snapshot = self._load_json_path(route_path)
+            if str(snapshot.get("route_id") or "") == observation.route_id:
+                return observation.model_copy(update={"route_snapshot": snapshot})
+        return observation
 
     def _finish_tournament(
         self,
@@ -3695,6 +3800,7 @@ class TMMResearchHarness:
                 for route_id in sorted(ordered_track_ids)
             ],
             "route_count_after_feedback": len(ordered_track_ids),
+            "route_failures": _terminal_route_failures(tracks.values()),
             "route_sources": {
                 route_id: tracks[route_id].source
                 for route_id in sorted(ordered_track_ids)
@@ -3731,6 +3837,9 @@ class TMMResearchHarness:
         result = TMMResearchHarnessResult(
             run_id=self.run_id,
             status=final_status,
+            acceptance_status=acceptance_summary(observations, combined_plan["route_failures"])["acceptance_status"],
+            failed_iteration_ids=tuple(acceptance_summary(observations)["failed_iteration_ids"]),
+            route_failures=tuple(combined_plan["route_failures"]),
             stage="finished",
             question=question,
             problem_analysis=problem,
@@ -3818,6 +3927,10 @@ class TMMResearchHarness:
                 stage="problem_analysis",
                 reason=str(problem.get("compatibility_reason") or analysis_status),
             )
+
+        self.research_charter = build_research_charter(question, problem)
+        self._write("RESEARCH_CHARTER.json", self.research_charter)
+        self._attest(self.work_dir / "RESEARCH_CHARTER.json", "immutable_original_request")
 
         # Before any route exists, so no result can influence what counts as a
         # good result. Every route is then measured on these numbers, which is
@@ -4509,7 +4622,7 @@ class TMMResearchHarness:
                             "experiment_results": [],
                             "diagnoses": [
                                 {
-                                    "category": "runtime_environment",
+                                    "category": _execution_failure_category(str(outcome.get("error_type") or "Exception"), str(outcome.get("message") or "")),
                                     "recoverable_with_tmm": False,
                                     "allowed_actions": ["stop"],
                                     "explanation": (
@@ -4813,7 +4926,7 @@ class TMMResearchHarness:
 
                 if not self._budget_remaining(len(observations)):
                     track.status = TRACK_STOPPED_BUDGET
-                    track.termination_reason = self._budget_termination_reason()
+                    track.termination_reason = self._budget_termination_reason() + f"; terminal replan failure: {termination_reason}"
                 else:
                     track.status = TRACK_STOPPED_ROUND_LIMIT
                     track.termination_reason = (
@@ -4921,6 +5034,7 @@ class TMMResearchHarness:
             **plan,
             "routes": [tracks[tid].current_route for tid in sorted(ordered_track_ids)],
             "route_count_after_feedback": len(ordered_track_ids),
+            "route_failures": _terminal_route_failures(tracks.values()),
             "route_sources": {
                 route_id: tracks[route_id].source
                 for route_id in sorted(ordered_track_ids)
@@ -4952,6 +5066,9 @@ class TMMResearchHarness:
         result = TMMResearchHarnessResult(
             run_id=self.run_id,
             status=final_status,
+            acceptance_status=acceptance_summary(observations, combined_plan["route_failures"])["acceptance_status"],
+            failed_iteration_ids=tuple(acceptance_summary(observations)["failed_iteration_ids"]),
+            route_failures=tuple(combined_plan["route_failures"]),
             stage="finished",
             question=question,
             problem_analysis=problem,

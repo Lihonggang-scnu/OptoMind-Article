@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, ValidationError,
 
 from config.qwen_config import get_cost_tracker
 
-from .problem_analyzer import ArticlePlusQwenClient, validate_research_charter
+from .problem_analyzer import ArticlePlusQwenClient, REQUIRED_CHARTER_FIELDS, validate_research_charter
 from .qwen_policy import QWEN_POLICY_MODEL
 from .text_safety import (
     normalize_text_sequence,
@@ -1486,6 +1486,11 @@ def _route_layer_counts(route: Mapping[str, Any]) -> list[int]:
                 counts.append(int(item))
             except (TypeError, ValueError):
                 continue
+    from .research_charter import _COUNT, _count
+    for key in ("proposed_topology", "execution_request_english"):
+        text = str(route.get(key) or "")
+        counts.extend(_count(match.group(1)) for match in re.finditer(
+            rf"\b({_COUNT})[- ](?:finite\s+)?layers?\b(?!\s+of\b)", text, re.I))
     return counts
 
 
@@ -1543,9 +1548,14 @@ def _check_charter_drift(strategy: Mapping[str, Any], charter: Any) -> None:
                 f"{list(wavelength)} nm outside the charter range "
                 f"{list(charter_wavelength)} nm"
             )
-        materials = _route_materials(route)
+        materials = [re.sub(r"\s*\([^)]*\)\s*$", "", item).strip() for item in _route_materials(route)]
+        bounding_media = {str(item).strip().casefold() for item in (_charter_value(charter, "bounding_medium_materials") or [])}
+        materials = [
+            normalized if (normalized := re.sub(r"\b(?:semi-infinite|substrate|incident medium|incidence)\b", "", item).strip()) in bounding_media else item
+            for item in materials
+        ]
         if whitelist and materials:
-            outside = [item for item in materials if item not in whitelist]
+            outside = [item for item in materials if item not in whitelist and item not in bounding_media]
             if outside:
                 raise ValueError(
                     f"CHARTER_DRIFT_ERROR: route {label} proposes material(s) "
@@ -1626,6 +1636,12 @@ class QwenTMMStrategyPlanner:
         # deltas, mechanical insights and the tested-stack exclusion list --
         # enters verbatim; the planner must treat it as ground truth about
         # what was already tried.
+        if charter is not None:
+            base_payload["immutable_research_charter"] = (
+                dict(charter) if isinstance(charter, Mapping)
+                else charter.model_dump(mode="json") if isinstance(charter, BaseModel)
+                else {name: _charter_value(charter, name) for name in REQUIRED_CHARTER_FIELDS}
+            )
         if insight_appendage:
             base_payload["insight_appendage"] = str(insight_appendage)
         # Fix A: when refining a single chain, inject its stable id so the

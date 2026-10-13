@@ -39,11 +39,13 @@ import math
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Protocol, Sequence
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from tmm_engine.spectral_reduction import MeanReduction
 
 from config.qwen_config import get_cost_tracker
 
-from .design_task import ObjectivePreference
+from .design_task import MEAN_OBJECTIVE_METRICS, ObjectivePreference
+from .metric_reduction import requested_mean_reduction
 from .metric_catalog import (
     CATALOG_SCHEMA_VERSION,
     METRIC_CATALOG,
@@ -450,6 +452,13 @@ class FixedScoreMetric(BaseModel):
     region: Dict[str, Any] = Field(default_factory=dict)
     target: float | None = None
     rationale: str = ""
+    mean_reduction: MeanReduction | None = None
+
+    @model_validator(mode="after")
+    def _validate_reduction(self) -> "FixedScoreMetric":
+        if self.mean_reduction is not None and self.metric not in MEAN_OBJECTIVE_METRICS:
+            raise ValueError("mean_reduction is only valid for band-mean metrics")
+        return self
 
     @property
     def objective_id(self) -> str:
@@ -483,6 +492,7 @@ class FixedScoreMetric(BaseModel):
             sense="report",
             weight=1.0,
             target=self.target,
+            mean_reduction=self.mean_reduction,
             region=dict(self.region),
             admission_role="score_only",
         )
@@ -666,6 +676,11 @@ def _row_matches(row: Any, metric: FixedScoreMetric) -> bool:
         return False
     if str(row.get("metric") or "") != metric.metric:
         return False
+    reported_reduction = row.get("mean_reduction")
+    if metric.mean_reduction is not None and reported_reduction != metric.mean_reduction:
+        return False
+    if metric.mean_reduction is None and reported_reduction not in (None, "wavelength_integral_mean"):
+        return False
     region = row.get("region")
     if not isinstance(region, Mapping):
         return False
@@ -707,7 +722,10 @@ def _locate_row(
     # can still be matched by observable + band parsed from its key, so the
     # route stays in the frozen ranking instead of dropping out over a
     # naming gap. The match is recorded for audit.
-    weak = _weak_observable_band_match(attainment, metric, errors)
+    weak = (
+        _weak_observable_band_match(attainment, metric, errors)
+        if metric.mean_reduction is None else None
+    )
     return weak
 
 
@@ -737,6 +755,8 @@ def _weak_observable_band_match(
     bands = metric.bands_nm()
     for key, row in attainment.items():
         if not isinstance(row, Mapping) or row.get("metric"):
+            continue
+        if row.get("mean_reduction") not in (None, "wavelength_integral_mean"):
             continue
         observed = row.get("observed")
         if observed is None:
@@ -1058,7 +1078,7 @@ class QwenScoringStandardBuilder:
                 )
             _record_usage(response, usages)
             previous = str(response.get("content") or "")
-            metrics, errors = self._verify_selection(_safe_json(previous))
+            metrics, errors = self._verify_selection(_safe_json(previous), question=question)
             if metrics:
                 return MetricSelectionResult(
                     status="selected",
@@ -1076,7 +1096,7 @@ class QwenScoringStandardBuilder:
         )
 
     def _verify_selection(
-        self, raw: Mapping[str, Any]
+        self, raw: Mapping[str, Any], *, question: str = ""
     ) -> tuple[tuple[FixedScoreMetric, ...], tuple[str, ...]]:
         proposed = raw.get("metrics")
         if not isinstance(proposed, list) or not proposed:
@@ -1105,6 +1125,13 @@ class QwenScoringStandardBuilder:
                 continue
             seen.add(verdict.variable)
             reference = proposed[index - 1]
+            try:
+                requested_reduction = requested_mean_reduction(
+                    question, str(verdict.normalized["metric"]), verdict.normalized["region"]
+                )
+            except ValueError as exc:
+                errors.append(f"metric {index}: {exc}")
+                continue
             metrics.append(
                 FixedScoreMetric(
                     variable=verdict.variable,
@@ -1113,6 +1140,7 @@ class QwenScoringStandardBuilder:
                     sense=str(verdict.normalized["sense"]),
                     region=dict(verdict.normalized["region"]),
                     target=verdict.normalized.get("target"),
+                    mean_reduction=requested_reduction or verdict.normalized.get("mean_reduction"),
                     rationale=str(
                         (reference or {}).get("rationale")
                         if isinstance(reference, Mapping)

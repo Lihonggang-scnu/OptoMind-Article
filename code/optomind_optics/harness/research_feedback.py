@@ -17,6 +17,7 @@ class ResearchIterationObservation(BaseModel):
     iteration_id: str
     route_id: str
     route_title: str
+    route_snapshot: Dict[str, Any] = Field(default_factory=dict)
     compilation_status: str
     compilation_rationale: str = ""
     compilation_errors: Tuple[str, ...] = ()
@@ -190,6 +191,24 @@ def observation_from_run_result(
         task_path=task_path,
         result_path=result_path,
     )
+
+
+def acceptance_summary(
+    observations: Iterable[ResearchIterationObservation],
+    route_failures: Iterable[Mapping[str, Any]] = (),
+) -> Dict[str, Any]:
+    rows = list(observations)
+    terminal_failures = [dict(item) for item in route_failures]
+    verified = [row.iteration_id for row in rows if row.physically_valid_candidate_count > 0]
+    failed = [row.iteration_id for row in rows if row.compilation_status != "compiled"
+              or row.run_status not in {"completed", "completed_best_effort"}
+              or row.physically_valid_candidate_count <= 0]
+    return {
+        "acceptance_status": "partial" if verified and (failed or terminal_failures) else "accepted" if verified else "unverified",
+        "verified_iteration_ids": verified,
+        "failed_iteration_ids": failed,
+        "route_failures": terminal_failures,
+    }
 
 
 class DeterministicResearchFeedbackController:

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Literal, Mapping, Protocol, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from tmm_engine.spectral_reduction import MeanReduction
 
 from .benchmarks import BenchmarkTask
 from .design_task import (
@@ -28,6 +29,7 @@ from .design_task import (
 from config.qwen_config import get_cost_tracker
 
 from .experiment_store import ExperimentStore
+from .metric_reduction import requested_mean_reduction
 from .problem_analyzer import (
     ARTICLE_PROBLEM_ANALYZER_MODEL,
     ArticlePlusQwenClient,
@@ -1210,6 +1212,7 @@ _OBJECTIVE_IDENTITY_FIELDS = (
     "polarization",
     "weight",
     "aggregation",
+    "mean_reduction",
 )
 
 
@@ -1235,7 +1238,11 @@ def _objective_signature(targets: Sequence[Mapping[str, Any]]) -> str:
 
     canonical = sorted(
         json.dumps(
-            {field: target.get(field) for field in _OBJECTIVE_IDENTITY_FIELDS},
+            {
+                field: target.get(field)
+                for field in _OBJECTIVE_IDENTITY_FIELDS
+                if field != "mean_reduction" or target.get(field) is not None
+            },
             sort_keys=True,
             default=str,
         )
@@ -2008,6 +2015,83 @@ def _align_targets_with_scoring_standard(
     return draft.model_copy(update={"experiments": tuple(experiments)}), tuple(changes)
 
 
+def _normalize_mean_reductions(
+    draft: TMMTaskDraft,
+    question: str,
+    standard: ScoringStandard | None,
+) -> tuple[TMMTaskDraft, tuple[str, ...]]:
+    metrics_by_observable = {
+        "R": "mean_reflectance", "T": "mean_transmittance", "A": "mean_absorption",
+    }
+    aliases = {
+        "band_reflectance": "mean_reflectance",
+        "reflectance_stopband": "mean_reflectance",
+        "mean_emissivity": "mean_absorption",
+    }
+
+    def reduction_for(metric: str, region: Mapping[str, Any]) -> MeanReduction | None:
+        frozen: set[MeanReduction] = set()
+        for fixed in standard.metrics if standard is not None else ():
+            if aliases.get(fixed.metric, fixed.metric) != aliases.get(metric, metric):
+                continue
+            if fixed.mean_reduction is None:
+                continue
+            if not any(tuple(region.get("wavelength_nm", ())) == band for band in fixed.bands_nm()):
+                continue
+            if any(
+                fixed.region.get(key) is not None and fixed.region[key] != region.get(key)
+                for key in ("angle_deg", "polarization")
+            ):
+                continue
+            frozen.add(fixed.mean_reduction)
+        if len(frozen) > 1:
+            raise ValueError(f"conflicting frozen mean reductions for {metric}")
+        return next(iter(frozen)) if frozen else requested_mean_reduction(question, metric, region)
+
+    experiments = []
+    changes = []
+    for experiment in draft.experiments:
+        payload = dict(experiment.tmm_task)
+        targets = []
+        for target in payload.get("targets") or ():
+            row = dict(target)
+            metric = metrics_by_observable.get(str(row.get("observable")))
+            if metric and str(row.get("aggregation") or "mean") == "mean":
+                region = {
+                    "wavelength_nm": [row["wavelength_min_nm"], row["wavelength_max_nm"]],
+                    "angle_deg": row.get("angle_deg", 0.0),
+                    "polarization": row.get("polarization", "unpolarized"),
+                }
+                reduction = reduction_for(metric, region)
+                if reduction is not None and row.get("mean_reduction") != reduction:
+                    row["mean_reduction"] = reduction
+                    changes.append(
+                        f"{experiment.experiment_id}: preserved explicit {reduction} "
+                        f"for target {row.get('name') or metric}"
+                    )
+            targets.append(row)
+        if "targets" in payload:
+            payload["targets"] = targets
+        objectives = []
+        for preference in experiment.objectives:
+            reduction = reduction_for(preference.metric, preference.region)
+            if reduction is not None and preference.mean_reduction != reduction:
+                preference = preference.model_copy(update={"mean_reduction": reduction})
+                changes.append(
+                    f"{experiment.experiment_id}: preserved explicit {reduction} "
+                    f"for objective {preference.objective_id}"
+                )
+            objectives.append(preference)
+        experiments.append(
+            TMMExperimentSpec.model_validate({
+                **experiment.model_dump(mode="json"),
+                "tmm_task": payload,
+                "objectives": objectives,
+            })
+        )
+    return draft.model_copy(update={"experiments": tuple(experiments)}), tuple(changes)
+
+
 def _apply_scoring_standard(
     draft: TMMTaskDraft,
     standard: ScoringStandard,
@@ -2143,6 +2227,7 @@ def _synchronize_objectives_from_targets(
                     "sense": sense,
                     "weight": float(target.get("weight", 1.0) or 1.0),
                     "target": float(target["target"]),
+                    "mean_reduction": target.get("mean_reduction"),
                     "region": region,
                     "admission_role": "score_only",
                 }
@@ -2773,6 +2858,15 @@ def _check_task_spec_charter_drift(task_spec: Mapping[str, Any], charter: Any) -
                 )
 
 
+    from .research_charter import check_frozen_task_constraints
+
+    if isinstance(charter, Mapping):
+        try:
+            check_frozen_task_constraints(payload if isinstance(payload, Mapping) else {}, charter)
+        except ValueError as exc:
+            raise CompileFailure(str(exc)) from exc
+
+
 def _canonical_task_sha256(task_spec: Mapping[str, Any]) -> str:
     """Canonical UTF-8 JSON sha256 of the physics task content only.
 
@@ -3109,6 +3203,9 @@ class QwenTMMTaskCompiler:
                 requested_angles, requested_polarizations = _requested_illumination(
                     source_question
                 )
+                draft, mean_reduction_corrections = _normalize_mean_reductions(
+                    draft, source_question, self._scoring_standard
+                )
                 # Gate the objective this compilation produced on its own, before
                 # any freeze is applied.  Recorded either way: when it passes it
                 # says the model needed no help, which is what tells us later
@@ -3222,6 +3319,7 @@ class QwenTMMTaskCompiler:
                         "substrate_corrections": list(substrate_corrections),
                         "solver_corrections": list(solver_corrections),
                         "objective_synchronization": list(objective_corrections),
+                        "mean_reduction_normalization": list(mean_reduction_corrections),
                         "objective_freeze": list(objective_freeze),
                         "objective_gate": list(objective_gate),
                         "objective_signature": _objective_signature(

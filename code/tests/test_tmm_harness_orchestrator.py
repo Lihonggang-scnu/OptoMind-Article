@@ -388,3 +388,36 @@ def test_run_result_carries_the_engine_diagnoses_the_research_loop_reads() -> No
 
 def test_summarized_diagnoses_skip_records_without_a_category() -> None:
     assert _summarize_diagnoses([{"sequence": 1, "failure": {"code": "x"}}]) == ()
+
+
+@pytest.mark.parametrize("global_search", [False, True])
+def test_finite_gradient_budget_includes_baseline_and_candidate_certification(
+    tmp_path, global_search
+) -> None:
+    pytest.importorskip("torch")
+    task = build_dev_optical_design_task("DEV01")
+    task = task.model_copy(update={
+        "budget": task.budget.model_copy(update={"maximum_forward_evaluations": 64})
+    })
+    result = TMMHarnessOrchestrator(
+        tmp_path, run_id="gradient_budget_64",
+        config=TMMHarnessConfig(enable_global_optimizer=global_search, use_qwen_policy=False),
+    ).run(task)
+    budget = json.loads((tmp_path / "BUDGET.json").read_text())
+    cost = json.loads((tmp_path / "COST.json").read_text())
+    assert cost["forward_evaluations"] <= 64
+    measured = sum(
+        event.get("actual_usage", {}).get("forward_evaluations", 0)
+        for event in budget["events"] if event["event_type"] == "commit"
+    )
+    assert measured == cost["forward_evaluations"]
+    assert any(event["action_id"].startswith("verify:") for event in budget["events"])
+    assert result.status == "completed"
+    candidates = result.experiment_results[0]["portfolio"]["candidates"]
+    assert any(item["metadata"].get("source") != "baseline" for item in candidates)
+    optimizer_results = list(tmp_path.rglob("OPTIMIZER_gradient_thickness.json"))
+    assert len(optimizer_results) == 1
+    optimizer = json.loads(optimizer_results[0].read_text())
+    assert optimizer["status"] == "best_effort"
+    assert optimizer["evaluation_count"] <= 64 - 5
+    assert optimizer["audit"]["raw_optimizer_audit"]["budget_exhausted"]

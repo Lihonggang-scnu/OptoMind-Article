@@ -503,7 +503,7 @@ class GradientThicknessAdapter:
     def optimize(
         self,
         task: OptimizationTask,
-        maximum_forward_evaluations: Optional[int] = None,  # accepted for API symmetry with DE adapter; gradient budget is governed by task.optimizer.max_steps
+        maximum_forward_evaluations: Optional[int] = None,
     ) -> AdapterOptimizationResult:
         assessment = _require_supported(self, task)
         started = time.perf_counter()
@@ -511,7 +511,9 @@ class GradientThicknessAdapter:
             self.material_registry,
             device=self.device,
         )
-        raw_result = optimizer.optimize(task)
+        raw_result = optimizer.optimize(
+            task, maximum_forward_evaluations=maximum_forward_evaluations
+        )
         raw_audit = dict(getattr(raw_result, "audit", {}) or {})
         raw_evaluation_count = getattr(raw_result, "evaluation_count", None)
         if raw_evaluation_count is None:

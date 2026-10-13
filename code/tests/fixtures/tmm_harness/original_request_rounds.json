@@ -1,0 +1,869 @@
+{
+  "question": "Design a planar two-layer antireflection coating on a semi-infinite glass substrate (constant refractive index 1.52, lossless), with air incidence (index 1.0). Use only lossless constant-index SiO2 (n=1.46) and TiO2 (n=2.40), one layer of each in either order. Each layer thickness must be between 40 and 160 nm. At normal incidence with s polarization, minimize the arithmetic mean power reflectance sampled from 450 to 700 nm at 5 nm spacing. A mean reflectance below 0.03 is the stated target. Use deterministic TMM only, with no RCWA, FDFD, learned surrogate or hardware. Allow at most two executed research rounds with one route and at most 64 solver evaluations per round, seed 17. After observing the actual result, choose a justified adjustment or stop. Do not claim the target was met without the spectrum and independent numeric check.",
+  "problem": {
+    "problem_id": "tmm_problem_cf712123ca1f601b",
+    "original_request": "Design a planar two-layer antireflection coating on a semi-infinite glass substrate (constant refractive index 1.52, lossless), with air incidence (index 1.0). Use only lossless constant-index SiO2 (n=1.46) and TiO2 (n=2.40), one layer of each in either order. Each layer thickness must be between 40 and 160 nm. At normal incidence with s polarization, minimize the arithmetic mean power reflectance sampled from 450 to 700 nm at 5 nm spacing. A mean reflectance below 0.03 is the stated target. Use deterministic TMM only, with no RCWA, FDFD, learned surrogate or hardware. Allow at most two executed research rounds with one route and at most 64 solver evaluations per round, seed 17. After observing the actual result, choose a justified adjustment or stop. Do not claim the target was met without the spectrum and independent numeric check.",
+    "normalized_request_english": "Design a planar two-layer antireflection coating on a semi-infinite glass substrate (refractive index 1.52, lossless) with air incidence (index 1.0). The stack must consist of exactly one layer of lossless SiO2 (n=1.46) and one layer of lossless TiO2 (n=2.40) in either order. Layer thicknesses are constrained between 40 nm and 160 nm. The objective is to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over the wavelength range 450 nm to 700 nm (sampled every 5 nm). A mean reflectance below 0.03 is a soft scoring preference. The method must use deterministic Transfer Matrix Method (TMM) only. The optimization allows up to two research rounds with one route and a maximum of 64 solver evaluations per round using seed 17. Decisions to adjust or stop must be based on observed results and independent numeric checks.",
+    "primary_intent": "design",
+    "secondary_intents": [
+      "optimize"
+    ],
+    "compatibility": "compatible",
+    "compatibility_reason": "The request specifies a planar, laterally uniform, linear, isotropic layered medium under frequency-domain plane-wave illumination, which fits the Harness capabilities. All materials are lossless and constant-index, and the calculation method (TMM) is supported.",
+    "wavelengths_nm": [
+      [
+        450.0,
+        700.0
+      ]
+    ],
+    "angles_deg": [
+      0.0
+    ],
+    "polarizations": [
+      "s"
+    ],
+    "target_observables": [
+      "reflectance"
+    ],
+    "preferred_behaviors": [
+      "minimize arithmetic mean power reflectance from 450 nm to 700 nm",
+      "achieve mean reflectance below 0.03 as a soft scoring preference"
+    ],
+    "suppressed_behaviors": [
+      "high reflection in the 450 nm to 700 nm band"
+    ],
+    "known_stack_materials": [
+      "substrate: glass (n=1.52, lossless)",
+      "incident medium: air (n=1.0)",
+      "layer material option 1: SiO2 (n=1.46, lossless)",
+      "layer material option unspecified: TiO2 (n=2.40, lossless)"
+    ],
+    "design_variables": [
+      "layer order (SiO2/TiO2 or TiO2/SiO2)",
+      "thickness of the SiO2 layer (40-160 nm)",
+      "thickness of the TiO2 layer (40-160 nm)"
+    ],
+    "manufacturing_constraints": [
+      "layer thickness must be between 40 nm and 160 nm",
+      "exactly one layer of SiO2 and one layer of TiO2"
+    ],
+    "assumptions": [
+      "refractive indices are constant over the specified wavelength range",
+      "interfaces are perfectly sharp and planar"
+    ],
+    "ambiguities": [],
+    "method_research_questions": [
+      "which layer order and specific thickness combination yields the lowest mean reflectance within the evaluation budget",
+      "whether the soft target of 0.03 mean reflectance is achievable given the thickness constraints"
+    ],
+    "needs_method_research": false
+  },
+  "rounds": [
+    {
+      "route": {
+        "route_id": "route_01",
+        "title": "Optimization of TiO2/SiO2/Glass High-Low Antireflection Stack",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A two-layer stack with the higher-index material (TiO2, n=2.40) adjacent to the glass substrate (n=1.52) and the lower-index material (SiO2, n=1.46) facing air will provide a smoother effective index transition than the reverse order, potentially yielding a lower mean reflectance across the visible spectrum when thicknesses are optimized.",
+        "design_principle": "Stepped refractive index matching: Air (1.0) -> Low (1.46) -> High (2.40) -> Substrate (1.52). This attempts to bridge the large index gap between air and the intermediate/high layers before reaching the substrate.",
+        "proposed_materials": [
+          "Air (n=1.0)",
+          "SiO2 (n=1.46)",
+          "TiO2 (n=2.40)",
+          "Glass (n=1.52)"
+        ],
+        "proposed_topology": "Air | SiO2 (variable) | TiO2 (variable) | Glass Substrate",
+        "design_variables": [
+          "thickness_SiO2_nm (bounded 40-160)",
+          "thickness_TiO2_nm (bounded 40-160)"
+        ],
+        "soft_objectives": [
+          "Minimize arithmetic mean power reflectance (s-pol, normal incidence) from 450 nm to 700 nm",
+          "Achieve mean reflectance < 0.03"
+        ],
+        "manufacturing_considerations": [
+          "Layer thicknesses strictly bounded between 40 nm and 160 nm",
+          "Exactly one layer of each material"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Fresnel equations for normal incidence",
+          "Transfer Matrix Method for multilayer interference",
+          "Quarter-wave transformer approximation as an initial guess heuristic"
+        ],
+        "expected_advantages": [
+          "The high-index layer next to the glass may reduce the reflection coefficient at the second interface compared to a direct SiO2-Glass interface.",
+          "Two degrees of freedom (thicknesses) allow tuning for broadband performance."
+        ],
+        "known_risks": [
+          "The index step from SiO2 (1.46) to TiO2 (2.40) is large and may cause significant internal reflection if not perfectly tuned.",
+          "Thickness constraints (40-160 nm) may prevent reaching the theoretical global minimum if it lies outside this box.",
+          "Two layers may be insufficient to achieve the <0.03 target over such a wide bandwidth."
+        ],
+        "execution_request_english": "Execute a deterministic TMM optimization for a planar three-medium stack: Incident Air (n=1.0), Layer 1 (SiO2, n=1.46, lossless), Layer 2 (TiO2, n=2.40, lossless), Substrate Glass (n=1.52, lossless). Optimize the thickness of Layer 1 and Layer 2 to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over the wavelength range 450 nm to 700 nm (5 nm spacing). Constraints: Thickness of Layer 1 in [40, 160] nm; Thickness of Layer 2 in [40, 160] nm. Use seed 17 for the optimizer. Maximum 64 solver evaluations. Report the optimal thicknesses, the full reflectance spectrum, and the calculated mean reflectance. Canonical user controls: incidence angles 0 degrees. polarization s. wavelength intervals 450-700 nm. soft objectives: minimize arithmetic mean power reflectance from 450 nm to 700 nm; achieve mean reflectance below 0.03 as a soft scoring preference. behaviors to suppress or avoid: high reflection in the 450 nm to 700 nm band. manufacturing constraints: layer thickness must be between 40 nm and 160 nm; exactly one layer of SiO2 and one layer of TiO2.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      },
+      "task": {
+        "schema_version": "optical-design-task.tmm.v1",
+        "task_id": "tmm_execute_a_deterministic_tmm_optimization_for_a_p_c771f8cccf",
+        "user_request_original": "Execute a deterministic TMM optimization for a planar three-medium stack: Incident Air (n=1.0), Layer 1 (SiO2, n=1.46, lossless), Layer 2 (TiO2, n=2.40, lossless), Substrate Glass (n=1.52, lossless). Optimize the thickness of Layer 1 and Layer 2 to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over the wavelength range 450 nm to 700 nm (5 nm spacing). Constraints: Thickness of Layer 1 in [40, 160] nm; Thickness of Layer 2 in [40, 160] nm. Use seed 17 for the optimizer. Maximum 64 solver evaluations. Report the optimal thicknesses, the full reflectance spectrum, and the calculated mean reflectance. Canonical user controls: incidence angles 0 degrees. polarization s. wavelength intervals 450-700 nm. soft objectives: minimize arithmetic mean power reflectance from 450 nm to 700 nm; achieve mean reflectance below 0.03 as a soft scoring preference. behaviors to suppress or avoid: high reflection in the 450 nm to 700 nm band. manufacturing constraints: layer thickness must be between 40 nm and 160 nm; exactly one layer of SiO2 and one layer of TiO2.",
+        "normalized_request_english": "Optimize the thicknesses of two finite planar layers (Layer 1: n=1.46, Layer 2: n=2.40) on a glass substrate (n=1.52) to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over 450-700 nm. Thickness bounds are 40-160 nm for both layers. Use optimizer seed 17.",
+        "experiments": [
+          {
+            "experiment_id": "opt_min_r_mean_s_pol_450_700",
+            "mode": "optimize",
+            "tmm_task": {
+              "simulation": {
+                "stack": {
+                  "name": "two_layer_low_r",
+                  "incident": {
+                    "constant_n": 1.0,
+                    "constant_k": 0.0
+                  },
+                  "layers": [
+                    {
+                      "material": null,
+                      "thickness_nm": 100.0,
+                      "coherence": "coherent",
+                      "optimizable": true,
+                      "min_thickness_nm": 40.0,
+                      "max_thickness_nm": 160.0,
+                      "label": "layer_1",
+                      "constant_n": 1.46,
+                      "constant_k": 0.0
+                    },
+                    {
+                      "material": null,
+                      "thickness_nm": 100.0,
+                      "coherence": "coherent",
+                      "optimizable": true,
+                      "min_thickness_nm": 40.0,
+                      "max_thickness_nm": 160.0,
+                      "label": "layer_2",
+                      "constant_n": 2.4,
+                      "constant_k": 0.0
+                    }
+                  ],
+                  "exit": {
+                    "constant_n": 1.52,
+                    "constant_k": 0.0
+                  }
+                },
+                "spectrum": {
+                  "start_nm": 450.0,
+                  "stop_nm": 700.0,
+                  "points": 51
+                },
+                "illumination": {
+                  "angles_deg": [
+                    0.0
+                  ],
+                  "polarizations": [
+                    "s"
+                  ]
+                },
+                "solver": "smatrix",
+                "allow_material_extrapolation": false,
+                "requested_outputs": [
+                  "R",
+                  "T",
+                  "A"
+                ],
+                "physics": {
+                  "geometry_class": "layered_planar",
+                  "material_class": "isotropic",
+                  "excitation_class": "plane_wave",
+                  "time_domain_required": false
+                }
+              },
+              "targets": [
+                {
+                  "observable": "R",
+                  "target": 0.0,
+                  "wavelength_min_nm": 450.0,
+                  "wavelength_max_nm": 700.0,
+                  "weight": 1.0,
+                  "angle_deg": 0.0,
+                  "polarization": "s",
+                  "constraint": "at_most",
+                  "aggregation": "mean",
+                  "name": "min_mean_reflectance"
+                }
+              ],
+              "optimizer": {
+                "method": "adam",
+                "max_steps": 8,
+                "learning_rate": 0.05,
+                "starts": 1,
+                "seed": 17,
+                "early_stop_patience": 15,
+                "improvement_tolerance": 1e-07,
+                "gradient_clip_norm": 10.0,
+                "thickness_window_nm": 100.0,
+                "quantization_nm": null
+              }
+            },
+            "objectives": [
+              {
+                "objective_id": "min_mean_reflectance",
+                "metric": "mean_reflectance",
+                "sense": "minimize",
+                "weight": 1.0,
+                "target": 0.0,
+                "region": {
+                  "wavelength_nm": [
+                    450.0,
+                    700.0
+                  ],
+                  "angle_deg": 0.0,
+                  "polarization": "s"
+                },
+                "admission_role": "score_only"
+              },
+              {
+                "objective_id": "fixedscore.mean_reflectance_450_700nm",
+                "metric": "mean_reflectance",
+                "sense": "report",
+                "weight": 1.0,
+                "target": null,
+                "region": {
+                  "wavelength_nm": [
+                    450.0,
+                    700.0
+                  ],
+                  "angle_deg": 0,
+                  "polarization": "s"
+                },
+                "admission_role": "score_only"
+              }
+            ],
+            "tags": [
+              "s-pol",
+              "normal_incidence",
+              "broadband_low_r"
+            ]
+          }
+        ],
+        "verification": {
+          "require_spectral_convergence": true,
+          "require_independent_solver": true,
+          "check_passivity": true,
+          "check_energy_conservation": true,
+          "forbid_material_extrapolation": true
+        },
+        "portfolio": {
+          "maximum_candidates": 8,
+          "include_best_target_score": true,
+          "include_most_robust": true,
+          "include_simplest_fabrication": true,
+          "include_structurally_distinctive": true,
+          "include_pareto_front": true
+        },
+        "uncertainty": {
+          "thickness_sigma_nm": 0.0,
+          "thickness_error_model": "absolute_normal",
+          "thickness_relative_fraction": 0.0,
+          "thickness_samples": 1,
+          "angle_perturbation_deg": 0.0,
+          "material_dataset_policy": "resolved_only",
+          "maximum_material_scenarios": 1,
+          "random_seed": 17
+        },
+        "budget": {
+          "wall_time_seconds": 90.0,
+          "maximum_forward_evaluations": 64,
+          "maximum_optimizer_runs": 2,
+          "maximum_qwen_calls": 2,
+          "maximum_qwen_input_tokens": 12000,
+          "maximum_qwen_output_tokens": 2000,
+          "maximum_qwen_cost_cny": 2.0
+        },
+        "benchmark_id": null,
+        "metadata": {
+          "compiler": "QwenTMMTaskCompiler",
+          "compiler_schema": "tmm-task-compilation.v1",
+          "compiler_model": "qwen3.7-flash",
+          "performance_targets_are_soft": true,
+          "diversity_required": false,
+          "target_threshold_corrections": [],
+          "scoring_standard_target_alignments": [],
+          "illumination_corrections": [],
+          "substrate_corrections": [],
+          "solver_corrections": [],
+          "objective_synchronization": [
+            "opt_min_r_mean_s_pol_450_700: synchronized 1 simple objectives from executable targets"
+          ],
+          "objective_freeze": [
+            "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (-mean_reflectance_450_700nm)",
+            "opt_min_r_mean_s_pol_450_700: attached the 1 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+          ],
+          "objective_gate": [],
+          "objective_signature": "e4b68bf7469eb29a",
+          "uncertainty_normalization": []
+        }
+      },
+      "observation": {
+        "iteration_id": "iteration_01",
+        "route_id": "route_01",
+        "route_title": "Optimization of TiO2/SiO2/Glass High-Low Antireflection Stack",
+        "compilation_status": "compiled",
+        "compilation_rationale": "The request specifies a fixed two-layer stack with explicit indices (1.46, 2.40) and bounds [40, 160] nm. The trial physical contract mandates representing these as constant-index layers (material=null). I have mapped the user's soft preference for mean reflectance < 0.03 into a minimization objective. The optimizer settings respect the seed 17 and evaluation limit.",
+        "compilation_errors": [],
+        "run_status": "completed",
+        "physically_valid_candidate_count": 2,
+        "best_target_score": 0.9811618939085871,
+        "best_robustness_score": 0.7267493978892079,
+        "selected_candidate_ids": [
+          "opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2",
+          "opt_min_r_mean_s_pol_450_700__baseline"
+        ],
+        "failure_categories": [],
+        "experiment_summaries": [
+          {
+            "experiment_id": "opt_min_r_mean_s_pol_450_700",
+            "mode": "optimize",
+            "physically_valid_candidate_count": 2,
+            "best_target_score": 0.9811618939085871,
+            "selected_roles": {
+              "best_target_score": "opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2",
+              "most_robust": "opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2",
+              "simplest_fabrication": "opt_min_r_mean_s_pol_450_700__baseline",
+              "structurally_distinctive": "opt_min_r_mean_s_pol_450_700__baseline"
+            }
+          }
+        ],
+        "candidate_summaries": [
+          {
+            "candidate_id": "opt_min_r_mean_s_pol_450_700__baseline",
+            "experiment_id": "opt_min_r_mean_s_pol_450_700",
+            "target_score": 0.9616739339765763,
+            "robustness_score": null,
+            "simplicity_score": 1.0,
+            "distinctiveness_score": 0.07921104195617795,
+            "thicknesses_nm": [
+              100.0,
+              100.0
+            ],
+            "optimizer_id": null,
+            "objective_report": {
+              "schema_version": "tmm-objective-report.v1",
+              "aggregate_soft_score": 0.5676264612368286,
+              "weighted_directional_loss": 0.0015375230614904538,
+              "target_attainment": {
+                "min_mean_reflectance": {
+                  "metric": "mean_reflectance",
+                  "observed": 0.03832606602342375,
+                  "target": 0.0,
+                  "sense": "minimize",
+                  "weight": 1.0,
+                  "soft_score": 0.9616739339765763,
+                  "role": "soft_scoring_objective",
+                  "region": {
+                    "wavelength_nm": [
+                      450.0,
+                      700.0
+                    ],
+                    "angle_deg": 0.0,
+                    "polarization": "s"
+                  },
+                  "channel_observations": {
+                    "angle=0|pol=s": 0.03832606602342375
+                  },
+                  "aggregation": "mean"
+                },
+                "fixedscore.mean_reflectance_450_700nm": {
+                  "metric": "mean_reflectance",
+                  "observed": 0.03832606602342375,
+                  "target": null,
+                  "sense": "report",
+                  "weight": 1.0,
+                  "soft_score": null,
+                  "role": "report_only",
+                  "region": {
+                    "wavelength_nm": [
+                      450.0,
+                      700.0
+                    ],
+                    "angle_deg": 0,
+                    "polarization": "s"
+                  },
+                  "channel_observations": {
+                    "angle=0|pol=s": 0.03832606602342375
+                  },
+                  "aggregation": "mean"
+                }
+              },
+              "admission_role": "ranking_only"
+            },
+            "robustness_report": {},
+            "certificate_id": "807628aeaafa2ff051004fd7f7266687c9bba0dbb78c58591b12933e25fa9102",
+            "artifact_ids": [
+              "experiments/opt_min_r_mean_s_pol_450_700/baseline/PHYSICS_ACCEPTANCE_CERTIFICATE.json",
+              "experiments/opt_min_r_mean_s_pol_450_700/baseline/OBJECTIVE_REPORT.json"
+            ],
+            "layer_materials": [
+              "n=1.46",
+              "n=2.4"
+            ],
+            "layer_labels": [
+              "layer_1",
+              "layer_2"
+            ],
+            "incident_medium": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "exit_medium": {
+              "constant_n": 1.52,
+              "constant_k": 0.0
+            }
+          },
+          {
+            "candidate_id": "opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2",
+            "experiment_id": "opt_min_r_mean_s_pol_450_700",
+            "target_score": 0.9811618939085871,
+            "robustness_score": 0.7267493978892079,
+            "simplicity_score": 0.9756097560975611,
+            "distinctiveness_score": 0.0,
+            "thicknesses_nm": [
+              90.54254727031935,
+              109.5529574424896
+            ],
+            "optimizer_id": "gradient_thickness",
+            "objective_report": {
+              "schema_version": "tmm-objective-report.v1",
+              "aggregate_soft_score": 0.7267493978892079,
+              "weighted_directional_loss": 0.00038758274735219297,
+              "target_attainment": {
+                "min_mean_reflectance": {
+                  "metric": "mean_reflectance",
+                  "observed": 0.018838106091412923,
+                  "target": 0.0,
+                  "sense": "minimize",
+                  "weight": 1.0,
+                  "soft_score": 0.9811618939085871,
+                  "role": "soft_scoring_objective",
+                  "region": {
+                    "wavelength_nm": [
+                      450.0,
+                      700.0
+                    ],
+                    "angle_deg": 0.0,
+                    "polarization": "s"
+                  },
+                  "channel_observations": {
+                    "angle=0|pol=s": 0.018838106091412923
+                  },
+                  "aggregation": "mean"
+                },
+                "fixedscore.mean_reflectance_450_700nm": {
+                  "metric": "mean_reflectance",
+                  "observed": 0.018838106091412923,
+                  "target": null,
+                  "sense": "report",
+                  "weight": 1.0,
+                  "soft_score": null,
+                  "role": "report_only",
+                  "region": {
+                    "wavelength_nm": [
+                      450.0,
+                      700.0
+                    ],
+                    "angle_deg": 0,
+                    "polarization": "s"
+                  },
+                  "channel_observations": {
+                    "angle=0|pol=s": 0.018838106091412923
+                  },
+                  "aggregation": "mean"
+                }
+              },
+              "admission_role": "ranking_only"
+            },
+            "robustness_report": {
+              "schema_version": "tmm-robustness-report.v1",
+              "candidate_id": "opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2",
+              "perturbation_model": {
+                "distribution": "absolute_normal",
+                "sigma_nm": 0.0,
+                "relative_fraction": 0.0,
+                "angle_distribution": "uniform_common_incidence_offset",
+                "angle_perturbation_deg": 0.0,
+                "samples": 1,
+                "random_seed": 17,
+                "bounds_policy": "clip_to_declared_layer_bounds"
+              },
+              "nominal_soft_score": 0.7267493978892079,
+              "sample_soft_scores": [
+                0.7267493978892079
+              ],
+              "sample_angle_offsets_deg": [
+                0.0
+              ],
+              "nominal_spectral_metrics": {
+                "target_domain_mean_R": 0.018799506604644536,
+                "target_domain_max_R": 0.028053524297037606,
+                "target_domain_min_R": 0.010264464525667765
+              },
+              "sample_spectral_metrics": [
+                {
+                  "target_domain_mean_R": 0.018799506604644536,
+                  "target_domain_max_R": 0.028053524297037606,
+                  "target_domain_min_R": 0.010264464525667765
+                }
+              ],
+              "spectral_metric_summary": {
+                "target_domain_max_R": {
+                  "mean": 0.028053524297037606,
+                  "standard_deviation": 0.0,
+                  "minimum": 0.028053524297037606,
+                  "maximum": 0.028053524297037606,
+                  "p05": 0.028053524297037606,
+                  "p95": 0.028053524297037606
+                },
+                "target_domain_mean_R": {
+                  "mean": 0.018799506604644536,
+                  "standard_deviation": 0.0,
+                  "minimum": 0.018799506604644536,
+                  "maximum": 0.018799506604644536,
+                  "p05": 0.018799506604644536,
+                  "p95": 0.018799506604644536
+                },
+                "target_domain_min_R": {
+                  "mean": 0.010264464525667765,
+                  "standard_deviation": 0.0,
+                  "minimum": 0.010264464525667765,
+                  "maximum": 0.010264464525667765,
+                  "p05": 0.010264464525667765,
+                  "p95": 0.010264464525667765
+                }
+              },
+              "mean_soft_score": 0.7267493978892079,
+              "worst_soft_score": 0.7267493978892079,
+              "p10_soft_score": 0.7267493978892079,
+              "robustness_score": 0.7267493978892079,
+              "failed_simulations": 0,
+              "sample_failure_reasons": [],
+              "admission_role": "ranking_only"
+            },
+            "certificate_id": "2730cd43e85107bc3905e96df9958ca2e3aac13292bae47f6c57beef7ecaa247",
+            "artifact_ids": [
+              "experiments/opt_min_r_mean_s_pol_450_700/candidates/opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2/PHYSICS_ACCEPTANCE_CERTIFICATE.json",
+              "experiments/opt_min_r_mean_s_pol_450_700/candidates/opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2/OBJECTIVE_REPORT.json",
+              "experiments/opt_min_r_mean_s_pol_450_700/candidates/opt_min_r_mean_s_pol_450_700__grad__9fbba01872a2/ROBUSTNESS.json"
+            ],
+            "layer_materials": [
+              "n=1.46",
+              "n=2.4"
+            ],
+            "layer_labels": [
+              "layer_1",
+              "layer_2"
+            ],
+            "incident_medium": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "exit_medium": {
+              "constant_n": 1.52,
+              "constant_k": 0.0
+            }
+          }
+        ],
+        "budget_usage": {
+          "wall_time_seconds": 5.015999999828637,
+          "forward_evaluations": 20,
+          "optimizer_runs": 1,
+          "qwen_calls": 0,
+          "qwen_input_tokens": 0,
+          "qwen_output_tokens": 0,
+          "qwen_cost_cny": 0.0
+        },
+        "work_dir": "iterations/iteration_01",
+        "task_path": "iterations/iteration_01/COMPILED_TASK.json",
+        "result_path": "iterations/iteration_01/tmm_run/FINAL_RESULT.json"
+      }
+    },
+    {
+      "route": {
+        "route_id": "route_01",
+        "title": "Expansion to 3-Layer SiO2/TiO2 Antireflection Stack",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "Adding a third layer to the two-material system (SiO2/TiO2) provides sufficient degrees of freedom to reduce the arithmetic mean reflectance over 450-700 nm below the ~0.019 level achieved by the optimal 2-layer configuration, potentially approaching the soft target of 0.03 with greater margin or exceeding it significantly.",
+        "design_principle": "Multi-layer impedance matching: A three-layer structure allows for a smoother transition of effective refractive index from air (1.0) to glass (1.52) across the bandwidth, mitigating the sharp resonances inherent in two-layer designs. Specifically, a Low-High-Low (LHL) or High-Low-High (HLH) sequence can broaden the antireflection band.",
+        "proposed_materials": [
+          "SiO2 (n=1.46)",
+          "TiO2 (n=2.40)",
+          "Glass Substrate (n=1.52)",
+          "Air (n=1.0)"
+        ],
+        "proposed_topology": "Air | Layer 1 | Layer 2 | Layer 3 | Glass Substrate. Total finite layers: 3. Material assignment hypothesis: Layer 1=SiO2, Layer 2=TiO2, Layer 3=SiO2 (LHL configuration).",
+        "design_variables": [
+          "thickness_layer_1_nm (40-160)",
+          "thickness_layer_2_nm (40-160)",
+          "thickness_layer_3_nm (40-160)"
+        ],
+        "soft_objectives": [
+          "minimize arithmetic mean power reflectance (s-pol, normal incidence) over 450-700 nm",
+          "achieve mean reflectance < 0.03"
+        ],
+        "manufacturing_considerations": [
+          "All layers must remain within 40-160 nm thickness bounds",
+          "Only SiO2 and TiO2 materials permitted"
+        ],
+        "evidence_ids": [],
+        "theory_basis": [
+          "Thin-film interference theory suggests that N-layer AR coatings can achieve lower average reflectance over a broad band than (N-1)-layer coatings given the same material constraints.",
+          "Quarter-wave stack principles adapted for broadband AR: centering optical thicknesses near lambda/4 at the geometric mean of the band edges."
+        ],
+        "expected_advantages": [
+          "Broader spectral low-reflectance region compared to 2-layer design.",
+          "Lower arithmetic mean reflectance due to extra tuning parameter.",
+          "Potential to push mean reflectance well below 0.01."
+        ],
+        "known_risks": [
+          "Optimizer may converge to a local minimum where the third layer has negligible effect (thickness near bound or effectively zero optical impact).",
+          "Increased complexity might lead to thinner layers approaching the 40 nm lower bound, increasing sensitivity to fabrication errors (though not modeled here)."
+        ],
+        "execution_request_english": "Optimize a planar 3-layer antireflection coating on a semi-infinite glass substrate (n=1.52) with air incidence (n=1.0). The stack must consist of exactly three lossless constant-index layers in the order: SiO2 (n=1.46), TiO2 (n=2.40), SiO2 (n=1.46). Each layer thickness is a continuous variable bounded between 40 nm and 160 nm. Minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over the wavelength range 450 nm to 700 nm (sampled every 5 nm). Use deterministic TMM. Initialize the optimizer with thicknesses corresponding to quarter-wave optical thickness at 575 nm (approx: 98nm, 60nm, 98nm) or random uniform within bounds. Run with seed 17, max 64 evaluations. Report the best candidate's thicknesses and resulting spectrum. Canonical user controls: incidence angles 0 degrees. polarization s. wavelength intervals 450-700 nm. soft objectives: minimize arithmetic mean power reflectance from 450 nm to 700 nm; achieve mean reflectance below 0.03 as a soft scoring preference. behaviors to suppress or avoid: high reflection in the 450 nm to 700 nm band. manufacturing constraints: layer thickness must be between 40 nm and 160 nm; exactly one layer of SiO2 and one layer of TiO2.",
+        "priority": 1,
+        "parent_route_id": "route_01",
+        "revision_reason": "Follows feedback directive to increase layer count from 2 to 3 to explore if additional degrees of freedom can lower mean reflectance below the Round 1 result of ~0.019. Changes topology from 2 layers to fixed 3 layers (LHL)."
+      },
+      "task": {
+        "schema_version": "optical-design-task.tmm.v1",
+        "task_id": "tmm_optimize_a_planar_3_layer_antireflection_coating_63f10fc63f",
+        "user_request_original": "Optimize a planar 3-layer antireflection coating on a semi-infinite glass substrate (n=1.52) with air incidence (n=1.0). The stack must consist of exactly three lossless constant-index layers in the order: SiO2 (n=1.46), TiO2 (n=2.40), SiO2 (n=1.46). Each layer thickness is a continuous variable bounded between 40 nm and 160 nm. Minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over the wavelength range 450 nm to 700 nm (sampled every 5 nm). Use deterministic TMM. Initialize the optimizer with thicknesses corresponding to quarter-wave optical thickness at 575 nm (approx: 98nm, 60nm, 98nm) or random uniform within bounds. Run with seed 17, max 64 evaluations. Report the best candidate's thicknesses and resulting spectrum. Canonical user controls: incidence angles 0 degrees. polarization s. wavelength intervals 450-700 nm. soft objectives: minimize arithmetic mean power reflectance from 450 nm to 700 nm; achieve mean reflectance below 0.03 as a soft scoring preference. behaviors to suppress or avoid: high reflection in the 450 nm to 700 nm band. manufacturing constraints: layer thickness must be between 40 nm and 160 nm; exactly one layer of SiO2 and one layer of TiO2.",
+        "normalized_request_english": "Optimize a planar 3-layer antireflection coating on glass (n=1.52) with air incidence. Stack: Air | SiO2 | TiO2 | SiO2 | Glass. Layers are lossless constant-index: SiO2 (n=1.46), TiO2 (n=2.40), SiO2 (n=1.46). Thicknesses bounded 40-160 nm. Minimize mean reflectance for s-polarized light at normal incidence over 450-700 nm. Seed 17, max 64 steps.",
+        "experiments": [
+          {
+            "experiment_id": "optimize_ar_coating_sio2_tio2_sio2",
+            "mode": "optimize",
+            "tmm_task": {
+              "simulation": {
+                "stack": {
+                  "name": "ar_3layer_sio2_tio2_sio2",
+                  "incident": {
+                    "constant_n": 1.0,
+                    "constant_k": 0.0
+                  },
+                  "layers": [
+                    {
+                      "material": null,
+                      "thickness_nm": 98.0,
+                      "coherence": "coherent",
+                      "optimizable": true,
+                      "min_thickness_nm": 40.0,
+                      "max_thickness_nm": 160.0,
+                      "label": "layer_1",
+                      "constant_n": 1.46,
+                      "constant_k": 0.0
+                    },
+                    {
+                      "material": null,
+                      "thickness_nm": 60.0,
+                      "coherence": "coherent",
+                      "optimizable": true,
+                      "min_thickness_nm": 40.0,
+                      "max_thickness_nm": 160.0,
+                      "label": "layer_2",
+                      "constant_n": 2.4,
+                      "constant_k": 0.0
+                    },
+                    {
+                      "material": null,
+                      "thickness_nm": 98.0,
+                      "coherence": "coherent",
+                      "optimizable": true,
+                      "min_thickness_nm": 40.0,
+                      "max_thickness_nm": 160.0,
+                      "label": "layer_3",
+                      "constant_n": 1.46,
+                      "constant_k": 0.0
+                    }
+                  ],
+                  "exit": {
+                    "constant_n": 1.52,
+                    "constant_k": 0.0
+                  }
+                },
+                "spectrum": {
+                  "start_nm": 450.0,
+                  "stop_nm": 700.0,
+                  "points": 51
+                },
+                "illumination": {
+                  "angles_deg": [
+                    0.0
+                  ],
+                  "polarizations": [
+                    "s"
+                  ]
+                },
+                "solver": "smatrix",
+                "allow_material_extrapolation": false,
+                "requested_outputs": [
+                  "R",
+                  "T",
+                  "A"
+                ],
+                "physics": {
+                  "geometry_class": "layered_planar",
+                  "material_class": "isotropic",
+                  "excitation_class": "plane_wave",
+                  "time_domain_required": false
+                }
+              },
+              "targets": [
+                {
+                  "observable": "R",
+                  "target": 0.0,
+                  "wavelength_min_nm": 450.0,
+                  "wavelength_max_nm": 700.0,
+                  "weight": 1.0,
+                  "angle_deg": 0.0,
+                  "polarization": "s",
+                  "constraint": "at_most",
+                  "aggregation": "mean",
+                  "name": "min_mean_reflectance"
+                }
+              ],
+              "optimizer": {
+                "method": "adam",
+                "max_steps": 8,
+                "learning_rate": 0.05,
+                "starts": 1,
+                "seed": 17,
+                "early_stop_patience": 15,
+                "improvement_tolerance": 1e-07,
+                "gradient_clip_norm": 10.0,
+                "thickness_window_nm": 100.0,
+                "quantization_nm": null
+              }
+            },
+            "objectives": [
+              {
+                "objective_id": "min_mean_reflectance",
+                "metric": "mean_reflectance",
+                "sense": "minimize",
+                "weight": 1.0,
+                "target": 0.0,
+                "region": {
+                  "wavelength_nm": [
+                    450.0,
+                    700.0
+                  ],
+                  "angle_deg": 0.0,
+                  "polarization": "s"
+                },
+                "admission_role": "score_only"
+              },
+              {
+                "objective_id": "fixedscore.mean_reflectance_450_700nm",
+                "metric": "mean_reflectance",
+                "sense": "report",
+                "weight": 1.0,
+                "target": null,
+                "region": {
+                  "wavelength_nm": [
+                    450.0,
+                    700.0
+                  ],
+                  "angle_deg": 0,
+                  "polarization": "s"
+                },
+                "admission_role": "score_only"
+              }
+            ],
+            "tags": [
+              "ar_coating",
+              "3_layer",
+              "s_polarized"
+            ]
+          }
+        ],
+        "verification": {
+          "require_spectral_convergence": true,
+          "require_independent_solver": true,
+          "check_passivity": true,
+          "check_energy_conservation": true,
+          "forbid_material_extrapolation": true
+        },
+        "portfolio": {
+          "maximum_candidates": 8,
+          "include_best_target_score": true,
+          "include_most_robust": true,
+          "include_simplest_fabrication": true,
+          "include_structurally_distinctive": true,
+          "include_pareto_front": true
+        },
+        "uncertainty": {
+          "thickness_sigma_nm": 0.0,
+          "thickness_error_model": "absolute_normal",
+          "thickness_relative_fraction": 0.0,
+          "thickness_samples": 1,
+          "angle_perturbation_deg": 0.0,
+          "material_dataset_policy": "resolved_only",
+          "maximum_material_scenarios": 1,
+          "random_seed": 17
+        },
+        "budget": {
+          "wall_time_seconds": 90.0,
+          "maximum_forward_evaluations": 64,
+          "maximum_optimizer_runs": 2,
+          "maximum_qwen_calls": 2,
+          "maximum_qwen_input_tokens": 12000,
+          "maximum_qwen_output_tokens": 2000,
+          "maximum_qwen_cost_cny": 2.0
+        },
+        "benchmark_id": null,
+        "metadata": {
+          "compiler": "QwenTMMTaskCompiler",
+          "compiler_schema": "tmm-task-compilation.v1",
+          "compiler_model": "qwen3.7-flash",
+          "performance_targets_are_soft": true,
+          "diversity_required": false,
+          "target_threshold_corrections": [],
+          "scoring_standard_target_alignments": [],
+          "illumination_corrections": [],
+          "substrate_corrections": [],
+          "solver_corrections": [],
+          "objective_synchronization": [
+            "optimize_ar_coating_sio2_tio2_sio2: synchronized 1 simple objectives from executable targets"
+          ],
+          "objective_freeze": [
+            "optimizer targets left as this route declared them; the run is ranked by the frozen scoring standard (-mean_reflectance_450_700nm)",
+            "optimize_ar_coating_sio2_tio2_sio2: attached the 1 frozen scoring objective(s) so this route is ranked by the same standard as every other"
+          ],
+          "objective_gate": [],
+          "objective_signature": "e4b68bf7469eb29a",
+          "uncertainty_normalization": []
+        }
+      },
+      "observation": {
+        "iteration_id": "iteration_02",
+        "route_id": "route_01",
+        "route_title": "Expansion to 3-Layer SiO2/TiO2 Antireflection Stack",
+        "compilation_status": "compiled",
+        "compilation_rationale": "The explicit stack sequence 'SiO2, TiO2, SiO2' defines the topology (2 SiO2, 1 TiO2). The phrase 'exactly one layer of TiO2' is consistent with this. The contradictory 'exactly one layer of SiO2' is overridden by the authoritative explicit sequence per compiler policy. The task is compiled as a 3-layer optimization with fixed material order.",
+        "compilation_errors": [],
+        "run_status": "failed",
+        "physically_valid_candidate_count": 0,
+        "best_target_score": null,
+        "best_robustness_score": null,
+        "selected_candidate_ids": [],
+        "failure_categories": [
+          "runtime_environment"
+        ],
+        "experiment_summaries": [],
+        "candidate_summaries": [],
+        "budget_usage": {},
+        "work_dir": "iterations/iteration_02",
+        "task_path": "iterations/iteration_02/COMPILED_TASK.json",
+        "result_path": "iterations/iteration_02/tmm_run/EXECUTION_ERROR.json"
+      }
+    }
+  ]
+}

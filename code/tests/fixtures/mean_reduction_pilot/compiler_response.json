@@ -1,0 +1,151 @@
+{
+  "status": "compiled",
+  "rationale": "Recorded offline two-layer pilot compilation.",
+  "normalized_request_english": "Optimize the thicknesses of two finite planar layers (Layer 1: n=1.46, Layer 2: n=2.40) on a glass substrate (n=1.52) to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence over 450-700 nm. Thickness bounds are 40-160 nm for both layers. Use optimizer seed 17.",
+  "experiments": [
+    {
+      "experiment_id": "opt_min_r_mean_s_pol_450_700",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "two_layer_low_r",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": null,
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 40.0,
+                "max_thickness_nm": 160.0,
+                "label": "layer_1",
+                "constant_n": 1.46,
+                "constant_k": 0.0
+              },
+              {
+                "material": null,
+                "thickness_nm": 100.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 40.0,
+                "max_thickness_nm": 160.0,
+                "label": "layer_2",
+                "constant_n": 2.4,
+                "constant_k": 0.0
+              }
+            ],
+            "exit": {
+              "constant_n": 1.52,
+              "constant_k": 0.0
+            }
+          },
+          "spectrum": {
+            "start_nm": 450.0,
+            "stop_nm": 700.0,
+            "points": 51
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0
+            ],
+            "polarizations": [
+              "s"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "R",
+            "target": 0.0,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "min_mean_reflectance"
+          }
+        ],
+        "optimizer": {
+          "method": "adam",
+          "max_steps": 8,
+          "learning_rate": 0.05,
+          "starts": 1,
+          "seed": 17,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": null
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "min_mean_reflectance",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.0,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        },
+        {
+          "objective_id": "fixedscore.mean_reflectance_450_700nm",
+          "metric": "mean_reflectance",
+          "sense": "report",
+          "weight": 1.0,
+          "target": null,
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "s-pol",
+        "normal_incidence",
+        "broadband_low_r"
+      ]
+    }
+  ],
+  "uncertainty": {
+    "thickness_sigma_nm": 0.0,
+    "thickness_error_model": "absolute_normal",
+    "thickness_relative_fraction": 0.0,
+    "thickness_samples": 1,
+    "angle_perturbation_deg": 0.0,
+    "material_dataset_policy": "resolved_only",
+    "maximum_material_scenarios": 1,
+    "random_seed": 17
+  }
+}

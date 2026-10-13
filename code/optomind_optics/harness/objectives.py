@@ -15,9 +15,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from optomind_research.runtime.artifact_store import atomic_write_json
 from tmm_engine import OptimizationTask, SimulationTask, TMMWorkbench
+from tmm_engine.spectral_reduction import MeanReduction, reduce_spectral_mean
 from tmm_engine.workbench import ForwardSimulationResult
 
-from .design_task import ObjectivePreference
+from .design_task import MEAN_OBJECTIVE_METRICS, ObjectivePreference
 
 
 _BAND_RTA_METRICS = frozenset(
@@ -130,6 +131,7 @@ def _band_mean(
     wavelengths: np.ndarray,
     values: Any,
     interval: Sequence[float],
+    reduction: MeanReduction = "wavelength_integral_mean",
 ) -> float:
     lo, hi = float(interval[0]), float(interval[1])
     vector = np.asarray(values, dtype=np.float64)
@@ -138,12 +140,7 @@ def _band_mean(
     selected_values = vector[mask]
     if selected_values.size == 0 or not np.all(np.isfinite(selected_values)):
         raise ValueError(f"objective interval {lo:g}-{hi:g} nm has no finite samples")
-    if selected_values.size == 1:
-        return float(selected_values[0])
-    covered = float(selected_wavelengths[-1] - selected_wavelengths[0])
-    if covered <= 0:
-        return float(np.mean(selected_values))
-    return float(np.trapezoid(selected_values, selected_wavelengths) / covered)
+    return reduce_spectral_mean(selected_wavelengths, selected_values, reduction)
 
 
 def _band_extremum(
@@ -230,6 +227,7 @@ def evaluate_declared_objectives(
     for preference in preferences:
         channels = _selected_channels(result, preference.region)
         metric = preference.metric
+        reduction = preference.mean_reduction or "wavelength_integral_mean"
         observable = _preference_observable(metric)
         worst_case = metric in {
             "worst_case_reflectance",
@@ -243,8 +241,8 @@ def evaluate_declared_objectives(
             preferred = preference.region["preferred_wavelength_nm"]
             suppressed = preference.region["suppressed_wavelength_nm"]
             for channel, payload in channels:
-                high = _band_mean(wavelengths, payload["A"], preferred)
-                low = _band_mean(wavelengths, payload["A"], suppressed)
+                high = _band_mean(wavelengths, payload["A"], preferred, reduction)
+                low = _band_mean(wavelengths, payload["A"], suppressed, reduction)
                 contrast = high - low
                 scalar_values.append(contrast)
                 channel_observations[channel] = {
@@ -265,7 +263,7 @@ def evaluate_declared_objectives(
                         preference.target,
                     )
                     if worst_case
-                    else _band_mean(wavelengths, payload[observable], interval)
+                    else _band_mean(wavelengths, payload[observable], interval, reduction)
                 )
                 scalar_values.append(channel_value)
                 channel_observations[channel] = channel_value
@@ -273,7 +271,7 @@ def evaluate_declared_objectives(
             interval = preference.region["wavelength_nm"]
             for channel, payload in channels:
                 summaries = {
-                    name: _band_mean(wavelengths, payload[name], interval)
+                    name: _band_mean(wavelengths, payload[name], interval, reduction)
                     for name in ("R", "T", "A")
                     if name in payload
                 }
@@ -323,10 +321,14 @@ def evaluate_declared_objectives(
             "sense": preference.sense,
             "weight": float(preference.weight),
             "soft_score": soft_score,
+            "loss_semantics": "squared_reduced_directional_error" if soft_score is not None else None,
             "role": "report_only" if soft_score is None else "soft_scoring_objective",
             "region": dict(preference.region),
             "channel_observations": channel_observations,
         }
+        if metric in MEAN_OBJECTIVE_METRICS:
+            row["mean_reduction"] = reduction
+            row["channel_reduction"] = "sample_mean"
         if metric in _BAND_RTA_METRICS:
             row["aggregation"] = "worst_case" if worst_case else "mean"
         attainment[preference.objective_id] = row
@@ -369,7 +371,9 @@ def evaluate_optimization_objectives(
             else:
                 observed = float(selected[np.argmax(np.abs(selected - float(target.target)))])
         else:
-            observed = float(np.mean(selected))
+            observed = reduce_spectral_mean(
+                wavelengths[mask], selected, target.mean_reduction or "sample_mean"
+            )
         if target.constraint == "match":
             loss = float(np.mean((selected - float(target.target)) ** 2))
         elif target.constraint == "at_least":
@@ -384,6 +388,9 @@ def evaluate_optimization_objectives(
             "target": float(target.target),
             "constraint": str(target.constraint),
             "aggregation": str(target.aggregation),
+            "mean_reduction": (target.mean_reduction or "sample_mean")
+            if target.aggregation == "mean" else None,
+            "loss_semantics": "sample_mean_squared_directional_error_surrogate",
             "weight": float(target.weight),
             "tolerance": target.tolerance,
             "soft_score": score,

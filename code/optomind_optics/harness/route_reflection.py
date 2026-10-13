@@ -113,10 +113,12 @@ def _build_reflection_payload(
     observation: Mapping[str, Any],
     score_history: list[float],
     epsilon: float,
+    charter: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the user payload for the reflection prompt."""
     from .science.observation_adapter import reflection_evidence
     return {
+        "immutable_research_charter": dict(charter or {}),
         "scientific_evidence": reflection_evidence(observation),
         "pre_declarations": {
             "expected_observations": list(pre_declarations.get("expected_observations") or []),
@@ -148,6 +150,7 @@ def reflect_on_route(
     epsilon: float = 1e-4,
     force_mock: bool | None = None,
     context_sink=None,
+    charter: Mapping[str, Any] | None = None,
 ) -> RouteReflection:
     """Call LLM to reflect on a completed route.
 
@@ -165,7 +168,7 @@ def reflect_on_route(
         if the LLM response is invalid (never raises).
     """
     system_prompt = DEFAULT_REFLECTION_PROMPT.read_text(encoding="utf-8")
-    user_payload = _build_reflection_payload(pre_declarations, observation, score_history, epsilon)
+    user_payload = _build_reflection_payload(pre_declarations, observation, score_history, epsilon, charter)
 
     messages = [
         {"role": "system", "content": system_prompt},

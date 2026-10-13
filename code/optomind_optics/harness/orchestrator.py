@@ -1224,11 +1224,22 @@ class TMMHarnessOrchestrator:
     def _run_optimizers(self, task: OpticalDesignTask, parsed: Iterable[tuple[Any, EngineMode, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         assert self._budget is not None
         output: Dict[str, List[Dict[str, Any]]] = {}
+        verification_reservations: list[str] = []
         for spec, mode, parsed_task in parsed:
             if mode != EngineMode.optimize:
                 continue
             optimization: OptimizationTask = parsed_task
             rows: list[Dict[str, Any]] = []
+            candidate_limit = self.config.maximum_candidates_per_experiment
+            remaining = self._budget.remaining("forward_evaluations")
+            if remaining is not None:
+                candidate_limit = min(candidate_limit, max(0, (int(remaining) - 1) // 5))
+                if candidate_limit == 0:
+                    output[spec.experiment_id] = []
+                    continue
+                verification_id = f"candidate_verification:{spec.experiment_id}"
+                self._budget.reserve(verification_id, forward_evaluations=5 * candidate_limit)
+                verification_reservations.append(verification_id)
             primary = self.optimizers.select(optimization)
             if primary is not None and self._budget.can_reserve(f"optimizer:{spec.experiment_id}:primary", optimizer_runs=1):
                 estimate = min(
@@ -1363,10 +1374,12 @@ class TMMHarnessOrchestrator:
             ]
             output[spec.experiment_id] = self._deduplicate_candidates(
                 rows,
-                self.config.maximum_candidates_per_experiment,
+                candidate_limit,
                 spans_nm=spans,
                 minimum_normalized_separation=self.config.minimum_normalized_candidate_separation,
             )
+        for action_id in verification_reservations:
+            self._budget.release(action_id)
         return output
 
     def _global_search_allowed(self, experiment_id: str, rows: Sequence[Dict[str, Any]]) -> bool:

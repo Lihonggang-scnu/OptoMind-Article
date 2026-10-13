@@ -156,3 +156,29 @@ def test_gradient_adapter_returns_common_result_or_is_explicitly_unavailable() -
     assert result.candidate_designs
     assert result.audit["physics_self_certification"] is False
     assert np.isfinite(result.best_loss)
+
+
+@pytest.mark.parametrize("cap", [1, 7, 13])
+def test_gradient_adapter_honors_finite_forward_budget(cap, monkeypatch) -> None:
+    pytest.importorskip("torch")
+    from tmm_engine.differentiable import DifferentiableTMM
+
+    batches = []
+    original = DifferentiableTMM.forward
+
+    def forward(solver, thicknesses, *args, **kwargs):
+        batches.append(int(thicknesses.shape[0]))
+        return original(solver, thicknesses, *args, **kwargs)
+
+    monkeypatch.setattr(DifferentiableTMM, "forward", forward)
+    task = _task(optimizer=OptimizerSpec(method="adam_lbfgs", max_steps=30,
+                                        starts=3, seed=19, quantization_nm=2.0))
+    result = GradientThicknessAdapter(MaterialRegistry()).optimize(
+        task, maximum_forward_evaluations=cap
+    )
+    assert sum(batches) == result.evaluation_count <= cap
+    assert result.status == "best_effort"
+    assert result.stop_reason == "maximum_forward_evaluations"
+    assert result.audit["raw_optimizer_audit"]["budget_exhausted"]
+    assert result.candidate_designs
+    assert np.isfinite(result.best_loss)

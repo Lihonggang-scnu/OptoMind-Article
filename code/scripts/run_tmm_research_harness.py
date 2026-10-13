@@ -246,6 +246,9 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "run_id": result.run_id,
                 "status": result.status,
+                "acceptance_status": result.acceptance_status,
+                "failed_iteration_ids": list(result.failed_iteration_ids),
+                "route_failures": list(result.route_failures),
                 "stage": result.stage,
                 "output_dir": str(output_dir.resolve()),
                 "telemetry": result.telemetry,
@@ -257,7 +260,7 @@ def main(argv: list[str] | None = None) -> int:
             indent=2,
         )
     )
-    return 0 if result.status == "completed" else 2
+    return 0 if result.status == "completed" and result.acceptance_status == "accepted" else 2
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from typing import Any, Iterable, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .research_feedback import ResearchFeedbackDecision, ResearchIterationObservation
+from .research_feedback import ResearchFeedbackDecision, ResearchIterationObservation, acceptance_summary
 from .text_safety import repair_scientific_payload
 
 
@@ -15,6 +15,9 @@ class TMMResearchAnswer(BaseModel):
 
     schema_version: str = "tmm-research-answer.v1"
     status: str
+    acceptance_status: str = "unverified"
+    failed_iteration_ids: tuple[str, ...] = ()
+    route_failures: tuple[dict[str, Any], ...] = ()
     problem_id: str
     problem_interpretation: str
     method_findings: tuple[dict[str, Any], ...] = ()
@@ -232,18 +235,25 @@ class DeterministicTMMResearchReporter:
             if isinstance(raw_route_sources, Mapping)
             else {}
         )
+        bound_routes: list[dict[str, Any]] = []
         candidates: list[dict[str, Any]] = []
         route_summaries: list[dict[str, Any]] = []
         failed: list[dict[str, Any]] = []
         artifact_index: list[str] = []
         for row in observations:
-            route = routes_by_id.get(row.route_id, {})
+            route = row.route_snapshot or (
+                routes_by_id.get(row.route_id, {})
+                if sum(other.route_id == row.route_id for other in observations) == 1 else {}
+            )
+            bound_routes.append(route)
             route_summary = {
                 "iteration_id": row.iteration_id,
                 "route_id": row.route_id,
                 "route_title": row.route_title,
                 "route_source": route_sources.get(row.route_id, "planned"),
                 "scientific_hypothesis": route.get("scientific_hypothesis", ""),
+                "route_binding": "iteration_snapshot" if row.route_snapshot else "unversioned_plan" if route else "unavailable",
+                "execution_request_english": route.get("execution_request_english", ""),
                 "run_status": row.run_status,
                 "physically_valid_candidate_count": row.physically_valid_candidate_count,
                 "best_target_score": row.best_target_score,
@@ -418,7 +428,7 @@ class DeterministicTMMResearchReporter:
 
         used_evidence = {
             str(evidence_id)
-            for route in routes_by_id.values()
+            for route in bound_routes
             for evidence_id in route.get("evidence_ids", []) or []
         }
         references = []
@@ -443,7 +453,14 @@ class DeterministicTMMResearchReporter:
                 }
             )
 
+        acceptance = acceptance_summary(observations, plan.get("route_failures") or [])
         limitations = list(problem.get("ambiguities") or [])
+        if acceptance["acceptance_status"] == "partial":
+            limitations.append("Partial acceptance: verified candidates are preserved alongside recorded round or terminal route failures.")
+        if acceptance["failed_iteration_ids"]:
+            limitations.append("Failed or unverified rounds: " + ", ".join(acceptance["failed_iteration_ids"]) + ".")
+        for failure in acceptance["route_failures"]:
+            limitations.append(f"Route {failure.get('route_id')}: {failure.get('reason')}")
         limitations.extend(plan.get("unresolved_decisions") or [])
         if any(row.failure_categories for row in observations):
             limitations.append("Some planned routes produced recorded failures or capability limits; see the iteration artifacts.")
@@ -459,6 +476,8 @@ class DeterministicTMMResearchReporter:
         )
         lines = [
             "# TMM research and design result",
+            "",
+            f"Run status: {status}. Acceptance: {acceptance['acceptance_status']}.",
             "",
             "## Problem interpretation",
             "",
@@ -675,6 +694,9 @@ class DeterministicTMMResearchReporter:
 
         return TMMResearchAnswer(
             status=status,
+            acceptance_status=acceptance["acceptance_status"],
+            failed_iteration_ids=tuple(acceptance["failed_iteration_ids"]),
+            route_failures=tuple(acceptance["route_failures"]),
             problem_id=str(problem.get("problem_id") or "unknown"),
             problem_interpretation=normalized,
             method_findings=tuple(findings),

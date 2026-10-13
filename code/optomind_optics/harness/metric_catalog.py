@@ -27,7 +27,7 @@ from typing import Any, Dict, Literal, Mapping, Sequence
 from pydantic import BaseModel, ConfigDict, Field
 from tmm_engine.protocol import describe_capabilities
 
-from .design_task import SUPPORTED_OBJECTIVE_METRICS
+from .design_task import MEAN_OBJECTIVE_METRICS, SUPPORTED_OBJECTIVE_METRICS
 
 
 CATALOG_SCHEMA_VERSION = "tmm-metric-catalog.v1"
@@ -517,6 +517,12 @@ def verify_metric_reference(reference: Any) -> MetricVerification:
         )
         errors.append(f"sense {sense!r} is not allowed; {reason}")
 
+    reduction = reference.get("mean_reduction")
+    if reduction not in (None, "sample_mean", "wavelength_integral_mean"):
+        errors.append("mean_reduction must be sample_mean or wavelength_integral_mean")
+    elif reduction is not None and metric not in MEAN_OBJECTIVE_METRICS:
+        errors.append("mean_reduction is only valid for band-mean metrics")
+
     target = reference.get("target")
     if sense == "match" and target is None:
         errors.append("a 'match' sense requires a numeric target")
@@ -529,6 +535,8 @@ def verify_metric_reference(reference: Any) -> MetricVerification:
         "sense": sense,
         "region": normalized_region,
     }
+    if reduction is not None:
+        normalized["mean_reduction"] = reduction
     if target is not None:
         normalized["target"] = float(target)
     return MetricVerification(
@@ -568,6 +576,7 @@ def catalog_document(*, scoreable_only: bool = True) -> Dict[str, Any]:
         "reference_shape": {
             "metric": "one of the names below",
             "sense": "maximize | minimize | match (match also needs 'target')",
+            "mean_reduction": "sample_mean | wavelength_integral_mean; optional for band means",
             "wavelength_unit": "nm by default; declare um explicitly if used",
             "region": {
                 "wavelength_nm": "[lower, upper] for ordinary metrics",
