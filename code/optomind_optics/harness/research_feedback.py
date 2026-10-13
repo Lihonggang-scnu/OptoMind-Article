@@ -6,9 +6,14 @@ to decide whether spending more search budget is likely to add information.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 from typing import Any, Dict, Iterable, Literal, Mapping, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from .scoring_standard import ScoringStandard
 
 
 class ResearchIterationObservation(BaseModel):
@@ -24,6 +29,11 @@ class ResearchIterationObservation(BaseModel):
     run_status: str
     physically_valid_candidate_count: int = 0
     best_target_score: float | None = None
+    best_frozen_score: float | None = None
+    best_frozen_candidate_ids: Tuple[str, ...] = ()
+    score_basis: Literal["legacy_target", "frozen_standard"] = "legacy_target"
+    score_basis_fingerprint: str | None = None
+    score_available: bool | None = None
     best_robustness_score: float | None = None
     selected_candidate_ids: Tuple[str, ...] = ()
     failure_categories: Tuple[str, ...] = ()
@@ -33,6 +43,123 @@ class ResearchIterationObservation(BaseModel):
     work_dir: str
     task_path: str | None = None
     result_path: str | None = None
+
+    @property
+    def decision_score(self) -> float | None:
+        return decision_score(self)
+
+
+def _finite_score(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def decision_score(
+    observation: ResearchIterationObservation | Mapping[str, Any],
+) -> float | None:
+    row = (
+        {
+            field: getattr(observation, field)
+            for field in (
+                "score_basis", "score_available", "score_basis_fingerprint",
+                "best_frozen_score", "best_target_score",
+            )
+        }
+        if isinstance(observation, ResearchIterationObservation) else observation
+    )
+    basis = row.get("score_basis", "legacy_target")
+    if basis == "frozen_standard":
+        if not row.get("score_available") or not row.get("score_basis_fingerprint"):
+            return None
+        return _finite_score(row.get("best_frozen_score"))
+    if basis == "legacy_target":
+        return _finite_score(row.get("best_target_score"))
+    return None
+
+
+def _fingerprint(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    ).hexdigest()
+
+
+def _legacy_objective_fingerprint(compiled_task: Mapping[str, Any] | None) -> str | None:
+    contracts = []
+    for experiment in (compiled_task or {}).get("experiments", []) or []:
+        if not isinstance(experiment, Mapping):
+            return None
+        raw_task = dict(experiment.get("tmm_task") or {})
+        simulation = dict(raw_task.get("simulation") or raw_task)
+        if not experiment.get("objectives") and not raw_task.get("targets"):
+            return None
+        contracts.append(
+            {
+                "mode": experiment.get("mode"),
+                "objectives": experiment.get("objectives"),
+                "targets": raw_task.get("targets"),
+                "simulation": {key: value for key, value in simulation.items() if key != "stack"},
+            }
+        )
+    return _fingerprint(contracts) if contracts else None
+
+
+def apply_scoring_standard(
+    observation: ResearchIterationObservation,
+    standard: ScoringStandard,
+) -> ResearchIterationObservation:
+    fingerprint = _fingerprint(standard.model_dump(mode="json"))
+    candidates = []
+    scores = []
+    for candidate in observation.candidate_summaries:
+        outcome = standard.score(candidate.get("objective_report") or {})
+        score = _finite_score(outcome.value) if outcome.ok else None
+        candidates.append(
+            {
+                **candidate,
+                "frozen_score": score,
+                "frozen_score_outcome": outcome.model_dump(mode="json"),
+                "score_basis_fingerprint": fingerprint,
+            }
+        )
+        if score is not None:
+            scores.append(score)
+    best = max(scores, default=None)
+    experiments = tuple(
+        {
+            **experiment,
+            "best_frozen_score": max(
+                (
+                    candidate["frozen_score"]
+                    for candidate in candidates
+                    if candidate.get("experiment_id") == experiment.get("experiment_id")
+                    and candidate["frozen_score"] is not None
+                ),
+                default=None,
+            ),
+        }
+        for experiment in observation.experiment_summaries
+    )
+    return observation.model_copy(
+        update={
+            "best_frozen_score": best,
+            "best_frozen_candidate_ids": tuple(
+                dict.fromkeys(
+                    str(candidate["candidate_id"])
+                    for candidate in candidates
+                    if best is not None and candidate["frozen_score"] == best
+                    and candidate.get("candidate_id")
+                )
+            ),
+            "score_basis": "frozen_standard",
+            "score_basis_fingerprint": fingerprint,
+            "score_available": best is not None,
+            "candidate_summaries": tuple(candidates),
+            "experiment_summaries": experiments,
+        }
+    )
 
 
 class ResearchFeedbackDecision(BaseModel):
@@ -66,6 +193,7 @@ def observation_from_run_result(
     task_path: str | None = None,
     result_path: str | None = None,
     compiled_task: Mapping[str, Any] | None = None,
+    scoring_standard: ScoringStandard | None = None,
 ) -> ResearchIterationObservation:
     payload = dict(run_result or {})
     scores: list[float] = []
@@ -167,7 +295,7 @@ def observation_from_run_result(
     }
     if stop_reason in stop_reason_categories:
         categories.append(stop_reason_categories[stop_reason])
-    return ResearchIterationObservation(
+    observation = ResearchIterationObservation(
         iteration_id=iteration_id,
         route_id=route_id,
         route_title=route_title,
@@ -177,6 +305,8 @@ def observation_from_run_result(
         run_status=str(payload.get("status") or "not_run"),
         physically_valid_candidate_count=valid_count,
         best_target_score=max(scores, default=None),
+        score_basis_fingerprint=_legacy_objective_fingerprint(compiled_task),
+        score_available=any(_finite_score(value) is not None for value in scores),
         best_robustness_score=max(robust, default=None),
         selected_candidate_ids=tuple(dict.fromkeys(selected)),
         failure_categories=tuple(dict.fromkeys(categories)),
@@ -190,6 +320,10 @@ def observation_from_run_result(
         work_dir=work_dir,
         task_path=task_path,
         result_path=result_path,
+    )
+    return (
+        apply_scoring_standard(observation, scoring_standard)
+        if scoring_standard is not None else observation
     )
 
 
@@ -255,7 +389,7 @@ class DeterministicResearchFeedbackController:
             dict.fromkeys(
                 candidate
                 for row in rows
-                for candidate in row.selected_candidate_ids
+                for candidate in (*row.selected_candidate_ids, *row.best_frozen_candidate_ids)
             )
         )
         if current.run_status == "needs_higher_fidelity" or "outside_tmm_domain" in current.failure_categories:
@@ -353,9 +487,6 @@ class DeterministicResearchFeedbackController:
                 reason="No physically valid candidate was found within the bounded search.",
                 preserve_candidate_ids=preserve,
             )
-        # A soft score is normalized only within one executable objective
-        # contract. Never compare scores from different routes or from a
-        # report-only simulation against an optimization route.
         optimization_present = any(
             str(item.get("mode") or "") == "optimize"
             for item in current.experiment_summaries
@@ -367,20 +498,27 @@ class DeterministicResearchFeedbackController:
                 preserve_candidate_ids=preserve,
             )
         same_route_scores = [
-            float(row.best_target_score)
+            score
             for row in rows[:-1]
             if row.route_id == current.route_id
-            if row.best_target_score is not None
+            and current.score_basis_fingerprint is not None
+            and row.score_basis == current.score_basis
+            and row.score_basis_fingerprint == current.score_basis_fingerprint
             and row.physically_valid_candidate_count > 0
+            if (score := decision_score(row)) is not None
         ]
-        current_score = current.best_target_score
+        current_score = decision_score(current)
         previous_best = max(same_route_scores, default=None)
         improvement = (
             None
             if current_score is None or previous_best is None
             else float(current_score - previous_best)
         )
-        headroom = None if current_score is None else max(0.0, 1.0 - float(current_score))
+        frozen_score = current.score_basis == "frozen_standard"
+        headroom = (
+            None if frozen_score or current_score is None
+            else max(0.0, 1.0 - current_score)
+        )
         # R-06 reorder: an iterating route with ranking headroom refines
         # BEFORE any untried portfolio member is enumerated. The old order
         # (try_next_route first) reduced every run to exhaustive enumeration
@@ -394,18 +532,24 @@ class DeterministicResearchFeedbackController:
         if (
             budget_remaining
             and rounds_budget_left
-            and headroom is not None
-            and headroom >= self.refinement_headroom
+            and current_score is not None
+            and (frozen_score or (headroom is not None and headroom >= self.refinement_headroom))
             and (improvement is None or improvement >= self.meaningful_improvement)
         ):
             return ResearchFeedbackDecision(
                 action="refine_route",
-                reason="The verified route still has ranking headroom and recent search progress justifies one bounded refinement.",
+                reason=(
+                    "The verified route has an available frozen score and remaining budget for one bounded refinement."
+                    if frozen_score else
+                    "The verified route still has ranking headroom and recent search progress justifies one bounded refinement."
+                ),
                 observed_improvement=improvement,
                 remaining_headroom=headroom,
                 preserve_candidate_ids=preserve,
                 feedback_for_planner=(
                     "Preserve the verified scientific principle.",
+                    "Change only design choices that can plausibly improve the frozen score."
+                    if frozen_score else
                     "Change only design choices that can plausibly address the remaining objective headroom.",
                 ),
             )
@@ -416,11 +560,15 @@ class DeterministicResearchFeedbackController:
                 preserve_candidate_ids=preserve,
             )
         reason = (
-            "Further bounded search is unlikely to add material information."
-            if budget_remaining
+            "The physically verified candidates have no available decision score; score-based refinement cannot be justified."
+            if current_score is None
             else (
-                "The bounded route portfolio is complete; preserve the best "
-                "verified performance, robustness, and simplicity trade-offs."
+                "Further bounded search is unlikely to add material information."
+                if budget_remaining
+                else (
+                    "The bounded route portfolio is complete; preserve the best "
+                    "verified performance, robustness, and simplicity trade-offs."
+                )
             )
         )
         return ResearchFeedbackDecision(
@@ -436,5 +584,7 @@ __all__ = [
     "DeterministicResearchFeedbackController",
     "ResearchFeedbackDecision",
     "ResearchIterationObservation",
+    "apply_scoring_standard",
+    "decision_score",
     "observation_from_run_result",
 ]

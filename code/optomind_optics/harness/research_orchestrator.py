@@ -45,6 +45,7 @@ from .research_feedback import (
     ResearchFeedbackDecision,
     ResearchIterationObservation,
     observation_from_run_result,
+    apply_scoring_standard,
     acceptance_summary,
 )
 from .research_report import DeterministicTMMResearchReporter, TMMResearchAnswer
@@ -157,6 +158,7 @@ class RouteTrack:
     source: str                       # evidence_derived | experience_derived | planned
     rounds_used: int = 0              # executed rounds consumed by THIS chain
     score_history: list[float] = field(default_factory=list)
+    score_basis_fingerprint: str | None = None
     best_candidate_ids: list[str] = field(default_factory=list)
     status: str = TRACK_RACING
     termination_reason: str = ""     # empty while racing
@@ -2097,7 +2099,7 @@ class TMMResearchHarness:
                     NOISE_FLOOR_EVENT_TYPE,
                     **sample_event(
                         stable_sha256({"route": route_id})[:16],
-                        "best_target_score",
+                        "frozen_score" if self.scoring_standard is not None else "legacy_target_score",
                         track.score_history[-1] - track.score_history[-2],
                     ),
                 )
@@ -2260,17 +2262,26 @@ class TMMResearchHarness:
             compiled_task=(
                 task.model_dump(mode="json") if task is not None else None
             ),
+            scoring_standard=self.scoring_standard,
         )
         observation = observation.model_copy(update={"route_snapshot": json.loads(json.dumps(route))})
         # Per-chain ledgers live on the track. These three appends carry NO
         # lock by R-06 invariant: they execute on the main thread only (Phase
         # 1a/1c are serial; the concurrent phases never touch foreign tracks).
         # `observations` IS shared -> locked append below.
-        if observation.best_target_score is not None:
-            track.score_history.append(float(observation.best_target_score))
+        if observation.decision_score is not None and observation.score_basis_fingerprint:
+            if track.score_basis_fingerprint != observation.score_basis_fingerprint:
+                track.score_history.clear()
+            track.score_basis_fingerprint = observation.score_basis_fingerprint
+            track.score_history.append(float(observation.decision_score))
+        preserved_ids = (
+            observation.best_frozen_candidate_ids
+            if observation.score_basis == "frozen_standard"
+            else observation.selected_candidate_ids
+        )
         if observation.physically_valid_candidate_count > 0:
             track.best_candidate_ids.extend(
-                cid for cid in observation.selected_candidate_ids if cid not in track.best_candidate_ids
+                cid for cid in preserved_ids if cid not in track.best_candidate_ids
             )
         track.rounds_used += 1
         track.executed_hashes.add(_route_hash(track.current_route))
@@ -2387,6 +2398,9 @@ class TMMResearchHarness:
             run_status=observation.run_status,
             valid_candidates=observation.physically_valid_candidate_count,
             best_target_score=observation.best_target_score,
+            decision_score=observation.decision_score,
+            score_basis=observation.score_basis,
+            score_basis_fingerprint=observation.score_basis_fingerprint,
         )
         if verification is not None or verify_error:
             self._event(
@@ -2413,6 +2427,9 @@ class TMMResearchHarness:
             run_status=observation.run_status,
             valid_candidates=observation.physically_valid_candidate_count,
             best_target_score=observation.best_target_score,
+            decision_score=observation.decision_score,
+            score_basis=observation.score_basis,
+            score_basis_fingerprint=observation.score_basis_fingerprint,
             verification_overall=(
                 str(verification.get("overall_status"))
                 if verification is not None
@@ -2431,7 +2448,7 @@ class TMMResearchHarness:
                 )
                 self._tree.update_node(
                     node_id,
-                    metric=observation.best_target_score,
+                    metric=observation.decision_score,
                     is_buggy=buggy,
                 )
                 node = self._tree.nodes[node_id]
@@ -2510,6 +2527,12 @@ class TMMResearchHarness:
             repository = ScienceRepository(self.work_dir / "science", read_only=True)
             try: observation_dump = legacy_observation_projection(repository, scientific_ref)
             finally: repository.close()
+        observation_dump.update({
+            key: value for key, value in observation.model_dump(mode="json").items()
+            if key in {"best_frozen_score", "best_frozen_candidate_ids", "score_basis",
+                       "score_basis_fingerprint", "score_available", "candidate_summaries"}
+        })
+        observation_dump["rounds_executed"] = track.rounds_used
         def save_context(payload):
             if scientific_ref is not None:
                 from .science.migration import commit_legacy_context
@@ -2553,6 +2576,9 @@ class TMMResearchHarness:
             reflection_available = False
         observed_metrics_snapshot = {
             "best_target_score": observation.best_target_score,
+            "decision_score": observation.decision_score,
+            "score_basis": observation.score_basis,
+            "score_basis_fingerprint": observation.score_basis_fingerprint,
             "valid_candidates": observation.physically_valid_candidate_count,
             "run_status": observation.run_status,
             "tightest_margin": observation.best_robustness_score,
@@ -2691,7 +2717,7 @@ class TMMResearchHarness:
             and not llm_continue
             and rounds_this_route >= minimum_rounds
             and stop_basis
-            in {"physically_infeasible", "marginal_gains_too_low"}
+            in {"search_exhausted", "marginal_gains_too_low"}
             and stop_rationale
         )
         early_llm_stop = bool(
@@ -2896,8 +2922,11 @@ class TMMResearchHarness:
         # rule table's alone.
         rounds_used = int(track.rounds_used)
         history = track.score_history
-        score_before = history[-2] if len(history) >= 2 else None
-        score_after = history[-1] if history else None
+        score_after = observation.decision_score
+        score_before = (
+            history[-2] if score_after is not None and len(history) >= 2
+            else history[-1] if score_after is None and history else None
+        )
         expected_rows = track.current_route.get("expected_observations") or ()
         confidence_before = self._track_confidence.get(track.route_id, 0.5)
         entry = build_ledger_entry(
@@ -2907,6 +2936,7 @@ class TMMResearchHarness:
             best_score_before=score_before,
             best_score_after=score_after,
             expected_claim="; ".join(str(row) for row in expected_rows)[:500],
+            expected_metric="frozen_score" if observation.score_basis == "frozen_standard" else "legacy_target_score",
             expected_delta=None,
             gradient_basis=ctx.get("gradient_summary"),
             run_status=str(observation.run_status),
@@ -3133,6 +3163,7 @@ class TMMResearchHarness:
                     "termination_reason": t.termination_reason,
                     "rounds_used": t.rounds_used,
                     "score_history": list(t.score_history),
+                    "score_basis_fingerprint": t.score_basis_fingerprint,
                     "best_candidate_ids": list(t.best_candidate_ids),
                     "current_route": dict(t.current_route),
                 }
@@ -3296,7 +3327,10 @@ class TMMResearchHarness:
             ResearchIterationObservation.model_validate(item)
             for item in (raw_observations if isinstance(raw_observations, list) else [])
         ]
-        observations = [self._bind_saved_route(row) for row in observations]
+        observations = [
+            apply_scoring_standard(self._bind_saved_route(row), self.scoring_standard)
+            for row in observations
+        ]
         if not observations:
             raise ValueError("checkpoint has no iteration history to resume")
         raw_feedback = self._load_json_path(self.work_dir / "FEEDBACK_HISTORY.json")
@@ -3384,11 +3418,16 @@ class TMMResearchHarness:
                 ),
                 rounds_used=int(raw_track.get("rounds_used") or 0),
                 score_history=[
-                    float(value) for value in (raw_track.get("score_history") or [])
+                    float(row.decision_score) for row in observations
+                    if row.route_id == route_id and row.decision_score is not None
                 ],
-                best_candidate_ids=[
-                    str(value) for value in (raw_track.get("best_candidate_ids") or [])
-                ],
+                score_basis_fingerprint=next((
+                    row.score_basis_fingerprint for row in observations if row.route_id == route_id
+                ), None),
+                best_candidate_ids=list(dict.fromkeys(
+                    candidate_id for row in observations if row.route_id == route_id
+                    for candidate_id in row.best_frozen_candidate_ids
+                )),
                 status=str(raw_track.get("status") or TRACK_RACING),
                 termination_reason=str(raw_track.get("termination_reason") or ""),
                 current_route=current_route,
@@ -3796,6 +3835,7 @@ class TMMResearchHarness:
         )
         combined_plan = {
             **plan,
+            "research_charter": self.research_charter,
             "routes": [
                 tracks[route_id].current_route
                 for route_id in sorted(ordered_track_ids)
@@ -5033,6 +5073,7 @@ class TMMResearchHarness:
         )
         combined_plan = {
             **plan,
+            "research_charter": self.research_charter,
             "routes": [tracks[tid].current_route for tid in sorted(ordered_track_ids)],
             "route_count_after_feedback": len(ordered_track_ids),
             "route_failures": _terminal_route_failures(tracks.values()),

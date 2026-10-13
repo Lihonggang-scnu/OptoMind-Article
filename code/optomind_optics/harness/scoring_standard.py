@@ -46,6 +46,7 @@ from config.qwen_config import get_cost_tracker
 
 from .design_task import MEAN_OBJECTIVE_METRICS, ObjectivePreference
 from .metric_reduction import requested_mean_reduction
+from .objective_intent import objective_intent_errors
 from .metric_catalog import (
     CATALOG_SCHEMA_VERSION,
     METRIC_CATALOG,
@@ -1157,6 +1158,12 @@ class QwenScoringStandardBuilder:
                     ).strip(),
                 )
             )
+        try:
+            errors.extend(objective_intent_errors(
+                question, [metric.model_dump(mode="json") for metric in metrics]
+            ))
+        except ValueError as exc:
+            errors.append(f"ambiguous original objective: {exc}")
         if errors:
             return (), tuple(errors)
         return tuple(metrics), ()

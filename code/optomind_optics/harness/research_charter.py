@@ -9,6 +9,8 @@ import math
 import re
 from typing import Any, Mapping
 
+from .objective_intent import explicit_objective_intents, objective_intent_errors
+
 _NUMBER = r"\d+(?:\.\d+)?"
 _COUNTS = {"one": 1, "single": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
 _COUNT = r"(?:\d+|" + "|".join(_COUNTS) + r")"
@@ -88,6 +90,7 @@ def build_research_charter(question: str, problem: Mapping[str, Any]) -> dict[st
     seed_match = re.search(r"\bseed\s*(?:=|:)?\s*(\d+)\b", source, re.I)
     round_cap = re.search(rf"\b(?:at most|max(?:imum)?(?: of)?)\s+({_COUNT})\s+(?:executed\s+)?research\s+rounds\b", source, re.I)
     frozen = {
+        "objective_intents": list(explicit_objective_intents(source)),
         "maximum_forward_evaluations_per_round": int(evaluation_cap.group(1)) if evaluation_cap else None,
         "optimizer_seed": int(seed_match.group(1)) if seed_match else None,
         "maximum_research_rounds": _count(round_cap.group(1)) if round_cap else None,
@@ -134,8 +137,30 @@ def check_frozen_task_constraints(task: Mapping[str, Any], charter: Mapping[str,
         actual_cap = (task.get("budget") or {}).get("maximum_forward_evaluations")
         if actual_cap is None or float(actual_cap) > cap:
             raise ValueError("CHARTER_DRIFT_ERROR: solver evaluation budget exceeds original per-round cap")
+    all_metrics = []
     for experiment in task.get("experiments") or []:
         raw = experiment.get("tmm_task") or {}
+        metrics = []
+        names = {"R": "reflectance", "T": "transmittance", "A": "absorption"}
+        for target in raw.get("targets") or []:
+            observable = names.get(str(target.get("observable") or "").upper())
+            if observable is None:
+                continue
+            metrics.append({
+                "metric": ("worst_case_" if target.get("aggregation") == "worst_case" else "mean_") + observable,
+                "sense": {"at_least": "maximize", "at_most": "minimize"}.get(target.get("constraint"), "match"),
+                "mean_reduction": target.get("mean_reduction") or "sample_mean",
+                "region": {
+                    "wavelength_nm": [target.get("wavelength_min_nm"), target.get("wavelength_max_nm")],
+                    "angle_deg": target.get("angle_deg", 0.0),
+                    "polarization": target.get("polarization", "unpolarized"),
+                },
+            })
+        metrics.extend(experiment.get("objectives") or [])
+        all_metrics.extend(metrics)
+        errors = objective_intent_errors(str(charter.get("question") or ""), metrics, require_coverage=False)
+        if errors:
+            raise ValueError("CHARTER_DRIFT_ERROR: " + "; ".join(errors))
         simulation = raw.get("simulation") or raw
         seed = constraints.get("optimizer_seed")
         if seed is not None and experiment.get("mode") == "optimize" and (raw.get("optimizer") or {}).get("seed") != seed:
@@ -192,6 +217,10 @@ def check_frozen_task_constraints(task: Mapping[str, Any], charter: Mapping[str,
                     values = [start + index * (stop - start) / (points - 1) for index in range(points)]
             if not values or len(values) != len(expected) or any(not _equal(a, b) for a, b in zip(values, expected)):
                 raise ValueError("CHARTER_DRIFT_ERROR: original wavelength sampling changed")
+
+    errors = objective_intent_errors(str(charter.get("question") or ""), all_metrics)
+    if errors:
+        raise ValueError("CHARTER_DRIFT_ERROR: " + "; ".join(errors))
 
 
 def charter_digest(charter: Mapping[str, Any]) -> str:

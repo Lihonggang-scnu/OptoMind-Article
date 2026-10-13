@@ -1198,6 +1198,7 @@ def test_renamed_revision_keeps_declarations_and_score_history(tmp_path):
         EngineMode,
         HarnessBudgetPolicy,
         OpticalDesignTask,
+        ObjectivePreference,
         TMMExperimentSpec,
     )
     from optomind_optics.harness.research_orchestrator import TMMResearchHarnessConfig
@@ -1238,6 +1239,10 @@ def test_renamed_revision_keeps_declarations_and_score_history(tmp_path):
                 experiment_id="lineage_forward",
                 mode=EngineMode.simulate,
                 tmm_task=dataclass_to_dict(simulation),
+                objectives=(ObjectivePreference(
+                    objective_id="lineage_R", metric="mean_reflectance", sense="maximize",
+                    region={"wavelength_nm": [500, 600]},
+                ),),
             ),
         ),
         budget=HarnessBudgetPolicy(maximum_forward_evaluations=100),

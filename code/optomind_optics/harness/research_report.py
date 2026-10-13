@@ -20,6 +20,7 @@ class TMMResearchAnswer(BaseModel):
     route_failures: tuple[dict[str, Any], ...] = ()
     problem_id: str
     problem_interpretation: str
+    original_request: str = ""
     method_findings: tuple[dict[str, Any], ...] = ()
     route_summaries: tuple[dict[str, Any], ...] = ()
     recommended_candidates: tuple[dict[str, Any], ...] = ()
@@ -27,6 +28,7 @@ class TMMResearchAnswer(BaseModel):
     stop_decision: dict[str, Any] = Field(default_factory=dict)
     references: tuple[dict[str, Any], ...] = ()
     limitations: tuple[str, ...] = ()
+    initial_plan_open_questions: tuple[str, ...] = ()
     artifact_index: tuple[str, ...] = ()
     markdown: str
 
@@ -254,6 +256,17 @@ class DeterministicTMMResearchReporter:
                 "scientific_hypothesis": route.get("scientific_hypothesis", ""),
                 "route_binding": "iteration_snapshot" if row.route_snapshot else "unversioned_plan" if route else "unavailable",
                 "execution_request_english": route.get("execution_request_english", ""),
+                "proposed_topology": route.get("proposed_topology", ""),
+                "verified_layer_orders": [
+                    list(order)
+                    for order in dict.fromkeys(
+                        tuple(str(material) for material in candidate.get("layer_materials", []))
+                        for candidate in row.candidate_summaries
+                        if row.physically_valid_candidate_count > 0
+                        and candidate.get("layer_materials")
+                        and candidate.get("physically_admissible") is not False
+                    )
+                ],
                 "run_status": row.run_status,
                 "physically_valid_candidate_count": row.physically_valid_candidate_count,
                 "best_target_score": row.best_target_score,
@@ -461,7 +474,24 @@ class DeterministicTMMResearchReporter:
             limitations.append("Failed or unverified rounds: " + ", ".join(acceptance["failed_iteration_ids"]) + ".")
         for failure in acceptance["route_failures"]:
             limitations.append(f"Route {failure.get('route_id')}: {failure.get('reason')}")
-        limitations.extend(plan.get("unresolved_decisions") or [])
+        if observations:
+            coverage = "; ".join(
+                f"{item['iteration_id']} ({item['run_status']}; "
+                + (
+                    "verified layer orders: "
+                    + " | ".join(" / ".join(order) for order in item["verified_layer_orders"])
+                    if item["verified_layer_orders"]
+                    else "verified layer-order evidence unavailable"
+                )
+                + ")"
+                for item in route_summaries
+            )
+            limitations.append("Search coverage from the full recorded history: " + coverage + ".")
+            limitations.append(
+                "Finite optimizer results do not certify physical infeasibility or a global optimum. "
+                "Target attainment must be assessed against the unchanged original request, "
+                "not thresholds or untested alternatives proposed in the initial plan."
+            )
         if any(row.failure_categories for row in observations):
             limitations.append("Some planned routes produced recorded failures or capability limits; see the iteration artifacts.")
         if not references:
@@ -469,6 +499,11 @@ class DeterministicTMMResearchReporter:
         if status == "needs_higher_fidelity":
             limitations.append("The requested physics exceeds the declared TMM-only capability boundary.")
 
+        original_request = str(
+            (plan.get("research_charter") or {}).get("question")
+            or problem.get("original_request")
+            or ""
+        )
         normalized = str(
             problem.get("normalized_request_english")
             or problem.get("original_request")
@@ -482,6 +517,10 @@ class DeterministicTMMResearchReporter:
             "## Problem interpretation",
             "",
             normalized,
+            "",
+            "## Original request and target",
+            "",
+            original_request or "The original request is unavailable; target attainment is unresolved.",
             "",
             "## Method research",
             "",
@@ -503,6 +542,12 @@ class DeterministicTMMResearchReporter:
                 f"verified candidates {item['physically_valid_candidate_count']}, "
                 f"best soft score {_fmt(item['best_target_score'])}."
             )
+            if item["verified_layer_orders"]:
+                lines.append(
+                    f"  - `{item['iteration_id']}` verified layer orders: "
+                    + "; ".join(" / ".join(order) for order in item["verified_layer_orders"])
+                    + "."
+                )
         source_comparison = plan.get("planning_source_comparison")
         if isinstance(source_comparison, Mapping):
             lines.extend(["", "## Planning-source comparison", ""])
@@ -699,6 +744,8 @@ class DeterministicTMMResearchReporter:
             route_failures=tuple(acceptance["route_failures"]),
             problem_id=str(problem.get("problem_id") or "unknown"),
             problem_interpretation=normalized,
+            original_request=original_request,
+            initial_plan_open_questions=tuple(str(value) for value in plan.get("unresolved_decisions") or []),
             method_findings=tuple(findings),
             route_summaries=tuple(route_summaries),
             recommended_candidates=tuple(ranked[:12]),

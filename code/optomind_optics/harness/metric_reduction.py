@@ -53,9 +53,19 @@ def requested_mean_reduction(
         if isinstance(region.get(key), (list, tuple)) and len(region[key]) == 2
     ]
     found: set[str] = set()
-    for clause in _CLAUSE_BOUNDARY.split(str(question or "")):
+    clauses = [part for sentence in _CLAUSE_BOUNDARY.split(str(question or ""))
+               for part in re.split(r"\b(?:and|but)\s+(?=(?:minimi[sz]e|maximi[sz]e)\b)", sentence, flags=re.I)]
+    for clause in clauses:
         reductions = {name for name, pattern in _PATTERNS.items() if pattern.search(clause)}
         if not reductions:
+            continue
+        angles = [float(value) for value in re.findall(r"(\d+(?:\.\d+)?)\s*(?:degrees?\b|deg\b|°)", clause, re.I)]
+        if re.search(r"\bnormal\s+incidence\b", clause, re.I):
+            angles.append(0.0)
+        polarizations = re.findall(r"\b([sp])(?:[ -]polariz(?:ed|ation)|\s+polarization)\b", clause, re.I)
+        if angles and region.get("angle_deg") is not None and region["angle_deg"] not in angles:
+            continue
+        if polarizations and region.get("polarization") is not None and str(region["polarization"]).lower() not in [value.lower() for value in polarizations]:
             continue
         named = {name for name, pattern in _OBSERVABLES.items() if pattern.search(clause)}
         if named and observable is not None and observable not in named:

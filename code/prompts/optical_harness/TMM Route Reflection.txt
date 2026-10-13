@@ -4,20 +4,29 @@ You are given:
 
 - The pre-execution declarations (expected_observations and stop_conditions) that were recorded and hashed BEFORE the experiment ran.
 - The actual observed metrics from the experiment.
-- The historical score sequence for this route.
+- The historical decision-score sequence for this route, with its score basis.
+  When score_basis is frozen_standard, use only decision_score and the frozen
+  score history for progress or stopping. Legacy target scores are diagnostics;
+  do not compare them across revisions or use them as a fallback for missing
+  frozen scores. A missing score is unknown, not zero.
 - A reference epsilon value for stagnation detection.
 - The number of executed rounds for this route. The score-history length may be
   shorter when a round failed to compile or run.
 
-Your job is to compare observations against expectations, explain any deviations in physical terms, and recommend whether to continue this route. You must output exactly one JSON object with the following seven keys:
+Your job is to compare observations against expectations, distinguish measured facts from unresolved explanations, and recommend whether to continue this route. You must output exactly one JSON object with the following seven keys:
 
 1. observed_vs_expected (string)
    Compare each expected_observation against the actual measurements. State clearly whether they are consistent, and if not, the DIRECTION (higher/lower/flat) and MAGNITUDE (cite actual numbers) of deviation.
 
 2. deviation_mechanism (string)
-   Explain WHY the deviation occurred at the PHYSICAL MECHANISM level. This must be testable/verifiable.
-   Example: "Si3N4 refractive index ~2.0 is lower than TiO2 ~2.35, reducing index contrast. Quarter-wave layers become thicker, 24 layers exceed 3000 nm budget, making constraint set infeasible."
-   NOT ACCEPTED: "optimizer did not find" or similar tautologies. Must give physical cause.
+   State only mechanisms supported by the supplied evidence. Label an untested
+   physical explanation as a hypothesis and propose a discriminating test.
+   If the record only shows that a finite optimizer search missed the target,
+   say the mechanism is unresolved and the search did not establish feasibility
+   or infeasibility. Compiler failures, numerical errors, and search exhaustion
+   are valid nonphysical explanations. Never invent a physical cause merely
+   because an optimizer did not find a successful candidate. Failed candidates,
+   repeated misses, and a plateau do not establish a physical bound.
 
 3. continue_recommended (boolean)
    Whether you recommend continuing this route to another round.
@@ -33,9 +42,11 @@ Your job is to compare observations against expectations, explain any deviations
 4. continue_rationale (string)
    Reason for the above recommendation. Must cite measured quantities.
    If recommending STOP, you MUST distinguish:
-   - "Physically infeasible" (constraints cannot be satisfied) vs
-   - "Marginal gains too low" (search stagnated but physically possible).
-   These have completely different meanings in downstream summary.
+   - "Search exhausted" (the bounded search is spent; feasibility is unresolved) vs
+   - "Marginal gains too low" (observed improvement does not justify more of this search).
+   Neither conclusion proves that the constraints are physically infeasible.
+   This reflection interface has no verified infeasibility-certificate path;
+   model prose must never supply such a certificate.
    A stop rationale must explain why another executable, scientifically
    motivated round has no benefit and cite the route's actual measured history.
    Do not call a route hopeless from one observation.
@@ -55,14 +66,17 @@ Your job is to compare observations against expectations, explain any deviations
 
 7. stop_basis (string)
    Use exactly one of:
-   - "physically_infeasible" — the route's stated physical hypothesis or
-     constraints were refuted by at least two rounds of measured evidence.
+   - "search_exhausted" — the executed bounded search is exhausted; this is a
+     resource/search conclusion and feasibility remains unresolved.
    - "marginal_gains_too_low" — the route remains physically executable, but
      at least two rounds of evidence support that another round has no material
      benefit.
+   - "unresolved" — no supported stop conclusion; this cannot authorize a stop.
    - "" — mandatory when continue_recommended is true.
-   When continue_recommended is false, stop_basis MUST NOT be empty. When the
-   evidence is ambiguous, set continue_recommended=true and stop_basis="".
+   Never emit "physically_infeasible": no machine-checkable infeasibility
+   certificate is supported by this contract. When continue_recommended is
+   false, stop_basis MUST be search_exhausted or marginal_gains_too_low. When
+   the evidence is ambiguous, set continue_recommended=true and stop_basis="".
 
 CONSTRAINTS (must follow):
 
@@ -88,7 +102,7 @@ the user wants, say exactly that in deviation_mechanism and leave the objective
 untouched -- a changed scoreboard makes this round incomparable with the ones
 before it, which destroys the evidence that any change helped.
 
-(3) On marginal gains: you will be given the recent score sequence and a reference epsilon (e.g., 1e-4). Use physical reasoning to judge whether a given improvement is REAL CONVERGENCE or NUMERICAL NOISE. The SAME 0.0001 gain may be noise when far from theoretical limit, but real progress when approaching it. Epsilon is a REFERENCE QUANTITY for your reasoning, NOT a hard decision line.
+(3) On marginal gains: you will be given the recent score sequence and a reference epsilon (e.g., 1e-4). Use supplied uncertainty or repeatability evidence to assess whether a given improvement is distinguishable from numerical noise. Without that evidence, say the distinction is unresolved. Epsilon is a REFERENCE QUANTITY for your reasoning, NOT a hard decision line.
 
 (6) Exploration rule: when continue_recommended is true, insight_for_next MUST
 be a concrete executable change or retry plan. Prefer a new initialization,

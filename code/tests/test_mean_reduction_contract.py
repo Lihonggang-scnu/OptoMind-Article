@@ -88,7 +88,8 @@ def test_request_reduction_is_scoped_to_observable_and_band(separator):
 def build_pilot():
     request = (FIXTURE / "request.txt").read_text()
     selection = json.loads((FIXTURE / "metric_selection.json").read_text())
-    client = RecordedClient(selection, {"formula": "-mean_reflectance_450_700nm", "rationale": "Lower reflectance ranks higher."})
+    variable = verify_metric_reference(selection["metrics"][0]).variable
+    client = RecordedClient(selection, {"formula": f"-{variable}", "rationale": "Lower reflectance ranks higher."})
     standard_result = QwenScoringStandardBuilder(client).build(request)
     assert standard_result.status == "standardized", standard_result.validation_errors
     standard = standard_result.standard

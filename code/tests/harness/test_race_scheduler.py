@@ -200,6 +200,7 @@ def _stub_compiler_factory():
         EngineMode,
         HarnessBudgetPolicy,
         OpticalDesignTask,
+        ObjectivePreference,
         TMMExperimentSpec,
     )
     from tmm_engine import LayerSpec, MediumSpec, SimulationTask, SpectralGrid, StackSpec
@@ -222,6 +223,10 @@ def _stub_compiler_factory():
                 experiment_id="race_forward",
                 mode=EngineMode.simulate,
                 tmm_task=dataclass_to_dict(simulation),
+                objectives=(ObjectivePreference(
+                    objective_id="race_R", metric="mean_reflectance", sense="maximize",
+                    region={"wavelength_nm": [500, 600]},
+                ),),
             ),
         ),
         budget=HarnessBudgetPolicy(maximum_forward_evaluations=100),

@@ -14,6 +14,7 @@ def _obs(**changes):
         run_status="completed",
         physically_valid_candidate_count=1,
         best_target_score=0.6,
+        score_basis_fingerprint="shared-legacy-objective",
         selected_candidate_ids=("c1",),
         experiment_summaries=({"experiment_id": "e1", "mode": "optimize"},),
         work_dir="x",

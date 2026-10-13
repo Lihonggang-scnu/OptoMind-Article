@@ -22,6 +22,7 @@ quantity is computable and correctly named.
 from __future__ import annotations
 
 import re
+import math
 from typing import Any, Dict, Literal, Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -336,7 +337,12 @@ def canonical_metric_id(metric: str, region: Mapping[str, Any]) -> str:
         interval = region.get(key)
         if isinstance(interval, (list, tuple)) and len(interval) == 2:
             parts.append(_format_band(float(interval[0]), float(interval[1])))
-    return f"{metric}@{'_vs_'.join(parts)}" if parts else metric
+    identity = f"{metric}@{'_vs_'.join(parts)}" if parts else metric
+    if region.get("angle_deg") is not None:
+        identity += f"@{float(region['angle_deg']):g}deg"
+    if region.get("polarization") is not None:
+        identity += f"@{region['polarization']}"
+    return identity
 
 
 FIXED_SCORE_OBJECTIVE_PREFIX = "fixedscore."
@@ -500,9 +506,20 @@ def verify_metric_reference(reference: Any) -> MetricVerification:
             f"{', '.join(unexpected)}; it requires exactly "
             f"{', '.join(spec.required_region_keys)}"
         )
-    for selector in ("angle_deg", "polarization"):
-        if selector in region:
-            normalized_region[selector] = region[selector]
+    if region.get("angle_deg") is not None:
+        try:
+            angle = float(region["angle_deg"])
+            if isinstance(region["angle_deg"], bool) or not math.isfinite(angle):
+                raise ValueError
+            normalized_region["angle_deg"] = angle
+        except (TypeError, ValueError, OverflowError):
+            errors.append("angle_deg must be a finite numeric channel selector")
+    if region.get("polarization") is not None:
+        polarization = str(region["polarization"]).strip().lower()
+        if polarization not in {"s", "p", "unpolarized"}:
+            errors.append("polarization must be s, p, or unpolarized")
+        else:
+            normalized_region["polarization"] = polarization
 
     sense = str(reference.get("sense") or "").strip()
     if not sense:

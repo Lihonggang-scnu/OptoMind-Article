@@ -19,6 +19,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from tmm_engine.hashing import stable_sha256
 
+from .research_feedback import decision_score
+
 LEDGER_SCHEMA_VERSION = "optomind-action-ledger.v1"
 LEDGER_EVENT_TYPE = "action_effect_ledger"
 
@@ -106,10 +108,10 @@ CONFIDENCE_CEILING = 1.0
 def _rule_for(delta: Optional[float], expected: Optional[float]) -> Tuple[str, float]:
     """The mechanical belief rule. Same-sign & over threshold confirms."""
 
-    if delta is None:
+    if delta is None or expected is None:
         return ("no_signal", 0.0)
-    if expected is None or expected == 0:
-        return ("flat", FLAT_STEP if abs(delta) < CONFIRM_THRESHOLD else CONFIRM_STEP)
+    if expected == 0:
+        return ("confirmed", CONFIRM_STEP) if abs(delta) < CONFIRM_THRESHOLD else ("contradicted", CONTRADICT_STEP)
     same_sign = (delta > 0) == (expected > 0)
     magnitude_over = abs(delta) >= CONFIRM_THRESHOLD
     if same_sign and magnitude_over:
@@ -276,13 +278,20 @@ def build_insight_appendage(
     failure_categories: List[str] = []
     margins: List[float] = []
     for index, row in enumerate(rows, 1):
-        score = row.get("best_target_score")
+        score = decision_score(row)
         if score is not None:
             value = float(score)
+            if index > 1 and row.get("score_basis_fingerprint") != rows[index - 2].get("score_basis_fingerprint"):
+                best = None
             best = value if best is None else max(best, value)
             if index > 1:
-                previous = rows[index - 2].get("best_target_score")
-                if previous is not None:
+                previous_row = rows[index - 2]
+                previous = decision_score(previous_row)
+                same_basis = bool(row.get("score_basis_fingerprint")) and (
+                    row.get("score_basis_fingerprint") == previous_row.get("score_basis_fingerprint")
+                    and row.get("score_basis", "legacy_target") == previous_row.get("score_basis", "legacy_target")
+                )
+                if previous is not None and same_basis:
                     deltas.append(
                         f"round {index}: {value:.4f} (delta {value - float(previous):+.4f})"
                     )
@@ -317,9 +326,9 @@ def build_insight_appendage(
         counted[str(category)] = counted.get(str(category), 0) + 1
     for category, count in sorted(counted.items(), key=lambda kv: -kv[1])[:3]:
         insights.append(f"recurring failure category: {category} x{count}")
-    if best is not None and best < 1.0:
+    if best is not None and best < 1.0 and rows[-1].get("score_basis", "legacy_target") == "legacy_target":
         insights.append(
-            f"remaining headroom to 1.0: {1.0 - best:.4f} on the frozen metric"
+            f"remaining headroom to 1.0: {1.0 - best:.4f} on the legacy target metric"
         )
     if not insights:
         insights.append("no mechanical signal yet; treat the next round as exploratory")

@@ -2,7 +2,7 @@
 
 This module implements the "Phase B" of R-04: after a route executes, the LLM
 reflects on actual observations vs pre-execution declarations, explains
-deviations physically, and recommends continue/stop with grounded insight.
+deviations with explicit uncertainty, and recommends continue/stop with grounded insight.
 
 The reflection is written to ROUTE.REFLECTION.json (sidecar) and bound to the
 pre-execution attestation via attestation_sha256. A deterministic dual-gate
@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 from typing import Any, Literal, Mapping, Protocol
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from config.qwen_config import get_cost_tracker
 from .text_safety import repair_scientific_payload
@@ -54,11 +54,9 @@ class RouteReflection(BaseModel):
     continue_rationale: str
     insight_for_next: str
     insight_grounding: str
-    # A stop vote is not actionable unless the model states which of the two
-    # scientifically different claims it is making.  The empty default keeps
-    # old six-field reflection artifacts readable; the new prompt requires a
-    # non-empty value whenever continue_recommended is false.
-    stop_basis: Literal["", "physically_infeasible", "marginal_gains_too_low"] = ""
+    stop_basis: Literal["", "search_exhausted", "unresolved", "marginal_gains_too_low"] = ""
+    reported_stop_basis: str = ""
+    stop_basis_diagnostic: str = ""
     # D-3 (R-04-FIX): explicit degradation marker — empty on the normal path,
     # filled by degraded(). Must keep a default so model_validate() still
     # accepts the six-key JSON emitted by the LLM (extra="forbid" rejects
@@ -66,6 +64,22 @@ class RouteReflection(BaseModel):
     # only ever reaches sidecar files (ROUTE.REFLECTION.json), never
     # ArticlePipelineResult, so the hash contract (red line 5) is untouched.
     degraded_reason: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_unsupported_infeasibility(cls, value: Any) -> Any:
+        if isinstance(value, Mapping) and value.get("stop_basis") == "physically_infeasible":
+            return {
+                **value,
+                "stop_basis": "unresolved",
+                "reported_stop_basis": "physically_infeasible",
+                "stop_basis_diagnostic": (
+                    "Unsupported physical-infeasibility claim: no machine-checkable "
+                    "infeasibility certificate is supported by this reflection contract. "
+                    "Finite optimizer search and model prose do not prove infeasibility."
+                ),
+            }
+        return value
 
     @classmethod
     def degraded(cls, reason: str) -> "RouteReflection":
@@ -116,6 +130,7 @@ def _build_reflection_payload(
     charter: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the user payload for the reflection prompt."""
+    from .research_feedback import decision_score
     from .science.observation_adapter import reflection_evidence
     return {
         "immutable_research_charter": dict(charter or {}),
@@ -125,10 +140,15 @@ def _build_reflection_payload(
             "stop_conditions": list(pre_declarations.get("stop_conditions") or []),
         },
         "observed_metrics": {
-            "best_target_score": observation.get("best_target_score"),
+            "decision_score": decision_score(observation),
+            "score_basis": observation.get("score_basis", "legacy_target"),
+            "score_basis_fingerprint": observation.get("score_basis_fingerprint"),
+            "best_frozen_score": observation.get("best_frozen_score"),
+            "score_available": decision_score(observation) is not None,
+            "legacy_target_score_diagnostic": observation.get("best_target_score"),
             "valid_candidates": observation.get("physically_valid_candidate_count"),
             "run_status": observation.get("run_status"),
-            "rounds_executed": len(score_history),
+            "rounds_executed": observation.get("rounds_executed", len(score_history)),
             "tightest_margin": observation.get("best_robustness_score"),
             "candidate_thicknesses_nm": [
                 c.get("thicknesses_nm")
@@ -137,6 +157,8 @@ def _build_reflection_payload(
             ][:4],
         },
         "score_history": list(score_history),
+        "score_history_basis": observation.get("score_basis", "legacy_target"),
+        "score_history_basis_fingerprint": observation.get("score_basis_fingerprint"),
         "reference_epsilon": epsilon,
     }
 
@@ -159,7 +181,7 @@ def reflect_on_route(
         pre_declarations: Dict with expected_observations and stop_conditions
             from the pre-execution attestation (sidecar mapping).
         observation: Compressed view of ResearchIterationObservation.
-        score_history: Historical best_target_score sequence for this route.
+        score_history: Historical decision-score sequence on this route's score basis.
         epsilon: Reference epsilon for stagnation reasoning (not a hard gate).
         force_mock: Override mock mode.
 

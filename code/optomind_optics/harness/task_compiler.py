@@ -30,6 +30,7 @@ from config.qwen_config import get_cost_tracker
 
 from .experiment_store import ExperimentStore
 from .metric_reduction import requested_mean_reduction
+from .objective_intent import objective_intent_errors
 from .problem_analyzer import (
     ARTICLE_PROBLEM_ANALYZER_MODEL,
     ArticlePlusQwenClient,
@@ -2012,21 +2013,9 @@ def _align_targets_with_scoring_standard(
         "A": "worst_case_absorption",
     }
 
-    # Both aggregations of one observable answer to the same scored metric: a
-    # standard that ranks by mean reflectance still means "more" when a route
-    # writes its target as a worst case.
-    scored_sense: dict[str, str] = {}
-    scored_bands: dict[str, list[tuple[float, float]]] = {}
-    for metric in standard.metrics:
-        sense = str(metric.sense or "").casefold()
-        if sense not in {"maximize", "minimize"}:
-            continue
-        bands = [band for band in metric.bands_nm()]
-        if not bands:
-            continue
-        scored_sense[metric.metric] = sense
-        scored_bands.setdefault(metric.metric, []).extend(bands)
-    if not scored_sense:
+    scored = [metric for metric in standard.metrics
+              if metric.sense in {"maximize", "minimize"} and metric.bands_nm()]
+    if not scored:
         return draft, ()
 
     agreeing = {"maximize": ("at_least", 1.0), "minimize": ("at_most", 0.0)}
@@ -2049,24 +2038,43 @@ def _align_targets_with_scoring_standard(
                 if aggregation == "worst_case"
                 else metric_by_observable.get(observable)
             )
-            canonical = metric_name
-            if canonical not in scored_sense:
-                # A worst-case target still disagrees with a mean-aggregated
-                # standard, so fall back to the mean name for the lookup.
-                canonical = metric_by_observable.get(observable)
-            wanted = scored_sense.get(canonical or "")
-            if wanted is None:
-                rewritten.append(row)
-                continue
+            simulation = payload.get("simulation") or payload
+            illumination = simulation.get("illumination") or {}
+            matching = []
+            for metric in scored:
+                if metric.metric not in {metric_name, metric_by_observable.get(observable)}:
+                    continue
+                if not any(_target_band_within(row, band) for band in metric.bands_nm()):
+                    continue
+                same_channel = True
+                for selector, inventory, default in (
+                    ("angle_deg", "angles_deg", 0.0),
+                    ("polarization", "polarizations", "unpolarized"),
+                ):
+                    wanted_channel = metric.region.get(selector)
+                    actual_channel = row.get(selector, default)
+                    if wanted_channel is None:
+                        available = illumination.get(inventory) or [default]
+                        same_channel = same_channel and len(available) == 1 and available[0] == actual_channel
+                    else:
+                        same_channel = same_channel and wanted_channel == actual_channel
+                if same_channel:
+                    matching.append(metric)
+            exact_statistic = [metric for metric in matching if metric.metric == metric_name]
+            matching = exact_statistic or matching
+            senses = {metric.sense for metric in matching}
+            if len(senses) > 1:
+                raise ValueError(
+                    f"ambiguous frozen directions for target {row.get('name') or observable}: "
+                    + ", ".join(metric.canonical_id for metric in matching)
+                )
+            wanted = next(iter(senses), None)
             constraint = str(row.get("constraint") or "").casefold()
             implied = {"at_least": "maximize", "at_most": "minimize"}.get(constraint)
-            if implied is None or implied == wanted:
+            if wanted is None or implied is None or implied == wanted:
                 rewritten.append(row)
                 continue
-            bands = scored_bands.get(canonical or "") or ()
-            if not any(_target_band_within(row, band) for band in bands):
-                rewritten.append(row)
-                continue
+            canonical = matching[0].canonical_id
             new_constraint, new_target = agreeing[wanted]
             was_constraint = row.get("constraint")
             was_target = row.get("target")
@@ -3280,6 +3288,12 @@ class QwenTMMTaskCompiler:
                 )
                 standard_alignments: tuple[str, ...] = ()
                 if self._scoring_standard is not None:
+                    intent_errors = objective_intent_errors(
+                        source_question,
+                        [metric.model_dump(mode="json") for metric in self._scoring_standard.metrics],
+                    )
+                    if intent_errors:
+                        raise ValueError("frozen scoring standard contradicts request: " + "; ".join(intent_errors))
                     # Ahead of the objective rebuild, which reads each target's
                     # constraint to decide what the route pursues: a target
                     # corrected afterwards would leave the objective still
