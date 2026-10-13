@@ -13,6 +13,7 @@ import config.qwen_config as qwen_config
 from optomind_optics.harness import problem_analyzer as pmod
 from optomind_optics.harness import task_compiler as tcmod
 from optomind_optics.harness.dev_fixtures import build_dev_optical_design_task
+from optomind_optics.harness.design_task import HarnessBudgetPolicy, UncertaintyPolicy
 from optomind_optics.harness.experiment_store import ExperimentStore
 from optomind_optics.harness.task_compiler import (
     CompileFailure,
@@ -20,6 +21,7 @@ from optomind_optics.harness.task_compiler import (
     _check_task_spec_charter_drift,
     build_veritmm_task_spec,
 )
+from optomind_optics.harness.research_charter import build_research_charter
 
 FULL_CHARTER: dict[str, Any] = {
     "wavelength_range_nm": [450.0, 800.0],
@@ -66,6 +68,57 @@ class _ScriptedTurboClient:
     def call(self, messages, *, max_tokens: int = 4000, force_mock=None):
         self.calls += 1
         return self.responses.pop(0)
+
+
+def _formal01_fixture() -> dict[str, Any]:
+    fixture = Path(__file__).parents[1] / "fixtures" / "tmm_harness" / "formal01_controls.json"
+    return json.loads(fixture.read_text(encoding="utf-8"))
+
+
+def _formal01_request_and_draft() -> tuple[str, dict[str, Any], str]:
+    fixture = _formal01_fixture()
+    prompt_question = (
+        str(fixture["route_execution_request_english"])
+        + "\n\nAllow at most 20000 solver evaluations per round. Use seed 99."
+        + "\n\nImmutable original user request (overrides conflicting route proposals):\n"
+        + str(fixture["original_request"])
+        + "\nPreserve its physical constraints. Performance targets remain soft objectives."
+    )
+    return prompt_question, dict(fixture["compiler_draft"]), str(fixture["original_request"])
+
+
+def test_formal01_original_cap_and_seed_bind_before_charter_check():
+    question, draft, original_request = _formal01_request_and_draft()
+    result = QwenTMMTaskCompiler(
+        client=_ScriptedTurboClient([{"content": json.dumps(draft)}])
+    ).compile(question)
+
+    assert result.status == "compiled", result.validation_errors
+    assert result.task is not None
+    assert result.task.budget.maximum_forward_evaluations == 64
+    assert result.task.uncertainty.random_seed == 17
+    expected_optimizer = draft["experiments"][0]["tmm_task"]["optimizer"]
+    actual_optimizer = result.task.experiments[0].tmm_task["optimizer"]
+    assert {
+        key: value for key, value in actual_optimizer.items() if key != "seed"
+    } == {key: value for key, value in expected_optimizer.items() if key != "seed"}
+    assert all(
+        experiment.tmm_task["optimizer"]["seed"] == 17
+        for experiment in result.task.experiments
+        if experiment.mode.value == "optimize"
+    )
+    assert result.task.metadata["original_request_control_bindings"] == [
+        "maximum_forward_evaluations bound to explicit original request cap 64",
+        "optimizer seed bound to explicit original request seed 17",
+        "uncertainty random_seed bound to explicit original request seed 17",
+    ]
+    charter = build_research_charter(
+        original_request,
+        {},
+    )
+    _check_task_spec_charter_drift(
+        {"task": result.task.model_dump(mode="json")}, charter
+    )
 
 
 def _compiled_response(total_tokens: int | None = None) -> dict[str, Any]:
@@ -123,6 +176,9 @@ def test_valid_task_spec_passes(tmp_path, monkeypatch):
         "Design a single-layer antireflection coating on glass over 500-600 nm."
     )
     assert result.status == "compiled"
+    assert result.task is not None
+    assert result.task.budget.maximum_forward_evaluations == HarnessBudgetPolicy().maximum_forward_evaluations
+    assert result.task.uncertainty.random_seed == UncertaintyPolicy().random_seed
     spec = build_veritmm_task_spec(
         result,
         route_id="route_A",

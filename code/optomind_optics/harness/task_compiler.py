@@ -327,6 +327,86 @@ class TaskCompilationResult(BaseModel):
     rejected_draft: str = ""
 
 
+_IMMUTABLE_ORIGINAL_REQUEST_MARKER = (
+    "Immutable original user request (overrides conflicting route proposals):"
+)
+
+
+def _original_request_source(source_question: str) -> str:
+    """Return the authoritative user text when a route wrapper is present."""
+
+    source = str(source_question or "")
+    folded = source.casefold()
+    marker = _IMMUTABLE_ORIGINAL_REQUEST_MARKER.casefold()
+    index = folded.rfind(marker)
+    return source[index + len(_IMMUTABLE_ORIGINAL_REQUEST_MARKER) :] if index >= 0 else source
+
+
+def _explicit_original_request_controls(
+    source_question: str,
+) -> tuple[int | None, int | None]:
+    """Read only explicit cap/seed controls from the original request.
+
+    The charter owns the natural-language extraction rules.  A route may carry
+    a conflicting proposal, so the immutable suffix is isolated before the
+    shared parser is called.
+    """
+
+    from .research_charter import build_research_charter
+
+    charter = build_research_charter(_original_request_source(source_question), {})
+    frozen = charter.get("frozen_constraints") or {}
+    cap = frozen.get("maximum_forward_evaluations_per_round")
+    seed = frozen.get("optimizer_seed")
+    return (
+        None if cap is None else int(cap),
+        None if seed is None else int(seed),
+    )
+
+
+def _bind_explicit_original_request_controls(
+    draft: TMMTaskDraft,
+    uncertainty: UncertaintyPolicy,
+    source_question: str,
+) -> tuple[TMMTaskDraft, UncertaintyPolicy, HarnessBudgetPolicy, tuple[str, ...]]:
+    """Bind only explicit original cap/seed values into production objects."""
+
+    cap, seed = _explicit_original_request_controls(source_question)
+    budget = HarnessBudgetPolicy()
+    bindings: list[str] = []
+    if cap is not None:
+        budget = HarnessBudgetPolicy(maximum_forward_evaluations=cap)
+        bindings.append(
+            f"maximum_forward_evaluations bound to explicit original request cap {cap}"
+        )
+    if seed is None:
+        return draft, uncertainty, budget, tuple(bindings)
+
+    uncertainty = uncertainty.model_copy(update={"random_seed": seed})
+    experiments: list[TMMExperimentSpec] = []
+    optimizer_bound = False
+    for experiment in draft.experiments:
+        mode = getattr(experiment.mode, "value", str(experiment.mode))
+        if mode != "optimize":
+            experiments.append(experiment)
+            continue
+        raw_task = dict(experiment.tmm_task)
+        optimizer = raw_task.get("optimizer")
+        if not isinstance(optimizer, Mapping):
+            raise ValueError(
+                "explicit original request seed cannot be bound because the "
+                "compiled optimize experiment has no optimizer block"
+            )
+        raw_task["optimizer"] = {**dict(optimizer), "seed": seed}
+        optimizer_bound = True
+        experiments.append(experiment.model_copy(update={"tmm_task": raw_task}))
+    draft = draft.model_copy(update={"experiments": tuple(experiments)})
+    if optimizer_bound:
+        bindings.append(f"optimizer seed bound to explicit original request seed {seed}")
+    bindings.append(f"uncertainty random_seed bound to explicit original request seed {seed}")
+    return draft, uncertainty, budget, tuple(bindings)
+
+
 def _safe_json(text: str) -> dict[str, Any]:
     text = str(text or "").strip()
     try:
@@ -3284,6 +3364,16 @@ class QwenTMMTaskCompiler:
                     draft.uncertainty, source_question
                 )
                 uncertainty_warnings = (*uncertainty_repairs, *uncertainty_warnings)
+                (
+                    draft,
+                    uncertainty,
+                    budget,
+                    original_request_bindings,
+                ) = _bind_explicit_original_request_controls(
+                    draft,
+                    uncertainty,
+                    source_question,
+                )
                 rationale = draft.rationale
                 if uncertainty_warnings:
                     # The validated contract is authoritative. A model may
@@ -3304,7 +3394,7 @@ class QwenTMMTaskCompiler:
                     verification=PhysicsVerificationPolicy(),
                     portfolio=PortfolioPolicy(),
                     uncertainty=uncertainty,
-                    budget=HarnessBudgetPolicy(),
+                    budget=budget,
                     metadata={
                         "compiler": "QwenTMMTaskCompiler",
                         "compiler_schema": "tmm-task-compilation.v1",
@@ -3326,6 +3416,9 @@ class QwenTMMTaskCompiler:
                             _objective_targets(draft)
                         ),
                         "uncertainty_normalization": list(uncertainty_warnings),
+                        "original_request_control_bindings": list(
+                            original_request_bindings
+                        ),
                     },
                 )
                 semantic_errors = _semantic_coverage_errors(

@@ -23,6 +23,7 @@ import pytest
 from optomind_optics.harness.route_reflection import (
     REFLECTION_MODEL,
     RouteReflection,
+    _build_reflection_payload,
     reflect_on_route,
     write_reflection_sidecar,
 )
@@ -352,6 +353,28 @@ def _fake_observation() -> dict[str, Any]:
         "task_path": None,
         "result_path": None,
     }
+
+
+def test_reflection_payload_preserves_formal_compilation_diagnostics():
+    fixture_path = (
+        Path(__file__).parents[1]
+        / "fixtures"
+        / "tmm_harness"
+        / "formal01_controls.json"
+    )
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    observation = fixture["contract_diagnostics"]
+    payload = _build_reflection_payload({}, observation, [], 1e-4, {})
+    evidence = payload["scientific_evidence"]
+    assert evidence["compilation_status"] == "contract_rejected"
+    assert evidence["compilation_rationale"] == (
+        "The compiled proposal violates the immutable original request."
+    )
+    assert evidence["compilation_errors"] == [
+        "CHARTER_DRIFT_ERROR: solver evaluation budget exceeds original per-round cap"
+    ]
+    assert evidence["failure_categories"] == ["contract_violation"]
+    assert evidence["run_status"] == "contract_rejected"
 
 
 def _fake_reflection_response() -> dict[str, Any]:

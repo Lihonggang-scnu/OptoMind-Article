@@ -23,7 +23,29 @@ def decision_context(observation: Observation, messages=()):
 
 
 def reflection_evidence(observation: Mapping[str, Any]):
-    return {key: observation[key] for key in ("binding", "raw_blocks", "derived_features", "quality", "artifact_refs", "gradient_summary", "energy_accounting_summary", "verification", "verification_partial", "evidence_coverage", "verify_run_error", "candidate_summaries") if key in observation}
+    return {
+        key: observation[key]
+        for key in (
+            "binding",
+            "raw_blocks",
+            "derived_features",
+            "quality",
+            "artifact_refs",
+            "gradient_summary",
+            "energy_accounting_summary",
+            "verification",
+            "verification_partial",
+            "evidence_coverage",
+            "verify_run_error",
+            "candidate_summaries",
+            "compilation_status",
+            "compilation_rationale",
+            "compilation_errors",
+            "failure_categories",
+            "run_status",
+        )
+        if key in observation
+    }
 
 
 def bound_gradient(simulation: dict, *, candidate_ref: ObjectRef, objective_ref: ObjectRef, objective, binding: dict, provenance=None):
