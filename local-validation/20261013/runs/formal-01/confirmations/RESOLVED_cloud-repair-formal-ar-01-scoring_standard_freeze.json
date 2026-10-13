@@ -1,0 +1,45 @@
+{
+  "gate_id": "cloud-repair-formal-ar-01-scoring_standard_freeze",
+  "decision": "timeout_accepted",
+  "payload_after": {
+    "standard": {
+      "schema_version": "tmm-scoring-standard.v1",
+      "catalog_schema_version": "tmm-metric-catalog.v1",
+      "locked": true,
+      "question_digest": "cf712123ca1f601b",
+      "metrics": [
+        {
+          "variable": "mean_reflectance_450_700nm",
+          "canonical_id": "mean_reflectance@450-700nm",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0,
+            "polarization": "s"
+          },
+          "target": null,
+          "rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance sampled from 450 to 700 nm' at 'normal incidence with s polarization'.",
+          "mean_reduction": "sample_mean"
+        }
+      ],
+      "formula": "-mean_reflectance_450_700nm",
+      "formula_variables": [
+        "mean_reflectance_450_700nm"
+      ],
+      "metric_rationale": "This single metric directly encodes the primary optimization objective stated in the request: minimizing the average reflectance over the specific 450-700 nm band for s-polarized light at normal incidence. The target value of 0.03 mentioned in the text serves as a success criterion for the final result but does not change the ranking direction (minimization) required to find the best design; therefore, a 'match' sense is unnecessary and would distort the ranking if the physical minimum is slightly above or below 0.03. No other metrics are needed because the request focuses solely on antireflection performance in this specific band, with no competing requirements for other bands or observables like transmittance or absorption.",
+      "formula_rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance' across the 450-700 nm band. Since the scoring system requires that higher values indicate better designs, the single metric representing average reflectance must be negated. This ensures that as the reflectance decreases (improving the design), the score increases. No other variables or weights are needed because the request focuses solely on this specific average value without secondary constraints or competing objectives.",
+      "provenance": {
+        "model": "qwen3.5-plus",
+        "metric_selection_attempts": 1,
+        "formula_attempts": 1,
+        "maximum_metrics": 4
+      }
+    }
+  },
+  "responder": "auto:timeout",
+  "resolved_at": "2026-10-13T09:37:08.378377+00:00"
+}

@@ -1,0 +1,45 @@
+{
+  "gate_id": "cloud-repair-formal-ar-02-scoring_standard_freeze",
+  "decision": "timeout_accepted",
+  "payload_after": {
+    "standard": {
+      "schema_version": "tmm-scoring-standard.v1",
+      "catalog_schema_version": "tmm-metric-catalog.v1",
+      "locked": true,
+      "question_digest": "cf712123ca1f601b",
+      "metrics": [
+        {
+          "variable": "mean_reflectance_450_700nm",
+          "canonical_id": "mean_reflectance@450-700nm",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0,
+            "polarization": "s"
+          },
+          "target": null,
+          "rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance sampled from 450 to 700 nm' at 'normal incidence with s polarization'.",
+          "mean_reduction": "sample_mean"
+        }
+      ],
+      "formula": "-mean_reflectance_450_700nm",
+      "formula_variables": [
+        "mean_reflectance_450_700nm"
+      ],
+      "metric_rationale": "This single metric directly encodes the primary optimization objective: minimizing the average reflectance over the specific visible band (450-700 nm) for the specified channel (normal incidence, s-polarization). The stated target of 0.03 is a success criterion for the result, not a separate ranking metric; since the goal is minimization, any design achieving <0.03 will naturally rank higher than those that do not when sorted by this metric. No other metrics are needed as there are no competing bands or secondary objectives like maximizing transmission in a different range.",
+      "formula_rationale": "The user explicitly requests to minimize the arithmetic mean power reflectance across the 450-700 nm band. Since the scoring system requires that higher values indicate better designs, the single metric 'mean_reflectance_450_700nm' (which must be minimized) is negated. This ensures that as the reflectance decreases towards the target of 0.03, the score increases, correctly ranking lower-reflectance designs as superior. No other variables or weights are needed as there is only one objective.",
+      "provenance": {
+        "model": "qwen3.5-plus",
+        "metric_selection_attempts": 1,
+        "formula_attempts": 1,
+        "maximum_metrics": 4
+      }
+    }
+  },
+  "responder": "auto:timeout",
+  "resolved_at": "2026-10-13T10:05:39.453586+00:00"
+}

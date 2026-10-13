@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_02/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "dd55f21269b53da2e92d3d256e2732dbe52d9a86e69a16cef88a4551bee7e938",
+  "recorded_at_utc": "2026-10-13T10:21:21.336783+00:00",
+  "elapsed_seconds": 260.35531790019013,
+  "run_id": "cloud-repair-formal-ar-03",
+  "iteration_id": "iteration_02",
+  "route_id": "route_01",
+  "scientific_hypothesis": "The global minimum for mean reflectance in this constrained two-layer system occurs with the SiO2 layer adjacent to air and the TiO2 layer adjacent to glass, with thicknesses perturbed slightly from the ideal quarter-wave values (SiO2 ~99nm, TiO2 ~60nm) to balance the broadband response. The reverse order (TiO2/SiO2) cannot achieve a lower mean reflectance even with optimal thickness tuning due to the impedance mismatch profile at the air interface.",
+  "expected_advantages": [
+    "Initialization near the physical optimum reduces the risk of the optimizer converging to a shallow local minimum far from the quarter-wave solution.",
+    "Explicitly testing the reverse order with equal optimization effort provides a definitive comparison rather than relying on potentially under-optimized baseline results from Round 1."
+  ],
+  "known_risks": [
+    "The optimal solution might lie at the boundary of the thickness constraints (40 or 160 nm) if the quarter-wave condition is incompatible with the broadband requirement.",
+    "The discrete nature of the stack order means the optimizer must evaluate both topologies; if the search budget is split too thinly, one order might be under-explored."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase as the optimizer identifies the superior stack order and converges on optimal thicknesses.",
+    "valid_candidates should remain high unless the thickness constraints force all candidates to invalid states (unlikely given the wide range).",
+    "tightest_margin should stabilize as the solution approaches the thickness boundaries or a local minimum.",
+    "If neither order achieves the soft target, best_target_score will plateau below the threshold corresponding to 0.03 reflectance."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If valid_candidates drops to zero due to constraint violations (unexpected), stop and report the constraint conflict."
+  ]
+}

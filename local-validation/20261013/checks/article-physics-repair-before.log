@@ -1,0 +1,57 @@
+FFF                                                                      [100%]
+================================== FAILURES ===================================
+____ test_constant_index_drift_is_returned_to_model_before_accepting_draft ____
+
+    def test_constant_index_drift_is_returned_to_model_before_accepting_draft():
+        saved = fixture()
+        correct = saved['compiler_draft']
+        wrong = deepcopy(correct)
+        layers = wrong['experiments'][0]['tmm_task']['simulation']['stack']['layers']
+        for layer, material in zip(layers, ('sio2', 'tio2')):
+            layer['material'] = material
+            layer.pop('constant_n')
+            layer.pop('constant_k')
+        client = RecordedClient(wrong, correct)
+        result = QwenTMMTaskCompiler(client=client).compile(saved['original_request'])
+>       assert result.status == 'compiled' and result.attempts == 2
+E       AssertionError: assert ('compiled' == 'compiled'
+E         
+E           compiled and 1 == 2)
+E        +  where 1 = TaskCompilationResult(schema_version='tmm-task-compilation.v1', status='compiled', benchmark_id=None, model_name='qwen...ge=({},), raw_response_sha256=('0b7551ddb5ebd5e6f49a1410d3b367e72565d11560ea8c6498918a50d2966f7b',), rejected_draft='').attempts
+
+code\tests\harness\test_compiler_original_physics_repair.py:36: AssertionError
+___ test_unrepaired_physical_drift_stays_invalid_and_never_relaxes_contract ___
+
+    def test_unrepaired_physical_drift_stays_invalid_and_never_relaxes_contract():
+        saved = fixture()
+        wrong = deepcopy(saved['compiler_draft'])
+        wrong['experiments'][0]['tmm_task']['simulation']['stack']['layers'][0]['constant_n'] = 1.47
+        result = QwenTMMTaskCompiler(client=RecordedClient(wrong, wrong)).compile(saved['original_request'])
+>       assert result.status == 'invalid' and result.task is None and result.attempts == 2
+E       AssertionError: assert ('compiled' == 'invalid'
+E         
+E         - invalid
+E         + compiled)
+
+code\tests\harness\test_compiler_original_physics_repair.py:49: AssertionError
+_______ test_permitted_order_clarification_uses_existing_single_repair ________
+
+    def test_permitted_order_clarification_uses_existing_single_repair():
+        saved = fixture()
+        clarification = {'status': 'needs_clarification', 'rationale': (
+            'The bounded task schema supports one fixed stack sequence per experiment; '
+            'please choose between the two layer orders.'), 'experiments': []}
+        client = RecordedClient(clarification, saved['compiler_draft'])
+        result = QwenTMMTaskCompiler(client=client).compile(saved['original_request'])
+>       assert result.status == 'compiled' and result.attempts == 2
+E       AssertionError: assert ('needs_clarification' == 'compiled'
+E         
+E         - compiled
+E         + needs_clarification)
+
+code\tests\harness\test_compiler_original_physics_repair.py:60: AssertionError
+=========================== short test summary info ===========================
+FAILED code\tests\harness\test_compiler_original_physics_repair.py::test_constant_index_drift_is_returned_to_model_before_accepting_draft
+FAILED code\tests\harness\test_compiler_original_physics_repair.py::test_unrepaired_physical_drift_stays_invalid_and_never_relaxes_contract
+FAILED code\tests\harness\test_compiler_original_physics_repair.py::test_permitted_order_clarification_uses_existing_single_repair
+3 failed in 0.69s

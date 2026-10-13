@@ -1,0 +1,44 @@
+{
+  "observed_vs_expected": "The pre-declaration expected that the optimizer would converge to a solution where reflectance decreases as thicknesses approach the theoretical optimum. The observed best target score is 0.9646 (mean reflectance ~0.0354), which is an improvement over the baseline (0.9324, mean reflectance ~0.0676). However, the result is inconsistent with the soft target of mean reflectance < 0.03 (score > 0.97ish depending on weighting, but specifically the metric value 0.0354 > 0.03). The deviation is in magnitude: the achieved mean reflectance is 0.0354 nm, which is 18% higher than the 0.03 target. The 'tightest_margin' reported in observed_metrics (0.588...) appears to be a misinterpretation of the robustness score or similar; physically, the thicknesses are well within bounds [40, 160], so the margin to boundary constraints is large (~26-44 nm away from limits), not tight.",
+  "deviation_mechanism": "The physical mechanism for the failure to reach R < 0.03 is the limitation of a two-layer stack with fixed materials (SiO2/TiO2) and fixed order (Air|SiO2|TiO2|Glass). A single quarter-wave pair can theoretically minimize reflection at a specific wavelength, but minimizing the *arithmetic mean* over a broad band (450-700 nm) requires more degrees of freedom. With only two layers, the system has only two thickness variables. The optimal thicknesses found (~86.6 nm and ~94.5 nm) represent a compromise across the spectrum. The refractive indices n_SiO2=1.46 and n_TiO2=2.40 create a specific impedance transformation. For a two-layer coating, it is physically difficult to achieve broadband anti-reflection below 3% mean reflectance because the phase accumulation cannot simultaneously cancel reflections at both the short (450 nm) and long (700 nm) ends of the band effectively enough. The 'Low-High' sequence (SiO2 then TiO2) is generally less effective for broadband AR on high-index substrates compared to 'High-Low' or multi-layer designs, due to the mismatch step sizes. The optimizer hit a local/global optimum constrained by the physics of 2-layer interference, not by search failure.",
+  "continue_recommended": false,
+  "continue_rationale": "Two rounds have been executed. The score history shows stagnation: [0.9646, 0.9646]. The best candidate achieves a mean reflectance of 0.0354, failing the 0.03 target. Further optimization within the same topology (2 layers, SiO2/TiO2, fixed order) is unlikely to yield significant benefit because the current solution is already near the physical limit for this specific configuration. The gradient summary indicates unavailable gradients, but the convergence of thicknesses across candidates (e.g., 86.5 vs 87.0, 94.5 vs 94.0) suggests the search space is exhausted. Continuing with the same design is scientifically futile; the route is physically limited.",
+  "insight_for_next": "",
+  "insight_grounding": "Candidate 'opt_ar_coating_sio2_tio2_order1__g__1ea06b213824' achieved mean_reflectance 0.0353624086564206 with thicknesses [86.55957088989845, 94.47810205108865]. Candidate 'opt_ar_coating_sio2_tio2_order1__g__808b9c1d06e8' had thicknesses [87.0, 94.0] and mean_reflectance 0.036559436580132616. The score history [0.9646375913435794, 0.9646375913435794] confirms no improvement between rounds. The target was 0.03, and the gap is 0.0054.",
+  "stop_basis": "marginal_gains_too_low",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-10-13T10:45:45.016439+00:00",
+  "attestation_sha256": "09b4ce331d95603aa480b7e3d74c68ba6ff30a76675ab53cb17326d89eec8a64",
+  "observed_metrics": {
+    "best_target_score": 0.9646375913435794,
+    "valid_candidates": 5,
+    "run_status": "completed",
+    "tightest_margin": 0.5887842007325347
+  },
+  "reflection_available": true,
+  "disagreement": {
+    "present": true,
+    "llm_recommendation": false,
+    "deterministic_verdict": "stop",
+    "deterministic_readings": {
+      "gate_max_rounds": false,
+      "gate_budget": false,
+      "gate_physics": true,
+      "gate_stagnation": true,
+      "observed_gain": null,
+      "epsilon": 0.0001,
+      "window_scores": [
+        0.9646375913435794,
+        0.9646375913435794
+      ],
+      "stagnation_is_advisory_only": true
+    },
+    "llm_stop_policy": {
+      "minimum_rounds_required": 2,
+      "rounds_executed": 2,
+      "stop_basis": "marginal_gains_too_low",
+      "explicit_no_benefit_stop": true
+    },
+    "resolution": "llm_stop_honored_after_minimum_rounds"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "b0ddcddc6ff390bad64d741eee0bba71620f97a95d8964c29eb09318e74dbbf3",
+  "recorded_at_utc": "2026-10-13T10:07:48.746462+00:00",
+  "elapsed_seconds": 197.79099670005962,
+  "run_id": "cloud-repair-formal-ar-02",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "There exists a combination of layer order (SiO2-first or TiO2-first) and layer thicknesses within the 40-160 nm range that minimizes the arithmetic mean power reflectance below the soft target of 0.03 across the 450-700 nm band.",
+  "expected_advantages": [
+    "Directly addresses the user's specific material and thickness constraints",
+    "Explores the full feasible design space for the two-layer system"
+  ],
+  "known_risks": [
+    "The global minimum may lie outside the 40-160 nm thickness bounds",
+    "The fixed refractive indices may not allow a mean reflectance below 0.03 with only two layers"
+  ],
+  "expected_observations": [
+    "best_target_score should increase as the optimizer converges toward the global minimum reflectance",
+    "valid_candidates count should remain positive throughout the search if feasible solutions exist within bounds",
+    "tightest_margin should reflect the distance of the best solution's thicknesses from the 40/160 nm boundaries",
+    "If the hypothesis holds, the final best_target_score will correspond to a mean reflectance value; if the physics limits performance, best_target_score will plateau at a value corresponding to the achievable minimum > 0.03"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero for all attempted steps in a round, stop and report the constraint conflict"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "720b311fcf178c34937b9cb370256e25556c59a55043d8ffe3de8f4ed66e0305",
+  "recorded_at_utc": "2026-10-13T10:43:01.781552+00:00",
+  "elapsed_seconds": 179.1915434000548,
+  "run_id": "cloud-repair-restore-ar-05",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "A two-layer stack with the low-index material (SiO2) adjacent to air and the high-index material (TiO2) adjacent to the glass substrate will achieve a lower arithmetic mean reflectance across the 450-700 nm band than the reverse ordering, given the thickness constraints of 40-160 nm.",
+  "expected_advantages": [
+    "The Low-High ordering provides a better match to the substrate index profile, likely yielding lower average reflectance compared to High-Low ordering which may suffer from strong front-surface reflection."
+  ],
+  "known_risks": [
+    "The optimal thicknesses for this specific ordering might fall outside the 40-160 nm constraint window, forcing a sub-optimal solution at the boundaries.",
+    "The constant-index assumption may not perfectly match real dispersion, though the problem mandates constant indices."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, the optimizer should converge to a solution where best_target_score increases (reflectance decreases) as thicknesses approach the theoretical optimum for the Low-High sequence.",
+    "valid_candidates should remain high throughout the search unless the constraints create a disjoint feasible region.",
+    "tightest_margin should indicate how close the solution is to the 40/160 nm boundaries; if tightest_margin approaches zero, the global optimum lies outside the allowed range.",
+    "If the hypothesis fails, the final mean reflectance may be significantly higher than what could be achieved with the reverse order, or the optimizer may stall at a boundary constraint without meeting the soft target of 0.03."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds of evaluation (within the 64 eval limit), treat the local optimum as found, stop and keep the current best thicknesses.",
+    "If valid_candidates drops to zero due to constraint conflicts (unlikely here but possible if logic errors occur), stop and report the constraint violation.",
+    "Upon reaching 64 solver evaluations, stop immediately and return the best candidate found so far."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_02/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "4a455d2bc3f9ea019fb7d7eaf0c36df909b919206f81a4db096cd8c490475975",
+  "recorded_at_utc": "2026-10-13T10:08:31.525932+00:00",
+  "elapsed_seconds": 240.57025930006057,
+  "run_id": "cloud-repair-formal-ar-02",
+  "iteration_id": "iteration_02",
+  "route_id": "route_01",
+  "scientific_hypothesis": "For a two-layer system with SiO2 (n=1.46) and TiO2 (n=2.40) on glass (n=1.52), the specific ordering of Low-High index (SiO2 then TiO2) admits a global minimum in mean reflectance over 450-700 nm within the 40-160 nm thickness constraints that is distinct from the High-Low ordering.",
+  "expected_advantages": [
+    "Provides a definitive optimal solution for the Low-High index sequence",
+    "Resolves the compilation ambiguity by fixing the topology",
+    "Allows direct comparison with the inverted sequence in a future step"
+  ],
+  "known_risks": [
+    "The global minimum for this specific order might exceed the 0.03 soft target due to material index mismatch",
+    "Thickness constraints (40-160 nm) may prevent reaching the ideal quarter-wave optical thickness for the center wavelength"
+  ],
+  "expected_observations": [
+    "best_target_score should increase as the optimizer converges toward the global minimum reflectance",
+    "valid_candidates count should remain positive throughout the search if feasible solutions exist within bounds",
+    "tightest_margin should reflect the distance of the best solution's thicknesses from the 40/160 nm boundaries",
+    "If the hypothesis holds, the final best_target_score will correspond to a mean reflectance value; if the physics limits performance, best_target_score will plateau at a value corresponding to the achievable minimum > 0.03"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero for all attempted steps in a round, stop and report the constraint conflict"
+  ]
+}

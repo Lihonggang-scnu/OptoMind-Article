@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_02/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "c36f87557515cc06cb943c9ac890ec976221fcce77070117777d994503527378",
+  "recorded_at_utc": "2026-10-13T09:40:03.534224+00:00",
+  "elapsed_seconds": 273.12734679994173,
+  "run_id": "cloud-repair-formal-ar-01",
+  "iteration_id": "iteration_02",
+  "route_id": "route_01",
+  "scientific_hypothesis": "A two-layer stack comprising one SiO2 and one TiO2 layer, with thicknesses bounded between 40 nm and 160 nm, can achieve an arithmetic mean reflectance below 0.03 across the 450-700 nm band at normal incidence if the optimizer finds a non-quarter-wave thickness combination that balances the spectral ripple, or if the optimal solution lies near the quarter-wave points (~98 nm for SiO2, ~60 nm for TiO2) adjusted for broadband performance.",
+  "expected_advantages": [
+    "Simple two-layer structure is easy to fabricate",
+    "SiO2/TiO2 provides a large index contrast suitable for broadband AR"
+  ],
+  "known_risks": [
+    "Two layers may be insufficient to reach < 0.03 mean reflectance over such a wide band (450-700 nm) given the specific index values",
+    "Optimizer may get stuck in local minima if initialization is poor"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase as the optimizer finds thickness pairs that deepen the interference minima across the band.",
+    "valid_candidates should remain high throughout the search as the thickness bounds are wide enough to support physical solutions.",
+    "tightest_margin should not degrade significantly if the solution space is smooth.",
+    "If the hypothesis fails, best_target_score will plateau at a value corresponding to a mean reflectance above 0.03 despite exhaustive search within the bounds."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds of evaluation (within the 64 eval limit), treat the local optimum as found, stop the search, and keep the current best thickness parameters.",
+    "If the maximum 64 solver evaluations are reached, stop and return the best candidate found so far."
+  ]
+}

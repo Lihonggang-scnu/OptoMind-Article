@@ -1,0 +1,31 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "531752fcd5bdd9b810b4211f3320a4a900b77630f3458ae13128ec8685dcac9b",
+  "recorded_at_utc": "2026-10-13T10:29:47.673835+00:00",
+  "elapsed_seconds": 188.68705850001425,
+  "run_id": "cloud-repair-formal-ar-04",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "For a two-layer system with indices n_air < n_SiO2 < n_TiO2 > n_glass, the stack ordering Air/SiO2/TiO2/Glass yields a lower global minimum mean reflectance than Air/TiO2/SiO2/Glass because the intermediate SiO2 layer reduces the initial impedance mismatch at the air interface more effectively than starting with the high-index TiO2.",
+  "expected_advantages": [
+    "Directly tests the theoretically preferred material ordering for impedance grading",
+    "Concentrates the limited 64-evaluation budget on refining thicknesses for the most promising topology rather than splitting resources between two topologies",
+    "Provides a clear baseline; if this optimal ordering fails to meet the target, the reverse ordering is unlikely to succeed given the larger initial index mismatch"
+  ],
+  "known_risks": [
+    "The reverse order (TiO2/SiO2) might unexpectedly perform better due to specific phase cancellation effects at the substrate interface not captured by simple impedance arguments",
+    "The thickness constraints (40-160 nm) may prevent the formation of ideal quarter-wave or half-wave conditions for the entire 450-700 nm band",
+    "Constant index assumption may introduce errors if actual material dispersion is significant, though the problem statement mandates constant indices"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, the optimizer should converge to a solution where best_target_score approaches 1.0 (corresponding to mean reflectance near 0.0) or at least significantly improves over unoptimized guesses, with tightest_margin remaining positive relative to the 40/160 nm bounds.",
+    "If the hypothesis fails or the constraints are too tight, best_target_score will plateau at a lower value corresponding to a mean reflectance above 0.03, and valid_candidates may cluster near the boundary limits (40 or 160 nm) indicating the solver is pushing against constraints.",
+    "The reflectance spectrum should show a broad dip centered roughly in the 450-700 nm range if successful, or a narrow/shifted dip if the thickness constraints limit performance."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds of evaluation (within the 64 eval limit), treat the local optimum as found, stop the search, and retain the current best thickness pair.",
+    "If the optimizer exhausts the 64 solver evaluations without converging to a stable point, stop and report the best valid candidate found so far.",
+    "If all generated candidates violate the 40-160 nm thickness constraints (valid_candidates = 0), stop and flag the constraint set as infeasible for this topology."
+  ]
+}

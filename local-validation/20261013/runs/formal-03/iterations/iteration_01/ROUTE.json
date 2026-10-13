@@ -1,0 +1,43 @@
+{
+  "route_id": "route_01",
+  "title": "Two-Layer AR Coating Optimization: Order and Thickness Sweep",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "Within the 40-160 nm thickness constraint, one specific stacking order (Air|TiO2|SiO2|Glass or Air|SiO2|TiO2|Glass) combined with optimized thicknesses will yield a significantly lower arithmetic mean reflectance across 450-700 nm than the alternative order.",
+  "design_principle": "Antireflection in a two-layer system relies on destructive interference between reflections at the air-coating, coating-coating, and coating-substrate interfaces. The phase shifts upon reflection depend on the relative refractive indices (n_air < n_SiO2 < n_TiO2 < n_glass vs n_air < n_TiO2 > n_SiO2 < n_glass), creating distinct interference conditions for each order that cannot be compensated solely by thickness changes.",
+  "proposed_materials": [
+    "SiO2 (Gao)",
+    "TiO2 (Siefke)"
+  ],
+  "proposed_topology": "Air / Layer1 / Layer2 / Glass(Substrate)",
+  "design_variables": [
+    "stack_order (binary choice: [TiO2, SiO2] or [SiO2, TiO2])",
+    "thickness_layer1 (continuous, 40-160 nm)",
+    "thickness_layer2 (continuous, 40-160 nm)"
+  ],
+  "soft_objectives": [
+    "minimize arithmetic mean power reflectance from 450 nm to 700 nm",
+    "achieve mean reflectance below 0.03"
+  ],
+  "manufacturing_considerations": [
+    "layer thickness must be strictly between 40 nm and 160 nm",
+    "exactly one layer of each material"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Thin-film interference theory for multi-layer stacks",
+    "Fresnel equations for normal incidence s-polarization",
+    "Transfer Matrix Method for stratified media"
+  ],
+  "expected_advantages": [
+    "Simultaneously resolves the discrete topology question (order) and continuous geometry question (thickness) within the single allowed route",
+    "Directly addresses the user's constraint of using exactly one layer of each material"
+  ],
+  "known_risks": [
+    "The global minimum may lie outside the 40-160 nm thickness range, leading to a boundary solution that fails the soft target of 0.03",
+    "Constant index assumption may deviate from real material dispersion, though required by the prompt"
+  ],
+  "execution_request_english": "Optimize a planar two-layer stack on a semi-infinite glass substrate (n=1.52) with air incidence (n=1.0). The stack must contain exactly one layer of SiO2 (Gao) and one layer of TiO2 (Siefke). Evaluate both possible orders: (1) Air | TiO2 (Siefke) | SiO2 (Gao) | Glass and (2) Air | SiO2 (Gao) | TiO2 (Siefke) | Glass. For each order, optimize the individual layer thicknesses within the range [40, 160] nm to minimize the arithmetic mean power reflectance at normal incidence (0 degrees) with s-polarization over the wavelength range 450-700 nm (5 nm steps). Use deterministic Transfer Matrix Method. Run for up to 2 research rounds with max 64 solver evaluations per round, seed 17. Report the best found stack order, thicknesses, and the resulting mean reflectance spectrum.",
+  "priority": 1,
+  "parent_route_id": null,
+  "revision_reason": null
+}

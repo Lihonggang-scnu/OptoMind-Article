@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "ad6335c60c12bdeb731190b2f50bf98d41b7fe2111e48d8bed3def31f4496296",
+  "recorded_at_utc": "2026-10-13T10:20:00.107054+00:00",
+  "elapsed_seconds": 179.12612190004438,
+  "run_id": "cloud-repair-formal-ar-03",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "Within the 40-160 nm thickness constraint, one specific stacking order (Air|TiO2|SiO2|Glass or Air|SiO2|TiO2|Glass) combined with optimized thicknesses will yield a significantly lower arithmetic mean reflectance across 450-700 nm than the alternative order.",
+  "expected_advantages": [
+    "Simultaneously resolves the discrete topology question (order) and continuous geometry question (thickness) within the single allowed route",
+    "Directly addresses the user's constraint of using exactly one layer of each material"
+  ],
+  "known_risks": [
+    "The global minimum may lie outside the 40-160 nm thickness range, leading to a boundary solution that fails the soft target of 0.03",
+    "Constant index assumption may deviate from real material dispersion, though required by the prompt"
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase as the optimizer identifies the superior stack order and converges on optimal thicknesses.",
+    "valid_candidates should remain high unless the thickness constraints force all candidates to invalid states (unlikely given the wide range).",
+    "tightest_margin should stabilize as the solution approaches the thickness boundaries or a local minimum.",
+    "If neither order achieves the soft target, best_target_score will plateau below the threshold corresponding to 0.03 reflectance."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-3 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best.",
+    "If valid_candidates drops to zero due to constraint violations (unexpected), stop and report the constraint conflict."
+  ]
+}

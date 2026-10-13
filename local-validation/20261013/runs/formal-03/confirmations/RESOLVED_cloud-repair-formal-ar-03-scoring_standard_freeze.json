@@ -1,0 +1,45 @@
+{
+  "gate_id": "cloud-repair-formal-ar-03-scoring_standard_freeze",
+  "decision": "timeout_accepted",
+  "payload_after": {
+    "standard": {
+      "schema_version": "tmm-scoring-standard.v1",
+      "catalog_schema_version": "tmm-metric-catalog.v1",
+      "locked": true,
+      "question_digest": "cf712123ca1f601b",
+      "metrics": [
+        {
+          "variable": "mean_reflectance_450_700nm",
+          "canonical_id": "mean_reflectance@450-700nm",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0,
+            "polarization": "s"
+          },
+          "target": 0.03,
+          "rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance sampled from 450 to 700 nm' and states 'A mean reflectance below 0.03 is the stated target'. The metric uses 'minimize' for the optimization direction and includes the 'target' of 0.03 to enforce the soft constraint mentioned.",
+          "mean_reduction": "sample_mean"
+        }
+      ],
+      "formula": "-abs(mean_reflectance_450_700nm - 0.03)",
+      "formula_variables": [
+        "mean_reflectance_450_700nm"
+      ],
+      "metric_rationale": "This single metric faithfully captures the entire optimization objective defined in the user's request: minimizing the average reflectance over the specific visible band (450-700 nm) at normal incidence with s-polarization. It incorporates the specific target value (0.03) provided as a performance goal. No other metrics are needed because the request does not ask for trade-offs in other bands, worst-case guarantees, or transmission maximization (which is mathematically equivalent to reflectance minimization in this lossless system). Adding extra metrics would dilute the focus on the specific mean reflectance requirement.",
+      "formula_rationale": "The user explicitly defines success as achieving a mean reflectance below 0.03, making this specific value the target rather than simply pushing reflectance toward zero indefinitely. The expression uses the absolute difference between the measured metric and the 0.03 target to penalize deviations in either direction (though physically we expect values above the target if the design fails). By subtracting this distance term, the score increases as the design gets closer to the 0.03 goal, satisfying the 'match' logic required for a stated target while adhering to the rule that higher scores must indicate better designs.",
+      "provenance": {
+        "model": "qwen3.5-plus",
+        "metric_selection_attempts": 1,
+        "formula_attempts": 1,
+        "maximum_metrics": 4
+      }
+    }
+  },
+  "responder": "auto:timeout",
+  "resolved_at": "2026-10-13T10:18:07.735407+00:00"
+}

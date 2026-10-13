@@ -1,0 +1,43 @@
+{
+  "route_id": "route_01",
+  "title": "Optimization of Air/SiO2/TiO2/Glass Two-Layer AR Coating",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "For a two-layer system with SiO2 (n=1.46) and TiO2 (n=2.40) on glass (n=1.52), the specific ordering of Low-High index (SiO2 then TiO2) admits a global minimum in mean reflectance over 450-700 nm within the 40-160 nm thickness constraints that is distinct from the High-Low ordering.",
+  "design_principle": "Impedance matching via sequential quarter-wave-like transformations, where the low-index layer acts as an intermediate transformer between air and the high-index layer, which then matches to the substrate.",
+  "proposed_materials": [
+    "sio2",
+    "tio2"
+  ],
+  "proposed_topology": "Air (n=1.0) | Layer 1: SiO2 (n=1.46) | Layer 2: TiO2 (n=2.40) | Substrate: Glass (n=1.52). Total finite layers: 2.",
+  "design_variables": [
+    "thickness_layer_1_siO2_nm",
+    "thickness_layer_2_tiO2_nm"
+  ],
+  "soft_objectives": [
+    "minimize arithmetic mean power reflectance from 450 to 700 nm",
+    "achieve mean reflectance below 0.03 as a soft scoring preference"
+  ],
+  "manufacturing_considerations": [
+    "layer thickness must be between 40 and 160 nm",
+    "exactly one layer of SiO2 and one layer of TiO2 in this specific order"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Fresnel equations for normal incidence",
+    "Transfer Matrix Method for multilayer interference",
+    "Quarter-wave antireflection coating theory generalized for two layers"
+  ],
+  "expected_advantages": [
+    "Provides a definitive optimal solution for the Low-High index sequence",
+    "Resolves the compilation ambiguity by fixing the topology",
+    "Allows direct comparison with the inverted sequence in a future step"
+  ],
+  "known_risks": [
+    "The global minimum for this specific order might exceed the 0.03 soft target due to material index mismatch",
+    "Thickness constraints (40-160 nm) may prevent reaching the ideal quarter-wave optical thickness for the center wavelength"
+  ],
+  "execution_request_english": "Perform a deterministic optimization using the Transfer Matrix Method for s-polarized light at normal incidence (0 degrees). The stack consists of exactly two finite layers on a semi-infinite glass substrate (n=1.52, lossless) with air incidence (n=1.0). The layer order is fixed: Layer 1 is SiO2 (n=1.46, lossless) and Layer 2 is TiO2 (n=2.40, lossless). Optimize the thickness of Layer 1 and Layer 2, both bounded between 40 nm and 160 nm. The objective is to minimize the arithmetic mean power reflectance sampled from 450 nm to 700 nm at 5 nm intervals. Use seed 17 for the optimizer and allow a maximum of 64 solver evaluations. Output the optimal thicknesses, the full reflectance spectrum, and the calculated mean reflectance. Canonical user controls: incidence angles 0 degrees. polarization s. wavelength intervals 450-700 nm. soft objectives: minimize arithmetic mean power reflectance from 450 to 700 nm; achieve mean reflectance below 0.03 as a soft scoring preference. behaviors to suppress or avoid: high reflection in the 450 to 700 nm band. manufacturing constraints: layer thickness must be between 40 and 160 nm; exactly one layer of SiO2 and one layer of TiO2.",
+  "priority": 1,
+  "parent_route_id": "route_01",
+  "revision_reason": "Split the ambiguous dual-topology request from route_01 into a single, fixed topology (Air/SiO2/TiO2/Glass) to satisfy the TMM compiler requirement for an explicit layer stack. This addresses the compilation failure while preserving the scientific intent to find the best geometry."
+}
