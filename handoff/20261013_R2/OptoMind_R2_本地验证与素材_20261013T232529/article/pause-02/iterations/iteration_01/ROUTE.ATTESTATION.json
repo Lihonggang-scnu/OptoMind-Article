@@ -1,0 +1,29 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "4c0779f0c4ec772e95615524b376b0d6d56c63bbd9902bcf984f14f7d045a4c5",
+  "recorded_at_utc": "2026-10-13T14:03:25.675647+00:00",
+  "elapsed_seconds": 189.33577900007367,
+  "run_id": "r2-restore-ar-02",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "A planar bilayer stack with low-index SiO2 as the incident-facing layer and high-index TiO2 as the substrate-facing layer, with optimized thicknesses between 40-160 nm, yields a lower arithmetic mean reflectance across 450-700 nm than the reverse ordering or unoptimized quarter-wave stacks.",
+  "expected_advantages": [
+    "Concentrating the evaluation budget (64 samples) on a single topology allows finer sampling of the thickness landscape compared to splitting the budget between two orderings.",
+    "SiO2-first topology aligns with standard broadband AR design heuristics for glass substrates."
+  ],
+  "known_risks": [
+    "The global minimum might exist in the reverse (TiO2/SiO2) ordering, which this route would identify only as a local failure, requiring a second round to investigate.",
+    "Constant index assumption may deviate from real dispersion, though the problem statement mandates it."
+  ],
+  "expected_observations": [
+    "If the hypothesis holds, best_target_score should increase as the optimizer finds thickness pairs that create destructive interference across the band.",
+    "valid_candidates should remain high throughout the run as the thickness bounds are wide enough to support physical solutions.",
+    "tightest_margin should not fall significantly if the optimal solution lies well within the 40-160 nm bounds.",
+    "If the SiO2-first order is suboptimal compared to TiO2-first, best_target_score will plateau at a value corresponding to a local minimum, and the resulting mean reflectance may remain above 0.03."
+  ],
+  "stop_conditions": [
+    "If best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds of internal iteration, treat the thickness landscape for this topology as exhausted, stop and keep the current best.",
+    "If valid_candidates drops to zero, stop immediately and report the constraint violation (though unlikely given the bounds)."
+  ]
+}

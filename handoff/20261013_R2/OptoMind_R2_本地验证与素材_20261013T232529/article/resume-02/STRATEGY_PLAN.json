@@ -1,0 +1,105 @@
+{
+  "status": "planned",
+  "plan": {
+    "problem_id": "tmm_problem_cf712123ca1f601b",
+    "planning_summary": "The problem defines a strictly constrained two-layer antireflection coating design space with only one genuine degree of freedom for optimization: the geometric thicknesses of the two fixed materials (SiO2 and TiO2). The layer order is a binary choice, but since the request allows 'either order' and asks to minimize reflectance, the most efficient single axis is to treat the stack topology as fixed (one specific order) and optimize the thicknesses within the bounds. If the optimal solution lies in the reverse order, the physics of the solver will reveal high reflectance for this topology, prompting a justified adjustment in the second round to swap the order. Splitting the budget into two routes (one for each order) would halve the resolution of the thickness search per route, likely missing the global minimum within the 64-evaluation limit. Therefore, one route is selected to deeply explore the thickness landscape of the theoretically preferred order (low-index on top), citing literature that supports TiO2/SiO2 systems for AR applications.",
+    "routes": [
+      {
+        "route_id": "route_01",
+        "title": "Thickness Optimization of SiO2/TiO2 Bilayer on Glass",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A planar bilayer stack with low-index SiO2 as the incident-facing layer and high-index TiO2 as the substrate-facing layer, with optimized thicknesses between 40-160 nm, yields a lower arithmetic mean reflectance across 450-700 nm than the reverse ordering or unoptimized quarter-wave stacks.",
+        "design_principle": "Antireflection in a two-layer system relies on destructive interference between reflections at the air-coating, coating-coating, and coating-substrate interfaces. Placing the lower index material (SiO2, n=1.46) next to air (n=1.0) provides a smoother impedance transition than placing high-index TiO2 (n=2.40) directly against air, which typically reduces the peak reflectance amplitude before interference effects are tuned by thickness.",
+        "proposed_materials": [
+          "SiO2 (Gao)",
+          "TiO2 (Siefke)"
+        ],
+        "proposed_topology": "Air (n=1.0) / SiO2 (variable thickness) / TiO2 (variable thickness) / Glass Substrate (n=1.52)",
+        "design_variables": [
+          "thickness_sio2_nm (continuous, bounded 40-160)",
+          "thickness_tio2_nm (continuous, bounded 40-160)"
+        ],
+        "soft_objectives": [
+          "minimize arithmetic mean power reflectance from 450 nm to 700 nm",
+          "prefer mean reflectance below 0.03"
+        ],
+        "manufacturing_considerations": [
+          "Layer thickness must remain within 40 nm to 160 nm to satisfy process constraints",
+          "Materials are lossless constant-index approximations"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L02"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for normal incidence s-polarization",
+          "Fresnel reflection coefficients at planar interfaces"
+        ],
+        "expected_advantages": [
+          "Concentrating the evaluation budget (64 samples) on a single topology allows finer sampling of the thickness landscape compared to splitting the budget between two orderings.",
+          "SiO2-first topology aligns with standard broadband AR design heuristics for glass substrates."
+        ],
+        "known_risks": [
+          "The global minimum might exist in the reverse (TiO2/SiO2) ordering, which this route would identify only as a local failure, requiring a second round to investigate.",
+          "Constant index assumption may deviate from real dispersion, though the problem statement mandates it."
+        ],
+        "execution_request_english": "Execute a deterministic Transfer Matrix Method optimization for a planar three-medium stack: Air (n=1.0), Layer 1 (SiO2 (Gao), n=1.46, lossless), Layer 2 (TiO2 (Siefke), n=2.40, lossless), Substrate (Glass, n=1.52, lossless). The stack order is fixed as Air/SiO2 (Gao)/TiO2 (Siefke)/Glass. Optimize the thickness of Layer 1 and Layer 2 independently, with both constrained to the range [40, 160] nm. The objective is to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence (0 degrees) over the wavelength range 450 nm to 700 nm, sampled at 5 nm intervals. Use seed 17 for the optimizer. Perform up to 64 solver evaluations. Report the best candidate's thicknesses, the full reflectance spectrum, and the calculated mean reflectance.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      }
+    ],
+    "research_influence": [
+      "L01 and L02 motivated the selection of TiO2/SiO2 material pairs for antireflection applications, supporting the feasibility of the proposed materials.",
+      "The literature did not specify the exact layer ordering for glass substrates in this specific visible band, reinforcing the need for the optimization route to test the SiO2-first hypothesis."
+    ],
+    "unresolved_decisions": [
+      "Whether the TiO2/SiO2 (high-index first) ordering yields a superior global minimum compared to the SiO2/TiO2 ordering chosen for Route 01. This will be resolved by analyzing the final mean reflectance; if it exceeds the soft target significantly, the second research round will be justified to swap the layer order."
+    ],
+    "stop_if_all_routes_fail": "If the optimized SiO2/TiO2 stack yields a mean reflectance > 0.05 and the solver indicates the optimum is pinned against the thickness bounds (40 or 160 nm), the current axis is insufficient. The study should then proceed to Round 2 with a modified route swapping the layer order to TiO2/SiO2.",
+    "route_sources": {
+      "route_01": "literature_planned"
+    },
+    "normal_route_count": 1,
+    "control_route_count": 0
+  },
+  "attempts": 1,
+  "normalization_warnings": [],
+  "usage": [
+    {
+      "prompt_tokens": 3872,
+      "completion_tokens": 1567,
+      "total_tokens": 5439,
+      "completion_tokens_details": {
+        "text_tokens": 1567
+      },
+      "prompt_tokens_details": {
+        "text_tokens": 3872
+      },
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "cost_cny": 0.0106192
+    },
+    {
+      "prompt_tokens": 5879,
+      "completion_tokens": 133,
+      "total_tokens": 6012,
+      "completion_tokens_details": {
+        "text_tokens": 133
+      },
+      "prompt_tokens_details": {
+        "text_tokens": 5879
+      },
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "cost_cny": 0.005341599999999999
+    }
+  ],
+  "model_name": "qwen3.5-plus",
+  "planning_mechanism": "literature_route_planning",
+  "route_sources": {
+    "route_01": "literature_planned"
+  },
+  "normal_route_count": 1,
+  "control_route_count": 0
+}

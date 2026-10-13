@@ -1,0 +1,30 @@
+{
+  "artifact": "iterations/iteration_01/ROUTE.json",
+  "artifact_kind": "pre_execution_plan",
+  "artifact_sha256": "0457770ab1618feb584552bf2444c092897b408884b74d81ce9e1e2092138c24",
+  "recorded_at_utc": "2026-10-13T13:55:15.635436+00:00",
+  "elapsed_seconds": 203.56742340000346,
+  "run_id": "r2-real-ar-01",
+  "iteration_id": "iteration_01",
+  "route_id": "route_01",
+  "scientific_hypothesis": "For a two-layer system using SiO2 and TiO2 on a glass substrate, the stacking order Air/SiO2/TiO2/Glass allows for a lower arithmetic mean reflectance over 450-700 nm than the reverse order, provided the layer thicknesses are optimized within the 40-160 nm range.",
+  "expected_advantages": [
+    "Smoother index transition from air to substrate may reduce peak reflectance",
+    "Deterministic TMM ensures exact solution within numerical precision"
+  ],
+  "known_risks": [
+    "The optimal thicknesses may lie outside the 40-160 nm constraint box",
+    "The reversed order (TiO2 first) might theoretically perform better for this specific wavelength band",
+    "Constant index assumption may introduce errors if actual materials have dispersion"
+  ],
+  "expected_observations": [
+    "best_target_score should increase as the optimizer converges towards the global minimum within the thickness bounds",
+    "valid_candidates should remain equal to the number of evaluated points if all thickness pairs satisfy the 40-160 nm constraint",
+    "tightest_margin should reflect the distance of the best solution from the 40 nm or 160 nm boundaries",
+    "If the hypothesis holds, the final mean reflectance should be lower than typical single-layer limits, potentially approaching the 0.03 target"
+  ],
+  "stop_conditions": [
+    "if best_target_score improves by less than 1e-4 against the historical best for two consecutive rounds, treat the axis as exhausted, stop and keep the current best",
+    "if valid_candidates drops to zero due to constraint violations (unlikely given bounded search space), stop and report failure"
+  ]
+}

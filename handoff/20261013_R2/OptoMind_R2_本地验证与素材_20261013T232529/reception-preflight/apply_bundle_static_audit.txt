@@ -1,0 +1,40 @@
+apply_bundle_static_audit
+source=D:\OptoMind-Article-3\incoming\20261013_R2\unpacked\OptoMind_云端修复交接_20261013_R2\tools\apply_bundle.py
+sha256=eb1e317050a15b0287a97e5ccfd74b9a28cc07ea11b41f5e64ae345272cb7591
+lines=119
+
+ast_parse=ok
+static_scope:
+- imports are argparse, hashlib, json, os, pathlib.Path, sys, tempfile, datetime; no subprocess, network, API, git, model, or package-install imports.
+- bundle root is the directory containing the script; manifest and payload files are read only.
+- contained(root, relative) resolves and rejects paths outside the supplied root or the root itself. Destinations derive only from manifest path entries under the four supplied component roots; payloads derive only from manifest payload entries under the bundle.
+- dry-run takes the non-apply branch and only emits JSON. It does not create directories, temporary files, backups, replace/unlink files, chmod files, or mutate repository metadata.
+- apply-only writes are: bundle/application_backups/<UTC stamp>/RESTORE_INDEX.json, per-existing-file .original backups there, and atomic replacement of the manifest destination files. Temporary files are created in the destination parent and removed/replaced by the same destination. Rollback only targets those written destinations and backup temporaries.
+- no non-file side effect was found in the source.
+
+ast_io_calls_observed:
+line 20: resolve
+line 21: resolve
+line 27: mkdir (atomic_write; apply-only call site)
+line 28: tempfile.mkstemp (atomic_write; apply-only)
+line 30: os.fdopen
+line 32: os.replace (atomic_write; apply-only)
+line 34: exists
+line 35: os.unlink (temporary cleanup)
+line 49: resolve
+line 50: read_text (MANIFEST.json)
+line 52: resolve
+line 57: is_dir
+line 65: read_bytes (payload)
+line 68: exists/read_bytes (destination)
+line 83: mkdir (application_backups; apply-only)
+line 88: write_bytes (.original backup; apply-only)
+line 90: write_text (RESTORE_INDEX.json; apply-only)
+line 94: exists/read_bytes (race check; apply-only)
+line 100: os.chmod (destination mode restore; apply-only)
+line 104: destination.unlink (rollback; apply-only)
+line 107: os.chmod (rollback; apply-only)
+line 109/111/118: print only
+
+assessment=dry-run safe to execute; no non-file-range side effect requiring a stop was identified.
+

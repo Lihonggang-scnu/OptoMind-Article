@@ -1,0 +1,44 @@
+{
+  "route_id": "route_01",
+  "title": "Optimization of Air/SiO2/TiO2/Glass Stack Thicknesses",
+  "route_kind": "optimize_existing_stack",
+  "scientific_hypothesis": "For a two-layer system using SiO2 and TiO2 on a glass substrate, the stacking order Air/SiO2/TiO2/Glass allows for a lower arithmetic mean reflectance over 450-700 nm than the reverse order, provided the layer thicknesses are optimized within the 40-160 nm range.",
+  "design_principle": "Antireflection performance relies on destructive interference and impedance matching. Placing the higher index material (TiO2) next to the high-index substrate (glass) and the lower index material (SiO2) next to air creates a stepped refractive index profile (1.0 -> 1.46 -> 2.40 -> 1.52) that reduces the Fresnel reflection at the initial interface more gradually than the reverse (1.0 -> 2.40 -> 1.46 -> 1.52), potentially offering broader bandwidth suppression.",
+  "proposed_materials": [
+    "SiO2 (Gao)",
+    "TiO2 (Siefke)"
+  ],
+  "proposed_topology": "Air (n=1.0) / SiO2 (variable thickness) / TiO2 (variable thickness) / Glass Substrate (n=1.52)",
+  "design_variables": [
+    "thickness of the SiO2 layer (bounded 40-160 nm)",
+    "thickness of the TiO2 layer (bounded 40-160 nm)"
+  ],
+  "soft_objectives": [
+    "minimize arithmetic mean power reflectance from 450 to 700 nm",
+    "achieve mean reflectance below 0.03 as a soft scoring preference"
+  ],
+  "manufacturing_considerations": [
+    "layer thickness must be between 40 and 160 nm",
+    "exactly one layer of SiO2 and one layer of TiO2",
+    "planar, laterally uniform layers"
+  ],
+  "evidence_ids": [],
+  "theory_basis": [
+    "Fresnel equations for normal incidence s-polarization",
+    "Transfer Matrix Method for multilayer interference",
+    "Impedance matching principles for broadband antireflection coatings"
+  ],
+  "expected_advantages": [
+    "Smoother index transition from air to substrate may reduce peak reflectance",
+    "Deterministic TMM ensures exact solution within numerical precision"
+  ],
+  "known_risks": [
+    "The optimal thicknesses may lie outside the 40-160 nm constraint box",
+    "The reversed order (TiO2 first) might theoretically perform better for this specific wavelength band",
+    "Constant index assumption may introduce errors if actual materials have dispersion"
+  ],
+  "execution_request_english": "Optimize the layer thicknesses of a planar two-layer stack with the structure: Air incident medium, followed by a SiO2 (Gao) layer, then a TiO2 (Siefke) layer, on a semi-infinite Glass substrate (n=1.52). Use deterministic Transfer Matrix Method (TMM) to calculate s-polarized power reflectance at normal incidence (0 degrees). The wavelength range is 450 nm to 700 nm, sampled every 5 nm. The objective is to minimize the arithmetic mean of the power reflectance over this spectrum. Design variables are the thickness of the SiO2 (Gao) layer and the thickness of the TiO2 (Siefke) layer, both constrained to the range [40, 160] nm. Use seed 17 for the optimizer. Allow at most 64 solver evaluations. Materials must be resolved from the catalog as 'SiO2 (Gao)' and 'TiO2 (Siefke)' with their constant lossless refractive indices (1.46 and 2.40 respectively) as specified in the problem description. Do not use RCWA, FDFD, or surrogates.",
+  "priority": 1,
+  "parent_route_id": null,
+  "revision_reason": null
+}

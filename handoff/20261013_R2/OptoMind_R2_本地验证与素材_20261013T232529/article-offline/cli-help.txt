@@ -1,0 +1,86 @@
+usage: run_tmm_research_harness.py [-h] [--question-file QUESTION_FILE]
+                                   [--resume-from RESUME_FROM]
+                                   [--resume-route RESUME_ROUTE]
+                                   [--output-dir OUTPUT_DIR] [--run-id RUN_ID]
+                                   [--kb-sqlite KB_SQLITE]
+                                   [--online-method-research | --no-online-method-research]
+                                   [--qwen-method-synthesis | --no-qwen-method-synthesis]
+                                   [--maximum-iterations MAXIMUM_ITERATIONS]
+                                   [--maximum-initial-routes MAXIMUM_INITIAL_ROUTES]
+                                   [--route-planning-maximum-routes ROUTE_PLANNING_MAXIMUM_ROUTES]
+                                   [--max-rounds-per-route MAX_ROUNDS_PER_ROUTE]
+                                   [--research-mode {bounded_design,open_research}]
+                                   [--minimum-rounds-before-llm-stop MINIMUM_ROUNDS_BEFORE_LLM_STOP]
+                                   [--control-route | --no-control-route]
+                                   [--maximum-refinement-rounds MAXIMUM_REFINEMENT_ROUNDS]
+                                   [--maximum-method-research-rounds MAXIMUM_METHOD_RESEARCH_ROUNDS]
+                                   [--method-research-wall-time-seconds METHOD_RESEARCH_WALL_TIME_SECONDS]
+                                   [--s2-request-budget-seconds S2_REQUEST_BUDGET_SECONDS]
+                                   [--wall-time-seconds WALL_TIME_SECONDS]
+                                   [--task-compiler-tier {turbo,plus}]
+                                   [--force-mock]
+                                   [question]
+
+Analyze, research, design, execute and revise a planar multilayer task with
+qwen3.7-flash and the deterministic TMM runtime.
+
+positional arguments:
+  question              Natural-language optical task
+
+options:
+  -h, --help            show this help message and exit
+  --question-file QUESTION_FILE
+                        UTF-8 text file containing the task
+  --resume-from RESUME_FROM
+                        Resume a completed/paused harness output directory
+                        into a new output directory; literature routes below
+                        the round cap are reactivated by default
+  --resume-route RESUME_ROUTE
+                        Explicit route ID to reactivate during resume; repeat
+                        as needed
+  --output-dir OUTPUT_DIR
+                        New or empty run directory
+  --run-id RUN_ID
+  --kb-sqlite KB_SQLITE
+                        Optional ReviewKnowledgeBase SQLite path; repeat as
+                        needed
+  --online-method-research, --no-online-method-research
+                        Use S2 first and OpenAlex only as a complement
+                        (default: enabled)
+  --qwen-method-synthesis, --no-qwen-method-synthesis
+                        Use one bounded qwen3.7-flash call to synthesize
+                        literature methods
+  --maximum-iterations MAXIMUM_ITERATIONS
+  --maximum-initial-routes MAXIMUM_INITIAL_ROUTES
+  --route-planning-maximum-routes ROUTE_PLANNING_MAXIMUM_ROUTES
+                        Maximum number of literature-planned routes before
+                        adding the control arm (default: 4)
+  --max-rounds-per-route MAX_ROUNDS_PER_ROUTE
+                        Independent hard cap for each route lineage (default:
+                        6)
+  --research-mode {bounded_design,open_research}
+                        O-08: bounded_design (tournament template) or
+                        open_research (hypothesis tree)
+  --minimum-rounds-before-llm-stop MINIMUM_ROUNDS_BEFORE_LLM_STOP
+                        Minimum executed rounds before an explicit LLM no-
+                        benefit stop can terminate a route (default: 2)
+  --control-route, --no-control-route
+                        Add one parallel planner route using model memory
+                        only, without S2 or method-research input (default:
+                        enabled)
+  --maximum-refinement-rounds MAXIMUM_REFINEMENT_ROUNDS
+  --maximum-method-research-rounds MAXIMUM_METHOD_RESEARCH_ROUNDS
+  --method-research-wall-time-seconds METHOD_RESEARCH_WALL_TIME_SECONDS
+                        Maximum online-method-research time per round before
+                        graceful fallback
+  --s2-request-budget-seconds S2_REQUEST_BUDGET_SECONDS
+                        Maximum elapsed time for one Semantic Scholar request
+                        including retries
+  --wall-time-seconds WALL_TIME_SECONDS
+  --task-compiler-tier {turbo,plus}
+                        Qwen tier that translates a route into a TMM task.
+                        turbo is the shipped default; plus costs more per
+                        compile and is worth trying when a compile encodes a
+                        direction backwards
+  --force-mock          Forward the repository mock flag to Qwen calls
+                        (diagnostic only)

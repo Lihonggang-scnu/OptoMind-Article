@@ -1,0 +1,24 @@
+{
+  "observed_vs_expected": "The experiment executed one round with 5 valid candidates. The best observed mean reflectance was 0.03536 (candidate `ar_coating_sio2_tio2_order1__gradi__2a0f0b4bfdb3`), which is higher than the target of 0.03. The expected observation that 'the final mean reflectance should be lower than typical single-layer limits' is consistent, as the baseline (80/80 nm) had a reflectance of 0.0676. However, the expectation that it would 'potentially approach the 0.03 target' was not met in this round; the deviation is approximately 0.0054 (absolute) or ~18% relative to the target. The score improved from the baseline implicit state, but stagnation near 0.035 suggests the optimizer may have hit a local optimum or boundary constraint within the limited search space.",
+  "deviation_mechanism": "The mechanism for failing to reach <0.03 is likely that the specific layer order (SiO2 then TiO2) combined with the thickness bounds [40, 160] nm restricts the achievable optical path length and impedance matching. The optimizer found a local minimum at ~86.6/94.5 nm. It is a hypothesis that the alternative layer order (TiO2 then SiO2) might offer a different phase accumulation profile capable of reaching lower reflectance. This is an untested physical explanation. A discriminating test would be to run a new round initializing with the swapped material order or perturbing the current best candidate significantly to escape the local basin.",
+  "continue_recommended": true,
+  "continue_rationale": "Only 1 round has been executed. The stop boundary requires at least 2 rounds. Furthermore, the result (R=0.035) is close to the target (0.03) but not converged. The optimizer appears to have settled on a specific local minimum. Continuing allows exploration of the other layer permutation or a broader search to see if the global minimum lies outside the current basin. Stopping now would discard the possibility that the target is physically reachable with a different configuration.",
+  "insight_for_next": "Initialize the next round with the swapped layer order: Air | TiO2 (n=2.4) | SiO2 (n=1.46) | Glass. Use the same thickness bounds [40, 160] nm and seed 17. This tests the hypothesis that the first-order stack (SiO2/TiO2) is suboptimal compared to the second-order stack (TiO2/SiO2) for broadband AR in this specific index contrast regime.",
+  "insight_grounding": "Candidate `ar_coating_sio2_tio2_order1__gradi__2a0f0b4bfdb3` achieved R=0.03536 with layers ['n=1.46', 'n=2.4'] (SiO2/TiO2). The charter permits 'one layer of each in either order'. The current best performance is limited by this specific ordering. Testing the reverse order is a direct structural change supported by the material whitelist constraints.",
+  "stop_basis": "",
+  "reported_stop_basis": "",
+  "stop_basis_diagnostic": "",
+  "degraded_reason": "",
+  "recorded_at_utc": "2026-10-13T13:55:44.499679+00:00",
+  "attestation_sha256": "9bb10c39ea6600ca8f9a5335daa2fc100b800c7666d235f005d8479a172367ac",
+  "observed_metrics": {
+    "best_target_score": 0.9646375913435794,
+    "decision_score": 0.9646375913435794,
+    "score_basis": "legacy_target",
+    "score_basis_fingerprint": "51750725f0df2c25fa33901b7485a697e17ead32ad2ffbe35db8ee02fb0620b0",
+    "valid_candidates": 5,
+    "run_status": "completed",
+    "tightest_margin": 0.5887842007325347
+  },
+  "reflection_available": true
+}

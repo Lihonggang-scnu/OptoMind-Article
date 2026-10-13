@@ -1,0 +1,74 @@
+{
+  "schema_version": "tournament-state.v1",
+  "updated_at_utc": "2026-10-13T14:09:20.595029+00:00",
+  "wave": 2,
+  "budget_snapshot": {
+    "iterations_used": 2,
+    "maximum_iterations": 2,
+    "configured_maximum_iterations": 2,
+    "rounds_per_route": 2,
+    "shared_iteration_pool": false,
+    "wall_seconds_elapsed": 38.607
+  },
+  "tracks": [
+    {
+      "route_id": "route_01",
+      "source": "literature_planned",
+      "status": "stopped_round_limit",
+      "termination_reason": "reached the per-route cap of 2 executed rounds",
+      "rounds_used": 2,
+      "score_history": [
+        -0.0353624086564206,
+        -0.0353624086564206
+      ],
+      "score_basis_fingerprint": "4b81bb222ba7efe31d5e3499c025a0e6009a48fba860959d3c40e23320e82d9d",
+      "best_candidate_ids": [
+        "opt_ar_coating_sio2_tio2__gradient_thickness__01"
+      ],
+      "current_route": {
+        "route_id": "route_01",
+        "title": "Thickness Optimization of SiO2/TiO2 Bilayer on Glass",
+        "route_kind": "optimize_existing_stack",
+        "scientific_hypothesis": "A planar bilayer stack with low-index SiO2 as the incident-facing layer and high-index TiO2 as the substrate-facing layer, with optimized thicknesses between 40-160 nm, yields a lower arithmetic mean reflectance across 450-700 nm than the reverse ordering or unoptimized quarter-wave stacks.",
+        "design_principle": "Antireflection in a two-layer system relies on destructive interference between reflections at the air-coating, coating-coating, and coating-substrate interfaces. Placing the lower index material (SiO2, n=1.46) next to air (n=1.0) provides a smoother impedance transition than placing high-index TiO2 (n=2.40) directly against air, which typically reduces the peak reflectance amplitude before interference effects are tuned by thickness.",
+        "proposed_materials": [
+          "SiO2 (Gao)",
+          "TiO2 (Siefke)"
+        ],
+        "proposed_topology": "Air (n=1.0) / SiO2 (variable thickness) / TiO2 (variable thickness) / Glass Substrate (n=1.52)",
+        "design_variables": [
+          "thickness_sio2_nm (continuous, bounded 40-160)",
+          "thickness_tio2_nm (continuous, bounded 40-160)"
+        ],
+        "soft_objectives": [
+          "minimize arithmetic mean power reflectance from 450 nm to 700 nm",
+          "prefer mean reflectance below 0.03"
+        ],
+        "manufacturing_considerations": [
+          "Layer thickness must remain within 40 nm to 160 nm to satisfy process constraints",
+          "Materials are lossless constant-index approximations"
+        ],
+        "evidence_ids": [
+          "L01",
+          "L02"
+        ],
+        "theory_basis": [
+          "Transfer Matrix Method for normal incidence s-polarization",
+          "Fresnel reflection coefficients at planar interfaces"
+        ],
+        "expected_advantages": [
+          "Concentrating the evaluation budget (64 samples) on a single topology allows finer sampling of the thickness landscape compared to splitting the budget between two orderings.",
+          "SiO2-first topology aligns with standard broadband AR design heuristics for glass substrates."
+        ],
+        "known_risks": [
+          "The global minimum might exist in the reverse (TiO2/SiO2) ordering, which this route would identify only as a local failure, requiring a second round to investigate.",
+          "Constant index assumption may deviate from real dispersion, though the problem statement mandates it."
+        ],
+        "execution_request_english": "Execute a deterministic Transfer Matrix Method optimization for a planar three-medium stack: Air (n=1.0), Layer 1 (SiO2 (Gao), n=1.46, lossless), Layer 2 (TiO2 (Siefke), n=2.40, lossless), Substrate (Glass, n=1.52, lossless). The stack order is fixed as Air/SiO2 (Gao)/TiO2 (Siefke)/Glass. Optimize the thickness of Layer 1 and Layer 2 independently, with both constrained to the range [40, 160] nm. The objective is to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence (0 degrees) over the wavelength range 450 nm to 700 nm, sampled at 5 nm intervals. Use seed 17 for the optimizer. Perform up to 64 solver evaluations. Report the best candidate's thicknesses, the full reflectance spectrum, and the calculated mean reflectance.",
+        "priority": 1,
+        "parent_route_id": null,
+        "revision_reason": null
+      }
+    }
+  ]
+}

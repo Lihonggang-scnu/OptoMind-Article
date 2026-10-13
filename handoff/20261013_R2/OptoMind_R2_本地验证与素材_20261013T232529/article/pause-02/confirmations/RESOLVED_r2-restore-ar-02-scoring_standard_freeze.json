@@ -1,0 +1,45 @@
+{
+  "gate_id": "r2-restore-ar-02-scoring_standard_freeze",
+  "decision": "timeout_accepted",
+  "payload_after": {
+    "standard": {
+      "schema_version": "tmm-scoring-standard.v1",
+      "catalog_schema_version": "tmm-metric-catalog.v1",
+      "locked": true,
+      "question_digest": "cf712123ca1f601b",
+      "metrics": [
+        {
+          "variable": "mean_reflectance_450_700nm_0deg_s",
+          "canonical_id": "mean_reflectance@450-700nm@0deg@s",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "s"
+          },
+          "target": 0.03,
+          "rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance sampled from 450 to 700 nm' and states 'A mean reflectance below 0.03 is the stated target'. The metric uses 'minimize' for the optimization direction and includes the 'target' of 0.03 to align with the specific performance goal mentioned.",
+          "mean_reduction": "sample_mean"
+        }
+      ],
+      "formula": "-mean_reflectance_450_700nm_0deg_s",
+      "formula_variables": [
+        "mean_reflectance_450_700nm_0deg_s"
+      ],
+      "metric_rationale": "This single metric faithfully captures the entire optimization objective defined in the request: minimizing the average reflectance over the 450-700 nm band at normal incidence with s-polarization. The inclusion of the 'target' value (0.03) allows the scoring system to evaluate proximity to the user's specific success criterion. No other metrics are needed because the request does not specify competing goals (e.g., high transmission in a different band) or worst-case constraints; it focuses solely on the arithmetic mean within the specified visible range.",
+      "formula_rationale": "The user explicitly requests to minimize the arithmetic mean power reflectance. Since the scoring system requires that a higher value always indicates a better design, the single metric representing reflectance must be negated. This ensures that as the reflectance decreases (which is the goal), the score increases. No other variables were provided, and no specific weighting or target penalty structure was requested beyond the primary minimization instruction, so a direct negation is the most faithful and simple representation of the user's priority.",
+      "provenance": {
+        "model": "qwen3.5-plus",
+        "metric_selection_attempts": 1,
+        "formula_attempts": 2,
+        "maximum_metrics": 4
+      }
+    }
+  },
+  "responder": "auto:timeout",
+  "resolved_at": "2026-10-13T14:01:29.426644+00:00"
+}

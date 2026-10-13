@@ -1,0 +1,193 @@
+{
+  "schema_version": "optical-design-task.tmm.v1",
+  "task_id": "tmm_optimize_the_layer_thicknesses_of_a_planar_two_l_c27e384ea6",
+  "user_request_original": "Optimize the layer thicknesses of a planar two-layer stack with the structure: Air incident medium, followed by a SiO2 (Gao) layer, then a TiO2 (Siefke) layer, on a semi-infinite Glass substrate (n=1.52). Use deterministic Transfer Matrix Method (TMM) to calculate s-polarized power reflectance at normal incidence (0 degrees). The wavelength range is 450 nm to 700 nm, sampled every 5 nm. The objective is to minimize the arithmetic mean of the power reflectance over this spectrum. Design variables are the thickness of the SiO2 (Gao) layer and the thickness of the TiO2 (Siefke) layer, both constrained to the range [40, 160] nm. Use seed 17 for the optimizer. Allow at most 64 solver evaluations. Materials must be resolved from the catalog as 'SiO2 (Gao)' and 'TiO2 (Siefke)' with their constant lossless refractive indices (1.46 and 2.40 respectively) as specified in the problem description. Do not use RCWA, FDFD, or surrogates.\n\nImmutable original user request (overrides conflicting route proposals):\nDesign a planar two-layer antireflection coating on a semi-infinite glass substrate (constant refractive index 1.52, lossless), with air incidence (index 1.0). Use only lossless constant-index SiO2 (n=1.46) and TiO2 (n=2.40), one layer of each in either order. Each layer thickness must be between 40 and 160 nm. At normal incidence with s polarization, minimize the arithmetic mean power reflectance sampled from 450 to 700 nm at 5 nm spacing. A mean reflectance below 0.03 is the stated target. Use deterministic TMM only, with no RCWA, FDFD, learned surrogate or hardware. Allow at most two executed research rounds with one route and at most 64 solver evaluations per round, seed 17. After observing the actual result, choose a justified adjustment or stop. Do not claim the target was met without the spectrum and independent numeric check.\nPreserve its physical constraints. Performance targets remain soft objectives.",
+  "normalized_request_english": "Optimize the thicknesses of a SiO2 layer (n=1.46) and a TiO2 layer (n=2.40) on a glass substrate (n=1.52) to minimize the arithmetic mean power reflectance for s-polarized light at normal incidence across 450-700 nm. Layer thicknesses are constrained between 40 nm and 160 nm.",
+  "experiments": [
+    {
+      "experiment_id": "ar_coating_sio2_tio2_order1",
+      "mode": "optimize",
+      "tmm_task": {
+        "simulation": {
+          "stack": {
+            "name": "ar_coating_sio2_tio2",
+            "incident": {
+              "constant_n": 1.0,
+              "constant_k": 0.0
+            },
+            "layers": [
+              {
+                "material": null,
+                "thickness_nm": 80.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 40.0,
+                "max_thickness_nm": 160.0,
+                "label": "layer_1_sio2",
+                "constant_n": 1.46,
+                "constant_k": 0.0
+              },
+              {
+                "material": null,
+                "thickness_nm": 80.0,
+                "coherence": "coherent",
+                "optimizable": true,
+                "min_thickness_nm": 40.0,
+                "max_thickness_nm": 160.0,
+                "label": "layer_2_tio2",
+                "constant_n": 2.4,
+                "constant_k": 0.0
+              }
+            ],
+            "exit": {
+              "constant_n": 1.52,
+              "constant_k": 0.0
+            }
+          },
+          "spectrum": {
+            "start_nm": 450.0,
+            "stop_nm": 700.0,
+            "points": 51
+          },
+          "illumination": {
+            "angles_deg": [
+              0.0
+            ],
+            "polarizations": [
+              "s"
+            ]
+          },
+          "solver": "smatrix",
+          "allow_material_extrapolation": false,
+          "requested_outputs": [
+            "R",
+            "T",
+            "A"
+          ],
+          "physics": {
+            "geometry_class": "layered_planar",
+            "material_class": "isotropic",
+            "excitation_class": "plane_wave",
+            "time_domain_required": false
+          }
+        },
+        "targets": [
+          {
+            "observable": "R",
+            "target": 0.03,
+            "wavelength_min_nm": 450.0,
+            "wavelength_max_nm": 700.0,
+            "weight": 1.0,
+            "angle_deg": 0.0,
+            "polarization": "s",
+            "constraint": "at_most",
+            "aggregation": "mean",
+            "name": "mean_reflectance_target",
+            "mean_reduction": "sample_mean"
+          }
+        ],
+        "optimizer": {
+          "method": "adam_lbfgs",
+          "max_steps": 64,
+          "learning_rate": 0.05,
+          "starts": 3,
+          "seed": 17,
+          "early_stop_patience": 15,
+          "improvement_tolerance": 1e-07,
+          "gradient_clip_norm": 10.0,
+          "thickness_window_nm": 100.0,
+          "quantization_nm": 1.0
+        }
+      },
+      "objectives": [
+        {
+          "objective_id": "mean_reflectance_target",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "weight": 1.0,
+          "target": 0.03,
+          "mean_reduction": "sample_mean",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0.0,
+            "polarization": "s"
+          },
+          "admission_role": "score_only"
+        }
+      ],
+      "tags": [
+        "ar_coating",
+        "two_layer",
+        "s_polarization"
+      ]
+    }
+  ],
+  "verification": {
+    "require_spectral_convergence": true,
+    "require_independent_solver": true,
+    "check_passivity": true,
+    "check_energy_conservation": true,
+    "forbid_material_extrapolation": true
+  },
+  "portfolio": {
+    "maximum_candidates": 8,
+    "include_best_target_score": true,
+    "include_most_robust": true,
+    "include_simplest_fabrication": true,
+    "include_structurally_distinctive": true,
+    "include_pareto_front": true
+  },
+  "uncertainty": {
+    "thickness_sigma_nm": 1.0,
+    "thickness_error_model": "absolute_normal",
+    "thickness_relative_fraction": 0.0,
+    "thickness_samples": 16,
+    "angle_perturbation_deg": 0.0,
+    "material_dataset_policy": "evaluate_all_eligible",
+    "maximum_material_scenarios": 8,
+    "random_seed": 17
+  },
+  "budget": {
+    "wall_time_seconds": 900.0,
+    "maximum_forward_evaluations": 64,
+    "maximum_optimizer_runs": 2,
+    "maximum_qwen_calls": 2,
+    "maximum_qwen_input_tokens": 12000,
+    "maximum_qwen_output_tokens": 2000,
+    "maximum_qwen_cost_cny": 2.0
+  },
+  "benchmark_id": null,
+  "metadata": {
+    "compiler": "QwenTMMTaskCompiler",
+    "compiler_schema": "tmm-task-compilation.v1",
+    "compiler_model": "qwen3.7-flash",
+    "performance_targets_are_soft": true,
+    "diversity_required": false,
+    "target_threshold_corrections": [],
+    "scoring_standard_target_alignments": [],
+    "illumination_corrections": [],
+    "substrate_corrections": [],
+    "solver_corrections": [],
+    "objective_synchronization": [
+      "ar_coating_sio2_tio2_order1: synchronized 1 simple objectives from executable targets"
+    ],
+    "mean_reduction_normalization": [
+      "ar_coating_sio2_tio2_order1: preserved explicit sample_mean for target mean_reflectance_target",
+      "ar_coating_sio2_tio2_order1: preserved explicit sample_mean for objective obj_mean_r"
+    ],
+    "objective_freeze": [
+      "objective frozen for this run at signature 9755b4f17c88e32c (1 target(s))"
+    ],
+    "objective_gate": [],
+    "objective_signature": "9755b4f17c88e32c",
+    "uncertainty_normalization": [],
+    "original_request_control_bindings": [
+      "maximum_forward_evaluations bound to explicit original request cap 64",
+      "optimizer seed bound to explicit original request seed 17",
+      "uncertainty random_seed bound to explicit original request seed 17"
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "gate_id": "cloud-repair-formal-ar-04-scoring_standard_freeze",
+  "decision": "timeout_accepted",
+  "payload_after": {
+    "standard": {
+      "schema_version": "tmm-scoring-standard.v1",
+      "catalog_schema_version": "tmm-metric-catalog.v1",
+      "locked": true,
+      "question_digest": "cf712123ca1f601b",
+      "metrics": [
+        {
+          "variable": "mean_reflectance_450_700nm",
+          "canonical_id": "mean_reflectance@450-700nm",
+          "metric": "mean_reflectance",
+          "sense": "minimize",
+          "region": {
+            "wavelength_nm": [
+              450.0,
+              700.0
+            ],
+            "angle_deg": 0,
+            "polarization": "s"
+          },
+          "target": null,
+          "rationale": "The user explicitly requests to 'minimize the arithmetic mean power reflectance sampled from 450 to 700 nm' at 'normal incidence with s polarization'.",
+          "mean_reduction": "sample_mean"
+        }
+      ],
+      "formula": "-mean_reflectance_450_700nm",
+      "formula_variables": [
+        "mean_reflectance_450_700nm"
+      ],
+      "metric_rationale": "The request defines a single, clear optimization objective: minimizing the average reflectance over the 450–700 nm band for s-polarized light at normal incidence. The mention of a target value (0.03) serves as a success criterion or soft constraint but does not change the ranking direction; designs with lower mean reflectance are strictly better regardless of whether they hit 0.03. Therefore, a single metric using 'minimize' on 'mean_reflectance' over the specified band and channel is sufficient and faithful. No other metrics (e.g., worst-case or transmittance) were requested, and adding them would dilute the specific intent to optimize the arithmetic mean.",
+      "formula_rationale": "The user's sole optimization objective is to minimize the arithmetic mean power reflectance across the 450-700 nm band. Since the scoring system requires that higher values indicate better designs, the single verified metric 'mean_reflectance_450_700nm' (which must be minimized) is negated. This ensures that as the physical reflectance decreases, the score increases, directly aligning the ranking with the user's request without introducing arbitrary weights or unused variables.",
+      "provenance": {
+        "model": "qwen3.5-plus",
+        "metric_selection_attempts": 1,
+        "formula_attempts": 1,
+        "maximum_metrics": 4
+      }
+    }
+  },
+  "responder": "auto:timeout",
+  "resolved_at": "2026-10-13T10:27:42.949882+00:00"
+}
