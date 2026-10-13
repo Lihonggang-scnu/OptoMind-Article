@@ -475,6 +475,7 @@ def test_sampling_interval_is_not_a_wavelength_constraint(grid):
 
 @pytest.mark.parametrize("scope,expected", [
     ("Use TMM only, with no RCWA, FDFD, learned surrogate or hardware.", "compatible"),
+    ("Use TMM only, excluding RCWA, FDFD, surrogates or hardware.", "compatible"),
     ("Use no RCWA but require FDTD.", "incompatible"),
     ("Analyze a grating without RCWA or FEM.", "incompatible"),
 ])
