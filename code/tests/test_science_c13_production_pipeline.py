@@ -40,6 +40,19 @@ def test_real_factory_full_loop_stage_and_actual_canonical_authoring_consumer(tm
         assert source.result.selected_result_ref==selected.ref()
         assert source.executions==() and source.assets and source.assets[0].candidates
         assert source.assets[0].candidates[0].source_ref==selected.candidate_ref
+        # The actual failed adequacy outcome must remain source-bound and
+        # negative; a successful handoff must not erase or promote it.
+        claims=[loop.repository.load(ref) for ref in selected.claim_refs]
+        represented={canonical_hash(ref) for claim in claims for ref in (claim.ref(),*claim.evidence_refs)}
+        assert all(canonical_hash(ref) in represented for ref in selected.negative_result_refs)
+        assert selected.research_outcome.model_adequacy_state=='model_family_inadequate'
+        adequacy=next(claim for claim in claims if claim.object_id.endswith(':claim:adequacy'))
+        assert adequacy.status=='refuted' and adequacy.evidence_refs==selected.research_outcome.unresolved_failure_refs
+        assert adequacy.scope['unknown_risk'] is True and adequacy.scope['task_impact']=='unknown'
+        assert adequacy.scope['search_wide_false_rejection_risk']=='unknown'
+        assert not adequacy.scope['mechanism_or_transfer_claim']
+        assert adequacy.model_dump(mode='json') in source.scientific_selection['scientific_claims']
+        assert {row['object_id'] for row in source.scientific_selection['negative_results']}=={ref.object_id for ref in selected.negative_result_refs}
         before=loop.runner.gates['R'].usage()
         assert assembly.resume().result_id==result.result_id
         assert loop.runner.gates['R'].usage()==before

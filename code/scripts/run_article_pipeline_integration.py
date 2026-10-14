@@ -57,6 +57,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--release-state-root", type=Path, help="Optional verified C22 release selection directory")
     parser.add_argument("--release-runtime-versions", type=Path, help="JSON object with exact Article, Review and VeriTMM runtime revisions")
     parser.add_argument("--science-shadow-spec", type=Path, help="Optional bounded data-only shadow controller JSON; no extra acquisitions")
+    parser.add_argument('--science-entry-spec', type=Path,
+        help='Explicit frozen mechanism-diagnosis spec; no automatic task/objective translation')
+    parser.add_argument('--science-offline-world', type=Path,
+        help='Separate sealed synthetic evaluator input, never included in the public scientific spec')
     return parser
 
 
@@ -97,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
                 release_state_root=str(args.release_state_root) if args.release_state_root else None,
                 release_runtime_versions=json.loads(args.release_runtime_versions.read_text(encoding="utf-8")) if args.release_runtime_versions else {},
                 science_shadow_spec=json.loads(args.science_shadow_spec.read_text(encoding="utf-8")) if args.science_shadow_spec else None,
+                science_entry_spec=json.loads(args.science_entry_spec.read_text(encoding='utf-8')) if args.science_entry_spec else None,
+                science_offline_world=str(args.science_offline_world) if args.science_offline_world else None,
             )
         )
     except (ArticleIntegrationError, ValueError) as exc:
@@ -124,6 +130,13 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 130
     except Exception as exc:  # defensive CLI boundary; stages handle provider errors
+        if args.science_entry_spec is not None:
+            from optomind_optics.harness.science.diagnostic_research import DiagnosticExecutionPending
+            if isinstance(exc, DiagnosticExecutionPending):
+                print(json.dumps({'status': 'pending_observation',
+                    'message': 'Observation outcome is unresolved; use --resume to query the same durable receipt. No automatic resubmission.'}),
+                    file=sys.stderr)
+                return 2
         print(
             json.dumps(
                 {

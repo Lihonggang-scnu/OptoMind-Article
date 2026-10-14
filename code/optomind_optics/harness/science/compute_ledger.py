@@ -50,16 +50,33 @@ class ComputeLedger:
             self.db.rollback();raise
 
     def reserve(self, resource, quantity=1):
-        if resource not in self.limits or type(quantity) is not int or quantity < 0:
+        return self.reserve_many({resource: quantity})[resource]
+
+    def reserve_many(self, quantities):
+        """Atomically reserve all resources for one operation before it starts.
+
+        Rejection or storage failure leaves no partial events or totals. Once
+        committed, every event remains charged under the usual interruption and
+        failed-work semantics; callers settle each returned event separately.
+        """
+        quantities = dict(quantities)
+        if not quantities or any(resource not in self.limits or type(quantity) is not int or quantity < 0
+                                 for resource, quantity in quantities.items()):
             raise ValueError("undeclared compute resource or invalid quantity")
         self.db.execute("BEGIN IMMEDIATE")
         try:
-            used = self.db.execute("SELECT quantity FROM totals WHERE resource=?", (resource,)).fetchone()[0]
-            if used + quantity > self.limits[resource]:
-                raise ComputeBudgetExceeded(f"compute budget exhausted: {resource}")
-            row = self.db.execute("INSERT INTO events(parent,scope,resource,quantity,status) VALUES(?,?,?,?,?)", (_PARENT.get(), _SCOPE.get(), resource, quantity, "reserved"))
-            self.db.execute("UPDATE totals SET quantity=quantity+? WHERE resource=?",(quantity,resource))
-            self.db.commit(); return row.lastrowid
+            for resource, quantity in quantities.items():
+                used = self.db.execute("SELECT quantity FROM totals WHERE resource=?", (resource,)).fetchone()[0]
+                if used + quantity > self.limits[resource]:
+                    raise ComputeBudgetExceeded(f"compute budget exhausted: {resource}")
+            events = {}
+            for resource, quantity in quantities.items():
+                row = self.db.execute("INSERT INTO events(parent,scope,resource,quantity,status) VALUES(?,?,?,?,?)",
+                    (_PARENT.get(), _SCOPE.get(), resource, quantity, "reserved"))
+                self.db.execute("UPDATE totals SET quantity=quantity+? WHERE resource=?", (quantity, resource))
+                events[resource] = row.lastrowid
+            self.db.commit()
+            return events
         except BaseException:
             self.db.rollback(); raise
 

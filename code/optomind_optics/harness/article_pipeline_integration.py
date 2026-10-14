@@ -33,7 +33,7 @@ from .method_research import (
     DefaultMethodResearchOnlineClient,
     QwenMethodFindingSynthesizer,
 )
-from .article_memory_boundary import initialize_article_memory_workspace
+from .article_memory_boundary import resolve_article_memory_path
 
 
 SUMMARY_FILENAME = "ARTICLE_PIPELINE_INTEGRATION_SUMMARY.json"
@@ -66,6 +66,8 @@ class ArticleIntegrationOptions(_StrictModel):
     release_state_root: Optional[str] = None
     release_runtime_versions: dict[str, str] = Field(default_factory=dict)
     science_shadow_spec: Optional[dict[str, Any]] = None
+    science_entry_spec: Optional[dict[str, Any]] = None
+    science_offline_world: Optional[str] = None
 
     @field_validator("question", "run_id", "branch_id", "work_dir", "execution_root")
     @classmethod
@@ -551,6 +553,7 @@ def execute_article_pipeline_integration(
     online_client_factory: Callable[..., Any] = DefaultMethodResearchOnlineClient,
     clock: Callable[[], float] = time.monotonic,
     science_policy: Optional[Any] = None,
+    science_provider_factory: Optional[Callable[..., Any]] = None,
 ) -> ArticleIntegrationExecution:
     """Validate, assemble, run/resume, and summarize one real integration."""
 
@@ -560,6 +563,23 @@ def execute_article_pipeline_integration(
         else ArticleIntegrationOptions.model_validate(options)
     )
     env = os.environ if environment is None else environment
+    scientific_spec = None
+    if opts.science_entry_spec is not None:
+        from .science.entry_spec import DiagnosticEntrySpec
+        scientific_spec = DiagnosticEntrySpec.model_validate(opts.science_entry_spec)
+        if scientific_spec.run_id != opts.run_id or scientific_spec.original_question != opts.question:
+            raise ArticleIntegrationError('Article question/run differs from the explicit scientific spec')
+        if science_policy is not None:
+            raise ArticleIntegrationError('choose an explicit scientific spec or a host scientific policy')
+        if opts.science_offline_world is not None:
+            if science_provider_factory is not None:
+                raise ArticleIntegrationError('observation provider supplied twice')
+            from optomind_eval.durable_diagnostic_world import offline_diagnostic_provider_factory
+            science_provider_factory = offline_diagnostic_provider_factory(scientific_spec, opts.science_offline_world)
+        if not callable(science_provider_factory):
+            raise ArticleIntegrationError('scientific spec requires an explicit observation provider')
+    elif opts.science_offline_world is not None or science_provider_factory is not None:
+        raise ArticleIntegrationError('observation provider requires an explicit scientific spec')
     authority_key = str(env.get(AUTHORITY_ENVIRONMENT_VARIABLE) or "")
     if not authority_key:
         raise ArticleIntegrationError(
@@ -582,24 +602,30 @@ def execute_article_pipeline_integration(
         force_mock=opts.force_mock,
         maximum_routes=opts.maximum_routes,
     )
-    article_memory_path = initialize_article_memory_workspace(
+    # Admission owns creation of the write-once run directory. Creating the
+    # memory store here used to make every real fresh entry fail as nonempty.
+    article_memory_path = resolve_article_memory_path(
         request.work_dir,
         opts.article_memory_path,
     )
     config = ProductionAssemblyConfig(
         work_root=str(Path(opts.execution_root).resolve()),
+        article_memory_path=str(article_memory_path),
         review_kb_paths=tuple(str(path) for path in kb_paths),
         online_research=opts.online_research,
         release_state_root=opts.release_state_root,
         release_runtime_versions=opts.release_runtime_versions,
     )
     authority = ArticleCompilationAuthority(authority_key)
-    synthesis_callback = synthesizer_factory(force_mock=opts.force_mock)
-    online_client = online_client_factory() if opts.online_research else None
+    synthesis_callback = synthesizer_factory(force_mock=opts.force_mock) if scientific_spec is None else None
+    online_client = online_client_factory() if opts.online_research and scientific_spec is None else None
     factory = factory_type(request=request, authority=authority, config=config)
     assembly_options = {}
     if science_policy is not None:
         assembly_options["science_policy"] = science_policy
+    if scientific_spec is not None:
+        assembly_options['science_entry_spec'] = scientific_spec
+        assembly_options['science_provider_factory'] = science_provider_factory
     if opts.science_shadow_spec is not None:
         from .science.release_manifest import compile_shadow_spec
         assembly_options["science_shadow_spec"] = compile_shadow_spec(opts.science_shadow_spec)
@@ -610,7 +636,17 @@ def execute_article_pipeline_integration(
     )
 
     started = clock()
-    result = assembly.resume() if opts.resume else assembly.run()
+    try:
+        result = assembly.resume() if opts.resume else assembly.run()
+    finally:
+        if scientific_spec is not None:
+            policy = getattr(getattr(assembly, 'pipeline', None), 'science_policy', None)
+            if callable(getattr(policy, 'close', None)):
+                policy.close()
+    from .article_pipeline_factory import ArticlePipelineAssembly
+    if isinstance(assembly, ArticlePipelineAssembly) and result.status == 'failed' and not result.receipts:
+        # A rejected foreign/nonempty directory is not our artifact destination.
+        raise ArticleIntegrationError('pipeline admission failed: ' + '; '.join(result.validation_errors))
     elapsed = max(0.0, float(clock()) - float(started))
     summary = build_integration_summary(
         result,

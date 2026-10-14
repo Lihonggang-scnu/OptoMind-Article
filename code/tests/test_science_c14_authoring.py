@@ -138,6 +138,27 @@ def test_omitted_negative_outcome_blocks_authoring(tmp_path):
     assert 'negative/unknown claims omitted' in str(result.errors)
 
 
+def test_negative_source_without_adopted_claim_still_blocks_authoring(tmp_path):
+    from optomind_optics.harness.science.contracts import DecisionContext
+    source,bundle,selection,selected=setup_selection(tmp_path)
+    repo=ScienceRepository(selection.repository_root)
+    try:
+        adequacy=DecisionContext(object_id='unclaimed-adequacy',source_run_id='fixture',
+            input_refs=(selected.candidate_ref,),summary={'state':'model_family_inadequate'})
+        data=selected.model_dump();data.update(content_hash='',revision=2,negative_result_refs=[adequacy.ref()])
+        revised=SelectedResearchResult.model_validate(data)
+        repo.commit([adequacy,revised],task_ref=repo.latest_snapshot().task_ref,evidence_cutoff='missing-claim-regression')
+    finally:
+        repo.close()
+    selection=selection.model_copy(update={'selected_result_ref':revised.ref()})
+    with pytest.raises(ValueError,match='every adopted negative outcome requires a source-bound scientific claim'):
+        resolve_authoring_selection(selection,bundle.assets)
+    continuation,state=_continuation()
+    result=continuation.run(_request(source,tmp_path/'work',scientific_selection=selection))
+    assert result.status=='failed' and 'source-bound scientific claim' in str(result.errors)
+    assert state['synthesis'].calls==0
+
+
 class NegativeSynthesis(ScopedSynthesis):
     def __call__(self,payload):
         result=super().__call__(payload); alias=payload.trusted_values[0].alias

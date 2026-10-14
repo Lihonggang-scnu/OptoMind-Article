@@ -390,6 +390,7 @@ class ArticlePipeline:
         compile_assets: CompileAssetsAdapter,
         authority: Optional[ArticleCompilationAuthority] = None,
         science_policy=None,
+        article_memory_path: Optional[str] = None,
     ) -> None:
         adapters = {
             "analyze": analyze,
@@ -416,6 +417,7 @@ class ArticlePipeline:
         self.compile_assets = compile_assets
         self.authority = authority
         self.science_policy = science_policy
+        self.article_memory_path = article_memory_path
 
     def run(
         self,
@@ -494,6 +496,9 @@ class ArticlePipeline:
                 work_dir / REQUEST_FILENAME,
                 request_model.model_dump(mode="json"),
             )
+            if self.article_memory_path is not None:
+                from .article_memory_boundary import initialize_article_memory_workspace
+                initialize_article_memory_workspace(work_dir, self.article_memory_path)
             runner = _PipelineRunner(self, request_model, work_dir)
             return runner.run()
         except BaseException:
@@ -572,6 +577,9 @@ class ArticlePipeline:
                     question=request_model.question,
                     run_id=request_model.run_id,
                 )
+            if self.article_memory_path is not None:
+                from .article_memory_boundary import initialize_article_memory_workspace
+                initialize_article_memory_workspace(work_dir, self.article_memory_path)
             runner_state = self._build_resume_runner_state(
                 work_dir, request_model, state, errors, warnings
             )
@@ -581,6 +589,10 @@ class ArticlePipeline:
                     question=request_model.question,
                     run_id=request_model.run_id,
                 )
+            if getattr(self.science_policy, 'explicit_diagnostic_entry', None) is not None:
+                from .science.entry_spec import verify_completed_diagnostic_entry
+                verify_completed_diagnostic_entry(self.science_policy, request_model,
+                                                   runner_state['receipts'])
             if state.get("pending") is not None:
                 try:
                     recovery.promote_pending_checkpoint(
@@ -1207,7 +1219,9 @@ class _PipelineRunner:
 
     def run(self) -> ArticlePipelineResult:
         analysis = self._stage_problem_analysis()
-        if self._usable(analysis):
+        if self._usable(analysis) and self._explicit_diagnostic_spec() is not None:
+            self._run_explicit_diagnostic()
+        elif self._usable(analysis):
             research = self._stage_method_research()
             if self._usable(research):
                 strategy = self._stage_strategy_planning()
@@ -1239,6 +1253,73 @@ class _PipelineRunner:
             final.model_dump(mode="json"),
         )
         return final
+
+    def _explicit_diagnostic_spec(self):
+        policy = self.pipeline.science_policy
+        spec = getattr(policy, 'explicit_diagnostic_entry', None)
+        if spec is None:
+            return None
+        from .science.entry_spec import DiagnosticEntrySpec
+        from .science.pipeline_adapter import OpenResearchPipelinePolicy
+        if not isinstance(policy, OpenResearchPipelinePolicy) or not isinstance(spec, DiagnosticEntrySpec):
+            raise PipelineContractError('explicit diagnosis requires the typed bound scientific policy')
+        return spec.bind_request(self.request)
+
+    def _run_explicit_diagnostic(self):
+        """Run supplied diagnosis without inventing legacy optimizer requests."""
+        spec = self._explicit_diagnostic_spec()
+        policy = self.pipeline.science_policy
+        spec.bind_committed_analysis(self.work_dir)
+        reason = ('not_applicable: explicit bounded mechanism diagnosis supplies its '
+                  'hypotheses/protocol; legacy optimization route planning is not used')
+        for sequence, stage in enumerate(PIPELINE_STAGE_ORDER, start=1):
+            if not 2 <= sequence <= 6 or any(r.stage == stage for r in self.receipts):
+                continue
+            self._record_stage(sequence, stage, 'skipped',
+                input_ids=(self.output_ids['problem_analysis'][0],), output_ids=(),
+                warnings=(reason,), errors=(), payload={'status': 'not_applicable', 'reason': reason})
+        execution = next((r for r in self.receipts if r.stage == 'execution'), None)
+        if execution is None:
+            from .science.diagnostic_research import DiagnosticExecutionPending
+            try:
+                if policy.plan([], self.work_dir):
+                    raise ValueError('diagnostic entry cannot select optimizer requests')
+                selected = policy.finalize([], self.work_dir)
+                if selected is None:
+                    raise ValueError('diagnostic entry returned no canonical scientific result')
+            except DiagnosticExecutionPending:
+                # Keep stage 7 uncommitted: later resume queries the same
+                # durable receipt when the observation becomes available.
+                raise
+            except Exception as exc:
+                self._mark_failed_stage(7, 'execution',
+                    input_ids=(self.output_ids['problem_analysis'][0],),
+                    errors=(f'scientific continuation failed: {exc}',), warnings=(),
+                    payload=[], hard=True)
+                self._skip_remaining(8, 'scientific diagnostic execution unavailable')
+                return
+            self._record_stage(7, 'execution', 'completed',
+                input_ids=(self.output_ids['problem_analysis'][0],),
+                output_ids=(selected.object_id,), warnings=(), errors=(),
+                payload={'kind': 'mechanism_diagnosis', 'selected_result_ref': selected.ref().model_dump(mode='json'),
+                         'legacy_optimizer_executions': 0})
+        elif execution.status != 'completed':
+            self._skip_remaining(8, 'scientific diagnostic execution unavailable')
+            return
+        if not any(r.stage == 'asset_compilation' for r in self.receipts):
+            try:
+                source = policy.authoring_source(self.work_dir)
+                payload = {'kind': 'scientific_result',
+                    'selected_result_ref': source.result.selected_result_ref.model_dump(mode='json'),
+                    'source_directory': 'scientific_authoring', 'legacy_optimizer_certificates': False}
+            except Exception as exc:
+                self._mark_failed_stage(8, 'asset_compilation',
+                    input_ids=self.output_ids['execution'],
+                    errors=(f'scientific authoring handoff failed: {exc}',), warnings=(), payload=None, hard=True)
+                return
+            self._record_stage(8, 'asset_compilation', 'completed',
+                input_ids=self.output_ids['execution'], output_ids=(source.result.result_id,),
+                warnings=(), errors=(), payload=payload)
 
     def assemble_terminal_result(self) -> ArticlePipelineResult:
         """Assemble the final result from committed state (no adapters)."""
@@ -1447,7 +1528,11 @@ class _PipelineRunner:
     def _derive_status(self) -> PipelineStatus:
         if self.hard_failed:
             return "failed"
-        statuses = [receipt.status for receipt in self.receipts]
+        statuses = [receipt.status for receipt in self.receipts
+                    if not (self._explicit_diagnostic_spec() is not None
+                            and 2 <= receipt.sequence <= 6 and receipt.status == 'skipped'
+                            and any(w.startswith('not_applicable: explicit bounded mechanism diagnosis')
+                                    for w in receipt.warnings))]
         completed = statuses.count("completed")
         if completed == 0 and "unavailable" in statuses:
             return "unavailable"
@@ -2584,6 +2669,7 @@ def build_default_pipeline(
     compile_assets: CompileAssetsAdapter,
     authority: Optional[ArticleCompilationAuthority] = None,
     science_policy=None,
+    article_memory_path: Optional[str] = None,
 ) -> ArticlePipeline:
     """Wire caller-supplied adapters into an ArticlePipeline.
 
@@ -2602,6 +2688,7 @@ def build_default_pipeline(
         compile_assets=compile_assets,
         authority=authority,
         science_policy=science_policy,
+        article_memory_path=article_memory_path,
     )
 
 

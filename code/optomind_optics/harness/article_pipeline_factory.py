@@ -161,6 +161,7 @@ class ProductionAssemblyConfig(_StrictModel):
         "article-pipeline-assembly-config.v1"
     )
     work_root: str
+    article_memory_path: Optional[str] = None
     review_kb_paths: Tuple[str, ...] = Field(default_factory=tuple)
     online_research: bool = False
     research_options: Dict[str, Any] = Field(default_factory=dict)
@@ -272,6 +273,10 @@ class ArticlePipelineAssembly:
         self.release_binding = release_binding
 
     def _run_bound(self, *, resume: bool) -> ArticlePipelineResult:
+        if (getattr(self.pipeline.science_policy, 'explicit_diagnostic_entry', None) is not None
+                or (Path(self.request.work_dir) / 'SCIENCE_ENTRY_SPEC.json').exists()):
+            from .science.entry_spec import verify_entry_selection
+            verify_entry_selection(self.pipeline.science_policy, self.request, resume=resume)
         if self.release_binding is not None:
             self.release_binding.before_run(self.request.work_dir)
         result = self.pipeline.resume(self.request) if resume else self.pipeline.run(self.request)
@@ -329,6 +334,9 @@ class ProductionArticlePipelineFactory:
                 f"production assembly config is invalid: {exc}"
             ) from exc
         self.work_root = Path(self.config.work_root).resolve()
+        if self.config.article_memory_path is not None:
+            from .article_memory_boundary import resolve_article_memory_path
+            resolve_article_memory_path(self.request.work_dir, self.config.article_memory_path)
 
     def assemble(
         self,
@@ -345,6 +353,8 @@ class ProductionArticlePipelineFactory:
         research_options: Optional[Mapping[str, Any]] = None,
         science_policy: Optional[Any] = None,
         open_research_builder: Optional[Callable[..., Any]] = None,
+        science_entry_spec: Optional[Any] = None,
+        science_provider_factory: Optional[Callable[..., Any]] = None,
         science_shadow_spec: Optional[Mapping[str, Any]] = None,
         scheduler: Optional[BudgetScheduler] = None,
         budget_limits: Optional[BudgetLimits | Mapping[str, Any]] = None,
@@ -354,8 +364,18 @@ class ProductionArticlePipelineFactory:
     ) -> ArticlePipelineAssembly:
         """Assemble the pipeline and trusted local runtime components."""
 
-        if science_policy is not None and open_research_builder is not None:
-            raise PipelineAssemblyIntegrityError("choose one explicit scientific policy or open research builder")
+        if sum(value is not None for value in (science_policy, open_research_builder, science_entry_spec)) > 1:
+            raise PipelineAssemblyIntegrityError("choose one explicit scientific policy, open research builder or scientific entry spec")
+        if science_entry_spec is not None:
+            from .science.entry_spec import DiagnosticEntrySpec, diagnostic_entry_builder
+            science_entry_spec = (DiagnosticEntrySpec.model_validate(science_entry_spec)
+                                  if isinstance(science_entry_spec, dict) else science_entry_spec)
+            if not isinstance(science_entry_spec, DiagnosticEntrySpec):
+                raise PipelineAssemblyIntegrityError('unsupported scientific entry spec')
+            science_entry_spec = science_entry_spec.bind_request(self.request)
+            open_research_builder = diagnostic_entry_builder(science_entry_spec, self.request, science_provider_factory)
+        elif science_provider_factory is not None:
+            raise PipelineAssemblyIntegrityError('observation provider requires an explicit scientific entry spec')
         release_binding = None
         if self.config.release_state_root is not None:
             from .science.release_manifest import ProductionReleaseBinding
@@ -367,6 +387,9 @@ class ProductionArticlePipelineFactory:
             if mode == "active" and science_policy is None and open_research_builder is None:
                 raise PipelineAssemblyIntegrityError("active release requires an explicit scientific execution policy")
             if mode in {"legacy", "shadow"}:
+                if science_entry_spec is not None:
+                    raise PipelineAssemblyIntegrityError(
+                        'explicit mechanism diagnosis requires an active release; legacy/shadow mode cannot substitute optimization')
                 science_policy = None
                 open_research_builder = None
         elif self.config.release_runtime_versions or science_shadow_spec is not None:
@@ -428,19 +451,6 @@ class ProductionArticlePipelineFactory:
                 f"assembly identity/configuration error: {exc}"
             ) from exc
 
-        task_compiler = task_compiler or QwenTMMTaskCompiler(
-            client=task_compiler_client,
-            maximum_attempts=self.config.task_compiler_maximum_attempts,
-        )
-        strategy_planner = QwenTMMStrategyPlanner(
-            client=strategy_client,
-            maximum_attempts=self.config.planner_maximum_attempts,
-        )
-        director = ArticleDirector(client=director_client)
-        planner = planner or QwenArticleExperimentPlanner(
-            client=planner_client,
-            maximum_tokens=self.config.planner_maximum_tokens,
-        )
         research_options = dict(
             research_options
             if research_options is not None
@@ -455,7 +465,32 @@ class ProductionArticlePipelineFactory:
                 + ", ".join(reserved_research_options)
             )
 
+        if science_entry_spec is None:
+            task_compiler = task_compiler or QwenTMMTaskCompiler(
+                client=task_compiler_client,
+                maximum_attempts=self.config.task_compiler_maximum_attempts,
+            )
+            strategy_planner = QwenTMMStrategyPlanner(
+                client=strategy_client,
+                maximum_attempts=self.config.planner_maximum_attempts,
+            )
+            director = ArticleDirector(client=director_client)
+            planner = planner or QwenArticleExperimentPlanner(
+                client=planner_client,
+                maximum_tokens=self.config.planner_maximum_tokens,
+            )
+        else:
+            # This route supplies its structured task and executable hypotheses.
+            # Do not initialize unused online optimization planners.
+            strategy_planner = director = None
+
         def analyze(question: str, force_mock: Optional[bool]) -> Any:
+            if science_entry_spec is not None:
+                from .problem_analyzer import ProblemAnalysisResult
+                science_entry_spec.bind_request(self.request)
+                science_entry_spec.freeze(self.request.work_dir)
+                return ProblemAnalysisResult(status='analyzed', analysis=science_entry_spec.analysis,
+                    validation_warnings=['Explicit caller-supplied structured analysis; no new model analysis call.'])
             return analyze_optical_problem(
                 question,
                 client=problem_analyzer_client,
@@ -608,6 +643,8 @@ class ProductionArticlePipelineFactory:
         if open_research_builder is not None:
             from .science.pipeline_adapter import OpenResearchPipelinePolicy
             science_policy=OpenResearchPipelinePolicy(coordinator=coordinator,loop_builder=open_research_builder,article_request=self.request)
+            if science_entry_spec is not None:
+                science_policy.explicit_diagnostic_entry = science_entry_spec
 
         pipeline = build_default_pipeline(
             analyze=analyze,
@@ -620,6 +657,7 @@ class ProductionArticlePipelineFactory:
             compile_assets=compile_assets_impl,
             authority=self.authority,
             science_policy=science_policy,
+            article_memory_path=self.config.article_memory_path,
         )
         return ArticlePipelineAssembly(
             pipeline=pipeline,

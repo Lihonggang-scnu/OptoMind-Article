@@ -1075,6 +1075,20 @@ class OpenResearchLoop:
             scope={"strength":"prediction","evidence_tier":"V1_synthetic","same_specimen_only":True,
                 "parameter_uncertainty_coverage":"not established","global_adaptive_coverage":"not established",
                 "mechanism_or_transfer_claim":False})))
+        if unresolved_failure:
+            # A failed family check is an adopted negative independently of the
+            # held-out prediction check. Bind it to its own claim so authoring
+            # cannot omit it or mistake local prediction support for adequacy.
+            claims.append(self._put(ScientificClaim(object_id=f"{cfg.run_id}:claim:adequacy",source_run_id=cfg.run_id,
+                statement="The fitted specimen model passed the plug-in frozen-family refit-bootstrap adequacy criterion on the recorded data.",
+                evidence_refs=(adequacy_record.ref(),),status="refuted",
+                scope={"strength":"design","evidence_tier":"V1_synthetic",
+                    "task_ref":self.task.ref().model_dump(mode="json"),
+                    "model_adequacy_state":final_assessment["state"],
+                    "calibration_scope":final_assessment["calibration_scope"],
+                    "search_wide_false_rejection_risk":"unknown",
+                    "unknown_risk":final_assessment["unknown_risk"],"task_impact":final_assessment["task_impact"],
+                    "mechanism_or_transfer_claim":False,"manufactured_design_validation":False})))
         for index,ref in enumerate(negative_refs):
             selection_record=self.repository.load(ref)
             rejected=max(0,len(selection_record.summary["candidate_ids"])-1)

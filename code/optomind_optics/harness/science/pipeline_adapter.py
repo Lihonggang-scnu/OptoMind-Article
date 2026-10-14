@@ -204,7 +204,11 @@ class OpenResearchPipelinePolicy:
 
     def _verify_binding(self):
         from .open_research_loop import OpenResearchLoop
-        if not isinstance(self.loop,OpenResearchLoop):raise ValueError("actual OpenResearchLoop required")
+        from .entry_spec import DiagnosticPipelineLoopAdapter
+        if not isinstance(self.loop,(OpenResearchLoop,DiagnosticPipelineLoopAdapter)):
+            raise ValueError("actual supported scientific loop required")
+        if isinstance(self.loop,DiagnosticPipelineLoopAdapter):
+            self.loop.verify_contract(self.article_request)
         if self.coordinator.science_repository is not self.loop.repository:
             raise ValueError("open research must use Article's authoritative science repository")
         if self.coordinator.science_task_ref != self.loop.task.ref():
@@ -218,9 +222,13 @@ class OpenResearchPipelinePolicy:
         self._work_dir=root
         if self.loop is None:
             from .open_research_loop import OpenResearchLoop
+            from .entry_spec import DiagnosticPipelineLoopAdapter
             loop,resources=self.loop_builder(root)
             try:
-                if not isinstance(loop,OpenResearchLoop):raise ValueError("builder must return actual OpenResearchLoop")
+                if not isinstance(loop,(OpenResearchLoop,DiagnosticPipelineLoopAdapter)):
+                    raise ValueError("builder must return actual supported scientific loop")
+                if isinstance(loop,DiagnosticPipelineLoopAdapter):
+                    loop.verify_contract(self.article_request)
                 if loop.repository.root.resolve()!=Path(self.coordinator.science_root).resolve():
                     raise ValueError("research repository must be the factory's canonical science root")
                 if loop.task.source_run_id!=self.coordinator.adapter.run_id:
