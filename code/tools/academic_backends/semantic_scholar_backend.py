@@ -21,6 +21,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from config.secret_pool import optional_legacy_desktop
+
 S2_API_BASE = "https://api.semanticscholar.org/graph/v1"
 S2_FIELDS = (
     "paperId,title,abstract,year,authors,url,venue,journal,"
@@ -29,8 +31,6 @@ S2_FIELDS = (
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_S2_KEYS_FILE = PROJECT_ROOT / "api_keys" / "semantic-scholar-api-key.txt"
 NEW_PROJECT_S2_KEYS_FILE = PROJECT_ROOT / "api_keys" / "semanticscholar-apikey.txt"
-LEGACY_S2_KEYS_FILE = Path.home() / "Desktop" / "semantic-scholar-api-key.txt"
-NEW_DESKTOP_S2_KEYS_FILE = Path.home() / "Desktop" / "semanticscholar-apikey.txt"
 
 
 def _split_keys(raw: str) -> List[str]:
@@ -48,12 +48,18 @@ def _api_keys() -> List[str]:
     for env_name in ("SEMANTIC_SCHOLAR_API_KEYS", "SEMANTIC_SCHOLAR_API_KEY"):
         keys.extend(_split_keys(os.environ.get(env_name) or ""))
     configured = os.environ.get("SEMANTIC_SCHOLAR_API_KEYS_FILE")
-    key_files = [Path(configured)] if configured else [
-        NEW_PROJECT_S2_KEYS_FILE,
-        DEFAULT_S2_KEYS_FILE,
-        NEW_DESKTOP_S2_KEYS_FILE,
-        LEGACY_S2_KEYS_FILE,
-    ]
+    if configured:
+        key_files = [Path(configured)]
+    else:
+        key_files = [NEW_PROJECT_S2_KEYS_FILE, DEFAULT_S2_KEYS_FILE]
+        desktop = optional_legacy_desktop()
+        if desktop is not None:
+            key_files.extend(
+                [
+                    desktop / "semanticscholar-apikey.txt",
+                    desktop / "semantic-scholar-api-key.txt",
+                ]
+            )
     for path in key_files:
         if path.exists():
             try:

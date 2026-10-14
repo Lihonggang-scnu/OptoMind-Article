@@ -18,7 +18,10 @@ from typing import Iterable
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 API_KEYS_DIR = PROJECT_ROOT / "api_keys"
-DESKTOP = Path.home() / "Desktop"
+# Kept as an override seam for tests and explicitly selected callers.  The
+# normal legacy Desktop location is resolved only when candidates are loaded,
+# because a headless Windows child may not have a resolvable HOME.
+DESKTOP: Path | None = None
 _RNG = random.SystemRandom()
 
 
@@ -26,6 +29,23 @@ _RNG = random.SystemRandom()
 class SecretCandidate:
     value: str
     source: str
+
+
+def optional_legacy_desktop() -> Path | None:
+    """Return the optional legacy Desktop root without a cwd fallback.
+
+    ``DESKTOP`` remains an intentional override seam.  With no override, the
+    platform home is resolved lazily so importing configuration does not make
+    an unavailable HOME fatal.  The Desktop lookup is optional; project and
+    environment candidates remain usable when home resolution fails.
+    """
+
+    if DESKTOP is not None:
+        return Path(DESKTOP)
+    try:
+        return Path.home() / "Desktop"
+    except (OSError, RuntimeError):
+        return None
 
 
 def split_secret_values(raw: str) -> list[str]:
@@ -92,8 +112,14 @@ def secret_candidates(
         for index, value in enumerate(split_secret_values(raw), 1):
             add(SecretCandidate(value=value, source=f"{env_name}#{index}"))
 
+    filenames = tuple(filenames)
+    roots = [API_KEYS_DIR]
+    if include_legacy_desktop and filenames:
+        desktop = optional_legacy_desktop()
+        if desktop is not None:
+            roots.append(desktop)
     for filename in filenames:
-        for root in ([API_KEYS_DIR, DESKTOP] if include_legacy_desktop else [API_KEYS_DIR]):
+        for root in roots:
             for candidate in read_secret_file_candidates(root / filename):
                 add(candidate)
 

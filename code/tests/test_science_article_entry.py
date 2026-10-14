@@ -186,7 +186,10 @@ def test_cli_uses_explicit_spec_and_separate_world(tmp_path):
         '--science-offline-world', str(world)]
     # Two actual processes, with only the test authority and import path. No
     # model credentials or inherited provider configuration are passed through.
+    synthetic_home = tmp_path / 'empty-home'
+    synthetic_home.mkdir()
     env = {'PYTHONPATH': os.environ.get('PYTHONPATH', ''), 'PYTHONDONTWRITEBYTECODE': '1',
+           'HOME': str(synthetic_home), 'USERPROFILE': str(synthetic_home),
            AUTHORITY_ENVIRONMENT_VARIABLE: 'offline-science-entry-test-authority'}
     outputs = []
     for invocation in (args, [*args, '--resume']):

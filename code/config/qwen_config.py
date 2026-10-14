@@ -6,15 +6,27 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from config.secret_pool import SecretCandidate, mask_secret, secret_candidates, shuffled_secret_candidates
+from config.secret_pool import (
+    SecretCandidate,
+    mask_secret,
+    secret_candidates,
+    shuffled_secret_candidates,
+    optional_legacy_desktop,
+)
 
 
 CONFIG_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = CONFIG_DIR.parent
 MODEL_POLICY_PATH = CONFIG_DIR / "model_policy.yaml"
 DEFAULT_LOCAL_KEY_FILE = PROJECT_ROOT / "api_keys" / "qwen-api-key.txt"
-LEGACY_LOCAL_KEY_FILE = Path.home() / "Desktop" / "qwen-api-key.txt"
 DASHSCOPE_COMPATIBLE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+
+def __getattr__(name: str):
+    if name == "LEGACY_LOCAL_KEY_FILE":
+        desktop = optional_legacy_desktop()
+        return desktop / "qwen-api-key.txt" if desktop is not None else None
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def _coerce_scalar(value: str) -> Any:

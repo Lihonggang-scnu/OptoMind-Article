@@ -21,11 +21,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from config.secret_pool import optional_legacy_desktop
+
 OPENALEX_API_BASE = "https://api.openalex.org/works"
 RATE_LIMIT_SECONDS = 1.0
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OPENALEX_KEYS_FILE = PROJECT_ROOT / "api_keys" / "openalex.txt"
-LEGACY_OPENALEX_KEYS_FILE = Path.home() / "Desktop" / "openalex.txt"
 
 
 def _openalex_email() -> Optional[str]:
@@ -48,7 +49,13 @@ def _openalex_api_keys() -> List[str]:
         raw = os.environ.get(env_name) or ""
         keys.extend(_split_keys(raw))
     configured = os.environ.get("OPENALEX_API_KEYS_FILE")
-    key_files = [Path(configured)] if configured else [DEFAULT_OPENALEX_KEYS_FILE, LEGACY_OPENALEX_KEYS_FILE]
+    if configured:
+        key_files = [Path(configured)]
+    else:
+        key_files = [DEFAULT_OPENALEX_KEYS_FILE]
+        desktop = optional_legacy_desktop()
+        if desktop is not None:
+            key_files.append(desktop / "openalex.txt")
     for key_file in key_files:
         if key_file.exists():
             try:
