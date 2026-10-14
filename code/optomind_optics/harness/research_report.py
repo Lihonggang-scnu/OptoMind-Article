@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import math
 from typing import Any, Iterable, Mapping
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -16,6 +19,11 @@ class TMMResearchAnswer(BaseModel):
     schema_version: str = "tmm-research-answer.v1"
     status: str
     acceptance_status: str = "unverified"
+    physics_accepted: bool = False
+    target_met: bool | None = None
+    objective_value: float | None = None
+    target_margin: float | None = None
+    target_assessment: dict[str, Any] = Field(default_factory=dict)
     failed_iteration_ids: tuple[str, ...] = ()
     route_failures: tuple[dict[str, Any], ...] = ()
     problem_id: str
@@ -31,6 +39,76 @@ class TMMResearchAnswer(BaseModel):
     initial_plan_open_questions: tuple[str, ...] = ()
     artifact_index: tuple[str, ...] = ()
     markdown: str
+
+
+def _assess_target(candidate, scoring_standard=None):
+    """Assess the adopted candidate, never infer target success from a score.
+
+    Only explicit frozen thresholds with strict metric/band/channel/reduction
+    binding are assessed. Native target rows lack that full binding and cannot
+    supply a missing frozen threshold. Missing evidence is explicitly unknown.
+    """
+    result = {"target_met": None, "candidate_id": (candidate or {}).get("candidate_id"),
+              "iteration_id": (candidate or {}).get("iteration_id"),
+              "objective_value": (candidate or {}).get("frozen_score"),
+              "objective_value_basis": "frozen_score", "clauses": []}
+    if not candidate:
+        return {**result, "reason": "no_adopted_candidate"}
+    report = (candidate.get("objective_report") or {}).get("target_attainment") or {}
+    clauses = []
+    if scoring_standard is not None:
+        from .scoring_standard import _row_matches
+        result["score_basis_fingerprint"] = hashlib.sha256(json.dumps(
+            scoring_standard.model_dump(mode="json"), sort_keys=True,
+            separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+        for metric in scoring_standard.metrics:
+            if metric.target is None:
+                continue
+            matches = [row for row in report.values() if _row_matches(row, metric)]
+            values = set()
+            malformed = False
+            for row in matches:
+                try:
+                    raw = row.get("observed")
+                    if isinstance(raw, bool):
+                        raise ValueError("boolean is not a measurement")
+                    value = float(raw)
+                    if not math.isfinite(value):
+                        raise ValueError("nonfinite measurement")
+                    values.add(value)
+                except (TypeError, ValueError, OverflowError):
+                    malformed = True
+            observed = next(iter(values)) if not malformed and len(values) == 1 else None
+            clauses.append({"name": metric.variable, "observed": observed,
+                "target": metric.target, "constraint": {"minimize": "at_most", "maximize": "at_least"}.get(metric.sense),
+                "metric": metric.metric, "region": metric.region, "mean_reduction": metric.mean_reduction})
+    if not clauses:
+        return {**result, "reason": "no_explicit_frozen_target_threshold; native_target_binding_unavailable"}
+    for clause in clauses:
+        verdict = None
+        clause["target_margin"] = None
+        try:
+            value, target = float(clause["observed"]), float(clause["target"])
+            if not math.isfinite(value) or not math.isfinite(target):
+                raise ValueError("nonfinite target evidence")
+            constraint = clause.get("constraint")
+            if constraint == "at_most":
+                verdict = value <= target
+                clause["target_margin"] = target - value
+            elif constraint == "at_least":
+                verdict = value >= target
+                clause["target_margin"] = value - target
+            elif constraint == "match" and clause.get("tolerance") is not None:
+                tolerance = float(clause["tolerance"])
+                if math.isfinite(tolerance) and tolerance >= 0:
+                    verdict = abs(value - target) <= tolerance
+        except (TypeError, ValueError, OverflowError, KeyError):
+            pass
+        clause["target_met"] = verdict
+    values = [clause["target_met"] for clause in clauses]
+    met = False if False in values else True if values and all(value is True for value in values) else None
+    return {**result, "target_met": met, "clauses": clauses,
+            "reason": "target_not_met" if met is False else "target_met" if met is True else "target_evidence_incomplete_or_unsupported"}
 
 
 def _mapping(value: Any) -> dict[str, Any]:
@@ -466,6 +544,7 @@ class DeterministicTMMResearchReporter:
                 }
             )
 
+        target_assessment = _assess_target(ranked[0] if comparable and ranked else None, scoring_standard)
         acceptance = acceptance_summary(observations, plan.get("route_failures") or [])
         limitations = list(problem.get("ambiguities") or [])
         if acceptance["acceptance_status"] == "partial":
@@ -513,6 +592,7 @@ class DeterministicTMMResearchReporter:
             "# TMM research and design result",
             "",
             f"Run status: {status}. Acceptance: {acceptance['acceptance_status']}.",
+            "Scientific target: " + ({True: "met", False: "not met", None: "unknown"}[target_assessment["target_met"]]) + ".",
             "",
             "## Problem interpretation",
             "",
@@ -740,6 +820,12 @@ class DeterministicTMMResearchReporter:
         return TMMResearchAnswer(
             status=status,
             acceptance_status=acceptance["acceptance_status"],
+            physics_accepted=bool(acceptance["verified_iteration_ids"]),
+            target_met=target_assessment["target_met"],
+            objective_value=target_assessment.get("objective_value"),
+            target_margin=(target_assessment["clauses"][0].get("target_margin")
+                           if len(target_assessment["clauses"]) == 1 else None),
+            target_assessment=target_assessment,
             failed_iteration_ids=tuple(acceptance["failed_iteration_ids"]),
             route_failures=tuple(acceptance["route_failures"]),
             problem_id=str(problem.get("problem_id") or "unknown"),

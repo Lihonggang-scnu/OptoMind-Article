@@ -54,6 +54,40 @@ def _frozen_standard_targets(simulation, payload):
     return standard, targets
 
 
+def gradient_forward_cost(task, parameter_count, objective_kind):
+    """Exact solver-call allowance, shared by planning and execution."""
+    target_count = len(task.targets)
+    if objective_kind == "optomind_frozen_score":
+        return target_count * (1 + 2 * parameter_count)
+    if objective_kind == "veritmm_nominal_loss":
+        groups = len({(target.angle_deg, target.polarization) for target in task.targets})
+        return target_count + groups * (1 + 2 * parameter_count)
+    if objective_kind == "optomind_soft_score":
+        return target_count * (2 + 2 * parameter_count)
+    raise ValueError("objective_unsupported: cannot budget unknown objective")
+
+
+def planned_gradient_forward_cost(optimization, objective):
+    """Plan without executing a solver or loading materials/torch.
+
+    Use the same native variable validation and frozen target expansion as the
+    bound diagnostic. Unsupported bindings stay unavailable at execution.
+    """
+    from dataclasses import replace
+    from tmm_engine.gradient_api import _validate_task
+    from tmm_engine.schemas import dataclass_to_dict, SpectralTarget
+    if optimization.simulation.solver != "smatrix":
+        raise ValueError("solver_unsupported: differentiable binding requires smatrix")
+    indices = _validate_task(optimization.simulation, None)
+    if objective["kind"] == "optomind_frozen_score":
+        _, targets = _frozen_standard_targets(
+            dataclass_to_dict(optimization.simulation), objective["scoring_standard"])
+        optimization = replace(optimization, targets=tuple(SpectralTarget(**row) for row in targets))
+    if not optimization.targets:
+        raise ValueError("objective_unsupported: explicit targets required")
+    return gradient_forward_cost(optimization, len(indices), objective["kind"])
+
+
 def _frozen_formula_value(node, environment, torch):
     import ast
     import operator
@@ -295,14 +329,7 @@ def compute_bound_gradient(simulation, *, candidate_ref, objective_ref, objectiv
                                     objective_version=task_object.ref().model_dump(),**identities)
         if expected != binding or any(canonical_hash(provenance.get(k)) != canonical_hash(v) for k,v in identities.items()):
             raise ValueError("material/grid/polarization/solver/runtime identity mismatch")
-        target_count = len(task.targets)
-        if objective["kind"] == "optomind_frozen_score":
-            required = target_count * (1 + 2 * len(indices))
-        elif objective["kind"] == "veritmm_nominal_loss":
-            groups = len({(target.angle_deg, target.polarization) for target in task.targets})
-            required = target_count + groups * (1 + 2 * len(indices))
-        else:
-            required = target_count * (2 + 2 * len(indices))
+        required = gradient_forward_cost(task, len(indices), objective["kind"])
         if maximum_forward_evaluations is not None:
             if isinstance(maximum_forward_evaluations, bool) or int(maximum_forward_evaluations) != maximum_forward_evaluations or maximum_forward_evaluations < 0:
                 raise ValueError("gradient forward budget must be a nonnegative integer")

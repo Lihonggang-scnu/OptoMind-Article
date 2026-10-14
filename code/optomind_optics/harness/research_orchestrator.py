@@ -501,6 +501,11 @@ class TMMResearchHarnessResult(BaseModel):
     run_id: str
     status: str
     acceptance_status: str = "unverified"
+    physics_accepted: bool = False
+    target_met: bool | None = None
+    objective_value: float | None = None
+    target_margin: float | None = None
+    target_assessment: Dict[str, Any] = Field(default_factory=dict)
     failed_iteration_ids: Tuple[str, ...] = ()
     route_failures: Tuple[Dict[str, Any], ...] = ()
     stage: str
@@ -844,6 +849,9 @@ def canonical_execution_payload(task: Mapping[str, Any], *, scoring_standard=Non
     payload = {"experiments": experiments,
                **{key: normalize(task.get(key)) for key in ("verification", "portfolio", "uncertainty", "budget")},
                "optimizer_state": None}
+    diagnostic = (task.get("metadata") or {}).get("gradient_diagnostic_objective")
+    if diagnostic is not None:
+        payload["gradient_diagnostic_budget"] = {"kind": diagnostic.get("kind")}
     if scoring_standard is not None:
         import ast
         frozen = _mapping(scoring_standard)
@@ -2227,6 +2235,16 @@ class TMMResearchHarness:
                 }
                 atomic_write_json(iteration_dir / "TASK_COMPILATION.json", compilation_payload)
                 self._event("task_contract_rejected", route_id=route_id, iteration_id=iteration_id, reason=str(exc))
+        if task is not None and compilation_status == "compiled":
+            # Bind runtime-owned diagnostic intent before serial/pool dispatch.
+            # The immutable standard determines cost, never route-model text.
+            diagnostic_objective = (
+                {"kind": "optomind_frozen_score", "scoring_standard": self.scoring_standard.model_dump(mode="json")}
+                if self.scoring_standard is not None else {"kind": "optomind_soft_score"}
+            )
+            task = task.model_copy(update={"metadata": {
+                **task.metadata, "gradient_diagnostic_objective": diagnostic_objective,
+            }})
         execution_signature = None
         replicate_reason = ""
         if task is not None and compilation_status == "compiled":
@@ -4251,6 +4269,11 @@ class TMMResearchHarness:
             run_id=self.run_id,
             status=final_status,
             acceptance_status=acceptance_summary(observations, combined_plan["route_failures"])["acceptance_status"],
+            physics_accepted=getattr(answer, "physics_accepted", False),
+            target_met=getattr(answer, "target_met", None),
+            objective_value=getattr(answer, "objective_value", None),
+            target_margin=getattr(answer, "target_margin", None),
+            target_assessment=getattr(answer, "target_assessment", {}),
             failed_iteration_ids=tuple(acceptance_summary(observations)["failed_iteration_ids"]),
             route_failures=tuple(combined_plan["route_failures"]),
             stage="finished",
@@ -5491,6 +5514,11 @@ class TMMResearchHarness:
             run_id=self.run_id,
             status=final_status,
             acceptance_status=acceptance_summary(observations, combined_plan["route_failures"])["acceptance_status"],
+            physics_accepted=getattr(answer, "physics_accepted", False),
+            target_met=getattr(answer, "target_met", None),
+            objective_value=getattr(answer, "objective_value", None),
+            target_margin=getattr(answer, "target_margin", None),
+            target_assessment=getattr(answer, "target_assessment", {}),
             failed_iteration_ids=tuple(acceptance_summary(observations)["failed_iteration_ids"]),
             route_failures=tuple(combined_plan["route_failures"]),
             stage="finished",

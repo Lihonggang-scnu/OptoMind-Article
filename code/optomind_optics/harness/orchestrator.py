@@ -331,6 +331,8 @@ class TMMHarnessOrchestrator:
         self.provenance = ArtifactLineageStore(self.work_dir, resume=self.resume)
         self._budget: BudgetScheduler | None = None
         self._robustness_reservations: list[str] = []
+        self._gradient_reservation: str | None = None
+        self._gradient_allocation: Dict[str, Any] = {}
         self._qwen_usage: list[Dict[str, Any]] = []
         self._diagnostic_records: list[Dict[str, Any]] = []
         self._material_scenarios: Dict[str, tuple[MaterialScenario, ...]] = {}
@@ -688,6 +690,11 @@ class TMMHarnessOrchestrator:
         interrupted_stage = self.state.stage.value
         snapshot = self._budget.snapshot()
         for action_id in list(snapshot.get("active_reservations") or {}):
+            if action_id == "gradient_diagnostic_allowance":
+                # This hold cannot execute inside the harness, including an
+                # interrupted run. The post-run diagnostic owns actual charges.
+                self._budget.release(action_id)
+                continue
             # A process may have completed none, some, or all of an interrupted
             # action.  Charging the full reservation is fail-safe and prevents
             # a restart from silently exceeding the declared budget.
@@ -1244,10 +1251,42 @@ class TMMHarnessOrchestrator:
         proposal = ActionProposal(action_type=action, parameters={"experiment_id": experiment_id, **parameters})
         return self.graph.create_node(_stable_hash(proposal.model_dump(mode="json")), proposal, parents)
 
+    def _reserve_gradient_diagnostic(self, task, parsed):
+        """Hold one adopted-candidate diagnostic within this round's cap.
+
+        The selected experiment is not known yet, so hold the maximum supported
+        cost, not the sum. Release the hold without charging it at _finish;
+        the research-level ledger charges only the actual post-run diagnostic.
+        """
+        objective = task.metadata.get("gradient_diagnostic_objective")
+        if not isinstance(objective, dict):
+            return
+        from .science.gradient_binding import planned_gradient_forward_cost
+        costs, unavailable = {}, {}
+        for spec, mode, optimization in parsed:
+            if mode != EngineMode.optimize:
+                continue
+            try:
+                costs[spec.experiment_id] = planned_gradient_forward_cost(optimization, objective)
+            except (ValueError, TypeError, KeyError) as exc:
+                unavailable[spec.experiment_id] = str(exc)
+        required = max(costs.values(), default=0)
+        action_id = "gradient_diagnostic_allowance"
+        self._gradient_allocation = {"required": required, "reserved": 0,
+                                     "experiment_costs": costs, "unavailable": unavailable}
+        if required and self._budget.can_reserve(action_id, forward_evaluations=required):
+            self._budget.reserve(action_id, forward_evaluations=required)
+            self._gradient_reservation = action_id
+            self._gradient_allocation["reserved"] = required
+        elif required:
+            self._gradient_allocation["reason"] = "insufficient_round_budget"
+
     def _run_optimizers(self, task: OpticalDesignTask, parsed: Iterable[tuple[Any, EngineMode, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         assert self._budget is not None
         output: Dict[str, List[Dict[str, Any]]] = {}
         verification_reservations: list[str] = []
+        parsed = list(parsed)
+        self._reserve_gradient_diagnostic(task, parsed)
         for spec, mode, parsed_task in parsed:
             if mode != EngineMode.optimize:
                 continue
@@ -1264,7 +1303,10 @@ class TMMHarnessOrchestrator:
                     self._budget.reserve(reservation, forward_evaluations=robustness_reserve)
                     self._robustness_reservations.append(reservation)
                 searchable = int(remaining) - robustness_reserve
-                candidate_limit = min(candidate_limit, max(1, searchable // 20), max(0, (searchable - 1) // 5))
+                # Diagnostic protection reduces search, not the existing survivor
+                # policy; still clamp verification to the actual remaining cap.
+                before_diagnostic = searchable + int(self._gradient_allocation.get("reserved", 0))
+                candidate_limit = min(candidate_limit, max(1, before_diagnostic // 20), max(0, (searchable - 1) // 5))
                 if candidate_limit == 0:
                     output[spec.experiment_id] = []
                     continue
@@ -1277,7 +1319,8 @@ class TMMHarnessOrchestrator:
                 "survivor_limit": candidate_limit,
                 "verification_allowance": 5 * candidate_limit,
                 "robustness_allowance": robustness_reserve,
-                "gradient_accounting": "separate_gradient_compute_ledger",
+                "gradient_accounting": "shared_round_cap_actual_charged_after_run",
+                "gradient_allowance": dict(self._gradient_allocation),
                 "primary_allocated": 0,
                 "global_allocated": 0,
             }
@@ -2149,6 +2192,9 @@ class TMMHarnessOrchestrator:
         for reservation in self._robustness_reservations:
             self._budget.release(reservation)
         self._robustness_reservations.clear()
+        if self._gradient_reservation is not None:
+            self._budget.release(self._gradient_reservation)
+            self._gradient_reservation = None
         budget_snapshot = self._budget.snapshot()
         categories = {"baseline_verification": 0, "search": 0, "candidate_verification": 0, "uncertainty": 0, "other": 0}
         for event in budget_snapshot.get("events", []):
