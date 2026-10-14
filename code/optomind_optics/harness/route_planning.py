@@ -48,7 +48,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from config.qwen_config import get_cost_tracker
 
 from .material_catalog import MEASURED_NOT_TUNABLE, RouteMaterialCatalog
-from .strategy_planner import DesignRoute
+from .strategy_planner import DesignRoute, StrategyPlan, normalize_executable_plan
 from .text_safety import normalize_text_sequence_list
 
 
@@ -925,6 +925,13 @@ class QwenLiteratureRoutePlanner:
                 "evidence_ids_allowed": allowed,
                 "literature_status": harvest.status,
                 "every_route_must_declare": "design_variables",
+                "frozen_scoring_standard": (
+                    "If supplied in problem_analysis, it is the read-only evaluator for "
+                    "every route and round. Preserve its metric identities, directions, "
+                    "bands, conditions and formula. Distinguish route-local search "
+                    "targets from these fixed reporting/ranking metrics; never claim "
+                    "a substituted observable is the frozen metric."
+                ),
                 "verification": (
                     "a local check validates every route against the execution "
                     "contract and rejects any route that does not state what it "
@@ -1369,6 +1376,30 @@ class QwenLiteratureRoutePlanner:
             declarations_by_id[route_id] = declarations
             if material_report:
                 materials_by_id[route_id] = material_report
+
+        if routes:
+            try:
+                # Each route was schema-validated above. Literature portfolios can
+                # exceed StrategyPlan's legacy four-route bound, so construct only
+                # this internal carrier without imposing that unrelated cap.
+                # Normalize together: a requested layer-count range is distributed
+                # across the portfolio, not collapsed to the same count per route.
+                executable, execution_warnings = normalize_executable_plan(
+                    StrategyPlan.model_construct(
+                        problem_id="route-execution-contract",
+                        planning_summary="Validate the proposed literature/control portfolio",
+                        routes=tuple(DesignRoute.model_validate(row) for row in routes),
+                        stop_if_all_routes_fail="Return failures",
+                    ),
+                    _as_plain(problem_analysis) or {},
+                )
+                warnings.extend(execution_warnings)
+                routes = [route.model_dump(mode="json") for route in executable.routes]
+            except Exception as exc:
+                errors.append(_safe_error(exc))
+                routes = []
+                declarations_by_id = {}
+                materials_by_id = {}
 
         return (
             routes,

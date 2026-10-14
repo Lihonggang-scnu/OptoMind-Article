@@ -1483,9 +1483,12 @@ class TMMResearchHarness:
                 maximum_routes=self.config.route_planning_maximum_routes,
             )
         try:
+            planning_problem = dict(problem)
+            if self.scoring_standard is not None:
+                planning_problem["frozen_scoring_standard"] = self.scoring_standard.model_dump(mode="json")
             result = planner.plan(
                 question,
-                problem_analysis=dict(problem),
+                problem_analysis=planning_problem,
                 force_mock=self.config.qwen_force_mock,
             )
         except Exception as exc:
@@ -1892,6 +1895,9 @@ class TMMResearchHarness:
         chain_id: str | None = None,
         insight_appendage: str = "",
     ) -> tuple[Any, dict[str, dict[str, list[str]]]]:
+        problem = dict(problem)
+        if self.scoring_standard is not None:
+            problem["frozen_scoring_standard"] = self.scoring_standard.model_dump(mode="json")
         try:
             result = self.strategy_planner.plan(
                 problem,

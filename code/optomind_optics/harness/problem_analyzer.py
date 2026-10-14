@@ -966,6 +966,20 @@ def _is_wavelength_context(text: str, start: int, end: int) -> bool:
     return not any(term in before for term in _EXCLUDED_WAVELENGTH_TERMS)
 
 
+def _is_approximate_wavelength_point(text: str, start: int, end: int) -> bool:
+    """Recognize only approximation markers directly attached to this quantity."""
+    before = text[max(0, start - 24) : start]
+    after = text[end : end + 12]
+    return bool(
+        re.search(
+            r"(?:\b(?:near|around|about|approximately|approx\.?)|大约|约|接近|大概|[~≈])\s*$",
+            before,
+            re.IGNORECASE,
+        )
+        or re.match(r"\s*(?:附近|左右|上下|or\s+so\b)", after, re.IGNORECASE)
+    )
+
+
 def _extract_wavelength_intervals(text: str) -> list[tuple[float, float]]:
     intervals: list[tuple[float, float]] = []
     range_spans: list[tuple[int, int]] = []
@@ -986,6 +1000,14 @@ def _extract_wavelength_intervals(text: str) -> list[tuple[float, float]]:
             continue
         factor = _unit_factor(match.group("unit"))
         value = float(match.group("value")) * factor
+        # An approximate background wavelength covered by an explicit band is
+        # not an additional exact-point objective. Exact points remain required,
+        # even inside that band; uncovered approximate mentions remain unchanged
+        # rather than silently deleting a possibly separate spectral request.
+        if _is_approximate_wavelength_point(text, match.start(), match.end()) and any(
+            low < high and low <= value <= high for low, high in intervals
+        ):
+            continue
         intervals.append((value, value))
 
     unique: list[tuple[float, float]] = []

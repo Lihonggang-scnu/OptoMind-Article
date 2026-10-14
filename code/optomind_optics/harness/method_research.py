@@ -101,6 +101,7 @@ class MethodResearchQuery(BaseModel):
 
     query_id: str
     query_text: str
+    openalex_query_text: str = ""
     purpose: MethodPurpose
     priority: int = Field(default=3, ge=1, le=5)
 
@@ -256,7 +257,10 @@ class MethodResearchTelemetry(BaseModel):
     s2_snippets_rejected_scope: int = 0
     online_queries_skipped_budget: int = 0
     online_budget_exhausted: bool = False
-    openalex_calls: int = 0
+    openalex_calls: int = 0  # logical search invocations, including skipped adapters
+    openalex_http_requests: int = 0
+    openalex_skipped_adapter_calls: int = 0
+    online_query_log: list[dict[str, Any]] = Field(default_factory=list)
     records_returned: int = 0
     records_accepted: int = 0
     records_rejected_scope: int = 0
@@ -593,16 +597,25 @@ class DefaultMethodResearchOnlineClient:
         )
 
     def search_openalex(self, query: str, *, limit: int) -> MethodOnlineSearchResult:
+        before = int(getattr(self.openalex_backend, "stats", {}).get("requests", 0))
+        skipped = bool(getattr(self.openalex_backend, "adapter_only", False))
         try:
             records = self.openalex_backend.search(query, max_results=limit)
         except Exception as exc:  # provider failures become partial reports
             return MethodOnlineSearchResult(
-                records=(), source_route="openalex_search", error=_safe_error(exc)
+                records=(), source_route="openalex_search", error=_safe_error(exc),
+                provider_calls={"openalex_http_requests": max(0, int(getattr(self.openalex_backend, "stats", {}).get("requests", before)) - before)},
             )
+        skipped = skipped or (bool(getattr(self.openalex_backend, "adapter_only", False)) and int(getattr(self.openalex_backend, "stats", {}).get("requests", before)) == before)
         return MethodOnlineSearchResult(
             records=tuple(records or ()),
             source_route="openalex_search",
             error=str(getattr(self.openalex_backend, "last_error", "") or ""),
+            status="adapter_skipped" if skipped else "error" if getattr(self.openalex_backend, "last_error", "") else "records" if records else "empty_success",
+            provider_calls={
+                "openalex_http_requests": max(0, int(getattr(self.openalex_backend, "stats", {}).get("requests", before)) - before),
+                "openalex_skipped_adapter_calls": int(skipped),
+            },
         )
 
 
@@ -860,7 +873,24 @@ def generate_method_research_queries(
     seen_text: set[str] = set()
     seen_ids: set[str] = set()
 
-    def add_query(query: MethodResearchQuery) -> None:
+    def add_query(query: MethodResearchQuery, *, compact_generated: bool = False) -> None:
+        # Keep the original scientific query for local retrieval and scope
+        # checks. OpenAlex ANDs whitespace terms: auto-generated prose is not
+        # a useful lexical request. Derive a short method query from existing
+        # structured family/purpose fields without another model or request.
+        if compact_generated and not query.openalex_query_text:
+            family = _render_problem_value(payload.get("design_family") or "optical thin film", limit=100)
+            family_terms = re.findall(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)?", family)[:6]
+            purpose_terms = {
+                MethodPurpose.design_family: "interference design",
+                MethodPurpose.material_choice: "refractive index materials",
+                MethodPurpose.objective_formulation: "spectral objective",
+                MethodPurpose.optimization_strategy: "optimization thickness",
+                MethodPurpose.fabrication_constraint: "fabrication tolerance",
+                MethodPurpose.failure_mode: "sensitivity robustness",
+            }.get(query.purpose, "design method")
+            effective = " ".join(family_terms or ["optical", "thin", "film"]) + " " + purpose_terms
+            query = query.model_copy(update={"openalex_query_text": effective})
         normalized = re.sub(r"\s+", " ", query.query_text).strip().casefold()
         if not normalized or normalized in seen_text:
             return
@@ -925,7 +955,8 @@ def generate_method_research_queries(
                     query_text=scoped_text,
                     purpose=_infer_purpose(text),
                     priority=1,
-                )
+                ),
+                compact_generated=True,
             )
         if len(queries) >= max_queries:
             return queries[:max_queries]
@@ -990,7 +1021,8 @@ def generate_method_research_queries(
                     query_text=template.format(anchor=anchor, value=rendered),
                     purpose=purpose,
                     priority=min(5, 2 + len(queries)),
-                )
+                ),
+                compact_generated=True,
             )
             if len(queries) >= max_queries:
                 return queries[:max_queries]
@@ -1981,6 +2013,9 @@ class TMMMethodResearchAdapter:
             "online_queries_skipped_budget": 0,
             "online_budget_exhausted": False,
             "openalex_calls": 0,
+            "openalex_http_requests": 0,
+            "openalex_skipped_adapter_calls": 0,
+            "online_query_log": [],
             "records_returned": 0,
             "records_accepted": 0,
             "records_rejected_scope": 0,
@@ -2288,8 +2323,11 @@ class TMMMethodResearchAdapter:
         else:
             telemetry["openalex_calls"] += 1
         try:
-            result = _invoke_search(client, route, query.query_text, self.online_limit)
+            effective_query = query.openalex_query_text if route == "openalex_search" and query.openalex_query_text else query.query_text
+            telemetry["online_query_log"].append({"query_id": query.query_id, "route": route, "original_query": query.query_text, "effective_query": effective_query})
+            result = _invoke_search(client, route, effective_query, self.online_limit)
             records, response = _result_records(result)
+            telemetry["online_query_log"][-1].update(status=str(_response_value(response, "status", "") or "unreported"), records_returned=len(records))
         except Exception as exc:
             reason = f"online_{route}_error:{_safe_error(exc)}"
             reasons.append(reason)
@@ -2299,6 +2337,8 @@ class TMMMethodResearchAdapter:
         telemetry["records_returned"] += len(records)
         provider_calls = _response_value(response, "provider_calls", None)
         if isinstance(provider_calls, Mapping):
+            for key in ("openalex_http_requests", "openalex_skipped_adapter_calls"):
+                telemetry[key] += max(0, int(provider_calls.get(key, 0) or 0))
             actual_s2_calls = sum(
                 max(0, int(provider_calls.get(key, 0) or 0))
                 for key in ("s2_search", "s2_batch", "s2_snippet_search")

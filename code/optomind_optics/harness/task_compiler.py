@@ -3103,6 +3103,10 @@ class QwenTMMTaskCompiler:
         input_payload: dict[str, Any] = {
             "question": _bounded_compiler_question(source_question),
             "original_request_constraints": original_charter,
+            "frozen_scoring_standard": (
+                self._scoring_standard.model_dump(mode="json")
+                if self._scoring_standard is not None else None
+            ),
             "benchmark": None
             if benchmark is None
             else {
@@ -3118,6 +3122,16 @@ class QwenTMMTaskCompiler:
                 "performance_targets": "soft ranking scores only",
                 "physics_admission": "deterministic validators only",
                 "diversity": "optional bonus, never required",
+                "frozen_scoring_contract": (
+                    "When supplied, preserve the exact frozen reporting/ranking metric observable, statistic, "
+                    "direction, wavelength region, angle/polarization conditions and mean "
+                    "reduction. Do not substitute transmission for reflection or merge "
+                    "separate bands. The standard is read-only; do not redefine it. "
+                    "Route-local optimizer targets may differ from the frozen evaluator, "
+                    "but must be explicitly distinguished from it. "
+                    "Optimization experiments require explicit nonempty executable targets; "
+                    "targets remain soft goals, not physics admission thresholds."
+                ),
             },
         }
         usages: list[dict[str, Any]] = []
@@ -3153,6 +3167,7 @@ class QwenTMMTaskCompiler:
                     "benchmark": input_payload["benchmark"],
                     "fixed_rules": input_payload["fixed_rules"],
                     "original_request_constraints": input_payload["original_request_constraints"],
+                    "frozen_scoring_standard": input_payload["frozen_scoring_standard"],
                     "existing_draft": existing_draft,
                     "repair_request": {
                         "validation_errors": list(errors),
@@ -3288,8 +3303,12 @@ class QwenTMMTaskCompiler:
                 )
                 standard_alignments: tuple[str, ...] = ()
                 if self._scoring_standard is not None:
+                    # The route is a model proposal, not another user request.
+                    # Check the locked evaluator against authoritative user intent;
+                    # route search targets may differ, but every experiment still
+                    # receives all frozen scoring metrics below.
                     intent_errors = objective_intent_errors(
-                        source_question,
+                        _original_request_source(source_question),
                         [metric.model_dump(mode="json") for metric in self._scoring_standard.metrics],
                     )
                     if intent_errors:

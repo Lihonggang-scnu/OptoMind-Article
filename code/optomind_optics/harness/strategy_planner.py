@@ -1503,6 +1503,29 @@ def _validate_executable_topologies(plan: StrategyPlan) -> tuple[str, ...]:
     return tuple(dict.fromkeys(errors))
 
 
+def normalize_executable_plan(
+    plan: StrategyPlan, problem: Mapping[str, Any],
+) -> tuple[StrategyPlan, tuple[str, ...]]:
+    """Shared deterministic route contract, before either planner accepts a plan.
+
+    Preserve route identity/count and reuse the existing topology and user-control
+    policies. This changes execution topology, never the scientific objective.
+    """
+    warnings: list[str] = []
+    for normalize in (_fix_discrete_pair_ranges, _realize_symbolic_topologies):
+        plan, changes = normalize(plan)
+        warnings.extend(changes)
+    for normalize in (_enforce_requested_layer_count_portfolio,
+                      _realize_material_choice_topologies,
+                      _attach_canonical_execution_controls):
+        plan, changes = normalize(plan, problem)
+        warnings.extend(changes)
+    errors = list(_validate_executable_topologies(plan))
+    if errors:
+        raise ValueError("; ".join(errors))
+    return plan, tuple(warnings)
+
+
 def _charter_value(charter: Any, name: str) -> Any:
     if isinstance(charter, Mapping):
         return charter.get(name)
@@ -1698,6 +1721,13 @@ class QwenTMMStrategyPlanner:
             "fixed_rules": {
                 "solver_scope": "planar linear isotropic TMM only",
                 "performance_targets": "soft ranking objectives, never admission gates",
+                "frozen_scoring_standard": (
+                    "If supplied in problem_analysis, it is the read-only evaluator for "
+                    "every route and round. Preserve its metric identities, directions, "
+                    "bands, conditions and formula. Distinguish route-local search "
+                    "targets from these fixed reporting/ranking metrics; never claim "
+                    "a substituted observable is the frozen metric."
+                ),
                 "physics_acceptance": "deterministic verifier only",
                 "prior_evidence": (
                     "Executed records and measured outcomes describe past execution; "
@@ -1830,31 +1860,12 @@ class QwenTMMStrategyPlanner:
                     plan, allowed_evidence_ids
                 )
                 warnings.extend(id_warnings)
-                plan, topology_warnings = _fix_discrete_pair_ranges(plan)
-                warnings.extend(topology_warnings)
-                plan, realization_warnings = _realize_symbolic_topologies(plan)
-                warnings.extend(realization_warnings)
-                plan, layer_count_warnings = _enforce_requested_layer_count_portfolio(
-                    plan, problem
-                )
-                warnings.extend(layer_count_warnings)
-                plan, material_warnings = _realize_material_choice_topologies(
-                    plan, problem
-                )
-                warnings.extend(material_warnings)
-                plan, control_warnings = _attach_canonical_execution_controls(
-                    plan, problem
-                )
-                warnings.extend(control_warnings)
+                plan, execution_warnings = normalize_executable_plan(plan, problem)
+                warnings.extend(execution_warnings)
                 link_errors = _validate_evidence_links(plan, allowed_evidence_ids)
-                constraint_errors = _validate_explicit_constraint_preservation(
-                    plan, problem
-                )
-                topology_errors = _validate_executable_topologies(plan)
-                if link_errors or constraint_errors or topology_errors:
-                    raise ValueError(
-                        "; ".join((*link_errors, *constraint_errors, *topology_errors))
-                    )
+                constraint_errors = _validate_explicit_constraint_preservation(plan, problem)
+                if link_errors or constraint_errors:
+                    raise ValueError("; ".join((*link_errors, *constraint_errors)))
                 # T-05: enforce immutable ResearchCharter boundaries on the
                 # fully normalized plan; violations feed the repair loop.
                 if charter is not None:

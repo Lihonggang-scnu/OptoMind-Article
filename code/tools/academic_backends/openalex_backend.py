@@ -1,17 +1,18 @@
 """OpenAlex public fallback backend.
 
-OpenAlex offers a free/public REST API with polite rate limits.
-No API key is required for basic access; an email-based polite pool
-is available via the OPENALEX_EMAIL env var.
+Uses the existing configured OpenAlex REST access and rate limits.
+Availability and charging depend on current provider/account policy; this
+adapter neither provisions credentials nor authorizes paid access.
 
-If the public endpoint requires a key in the future, this backend
-will switch to adapter_only mode.
+Authentication and rate/budget failures disable the current adapter.
+A query-specific or transient failure must not suppress later independent queries.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import threading
 import time
 import urllib.error
@@ -63,11 +64,32 @@ def _openalex_api_keys() -> List[str]:
     return unique
 
 
+def _safe_bad_request_detail(exc: Any, key: str = "") -> str:
+    """Read only bounded error/message fields; never retain headers or URLs."""
+    try:
+        payload = json.loads(exc.read(4096).decode("utf-8", errors="replace"))
+        if not isinstance(payload, dict):
+            return ""
+        parts = [str(payload[name]) for name in ("error", "message")
+                 if isinstance(payload.get(name), (str, int))]
+        detail = "; ".join(parts)
+        if key:
+            detail = detail.replace(key, "[redacted]").replace(urllib.parse.quote(key, safe=""), "[redacted]")
+        detail = re.sub(r"https?://\S+", "[url omitted]", detail, flags=re.IGNORECASE)
+        # Diagnostic text is optional. Once a credential marker appears,
+        # discard the entire remaining segment rather than guessing where a
+        # scheme, quoted value, whitespace or encoded token ends.
+        detail = re.sub(r"(?is)\b(?:api[_-]?key|access[_-]?token|authorization|bearer|basic)\b.*", "[credential-bearing detail omitted]", detail)
+        return re.sub(r"\s+", " ", detail).strip()[:1000]
+    except Exception:
+        return ""
+
+
 class OpenAlexBackend:
     """Search OpenAlex for works. Falls back gracefully if unavailable.
 
     Priority: if public query works → enabled backend.
-    If public query fails or requires key → adapter_only.
+    Only authentication/rate/budget failures disable subsequent queries.
     """
 
     def __init__(self, rate_limit: float | None = None) -> None:
@@ -76,6 +98,7 @@ class OpenAlexBackend:
         self.enabled = True
         self.adapter_only = False
         self.last_error = ""
+        self.last_http_status: int | None = None
         self.stats: Dict[str, int] = {"requests": 0, "errors": 0, "rate_limited": 0, "keys_loaded": 0, "keys_exhausted": 0}
         if not hasattr(OpenAlexBackend, "_global_lock"):
             OpenAlexBackend._global_lock = threading.Lock()
@@ -104,6 +127,8 @@ class OpenAlexBackend:
         """Search OpenAlex and return normalized SourceRecord dicts."""
         if self.adapter_only:
             return []
+        self.last_error = ""
+        self.last_http_status = None
         api_keys = _openalex_api_keys()
         self.stats["keys_loaded"] = len(api_keys)
         disabled_until = float(getattr(OpenAlexBackend, "_global_disabled_until", 0.0))
@@ -143,7 +168,10 @@ class OpenAlexBackend:
             if not api_key:
                 break
         if data is None:
-            self.adapter_only = True
+            # A malformed query (400) or transient transport/server failure is
+            # local to this attempt. Do not turn later valid searches into
+            # silent no-ops. Keep credential/rate failures fail-closed.
+            self.adapter_only = self.last_http_status in (401, 402, 403, 429)
             return []
 
         results: List[Dict[str, Any]] = []
@@ -209,8 +237,12 @@ class OpenAlexBackend:
         req = urllib.request.Request(url, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.loads(resp.read().decode("utf-8", errors="replace"))
+                data = json.loads(resp.read().decode("utf-8", errors="replace"))
+                self.last_error = ""
+                self.last_http_status = getattr(resp, "status", 200)
+                return data
         except urllib.error.HTTPError as exc:
+            self.last_http_status = exc.code
             if exc.code == 429:
                 body = ""
                 try:
@@ -241,13 +273,21 @@ class OpenAlexBackend:
                     return None
                 time.sleep(wait_s)
                 self._respect_rate_limit()
+                self.stats["requests"] += 1
                 try:
                     with urllib.request.urlopen(req, timeout=30) as resp:
-                        return json.loads(resp.read().decode("utf-8", errors="replace"))
+                        data = json.loads(resp.read().decode("utf-8", errors="replace"))
+                        self.last_error = ""
+                        self.last_http_status = getattr(resp, "status", 200)
+                        return data
                 except Exception:
                     pass
             self.stats["errors"] += 1
             self.last_error = f"HTTP {getattr(exc, 'code', '')}: {getattr(exc, 'reason', '')}"
+            if exc.code == 400:
+                detail = _safe_bad_request_detail(exc, key)
+                if detail:
+                    self.last_error += "; " + detail
             return None
         except Exception as exc:
             self.stats["errors"] += 1
