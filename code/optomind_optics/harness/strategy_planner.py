@@ -10,6 +10,7 @@ deterministic TMM runtime.
 from __future__ import annotations
 
 import json
+import hashlib
 import difflib
 import re
 from pathlib import Path
@@ -343,6 +344,52 @@ def _compact_method_research(report: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _compact_execution_evidence(value: Any) -> Any:
+    """Bound prompt evidence without silently turning a partial record into a full one.
+
+    Hashes identify omitted source data; they are not physics verification. Spectral
+    arrays are deliberately excluded. This projection never computes a winner,
+    changes metric direction, or upgrades missing diagnostics to evidence.
+    """
+    remaining = 256
+
+    def omitted(raw: Any, reason: str) -> dict[str, Any]:
+        encoded = json.dumps(raw, sort_keys=True, ensure_ascii=False, default=str)
+        return {"compaction_omitted": reason,
+                "source_sha256": hashlib.sha256(encoded.encode("utf-8")).hexdigest()}
+
+    def visit(raw: Any, depth: int = 0) -> Any:
+        nonlocal remaining
+        remaining -= 1
+        if remaining < 0 or depth > 12:
+            return omitted(raw, "evidence_size_limit")
+        if isinstance(raw, Mapping):
+            result = {}
+            for index, (key, child) in enumerate(raw.items()):
+                if index >= 32 or remaining <= 0:
+                    result["compaction_remainder"] = omitted(raw, "mapping_limit")
+                    break
+                if key in {"spectrum", "spectra", "wavelengths_nm", "values_nm"}:
+                    result[key] = omitted(child, "spectral_data")
+                else:
+                    result[key] = visit(child, depth + 1)
+            return result
+        if isinstance(raw, (list, tuple)):
+            result = []
+            for child in raw[:16]:
+                if remaining <= 0:
+                    break
+                result.append(visit(child, depth + 1))
+            if len(result) < len(raw):
+                result.append({**omitted(raw, "sequence_limit"), "source_count": len(raw)})
+            return result
+        if isinstance(raw, str) and len(raw) > 400:
+            return {"text_head": raw[:400], **omitted(raw, "text_limit")}
+        return raw
+
+    return visit(value)
+
+
 def _compact_prior_iterations(
     rows: Iterable[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -369,6 +416,21 @@ def _compact_prior_iterations(
                 "best_target_score": item.get("best_target_score"),
                 "best_robustness_score": item.get("best_robustness_score"),
                 "failure_categories": list(item.get("failure_categories") or []),
+                # These are supplied observations, not a reconstruction from the
+                # proposed route or a hindsight selection of a better candidate.
+                **{
+                    key: _compact_execution_evidence(item[key])
+                    for key in (
+                        "selected_candidate_ids", "best_frozen_candidate_ids",
+                        "best_frozen_score", "score_basis", "score_basis_fingerprint",
+                        "score_available", "score_direction", "metric_direction",
+                        "selected_incumbent", "executed_decision", "executed_record",
+                        "execution_evidence", "budget_usage", "gradient_summary",
+                        "diagnostic_availability", "errors", "stop_reason",
+                        "insight_for_next", "insight_grounding",
+                    )
+                    if key in item
+                },
                 "candidate_summaries": [
                     {
                         key: candidate.get(key)
@@ -380,6 +442,15 @@ def _compact_prior_iterations(
                             "thicknesses_nm",
                             "optimizer_id",
                         )
+                    }
+                    | {
+                        key: _compact_execution_evidence(candidate[key])
+                        for key in (
+                            "experiment_id", "frozen_score", "frozen_score_outcome",
+                            "score_basis_fingerprint", "metric_direction",
+                            "objective_ref", "status", "errors",
+                        )
+                        if key in candidate
                     }
                     for candidate in item.get("candidate_summaries", []) or []
                     if isinstance(candidate, Mapping)
@@ -1628,6 +1699,13 @@ class QwenTMMStrategyPlanner:
                 "solver_scope": "planar linear isotropic TMM only",
                 "performance_targets": "soft ranking objectives, never admission gates",
                 "physics_acceptance": "deterministic verifier only",
+                "prior_evidence": (
+                    "Executed records and measured outcomes describe past execution; "
+                    "route proposals, reflection insights and feedback directives are "
+                    "hypotheses or instructions, not measured improvements. Preserve "
+                    "supplied score direction and diagnostic unavailable/error states; "
+                    "a budget stop is not evidence of convergence or a local optimum."
+                ),
                 "evidence_ids_allowed": sorted(allowed_evidence_ids),
                 "model": self._model_label,
             },
