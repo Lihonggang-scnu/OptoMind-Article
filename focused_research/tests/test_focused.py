@@ -69,7 +69,7 @@ def test_retrieval_depth_mapping_materials_and_dedup(tmp_path):
     assert result['status'] == 'complete'
     assert result['papers'] == 1
     assert result['hits'] == 3
-    assert all(c[2]['limit'] == 200 for c in gateway.calls)
+    assert all(c[2]['limit'] == 10 for c in gateway.calls)
     assert len(gateway.calls) == 2
     assert all(c[2]['deadline'] > time.monotonic() for c in gateway.calls)
     material = json.loads((tmp_path/'materials.json').read_text())
@@ -146,7 +146,7 @@ def test_real_gateway_paper_200_is_two_pages_and_snippet_200_single_call():
 
 def test_real_gateway_later_page_failure_is_partial(tmp_path):
     g=S2IntelligenceGateway(Transport(fail_second=True))
-    out=r.retrieve(plan(),tmp_path,gateway=g)
+    out=r.retrieve(plan(),tmp_path,gateway=g,per_query_limit=200)
     assert out['status']=='partial' and out['hits']==100
     calls=json.loads((tmp_path/'provider_calls.json').read_text())
     assert calls[0]['truncated_reason']=='later_page_unavailable'
@@ -274,7 +274,7 @@ def test_task_adapter_executes_exact_queries_and_links(tmp_path):
     assert result['constraints_evaluated'] is False
     assert [call[1] for call in gateway.calls] == [q['query'] for q in sheet['search_queries']]
     assert [call[0] for call in gateway.calls] == ['paper','snippet','paper','snippet','snippet']
-    assert all(call[2]['limit']==200 for call in gateway.calls)
+    assert all(call[2]['limit']==10 for call in gateway.calls)
     for artifact in ['materials.json','queries.json','provider_calls.json']:
         rows=json.loads((tmp_path/artifact).read_text())
         assert all(row['task_query']['subgoal_ids']==['G1','G2'] for row in rows)

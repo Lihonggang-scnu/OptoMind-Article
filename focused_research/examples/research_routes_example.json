@@ -1,0 +1,172 @@
+{
+  "schema_version": "focused_research.research_routes.v1",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_fixture_1",
+      "source_quote": "Alternating dielectric layers can produce wavelength-selective reflection.",
+      "structure_or_method": "Alternating dielectric layers.",
+      "physical_effect": "Qualitative wavelength-selective reflection.",
+      "conditions_and_unknowns": [
+        "Synthetic fixture only; no material dispersion, angular performance or numerical outcomes."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Hypothesize that thickness tuning in the permitted planar stack can move spectral reflection; this is our extrapolation, not the source statement."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "Changing the high-index optical thickness may shift visible reflection relative to NIR transmission; this is an untested route.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_fixture_1"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The qualitative multilayer principle may transfer to TiO2/SiO2 at 45 degrees; this fixture does not establish angular or polarization performance."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "The proposed comparison uses the task incidence angle."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Both evaluations use the task equal-s/p mean."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            45,
+            85
+          ],
+          "dL": [
+            70,
+            120
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH": 55,
+            "dL": 90
+          }
+        },
+        {
+          "id": "thicker_high_index",
+          "parameters_nm": {
+            "dH": 65,
+            "dL": 90
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "thicker_high_index",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "increase",
+          "reason": "A shifted interference band might improve overlap with the visible target; this is a directional hypothesis, not a measured or simulated result."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "thicker_high_index",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "decrease",
+          "reason": "The same spectral shift could extend reflection toward the NIR band and hurt transmission; the sign remains untested."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready"
+    }
+  ]
+}

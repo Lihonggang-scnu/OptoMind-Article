@@ -87,3 +87,19 @@ This supersedes the preceding provisional crosstalk-as-application-intent treatm
 - Added isolated actual-consumer tests with sockets disabled: all three R/T/A metrics distinguish sample mean .30 from wavelength-integral .36 on uneven samples; explicit angle/polarization selects only the intended channel and missing channels fail. A fourth test exposes that absent declared band endpoints are not filled or validated by the existing consumer; later forward integration must ensure exact endpoints and adequate interior sampling before whole-band acceptance. No core solver changed.
 - Updated handoff to the revised v2 plan-only target and explicit publication/live-test hold pending cloud review/release; previous CNY 2 incremental/CNY 140 total/three-HTTP-attempt controls remain ceilings, not a bypass of the hold.
 - Final check: `PYTHONPATH=/tmp/optomind-core-testdeps python -m pytest -q --disable-socket focused_research/tests` → **76 passed in 2.07s**, including an isolated four-test consumer subprocess. `git diff --check` passes. Only focused_research files changed; no live/paid calls, commit, upload or push.
+
+## 2026-10-15 — evidence-guided routes, separate from ongoing T019
+
+User authorized implementing the next module after reviewing the proposal. Created `feature/evidence-routes-20261015` in a separate worktree at `713799fb55899b78427aed56cb643bc72526c19d`; preserved the previous task-sheet checkout and prompt unchanged.
+
+Implemented deterministic lightweight retrieval (default 10 per query), raw public-provider retention, original-text evidence with explicit type/source/query/goal links and source-aware deduplication. Missing bibliographic fields do not block usable text. Over-limit rows remain in raw diagnostics only; original task query strings reach the provider unchanged.
+
+Implemented source-anchored decision clues and candidate route contracts, bounded named thickness variables, explicit instances, directional reference comparisons, partial/needs-revision retention, and an injected original-model-compatible generation function with one bounded format repair. Weak evidence and uncertainty alone do not disqualify a well-formed hypothesis. A route may predict only one goal; prepared instances retain every user objective. No unsupported new score or inferred equal-weight scalar objective is introduced.
+
+Added offline prompt/validation/materialization CLI, exact input hashes, and an explicit optical-media/grid adapter exercised against the existing VeriTMM task parser and Article objective consumer. Prepared outputs state syntax/provenance scope and no execution authorization. No physical simulation or project API/model call was made. Synthetic examples are marked as such.
+
+Independent review identified and prompted fixes for mixed material/constant-index type ambiguity and an incorrect sample constraint source ID (C6 → C7). Additional integration checks covered actual original-text retention, over-limit provider rows, all-goal preservation, endpoint samples, and the synthetic retrieval-to-route-to-consumer chain.
+
+The first implementation deliberately supports within-family thickness comparisons only. Structural-topology interventions, response-diversity archives, adaptive budget allocation and demonstrated research gains remain future stages. Query depth, model prompts and route scientific quality still require local empirical tuning. Source-linked constraint configuration must be reviewed semantically; ID existence alone does not establish correct interpretation.
+
+Final cloud verification: `PYTHONPATH=/tmp/optomind-core-testdeps python -m pytest -q --disable-socket focused_research/tests` — 149 passed. The independent reviewer ran the preceding 145-test revision; four final regressions cover invalid material field types paired with constant indices. The actual parser/objective subprocess checks do not invoke a solver. No live retrieval relevance or Qwen route quality is claimed.

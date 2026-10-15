@@ -1,6 +1,6 @@
-# Focused Research: provisional task-sheet retrieval
+# Focused Research: provisional task sheets, evidence and candidate routes
 
-The default flow is **natural question → research task sheet → validated query adapter → retrieval**. This first version is fixed-domain (optical thin-film research), not a universal taxonomy. It stops at retrieved metadata, abstracts and snippets. No full-paper extraction, evidence cards, scientific answer, design execution, PDF generation, citation/reference expansion or downstream T018 changes are implemented.
+The default flow is **natural question → research task sheet → validated query adapter → retrieval**. This first version is fixed-domain (optical thin-film research), not a universal taxonomy. The new standalone route stage turns source-linked passages into decision clues and parameterized candidate routes. It stops at prepared, unexecuted structures and directional expectations. No full-paper extraction, design execution, PDF generation, citation/reference expansion or downstream T018 changes are implemented. The earlier T019 task-sheet checkout remains unchanged.
 
 ## Query quality is provisional: empirical tuning is still pending
 
@@ -8,7 +8,7 @@ The default flow is **natural question → research task sheet → validated que
 
 The next-stage plan has two steps: (1) empirically compare query formulations using actual retrieved metadata, abstracts and snippets, favoring useful analogous designs/simulations/fabrication cases over background-only hits; (2) tune the Qwen prompt to produce the effective formulations. Final acceptance must exercise **Qwen-generated task sheet/queries → actual retrieval**, not just hand-written queries or a plausible model response.
 
-For that future experiment, start with 5–10 hits per query, then compare depths 15 and 20 for marginal new useful information, duplicates, relevance and latency/cost. Diminishing returns must be observed, not assumed. This is a plan, not an implemented tuning loop or authorization for live calls. The current default remains 200 results per query; changing it requires a separate decision.
+For that future experiment, start with 5–10 hits per query, then compare depths 15 and 20 for marginal new useful information, duplicates, relevance and latency/cost. Diminishing returns must be observed, not assumed. The retrieval default is now 10 results per query. Set `--per-query-limit` explicitly for other depths (1..200). This is not an implemented tuning loop or authorization for live calls.
 
 ## Run
 
@@ -66,12 +66,12 @@ Query guidance prioritizes analogous complete design/simulation/fabrication case
 The deterministic adapter maps each task query to one collector execution facet. These facets are execution slots, not a new decomposition of user goals. Exact query strings are never regenerated from titles. The adapter keeps task-query IDs and full source links on exported queries, provider audits, retrieval hits, materials and unique-material source mappings. Retrieval rejects edited adapter text or mappings that differ from the validated sheet before calling a provider. Original Review-v2 plans remain accepted only for legacy replay/compatibility under their original exact validation; the default planner emits task sheets.
 
 - 1–6 task queries total, never padding targets or six per subgoal; either endpoint alone is valid without filler queries
-- Default 200 results per query; configurable 1–200
+- Default 10 results per query; configurable 1–200
 - Shared monotonic deadline, default 300 seconds; configurable 1–1800
 - Socket timeout at most 30 seconds or remaining time, transport attempts at most 2
 - Paper relevance search pages at most 100 rows/request and never requests beyond its first 1,000-result window; duplicate IDs may cause extra bounded pages
 - Snippet search requests the configured limit once; no invented pagination or 120→360→400 broadening
-- Normalized repeat queries reuse their response while retaining every original query/source mapping
+- Exactly identical repeat queries reuse their response while retaining every original query/source mapping
 - No metadata enrichment, seed expansion, references/citations traversal or downstream model calls
 
 The supported ordinary Semantic Scholar `/paper/search` and `/snippet/search` endpoints specify **no special query syntax**. Paper queries use compact plain-text scholarly terms; snippet queries use natural-language questions. The provider recommends replacing hyphens with spaces for ordinary paper queries: prompt guidance does this before generation, without silently rewriting executable strings. `/paper/search/bulk` is a distinct endpoint with its own Boolean/phrase operators; it is not added or implicitly substituted here. See the [official Graph API documentation](https://api.semanticscholar.org/api-docs/) and [snippet documentation](https://api.semanticscholar.org/api-docs/snippets). Endpoint-aware phrase/question guidance is an engineering heuristic, not a claim that the API requires those linguistic forms.
@@ -86,6 +86,8 @@ The supported ordinary Semantic Scholar `/paper/search` and `/snippet/search` en
 - `materials.json`, `unique_materials.json`: readable metadata/abstract/snippet material and all source mappings; every row declares `fulltext_retrieved=false`
 - `snippets.sqlite`: actual snippet text keyed by hit ID, with hash/locator in corpus
 - `provider_calls.json`: limits, endpoint method, status, cache, pagination, query reuse and missing-result reasons
+- `evidence_items.json`: original passages, explicit types, source locators, merged query/goal links and usability diagnostics
+- `raw_retrieval_records.json`: original public gateway rows, including retained but unaccepted over-limit rows
 - `summary.json`, `provenance.json`: scope, budgets and vendored source hashes
 
 Failed calls, later-page failures, result-window/deadline cutoffs and missing execution slots are explicit; partial runs retain successful hits. All-provider failure is `failed`; healthy empty search is `no_results`. Review-v2 metadata filters/exclusions remain unapplied and cause `partial` when requested. Task-sheet constraints are retained separately for later scientific evaluation; retrieval does not claim filtering or compliance. Identity deduplication uses S2 ID, DOI and corpus ID, not title guessing.
@@ -101,3 +103,24 @@ PYTHONPATH=/tmp/optomind-core-testdeps python -m pytest -q --disable-socket focu
 ```
 
 The local dependency path is a test-environment convenience. Tests inject responses with sockets disabled and cover actual planner wiring, versioned example, unsupported/needs-revision behavior, strict metric conditions, relationships/candidate status, validation/repair, exact task-query execution and provenance, no-network rejection, 200-result pagination, relevance-window exhaustion, deduplication and failure states. An isolated subprocess also tests the actual objective consumer with sockets disabled: all three allowed R/T/A means distinguish arithmetic .30 from wavelength-integral .36 on uneven spectral samples, honor explicit channel selection, and reject missing channels. These are deterministic consumer fixtures, not physical simulations. **No paid calls or live provider tests were run.** Online availability and retrieval quality are unverified.
+
+
+## Candidate-route stage (offline preparation)
+
+Read [ROUTE_MODULE_DESIGN.md](ROUTE_MODULE_DESIGN.md) for the design and known limits. This module is provisional and requires actual model/retrieval tuning. It does not claim that a generated route works.
+
+`route_stage.py` performs only offline prompt preparation, contract validation or deterministic stack materialization. It never constructs a model client. Inputs are the upstream task sheet, the retrieval output `evidence_items.json`, and a source-linked structural configuration. The latter is explicit because the upstream sheet stores layer/material constraints as natural language; parsing a configuration does not prove its semantic correspondence to the question. The RGB/NIR example configuration records air incidence as a configuration assumption.
+
+```bash
+python focused_research/route_stage.py prompt --task-sheet focused_research/examples/rgb_nir_task_sheet.json --evidence-file local_runs/focused_materials/evidence_items.json --constraints-file focused_research/examples/rgb_nir_design_constraints.json --output local_runs/route_prompt
+python focused_research/route_stage.py validate --task-sheet focused_research/examples/rgb_nir_task_sheet.json --evidence-file local_runs/focused_materials/evidence_items.json --constraints-file focused_research/examples/rgb_nir_design_constraints.json --routes-file local_runs/model_routes.json --output local_runs/route_validation
+python focused_research/route_stage.py materialize --task-sheet focused_research/examples/rgb_nir_task_sheet.json --evidence-file local_runs/focused_materials/evidence_items.json --constraints-file focused_research/examples/rgb_nir_design_constraints.json --routes-file local_runs/model_routes.json --route-id R1 --output local_runs/prepared_stacks
+```
+
+All outputs use new directories and retain exact inputs plus their hashes. `contract_validated` and `prepared` are syntax/provenance milestones, not scientific acceptance or permission to execute. Incomplete routes remain `needs_revision`; they cannot be materialized.
+
+For the later local metered caller, `research_routes.generate(sheet, evidence, planner, design_constraints=config, max_repairs=1)` accepts an explicitly injected original Review-compatible planner. It retains raw/effective responses, validation failures and usage and rejects mock/fallback results. Set up the same standalone import paths as `run.py` before importing the vendor client. At most one format-repair round is allowed, but that is not a transport-attempt or monetary cap: the original local budget wrapper must cover every HTTP retry. No new paid task is authorized by this README.
+
+`route_consumer.prepare_tmm_inputs` takes a prepared instance, explicit optical-medium mappings and an explicit wavelength grid. It preserves task objectives without adding weights/targets and checks exact band endpoints plus interior samples. It constructs the existing VeriTMM task shape; it does not query optical constants or run a solver. Material dataset coverage, convergence, appropriate sampling density and physical verification remain prerequisites for future execution. The accompanying subprocess test uses the actual existing `simulation_task_from_dict` and `ObjectivePreference` consumers, without computation.
+
+First-version route expectations compare parameter settings within the same explicit layer sequence; topology-changing comparisons, adaptive budget allocation and intervention-response archives are future work. A route need not invent an expected direction for every goal. The task's remaining goals must still be evaluated by any later design selection.

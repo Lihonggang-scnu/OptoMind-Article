@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import hashlib
 import json
 import sys
@@ -16,10 +17,17 @@ VENDOR = ROOT / 'vendor' / 'review'
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(VENDOR))
 import task_sheet as ts
+from evidence_store import build_evidence_items, serialize_record
 from optomind_research.runtime.upgrade3 import query_plan as qp
 from optomind_research.runtime.upgrade3.candidate_corpus import (
-    SnippetTextStore, build_candidate_corpus, plan_queries,
+    SnippetTextStore, build_candidate_corpus, plan_queries as _vendor_plan_queries,
 )
+
+
+def plan_queries(plan):
+    mappings = plan.get('task_query_mappings', {})
+    return [replace(q, query_text=mappings.get(q.query_id, {}).get('query', q.query_text))
+            for q in _vendor_plan_queries(plan)]
 
 
 def write_json(path, value):
@@ -69,20 +77,33 @@ def generate_plan(question, output, planner=None):
 
 class AuditedGateway:
     """Bound and audit the real gateway; one failed query cannot erase other hits."""
-    def __init__(self, gateway, *, deadline):
+    def __init__(self, gateway, *, deadline, query_specs=None):
         self.gateway = gateway
+        self.query_specs = query_specs
         self.deadline = deadline
         self.calls = []
         self.query_cache = {}
+        self.raw_records = []
 
     def _search(self, method, query, *, limit, **kwargs):
+        if self.query_specs is not None:
+            if len(self.calls) >= len(self.query_specs):
+                raise ValueError('unexpected extra provider call')
+            spec = self.query_specs[len(self.calls)]
+            expected = 'search_snippets' if spec.retrieval_source == 'snippet_search' else 'search_papers'
+            if method != expected or query != spec.query_text.strip():
+                raise ValueError('provider call differs from validated query sequence')
+            query = spec.query_text
         started = time.monotonic()
-        identity = (method, ' '.join(query.split()).casefold(), limit)
+        identity = (method, query, limit)
         if identity in self.query_cache:
             rows, response, original_index = self.query_cache[identity]
             self.calls.append({**self.calls[original_index], 'query': query,
                 'deduplicated_query': True, 'reused_call_index': original_index,
                 'elapsed_seconds': 0.0})
+            self.raw_records.append({'call_index': len(self.calls) - 1, 'rows':
+                self.raw_records[original_index]['rows'], 'reused_call_index': original_index,
+                'accepted_limit': limit, 'returned': len(self.raw_records[original_index]['rows'])})
             return rows, response
         if started >= self.deadline:
             rows, response = [], SimpleNamespace(ok=False, status_code=0,
@@ -116,6 +137,9 @@ class AuditedGateway:
             'truncated_reason': audit.get('truncated_reason', ''),
             'elapsed_seconds': round(time.monotonic() - started, 3),
         })
+        self.raw_records.append({'call_index': len(self.calls) - 1,
+            'rows': [serialize_record(row) for row in rows],
+            'accepted_limit': limit, 'returned': len(rows)})
         bounded = rows[:limit]
         self.query_cache[identity] = (bounded, response, len(self.calls) - 1)
         return bounded, response
@@ -127,7 +151,7 @@ class AuditedGateway:
         return self._search('search_snippets', query, **kwargs)
 
 
-def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
+def retrieve(plan, output, *, gateway=None, per_query_limit=10, seconds=300):
     validate_limits(per_query_limit, seconds)
     if plan.get('schema_version') == ts.SCHEMA:
         plan = ts.adapt(plan)
@@ -147,7 +171,7 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
         from optomind_research.s2_intelligence_gateway import S2IntelligenceGateway, S2Transport
         gateway = S2IntelligenceGateway(S2Transport(
             cache_path=output / 'provider_cache.sqlite', timeout_seconds=30, max_attempts=2))
-    adapter = AuditedGateway(gateway, deadline=time.monotonic() + seconds)
+    adapter = AuditedGateway(gateway, deadline=time.monotonic() + seconds, query_specs=plan_queries(plan))
     store = SnippetTextStore(output / 'snippets.sqlite')
     try:
         corpus = build_candidate_corpus(plan, gateway=adapter, per_query_limit=per_query_limit,
@@ -159,10 +183,14 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
                 'planner_status': 'validated_task_sheet', 'plan_state': 'complete',
                 'degraded': False, 'channel_selection': 'intentional_per_query',
                 'note': 'Task sheets do not require both endpoints; legacy dual-channel diagnostic retained separately.'}
+        evidence = build_evidence_items(adapter.raw_records, plan_queries(plan), mappings)
+        write_json(output / 'evidence_items.json', evidence)
+        write_json(output / 'raw_retrieval_records.json', adapter.raw_records)
         # Preserve task provenance on hits/audits as well as the executable query list.
         for row in corpus['retrieval_hits'] + corpus['query_audit']:
             if row['query_id'] in mappings:
                 row['task_query'] = mappings[row['query_id']]
+                row['query_text'] = row['task_query']['query']
         # Produce readable retrieved materials in addition to the original hash/locator store.
         papers = {p['paper_id'] or ('corpus:' + str(p['corpus_id'])): p for p in corpus['papers']}
         materials = []
@@ -222,6 +250,9 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
             'subproblems': len(plan['facets']), 'queries': len(plan_queries(plan)),
             'papers': len(corpus['papers']), 'hits': len(materials),
             'unique_materials': len(unique_materials),
+            'evidence_items': len(evidence['items']),
+            'eligible_evidence_items': sum(i['eligible_as_evidence'] for i in evidence['items']),
+            'ineligible_evidence_items': sum(not i['eligible_as_evidence'] for i in evidence['items']),
             'missing_facets': missing_facets, 'fulltext_retrieved': False,
             'per_query_limit': per_query_limit, 'retrieval_seconds': seconds,
             'task_sheet_contract': plan.get('task_sheet', {}).get('schema_version'),
@@ -230,6 +261,7 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
         write_json(output / 'summary.json', summary)
         return summary
     finally:
+        write_json(output / 'raw_retrieval_records.json', adapter.raw_records)
         store.close()
 
 
@@ -239,7 +271,7 @@ def main(argv=None):
     parser.add_argument('--question')
     parser.add_argument('--plan-file', type=Path)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--per-query-limit', type=int, default=200)
+    parser.add_argument('--per-query-limit', type=int, default=10)
     parser.add_argument('--retrieval-seconds', type=float, default=300)
     args = parser.parse_args(argv)
     try:
