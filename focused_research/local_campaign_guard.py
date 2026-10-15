@@ -28,10 +28,30 @@ CASE_PROTOCOLS = {
         'requirements': ['Preserve transmission maximization in 1530–1565 nm and reflection maximization in 400–700 nm.', 'The original question provides no global thickness bounds. Do not invent user manufacturing limits. Finite route-family variable domains are model design hypotheses and must be labeled accordingly.'],
     },
 }
+# T032 extends the cold-start protocol inventory, not the numerical engine.
+# Unspecified physical conditions are labeled execution assumptions; none of
+# these three original questions supplies a global layer-thickness interval.
+CASE_PROTOCOLS.update({
+    'e2e-01-methane-swir-window': {
+        'assumptions': ['Use 0 degree incidence, equal-s/p unpolarized light and wavelength-integral band means as separately labeled execution assumptions, not original user facts.'],
+        'requirements': ['Preserve transmission maximization in 1000–1700 nm and reflection maximization in 300–450 nm, air incidence, fused silica, HfO2/SiO2 and at most 30 layers.', 'The original question provides no global thickness bounds or chirping requirement. Finite positive family-variable domains and structure families are model design hypotheses.'],
+    },
+    'e2e-04-solarblind-uv-triple': {
+        'assumptions': ['Use 0 degree incidence, equal-s/p unpolarized light and wavelength-integral band means as separately labeled execution assumptions, not original user facts.', 'Evaluate suppression as transmission minimization in each original rejected band. This is an explicit execution interpretation, not an added reflection objective.'],
+        'requirements': ['Maximize transmission in 255–280 nm; minimize transmission in 300–700 nm and 700–1100 nm. Preserve air incidence, fused silica, at most 30 layers and the original prohibition on metal layers.', 'The user permits ordinary depositable inorganic dielectric materials, not a named two-material set. Actual available optical-media records are an execution inventory and must be disclosed separately. Do not invent a narrower original material requirement.', 'No global user thickness bounds were specified. Use finite positive model-proposed family domains without inventing manufacturing constraints.'],
+    },
+    'e2e-05-visual-absorber-cr': {
+        'assumptions': ['Use 0 degree incidence, equal-s/p unpolarized light and wavelength-integral band means as separately labeled execution assumptions, not original user facts.', 'Treat the stated aluminum substrate as a semi-infinite absorbing exit medium for this planar-surface calculation; disclose this boundary assumption.'],
+        'requirements': ['Use the original explicit low-reflectance parenthetical to minimize mean R in 400–700 nm, and maximize mean R in 700–2000 nm. Preserve the user absorption motivation, HfO2/SiO2/Cr film allowance, aluminum substrate, air incidence and at most 20 layers.', 'A_finite=1-R-T_into_exit measures finite-film absorption only. Do not label it coating-plus-substrate absorption. For the stated absorbing semi-infinite surface system, 1-R is system absorptance; this does not add a third optimization goal or a heat-power objective.', 'No global user thickness bounds were specified. Use finite positive model-proposed family domains without inventing manufacturing constraints.'],
+    },
+})
 CASE_THICKNESS_BOUNDS = {
     'e2e-09-si-photonics-ar-dualband': (20.0, 400.0),
     'e2e-08-advanced-packaging-uv': (20.0, 350.0),
     'e2e-02-space-qkd-cband': None,
+    'e2e-01-methane-swir-window': None,
+    'e2e-04-solarblind-uv-triple': None,
+    'e2e-05-visual-absorber-cr': None,
 }
 
 
