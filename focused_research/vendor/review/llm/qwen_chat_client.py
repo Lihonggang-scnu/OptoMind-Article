@@ -416,6 +416,7 @@ def call_qwen_chat(
                     try:
                         resp = _open_qwen_request(req, timeout_sec)
                         provider_usage: dict[str, Any] = {}
+                        finish_reason = None
                         if stream:
                             pieces: list[str] = []
                             stream_lines = _iter_stream_lines_with_deadline(
@@ -442,6 +443,8 @@ def call_qwen_chat(
                                     if not choices:
                                         continue
                                     choice = choices[0] if isinstance(choices[0], dict) else {}
+                                    if choice.get("finish_reason") is not None:
+                                        finish_reason = choice["finish_reason"]
                                     delta = choice.get("delta") if isinstance(choice.get("delta"), dict) else {}
                                     value = delta.get("content")
                                     if value is None and isinstance(choice.get("message"), dict):
@@ -464,6 +467,7 @@ def call_qwen_chat(
                         else:
                             data = json.loads(resp.read().decode("utf-8"))
                             content = data["choices"][0]["message"]["content"]
+                            finish_reason = data["choices"][0].get("finish_reason")
                             if isinstance(data.get("usage"), dict):
                                 provider_usage = dict(data["usage"])
                     finally:
@@ -475,6 +479,7 @@ def call_qwen_chat(
                                 pass
                     return {
                         "content": content,
+                        "finish_reason": finish_reason,
                         "fallback_used": used_model_fallback,
                         "transport_error": (last_error if (used_model_fallback or key_failures)
                                             else ""),
@@ -503,6 +508,7 @@ def call_qwen_chat(
                             fallback_chain=[name for name, _ in model_candidates[1:]],
                             attempted_models=list(attempted_models),
                             selected_model_index=model_index,
+                            finish_reason=finish_reason,
                             partial_stream=bool(stream_interrupted_error),
                             stream_interrupted_error=stream_interrupted_error,
                             request_attempt_count=request_attempts,

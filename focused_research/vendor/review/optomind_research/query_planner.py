@@ -445,6 +445,9 @@ class QueryPlannerAgent:
             "fallback_used": bool(result.get("fallback_used")),
             "transport_error": str(result.get("transport_error") or ""),
             "json_contract_repaired": bool(result.get("json_contract_repaired")),
+            "finish_reason": result.get("finish_reason"),
+            "partial_stream": bool(self.last_usage.get("partial_stream")),
+            "stream_interrupted_error": self.last_usage.get("stream_interrupted_error", ""),
         }
         return self.last_raw_response
 

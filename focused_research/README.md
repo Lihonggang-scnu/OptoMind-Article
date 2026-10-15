@@ -131,3 +131,9 @@ See `FULLTEXT_INTEGRATION.md` and the current `LOCAL_TEST_HANDOFF.md`. Full-text
 
 ### Rate-limited S2 queries
 HTTP 429 is retryable transport state, not an empty-search observation. Successful queries are retained; only rate-limited queries cool down and reconnect, honoring Retry-After or backoff, up to 15 reconnections after the initial request per query. Exhaustion remains partial/incomplete. This is separate from the local paid-model attempt limit and does not expand the separately authorized Qwen attempts.
+
+### Candidate quantity and output completeness
+
+Route generation encourages around 10 or more useful candidates, with no route-count upper limit or hard minimum. Shared and injected prompts agree; validation and materialization retain every supplied valid route. Fewer or zero useful hypotheses remain acceptable, and parameter variants must not be disguised as independent mechanisms. Weak evidence and explicitly unverified model knowledge remain eligible; executable constraints, reasoning and directional predictions still apply.
+
+This does not increase model tokens, spending, time or HTTP-attempt limits. The injecting caller must choose a model-supported output-token allowance sufficient for the full route contracts within the already authorized aggregate budget. The vendor client preserves completion finish metadata for streaming and nonstreaming responses. Explicit output-length termination or interrupted streams produce `partial`, retain the raw response and usage, prepare no instances and do not trigger an extra repair call, even if the partial JSON happens to parse.

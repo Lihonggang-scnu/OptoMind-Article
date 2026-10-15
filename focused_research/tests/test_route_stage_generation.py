@@ -49,7 +49,9 @@ def test_injected_planner_prepares_all_ready_routes_and_keeps_audit(tmp_path):
     planner = AuditedPlannerFixture([response()])
     assert route_stage.main(args(tmp_path), planner=planner) == 0
     assert len(planner.calls) == 1
-    assert '2–3' in planner.calls[0]['user_payload']['route_count_request']
+    assert 'around 10 or more' in planner.calls[0]['user_payload']['route_count_request']
+    assert 'no route-count upper limit or hard minimum' in planner.calls[0]['user_payload']['route_count_request']
+    assert 'around 10 or more' in planner.calls[0]['system_prompt']
     outcome = read(tmp_path, 'generation_outcome.json')
     assert outcome['rounds'][0]['raw_response'] == response()
     assert outcome['rounds'][0]['effective_response']
@@ -154,3 +156,66 @@ def test_quality_sidecar_and_contract_repair_audit(tmp_path):
     assert quality['routes_removed'] == []
     assert 'coupled changes are allowed' in planner.calls[0]['user_payload']['route_count_request']
     assert 'shared by s and p' in planner.calls[0]['system_prompt']
+
+
+def many_routes():
+    routes = json.loads(response())
+    template = routes['routes'][0]
+    routes['routes'] = []
+    for index in range(12):
+        route = copy.deepcopy(template)
+        route['id'] = f'R{index + 1}'
+        route['claim'] = f'Untested same-family thickness parameter variant {index + 1}, not an independent mechanism.'
+        route['instances'][1]['parameters_nm']['dH'] = 60 + index
+        routes['routes'].append(route)
+    return routes
+
+
+def test_more_than_ten_valid_candidates_are_retained_and_materialized(tmp_path):
+    routes = many_routes()
+    planner = AuditedPlannerFixture([json.dumps(routes)])
+    assert route_stage.main(args(tmp_path), planner=planner) == 0
+    assert read(tmp_path, 'research_routes.json') == routes
+    assert len(read(tmp_path, 'prepared_instances.json')) == 24
+    assert {r['route_id'] for r in read(tmp_path, 'prepared_instances.json')} == {r['id'] for r in routes['routes']}
+    assert read(tmp_path, 'route_quality_report.json')['routes_removed'] == []
+
+
+@pytest.mark.parametrize('field,value', [('reason', ''), ('changed_variables', []),
+                                        ('candidate_instance_id', 'invented')])
+def test_large_route_batch_still_checks_last_candidate(tmp_path, field, value):
+    routes = many_routes()
+    routes['routes'][-1]['expectations'][0][field] = value
+    planner = AuditedPlannerFixture([json.dumps(routes)] * 2)
+    assert route_stage.main(args(tmp_path), planner=planner) == 2
+    assert read(tmp_path, 'prepared_instances.json') == []
+    assert read(tmp_path, 'generation_outcome.json')['status'] == 'invalid'
+
+
+def test_zero_candidates_does_not_force_a_minimum(tmp_path):
+    routes = json.loads(response())
+    routes['routes'] = []
+    planner = AuditedPlannerFixture([json.dumps(routes)])
+    assert route_stage.main(args(tmp_path), planner=planner) == 0
+    assert len(planner.calls) == 1
+    assert read(tmp_path, 'generation_outcome.json')['status'] == 'needs_revision'
+    assert read(tmp_path, 'prepared_instances.json') == []
+
+
+@pytest.mark.parametrize('metadata', [{'finish_reason': 'length'}, {'finish_reason': 'max_tokens'},
+                                      {'partial_stream': True}, {'stream_interrupted_error': 'TimeoutError'}])
+@pytest.mark.parametrize('location', ['last_transport', 'last_usage'])
+@pytest.mark.parametrize('parseable', [True, False])
+def test_truncated_output_is_partial_even_when_json_is_parseable(tmp_path, metadata, location, parseable):
+    raw = response() if parseable else response()[:100]
+    planner = AuditedPlannerFixture([raw, response()])
+    getattr(planner, location).update(metadata)
+    assert route_stage.main(args(tmp_path), planner=planner) == 2
+    assert len(planner.calls) == 1
+    outcome = read(tmp_path, 'generation_outcome.json')
+    assert outcome['status'] == 'partial'
+    assert outcome['first_hit'] is False
+    assert outcome['rounds'][0]['raw_response'] == raw
+    assert outcome['rounds'][0]['ok'] is False
+    assert read(tmp_path, 'prepared_instances.json') == []
+    assert read(tmp_path, 'summary.json')['status'] == 'partial'

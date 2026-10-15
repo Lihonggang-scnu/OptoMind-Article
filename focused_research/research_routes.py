@@ -360,6 +360,17 @@ def generate(task_sheet, evidence_items, planner, *, design_constraints, max_rep
         if transport.get('fallback_used') or transport.get('transport_error'):
             outcome.update(status='transport_rejected', errors=['api_error'])
             break
+        # Output limits are safety boundaries, never evidence that a shorter
+        # parseable contract is complete. Retain raw output without preparing it
+        # or spending the bounded repair allowance on a truncated generation.
+        truncated = any(
+            metadata.get('finish_reason') in ('length', 'max_tokens', 'max_output_tokens')
+            or metadata.get('partial_stream') or metadata.get('stream_interrupted_error')
+            for metadata in (transport, usage))
+        if truncated:
+            record.update(ok=False, error='generation output truncated or stream interrupted')
+            outcome.update(status='partial', errors=[record['error']])
+            break
         try:
             parsed = _extract_json_object(raw)
             record['raw_research_routes'] = copy.deepcopy(parsed)
