@@ -1,0 +1,313 @@
+{
+  "schema_version": "focused_research.task_sheet.v2",
+  "task_type": "design/optimization",
+  "user_objective": "Design a planar Ta2O5/SiO2 multilayer filter on fused silica for UV-excited fluorescence detection, minimizing wavelength-integral mean transmittance in dual stopbands (355-365 nm, 1030-1080 nm) and maximizing it in the signal passband (420-700 nm) at normal incidence with unpolarized light, subject to layer count and thickness constraints.",
+  "subgoals": [
+    {
+      "id": "G1",
+      "objective": "Minimize transmittance in the UV excitation leakage band",
+      "original_span": "在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+      "executable_metric": {
+        "objective_id": "G1",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            355,
+            365
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      }
+    },
+    {
+      "id": "G2",
+      "objective": "Maximize transmittance in the visible fluorescence signal band",
+      "original_span": "在 420-700 nm 信号波段尽可能提高平均透射率",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+      "executable_metric": {
+        "objective_id": "G2",
+        "metric": "mean_transmittance",
+        "sense": "maximize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            420,
+            700
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      }
+    },
+    {
+      "id": "G3",
+      "objective": "Minimize transmittance in the NIR alignment laser band",
+      "original_span": "在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+      "executable_metric": {
+        "objective_id": "G3",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            1030,
+            1080
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      }
+    }
+  ],
+  "application_intents": [
+    {
+      "id": "A1",
+      "intent": "UV-excited optical inspection module for advanced packaging and photoresist residue detection",
+      "original_span": "先进封装材料和光刻胶残留的紫外激发光学检测模块",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "operational_definition": null
+    }
+  ],
+  "goal_relationships": {
+    "mode": "all",
+    "priority_order": null,
+    "tradeoff": "User explicitly requests analysis of the tradeoff between passband loss and dual stopband suppression.",
+    "coupling": "G1, G2, and G3 are spectrally adjacent or separated goals for the same coating; achieving deep rejection in G1/G3 while maintaining high transmission in G2 requires careful management of spectral ripple and edge steepness."
+  },
+  "explicit_constraints": [
+    {
+      "id": "C1",
+      "constraint": "UV stopband: 355–365 nm",
+      "original_span": "355-365 nm"
+    },
+    {
+      "id": "C2",
+      "constraint": "Visible passband: 420–700 nm",
+      "original_span": "420-700 nm"
+    },
+    {
+      "id": "C3",
+      "constraint": "NIR stopband: 1030–1080 nm",
+      "original_span": "1030-1080 nm"
+    },
+    {
+      "id": "C4",
+      "constraint": "Incidence angle: 0 deg",
+      "original_span": "入射角 0 deg"
+    },
+    {
+      "id": "C5",
+      "constraint": "Incident medium: Air",
+      "original_span": "空气入射"
+    },
+    {
+      "id": "C6",
+      "constraint": "Substrate: Fused silica",
+      "original_span": "熔融石英基底"
+    },
+    {
+      "id": "C7",
+      "constraint": "Coating materials: Only Ta2O5 and SiO2",
+      "original_span": "膜层仅允许 Ta2O5 和 SiO2"
+    },
+    {
+      "id": "C8",
+      "constraint": "Maximum total layers: 36",
+      "original_span": "总层数不超过 36 层"
+    },
+    {
+      "id": "C9",
+      "constraint": "Single layer thickness bounds: 20-350 nm",
+      "original_span": "单层膜厚（layer thickness）：20-350 nm"
+    },
+    {
+      "id": "C10",
+      "constraint": "Polarization: Unpolarized",
+      "original_span": "非偏振 unpolarized"
+    },
+    {
+      "id": "C11",
+      "constraint": "Evaluation metric definition: Wavelength-integral mean divided by band width (inferred from 'average' context)",
+      "original_span": "平均透射率"
+    }
+  ],
+  "known_data": [
+    {
+      "statement": "Excitation source is near 355 nm",
+      "original_span": "以 355 nm 附近的光激发样品"
+    },
+    {
+      "statement": "Auxiliary alignment light is in the NIR range",
+      "original_span": "辅助近红外对准光"
+    }
+  ],
+  "unknowns_assumptions": [
+    {
+      "kind": "assumption",
+      "statement": "The term 'average' in the user request is operationalized as wavelength-integral mean for executable consistency with the task schema, as no specific sampling method was defined.",
+      "assumed_value": "wavelength_integral_mean",
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Optical constants (n, k) dispersion models for Ta2O5 and SiO2 in the UV-to-NIR range, and specific fabrication tolerance requirements, are not provided.",
+      "assumed_value": null,
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Specific numerical targets for 'as low as possible' or 'as high as possible' (e.g., OD values or %T thresholds) are unspecified.",
+      "assumed_value": null,
+      "needs_user_input": false
+    }
+  ],
+  "research_questions": [
+    {
+      "id": "R1",
+      "question": "What multilayer design strategies effectively create dual non-harmonic stopbands (UV and NIR) while maintaining a broad visible passband?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ]
+    },
+    {
+      "id": "R2",
+      "question": "How do Ta2O5/SiO2 layer thickness constraints (20-350 nm) impact the achievable rejection depth and bandwidth for UV and NIR blocks?",
+      "subgoal_ids": [
+        "G1",
+        "G3"
+      ]
+    },
+    {
+      "id": "R3",
+      "question": "Which optimization methods best handle the tradeoff between passband ripple and multi-band rejection under strict layer count limits?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ]
+    }
+  ],
+  "candidate_mechanisms": [
+    {
+      "id": "M1",
+      "mechanism": "Interference stacks with tailored period sequences can generate multiple distinct stopbands without harmonic overlap in the passband.",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "M2",
+      "mechanism": "Thickness limiting constraints may restrict the number of quarter-wave pairs available for deep UV blocking, requiring non-quarter-wave or mismatched stack designs.",
+      "subgoal_ids": [
+        "G1",
+        "G3"
+      ],
+      "status": "candidate"
+    }
+  ],
+  "search_queries": [
+    {
+      "id": "Q1",
+      "endpoint": "paper_search",
+      "query": "dual band stop filter design UV visible NIR multilayer coating",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Find complete design cases for filters blocking two separate bands (UV and NIR) while transmitting visible light."
+    },
+    {
+      "id": "Q2",
+      "endpoint": "snippet_search",
+      "query": "How to design a multilayer filter that blocks 355 nm and 1064 nm while transmitting visible fluorescence?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Seek specific examples matching the excitation (355 nm) and alignment (approx 1064 nm) wavelengths mentioned in similar applications."
+    },
+    {
+      "id": "Q3",
+      "endpoint": "paper_search",
+      "query": "Ta2O5 SiO2 thin film optical properties UV near infrared dispersion",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [],
+      "research_question_ids": [
+        "R2"
+      ],
+      "purpose": "material_structure",
+      "rationale": "Retrieve material data for Ta2O5 and SiO2 to verify transparency and refractive index contrast in the UV-to-NIR range."
+    },
+    {
+      "id": "Q4",
+      "endpoint": "snippet_search",
+      "query": "What optimization techniques manage tradeoffs between passband ripple and stopband depth in limited layer count dielectric filters?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R3"
+      ],
+      "purpose": "method_transfer",
+      "rationale": "Identify synthesis methods that explicitly address the user-requested tradeoff analysis under layer count constraints."
+    },
+    {
+      "id": "Q5",
+      "endpoint": "snippet_search",
+      "query": "How does single layer thickness limitation affect the performance of UV blocking filters using Ta2O5 and SiO2?",
+      "subgoal_ids": [
+        "G1"
+      ],
+      "mechanism_ids": [
+        "M2"
+      ],
+      "research_question_ids": [
+        "R2"
+      ],
+      "purpose": "mechanism",
+      "rationale": "Investigate the physical impact of the 20-350 nm thickness constraint specifically on the short-wavelength (UV) stopband design."
+    }
+  ],
+  "unsupported_requirements": [],
+  "readiness": "ready",
+  "original_question": "我正在研发先进封装材料和光刻胶残留的紫外激发光学检测模块。模块以 355 nm 附近的光激发样品，需要压低收集通道中的激发光泄漏，同时保留可见波段的荧光信息，并抑制辅助近红外对准光进入可见探测通道。请设计空气入射、入射角 0 deg、非偏振 unpolarized、熔融石英基底上的平面多层介质滤光膜：在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率，在 420-700 nm 信号波段尽可能提高平均透射率。膜层仅允许 Ta2O5 和 SiO2，总层数不超过 36 层。\n单层膜厚（layer thickness）：20-350 nm。\n请通过实际仿真比较不同膜系，分析通带损耗与双阻带抑制的折中，给出材料顺序、厚度和各目标波段结果。评价对象是检测模块中的滤光元件。"
+}

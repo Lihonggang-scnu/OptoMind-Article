@@ -1,0 +1,290 @@
+{
+  "schema_version": "focused_research.task_sheet.v2",
+  "task_type": "mixed/unresolved",
+  "user_objective": "Design a planar Ta2O5/SiO2 multilayer anti-reflection coating for silicon in CPO modules, minimizing reflectance in two disjoint telecom bands (1260-1360 nm and 1530-1565 nm) at normal incidence with unpolarized light, while reporting transmission into the silicon substrate.",
+  "subgoals": [
+    {
+      "id": "G1",
+      "objective": "Minimize average reflectance in the 1260-1360 nm band",
+      "original_span": "在上述两个波段分别尽可能降低平均反射率",
+      "operational_definition": "Wavelength integral of reflectance over the band, divided by band width, for unpolarized light at 0 degrees. Original question specifies 'average' without defining reduction; wavelength-integral mean is adopted as the evaluation protocol per execution assumptions.",
+      "executable_metric": {
+        "objective_id": "G1",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            1260,
+            1360
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      }
+    },
+    {
+      "id": "G2",
+      "objective": "Minimize average reflectance in the 1530-1565 nm band",
+      "original_span": "在上述两个波段分别尽可能降低平均反射率",
+      "operational_definition": "Wavelength integral of reflectance over the band, divided by band width, for unpolarized light at 0 degrees. Original question specifies 'average' without defining reduction; wavelength-integral mean is adopted as the evaluation protocol per execution assumptions.",
+      "executable_metric": {
+        "objective_id": "G2",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            1530,
+            1565
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      }
+    }
+  ],
+  "application_intents": [
+    {
+      "id": "A1",
+      "intent": "Co-packaged optics (CPO) module silicon micro-optical coupling element",
+      "original_span": "数据中心共封装光学模块中的硅微光学耦合元件",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "operational_definition": null
+    },
+    {
+      "id": "ReportTIntoSilicon",
+      "intent": "Report power transmission into the semi-infinite silicon substrate.",
+      "original_span": "报告进入硅基底的透射率",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "operational_definition": "Report existing T spectra in both original bands. This is not a new optimization objective and is not through-device transmission."
+    }
+  ],
+  "goal_relationships": {
+    "mode": "all",
+    "priority_order": null,
+    "tradeoff": "User explicitly requests performance trade-off analysis between the two bands.",
+    "coupling": "G1 and G2 are coupled through the same multilayer stack; optimizing one band may affect the other due to limited layer count (12) and material dispersion."
+  },
+  "explicit_constraints": [
+    {
+      "id": "C1",
+      "constraint": "Band 1: 1260-1360 nm",
+      "original_span": "1260-1360 nm"
+    },
+    {
+      "id": "C2",
+      "constraint": "Band 2: 1530-1565 nm",
+      "original_span": "1530-1565 nm"
+    },
+    {
+      "id": "C3",
+      "constraint": "Incidence angle: 0 degrees",
+      "original_span": "入射角 0 deg"
+    },
+    {
+      "id": "C4",
+      "constraint": "Polarization: unpolarized",
+      "original_span": "非偏振 unpolarized"
+    },
+    {
+      "id": "C5",
+      "constraint": "Incident medium: air",
+      "original_span": "空气入射"
+    },
+    {
+      "id": "C6",
+      "constraint": "Substrate: semi-infinite silicon",
+      "original_span": "硅作为半无限出射基底"
+    },
+    {
+      "id": "C7",
+      "constraint": "Materials: only Ta2O5 and SiO2",
+      "original_span": "膜层仅允许 Ta2O5 和 SiO2"
+    },
+    {
+      "id": "C8",
+      "constraint": "Total layers: no more than 12",
+      "original_span": "总层数不超过 12 层"
+    },
+    {
+      "id": "C9",
+      "constraint": "Single layer thickness bounds: 20-400 nm",
+      "original_span": "单层膜厚（layer thickness）：20-400 nm"
+    },
+    {
+      "id": "C10",
+      "constraint": "Compare broadband vs dual-band matching schemes",
+      "original_span": "请比较宽带与双波段匹配方案"
+    },
+    {
+      "id": "C11",
+      "constraint": "Report transmission into silicon substrate",
+      "original_span": "报告进入硅基底的透射率"
+    }
+  ],
+  "known_data": [
+    {
+      "statement": "Application context is data center co-packaged optics",
+      "original_span": "数据中心共封装光学模块"
+    }
+  ],
+  "unknowns_assumptions": [
+    {
+      "kind": "assumption",
+      "statement": "The term 'average' in the original question is interpreted as wavelength-integral mean divided by band width for executable metric definition, as specific sampling or arithmetic mean was not defined.",
+      "assumed_value": "wavelength_integral_mean",
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Optical constants (n, k) for Ta2O5, SiO2, and Silicon across the specified bands are not provided in the prompt and must be retrieved.",
+      "assumed_value": null,
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Specific numerical targets for 'as low as possible' reflectance are not defined; no threshold is assumed.",
+      "assumed_value": null,
+      "needs_user_input": false
+    }
+  ],
+  "research_questions": [
+    {
+      "id": "R1",
+      "question": "What are effective Ta2O5/SiO2 multilayer AR coating designs for dual-band operation on silicon substrates?",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ]
+    },
+    {
+      "id": "R2",
+      "question": "How do broadband AR designs compare to discrete dual-band optimized designs in terms of layer count and spectral performance trade-offs?",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ]
+    },
+    {
+      "id": "R3",
+      "question": "What optimization methods exist for constrained layer thickness (20-400 nm) and limited layer count (<=12) AR coatings?",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ]
+    }
+  ],
+  "candidate_mechanisms": [
+    {
+      "id": "M1",
+      "mechanism": "Destructive interference in quarter-wave or non-quarter-wave stacks to minimize reflection at specific wavelengths",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "M2",
+      "mechanism": "Impedance matching using graded index profiles approximated by discrete layers",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "status": "candidate"
+    }
+  ],
+  "search_queries": [
+    {
+      "id": "Q1",
+      "endpoint": "paper_search",
+      "query": "Ta2O5 SiO2 dual band anti-reflection coating silicon telecom wavelengths",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Find existing designs specifically targeting dual-band AR on silicon with the requested materials."
+    },
+    {
+      "id": "Q2",
+      "endpoint": "snippet_search",
+      "query": "How to design a multilayer anti-reflection coating for silicon covering both 1300 nm and 1550 nm bands with limited layers?",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1",
+        "R2"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Seek practical design strategies for bridging the gap between O-band and C/L-band on silicon."
+    },
+    {
+      "id": "Q3",
+      "endpoint": "paper_search",
+      "query": "broadband versus multiband anti-reflection coating design comparison silicon photonics",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "mechanism_ids": [
+        "M1",
+        "M2"
+      ],
+      "research_question_ids": [
+        "R2"
+      ],
+      "purpose": "method_transfer",
+      "rationale": "Retrieve comparative studies on broadband vs. discrete multi-band approaches to inform the requested trade-off analysis."
+    },
+    {
+      "id": "Q4",
+      "endpoint": "snippet_search",
+      "query": "What optimization algorithms are used for thin film layer thickness constraints between 20 and 400 nm?",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "mechanism_ids": [],
+      "research_question_ids": [
+        "R3"
+      ],
+      "purpose": "method_transfer",
+      "rationale": "Identify methods capable of handling the specific hard constraints on layer thickness and count."
+    },
+    {
+      "id": "Q5",
+      "endpoint": "paper_search",
+      "query": "optical constants Ta2O5 SiO2 silicon near infrared dispersion",
+      "subgoal_ids": [
+        "G1",
+        "G2"
+      ],
+      "mechanism_ids": [],
+      "research_question_ids": [],
+      "purpose": "material_structure",
+      "rationale": "Essential data retrieval for accurate simulation of the proposed stack; refractive indices are not provided in the prompt."
+    }
+  ],
+  "unsupported_requirements": [],
+  "readiness": "ready",
+  "original_question": "我负责数据中心共封装光学模块中的硅微光学耦合元件。模块需要兼容 1260-1360 nm 和 1530-1565 nm 两个通信波段，希望采用一套镀膜降低空气与硅界面的反射，减少不同波段单独设计镀膜的复杂度。请为硅元件的入射表面设计平面多层介质减反膜：空气入射、入射角 0 deg、非偏振 unpolarized，硅作为半无限出射基底；在上述两个波段分别尽可能降低平均反射率，并报告进入硅基底的透射率。膜层仅允许 Ta2O5 和 SiO2，总层数不超过 12 层。\n单层膜厚（layer thickness）：20-400 nm。\n请比较宽带与双波段匹配方案，利用真实光谱结果调整膜厚，给出两波段之间的性能折中及最终结构。评价范围是局部平面界面的功率反射与透射。"
+}
