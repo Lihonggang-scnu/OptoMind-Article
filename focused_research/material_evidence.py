@@ -239,36 +239,102 @@ def material_block_index(payload):
 
 
 
-def prompt_evidence_view(payload, *, max_text_chars=48000, max_payload_chars=192000):
-    """Bound model input without copying full archives or duplicating block text.
+def _prompt_locator(locator):
+    """Keep exact block/region handles; omit parser audit and duplicate word geometry."""
+    if not isinstance(locator, dict):
+        return deepcopy(locator)
+    audit = {'docling_prov', 'parser_config_sha256', 'parser_version',
+             'projection_version', 'docling_primary', 'order_index'}
+    return {k: deepcopy(v) for k, v in locator.items() if k not in audit}
 
-    All evidence text and linked scientific structures are kept whole. The caller
-    must explicitly select fewer blocks on overflow; this function never ranks,
-    slices, summarizes, or promotes source material. Empty evidence is valid.
+
+def prompt_evidence_view(payload, *, max_text_chars=48000, max_payload_chars=192000):
+    """Whole scientific content plus deduplicated source/snapshot reading context.
+
+    The immutable archive remains the audit authority. This versioned projection
+    omits local paths, parser-run documents and redundant word geometry, never
+    scientific text, table cells, formulas, references or source usage limits.
+    Table references are content-addressed so differing source restrictions are
+    never silently merged merely because a bibliographic ID is shared.
     """
     if any(type(v) is not int or v <= 0 for v in (max_text_chars, max_payload_chars)):
         raise ValueError('prompt evidence budgets must be positive integers')
     if not isinstance(payload, dict) or payload.get('schema_version') != SCHEMA or not isinstance(payload.get('items'), list):
         raise ValueError('focused evidence payload required')
-    fields = ('evidence_id', 'source_id', 'source_url', 'title', 'authors', 'year', 'doi',
-              'text', 'snippet_type', 'source_material_type', 'snapshot_id', 'block_id',
-              'query_ids', 'goal_ids', 'source_mappings', 'eligible_as_evidence',
-              'missing_reasons', 'material_assets', 'content_depth', 'reading_policy',
-              'known_gaps', 'identity_check', 'relevance_status', 'semantic_truth_status',
-              'formula_provenance', 'fidelity_status')
+    sources, snapshots = {}, {}
+    def intern(table, value, prefix):
+        serial = json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        key = prefix + hashlib.sha256(serial.encode()).hexdigest()[:24]
+        if key in table and table[key] != value:
+            raise ValueError('prompt context hash collision')
+        table[key] = value
+        return key
+    source_fields = ('source_id', 'source_url', 'title', 'authors', 'year', 'doi')
+    snapshot_fields = ('snapshot_id', 'content_depth', 'reading_policy', 'known_gaps', 'identity_check')
+    fields = ('evidence_id', 'text', 'snippet_type', 'source_material_type', 'snapshot_id', 'block_id',
+              'query_ids', 'goal_ids', 'eligible_as_evidence', 'missing_reasons', 'material_assets',
+              'relevance_status', 'semantic_truth_status', 'formula_provenance', 'fidelity_status')
     items = []
     for original in payload['items']:
         if not isinstance(original, dict) or not isinstance(original.get('text'), str):
             raise ValueError('every prompt evidence item requires string text')
         item = {key: deepcopy(original[key]) for key in fields if key in original}
+        source = {k: deepcopy(original[k]) for k in source_fields if k in original}
+        item['source_ref'] = intern(sources, source, 'source_')
+        if original.get('snapshot_id'):
+            context = {k: deepcopy(original[k]) for k in snapshot_fields if k in original}
+            policy = context.get('reading_policy', {})
+            # Identical gaps need appear only once; nonidentical lists remain intact.
+            if policy.get('known_gaps') == context.get('known_gaps'):
+                policy.pop('known_gaps', None)
+            documents = []
+            for mapping in original.get('source_mappings', []):
+                native_docs = [mapping.get('source_document')]
+                hashes = mapping.get('source_hashes', [])
+                if isinstance(hashes, list):
+                    native_docs.extend(d for d in hashes if isinstance(d, dict) and d.get('role') in {'pdf', 'wire_bytes'})
+                for doc in native_docs:
+                    if not isinstance(doc, dict):
+                        continue
+                    doc = {k: deepcopy(doc[k]) for k in ('source_document_id', 'raw_sha256',
+                           'role', 'format', 'source_uri', 'legal_use_status') if k in doc}
+                    if doc not in documents:
+                        documents.append(doc)
+            gaps = context.get('known_gaps', [])
+            grouped, ordinary = {}, []
+            for gap in gaps:
+                if isinstance(gap, dict) and gap.get('asset_id'):
+                    base = {k: deepcopy(v) for k, v in gap.items() if k != 'asset_id'}
+                    key = json.dumps(base, ensure_ascii=False, sort_keys=True)
+                    grouped.setdefault(key, {'gap': base, 'asset_ids': []})['asset_ids'].append(gap['asset_id'])
+                else:
+                    ordinary.append(deepcopy(gap))
+            if grouped:
+                context['known_gaps'] = ordinary
+                context['asset_gap_groups'] = list(grouped.values())
+            context['source_documents'] = documents
+            item['snapshot_ref'] = intern(snapshots, context, 'snapshot_')
+        mappings = []
+        for original_mapping in original.get('source_mappings', []):
+            mapping = {k: deepcopy(v) for k, v in original_mapping.items()
+                       if k not in ('snapshot_path', 'source_hashes', 'source_document', 'locator')}
+            if isinstance(original_mapping.get('source_hashes'), dict):
+                mapping['source_hashes'] = deepcopy(original_mapping['source_hashes'])
+            # Native block locator below is authoritative. S2 has no material block.
+            if 'material_block' not in original and 'locator' in original_mapping:
+                mapping['locator'] = _prompt_locator(original_mapping['locator'])
+            if mapping not in mappings:
+                mappings.append(mapping)
+        item['source_mappings'] = mappings
         if 'material_block' in original:
-            # The exact selected quotation is already under text; alternative
-            # normalized/raw renderings remain available in the source archive.
             item['material_block'] = {key: deepcopy(value)
                 for key, value in original['material_block'].items()
                 if key not in ('text_raw', 'text_normalized')}
+            if 'locator' in item['material_block']:
+                item['material_block']['locator'] = _prompt_locator(item['material_block']['locator'])
         items.append(item)
-    view = {'schema_version': SCHEMA, 'items': items}
+    view = {'schema_version': SCHEMA, 'prompt_view_version': 2,
+            'sources': sources, 'snapshots': snapshots, 'items': items}
     if (sum(len(item['text']) for item in items) > max_text_chars or
             len(json.dumps(view, ensure_ascii=False, allow_nan=False)) > max_payload_chars):
         raise ValueError('prompt evidence exceeds budget; provide an explicit smaller block selection')

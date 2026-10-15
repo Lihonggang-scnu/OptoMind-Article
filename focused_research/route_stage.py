@@ -48,7 +48,7 @@ class _RoutePlanner:
             raise ValueError('route stage model-call limit exceeded')
         self.calls += 1
         prompt = {**prompt, 'user_payload': {**prompt['user_payload'],
-            'route_count_request': 'Aim for 2–3 distinct testable routes from external_evidence, model_knowledge or hybrid bases; return at most 3. This is a soft target: return fewer or none when useful testable hypotheses are insufficient. Empty retrieval still permits model_knowledge routes with explicit unverified physical reasoning and no citations. Keep each route compact: a few explicit thickness variables, one baseline and one single-variable-change candidate. Never fabricate evidence or duplicate a route just to meet the count.'}}
+            'route_count_request': 'Aim for 2–3 distinct testable routes from external_evidence, model_knowledge or hybrid bases; return at most 3. This is a soft target: return fewer or none when useful testable hypotheses are insufficient. Empty retrieval still permits model_knowledge routes with explicit unverified physical reasoning and no citations. Keep each route compact: a few explicit thickness variables, one baseline and one candidate with a small, physically motivated set of explicit changed thickness variables (coupled changes are allowed). Distinguish routes by their executable family or spatial intervention role, not by source labels or renamed instances; same-family parameter variants are allowed but are not automatically independent mechanisms. Never fabricate evidence or duplicate a route just to meet the count.'}}
         return self.planner._call_query_plan_model(prompt)
 
 
@@ -64,6 +64,7 @@ def main(argv=None, *, planner=None):
     args = parser.parse_args(argv)
     # No vendor client or credentials are constructed, even for injected generation.
     import research_routes as rr
+    from route_quality import quality_report
     try:
         if args.stage == 'generate' and planner is None:
             raise ValueError('generate requires an explicitly injected original audited local planner; no bare paid fallback is available')
@@ -112,6 +113,8 @@ def main(argv=None, *, planner=None):
                 state = 'instances_prepared'
             else:
                 state = 'contract_validated'
+        if args.stage != 'prompt' and routes:
+            save(args.output / 'route_quality_report.json', quality_report(routes))
         save(args.output / 'input_identity.json', identity)
         save(args.output / 'summary.json', {'status': state, 'live_model_called': called,
             'model_call_attempts': injected.calls if args.stage == 'generate' else 0,

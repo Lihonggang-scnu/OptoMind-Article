@@ -194,3 +194,45 @@ def test_local_formula_enhancement_and_inherited_associations_reach_prompt():
     assert view['items'][-2]['text'] == r'\frac{A}{B}'
     assert view['items'][-2]['formula_provenance']['model']['name'] == 'CodeFormulaV2'
     assert view['items'][-2]['fidelity_status'] == 'local_transcription_candidate_not_scientific_verification'
+
+
+def test_prompt_shared_context_compacts_audit_without_losing_science():
+    import json
+    from material_evidence import prompt_evidence_view
+    e = export()
+    e['material']['manifest']['identity_check'] = {'status': 'input_attributed', 'conflicts': []}
+    gaps = [{'kind': 'asset', 'status': 'caption_only', 'reason': 'image unavailable', 'asset_id': str(n)} for n in range(40)]
+    e['material']['manifest']['known_gaps'] = gaps
+    e['material']['reading_policy'] = {'eligible': True, 'identity_status': 'input_attributed',
+        'known_gaps': deepcopy(gaps), 'usage_limits': {'prohibited': ['certify_semantic_truth_from_a_quote']}}
+    e['material']['manifest']['source_documents'].append({'source_document_id': 'audit',
+        'role': 'parser_run', 'provenance': {'irrelevant_runtime_dump': 'x' * 80000}})
+    payload = import_material_export(e)
+    before = deepcopy(payload)
+    view = prompt_evidence_view(payload)
+    assert payload == before
+    assert len(view['sources']) == len(view['snapshots']) == 1
+    assert [(i['evidence_id'], i['text']) for i in view['items']] == [(i['evidence_id'], i['text']) for i in payload['items']]
+    context = view['snapshots'][view['items'][0]['snapshot_ref']]
+    assert context['identity_check']['status'] == 'input_attributed'
+    assert context['reading_policy']['usage_limits'] == e['material']['reading_policy']['usage_limits']
+    expanded = [{**group['gap'], 'asset_id': aid} for group in context['asset_gap_groups'] for aid in group['asset_ids']]
+    assert expanded == gaps
+    assert context['source_documents'][0]['raw_sha256'] == 'a' * 64
+    assert view['items'][0]['material_assets'] == payload['items'][0]['material_assets']
+    assert view['items'][1]['material_block']['normalization_warnings'] == ['unenhanced']
+    serialized = json.dumps(view)
+    assert 'irrelevant_runtime_dump' not in serialized and '/prepared/' not in serialized
+    assert len(serialized) < 12000
+
+
+def test_prompt_preserves_multipage_locations_and_distinct_restrictions():
+    from material_evidence import prompt_evidence_view
+    payload = import_material_export(export())
+    locations = [{'page': 1, 'charspan': [0, 3]}, {'page': 2, 'charspan': [3, 8]}]
+    payload['items'][0]['material_block']['locator']['locations'] = locations
+    payload['items'][1]['reading_policy']['eligible'] = False
+    view = prompt_evidence_view(payload)
+    assert view['items'][0]['material_block']['locator']['locations'] == locations
+    assert len(view['snapshots']) == 2
+    assert view['snapshots'][view['items'][1]['snapshot_ref']]['reading_policy']['eligible'] is False

@@ -113,9 +113,50 @@ def discover(queries, providers, root, limit, resume):
     return candidates,audit
 
 
+def eligibility_reason(result, snapshot):
+    """Native body eligibility, separate from independent identity verification.
+
+    Review's aggregate identity conflicts include rejected search candidates.
+    Only its pinned CORE route has the narrowly audited exception below; actual
+    selected snapshot conflicts always block, including synthetic attribution.
+    """
+    if result.get('parser') not in {'jats', 'tei', 'docling', 'core_text_jats'}:
+        return 'unsupported_parser'
+    policy = snapshot.reading_policy()
+    if policy.get('eligible') is False:
+        return 'policy_ineligible'
+    if policy.get('material_scope') not in {'fulltext', 'structured_partial'}:
+        return 'insufficient_material_scope'
+    check = getattr(snapshot, 'manifest', {}).get('identity_check', {})
+    conflict_states = {'conflict', 'mismatch', 'identity_mismatch'}
+    if (check.get('conflicts') or check.get('status') in conflict_states
+            or policy.get('identity_status') in conflict_states):
+        return 'selected_source_identity_conflict'
+    identity = result.get('identity') or {}
+    if identity.get('status') in conflict_states or identity.get('conflicts'):
+        conflicts = identity.get('conflicts') or []
+        # In pinned Review, these entries are appended only when consider()
+        # rejects a candidate; core_fulltext is separately match_identity-gated.
+        rejected_other_candidates = bool(conflicts) and all(
+            isinstance(c, str) and c.split(':', 1)[0] in {'openalex', 'crossref', 'arxiv', 'semantic_scholar'}
+            and ':' in c for c in conflicts)
+        core_bound = (result.get('parser') == 'core_text_jats'
+            and result.get('selected_route') == 'core_fulltext'
+            and result.get('snapshot_id') == getattr(snapshot, 'snapshot_id', None)
+            and policy.get('identity_status') == 'input_attributed'
+            and check.get('status') == 'input_attributed' and check.get('conflicts') == []
+            and any(a.get('provider') == 'core' and a.get('status') == 'matched'
+                    for a in identity.get('provider_audit', []))
+            and any(a.get('route') == 'core_fulltext' and a.get('source') == 'core'
+                    and a.get('status') == 'usable' and a.get('content_kind') == 'core_text_jats'
+                    for a in result.get('attempts', [])))
+        if not (core_bound and rejected_other_candidates):
+            return 'unresolved_acquisition_identity_conflict'
+    return ''
+
+
 def eligible(result, snapshot):
-    # A fallback published snapshot is not equivalent to full-text acquisition.
-    return result.get('parser') in {'jats','tei','docling'} and snapshot.reading_policy().get('material_scope') in {'fulltext','structured_partial'}
+    return not eligibility_reason(result, snapshot)
 
 
 def enrich_existing(request):
@@ -173,9 +214,125 @@ def enrich_existing(request):
         'discovery_calls':0,'basic_parse_calls':0}
 
 
+def _canonical_identity(value):
+    value = str(value or '').strip().casefold()
+    for prefix in ('https://doi.org/', 'http://doi.org/', 'http://dx.doi.org/', 'https://dx.doi.org/', 'doi:'):
+        if value.startswith(prefix):
+            return value[len(prefix):]
+    return value
+
+
+def _reexport_identity_bound(snapshot, record, acquisition):
+    """Bind loaded native identity, not just a supplied snapshot ID string."""
+    manifest = snapshot.manifest
+    native = _canonical_identity(manifest.get('canonical_paper_id'))
+    expected = [record.get('canonical_paper_id'), (acquisition.get('identity') or {}).get('canonical_paper_id')]
+    expected = [_canonical_identity(v) for v in expected if v]
+    if not native or not expected or any(v != native for v in expected):
+        return False
+    # Missing optional DOI is permissible; an explicit contradiction is not.
+    check = manifest.get('identity_check') or {}
+    native_doi = _canonical_identity((check.get('provided') or {}).get('doi'))
+    for identity in (record, acquisition.get('identity') or {}):
+        doi = _canonical_identity(identity.get('doi'))
+        if doi and native_doi and doi != native_doi:
+            return False
+    return True
+
+
+def reexport_existing(request):
+    """Offline native re-verification. Never instantiate an acquirer or parser."""
+    from optomind_research.runtime.upgrade3.local_materials import PreparedSnapshotProvider
+    if any(request.get(k) for k in ('enrich_result', 'local_formula_config', 'formula_selected_ids',
+                                    'records', 'queries', 'providers', 'docling_python', 'docling_config', 'docling_batch_index')):
+        raise ValueError('offline_reexport_mixed_with_active_phase')
+    source_path = Path(request['reexport_result']).resolve()
+    if hashlib.sha256(source_path.read_bytes()).hexdigest() != request.get('reexport_sha256'):
+        raise ValueError('offline_reexport_source_changed')
+    source = read(source_path)
+    if source.get('schema_version') != 'focused_fulltext_result_v1' or source.get('review_commit') != PIN:
+        raise ValueError('offline_reexport_incompatible_source')
+    old_rows = source.get('records', [])
+    if not isinstance(old_rows, list) or not 1 <= len(old_rows) <= 5:
+        raise ValueError('offline_reexport_requires_one_to_five_records')
+    if source.get('selected_count', len(old_rows)) != len(old_rows):
+        raise ValueError('offline_reexport_incomplete_record_inventory')
+    root = Path(request['output_root']).resolve()
+    if root == source_path.parent or root in source_path.parent.parents or source_path.parent in root.parents:
+        raise ValueError('offline_reexport_requires_new_output')
+    # Validate every source path before exporting the first row, including when
+    # called directly rather than through the wrapper's read-only preflight.
+    for old in old_rows:
+        source_paths = [(old.get(k) or {}).get('snapshot_path') for k in ('acquisition', 'docling_acquisition')]
+        if old.get('export_path'):
+            source_paths.append(read(old['export_path']).get('snapshot_path'))
+        for source_path_value in source_paths:
+            if not source_path_value:
+                continue
+            source_root = Path(source_path_value).resolve()
+            if root == source_root or root in source_root.parents or source_root in root.parents:
+                raise ValueError('offline_reexport_output_overlaps_snapshot')
+    if root.exists():
+        allowed = {'FULLTEXT_REQUEST.json', 'worker.stdout.log', 'worker.stderr.log'}
+        if not root.is_dir() or any(p.name not in allowed or not p.is_file() for p in root.iterdir()):
+            raise ValueError('offline_reexport_output_contains_existing_artifacts')
+        request_file = root / 'FULLTEXT_REQUEST.json'
+        if any(root.iterdir()) and (not request_file.is_file() or read(request_file) != request):
+            raise ValueError('offline_reexport_output_metadata_not_current_request')
+    exports, rows = [], []
+    for old in old_rows:
+        row = {'record': old.get('record', {}), 'status': 'blocked_missing_snapshot'}
+        rows.append(row)
+        try:
+            # The final Docling result supersedes any intermediate fitz acquisition.
+            acquisition = old.get('docling_acquisition') or old.get('acquisition') or {}
+            row['acquisition'] = acquisition
+            snapshot_path = acquisition.get('snapshot_path')
+            if old.get('export_path'):
+                envelope = read(old['export_path'])
+                if envelope.get('review_commit') != PIN or envelope.get('source_record') != old.get('record'):
+                    raise ValueError('existing_export_source_binding_mismatch')
+                snapshot_path = envelope.get('snapshot_path')
+                expected = (envelope.get('material') or {}).get('snapshot_id')
+                if expected != acquisition.get('snapshot_id'):
+                    raise ValueError('existing_export_acquisition_binding_mismatch')
+            if not snapshot_path:
+                continue
+            if (root == Path(snapshot_path).resolve() or root in Path(snapshot_path).resolve().parents
+                    or Path(snapshot_path).resolve() in root.parents):
+                raise ValueError('offline_reexport_output_overlaps_snapshot')
+            snapshot = PreparedSnapshotProvider(snapshot_path).load()
+            if snapshot.snapshot_id != acquisition.get('snapshot_id'):
+                raise ValueError('existing_snapshot_acquisition_binding_mismatch')
+            if not _reexport_identity_bound(snapshot, row['record'], acquisition):
+                raise ValueError('existing_snapshot_paper_identity_binding_mismatch')
+            reason = eligibility_reason(acquisition, snapshot)
+            if reason:
+                row.update(status='blocked_' + reason, eligibility_reason=reason)
+                continue
+            envelope = {'schema_version': 'review_material_export_v1', 'verified': True,
+                'review_commit': PIN, 'snapshot_path': str(snapshot.root),
+                'material': snapshot.as_material(), 'source_record': row['record']}
+            target = root / 'exports' / (snapshot.snapshot_id + '.json')
+            save(target, envelope)
+            exports.append(str(target))
+            row.update(status='verified_material', export_path=str(target), snapshot_id=snapshot.snapshot_id,
+                       formula_status='not_run_offline_reexport')
+        except Exception as exc:
+            row.update(status='blocked_snapshot_reverification', error=str(exc) if isinstance(exc, ValueError) else type(exc).__name__)
+    return {'schema_version': 'focused_fulltext_result_v1', 'review_commit': PIN,
+        'phase': 'offline_reexport', 'status': 'complete' if len(exports) == len(rows) else ('partial' if exports else 'empty'),
+        'exports': exports, 'records': rows, 'selected_count': len(rows),
+        'source_result': str(source_path), 'source_result_sha256': request['reexport_sha256'],
+        'paid_model_calls': 0, 'discovery_calls': 0, 'acquisition_calls': 0,
+        'basic_parse_calls': 0, 'formula_calls': 0, 'firecrawl_enabled': False}
+
+
 def execute(request):
     review=verify_review(request['review_root'],request.get('review_commit',PIN))
     sys.path.insert(0,str(review))
+    if request.get('reexport_result'):
+        return reexport_existing(request)
     if request.get('enrich_result'):
         return enrich_existing(request)
     from optomind_research.runtime.upgrade3.material_acquisition import MaterialAcquirer, AcquisitionConfig
@@ -247,6 +404,10 @@ def execute(request):
                 if pdf_path or (snapshot is not None and eligible(acquisition,snapshot)):
                     save(receipt,{'acquisition':acquisition,'local_pdf':pdf_path,'pdf_sha256':pdf_sha})
             row={'record':record,'acquisition':acquisition,'status':'no_verified_body'}; rows.append(row)
+            if snapshot is not None:
+                reason = eligibility_reason(acquisition, snapshot)
+                if reason:
+                    row.update(status='blocked_' + reason, eligibility_reason=reason)
             if snapshot is not None and eligible(acquisition,snapshot):
                 prepared[index]=(snapshot,record,row)
             elif pdf_path:

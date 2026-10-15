@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 import json
 import sys
+import subprocess
 import time
 from pathlib import Path
 from types import SimpleNamespace
@@ -40,6 +41,36 @@ def write_json(path, value):
     temporary = path.with_suffix(path.suffix + '.tmp')
     temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     temporary.replace(path)
+
+
+def runtime_source_provenance(source_file=None):
+    """Report this runner's checkout, not the vendored Review origin revision.
+
+    Detached exports may have no Git metadata. In that case commit/dirty are
+    unknown, while the actual runner bytes remain fingerprinted. Never borrow a
+    containing unrelated repository's HEAD or guess a release commit.
+    """
+    source = Path(source_file or __file__).resolve()
+    result = {'source_commit': None, 'source_worktree_dirty': None,
+              'runner_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+              'vendor_review_origin_commit': '775329cee02d4dacd108bf41969b1d21d26750e0'}
+    def git(*args):
+        return subprocess.run(['git', '-C', str(source.parent), *args],
+            check=True, capture_output=True, text=True, timeout=3).stdout.strip()
+    try:
+        top = Path(git('rev-parse', '--show-toplevel')).resolve()
+        source.relative_to(top)
+        git('ls-files', '--error-unmatch', '--', source.name)
+        commit = git('rev-parse', 'HEAD')
+        if len(commit) != 40 or any(c not in '0123456789abcdef' for c in commit):
+            return result
+        # No pathspec: report the whole checkout, including nonignored untracked
+        # modules, rather than silently excluding configuration outside focused/.
+        dirty = git('status', '--porcelain', '--untracked-files=normal')
+        result.update(source_commit=commit, source_worktree_dirty=bool(dirty))
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    return result
 
 
 def validate_limits(limit, seconds):
@@ -416,7 +447,7 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=10, seconds=300):
             'rate_limit_exhausted_queries': sum(c.get('retry_exhausted', False) for c in adapter.calls),
             'task_sheet_contract': plan.get('task_sheet', {}).get('schema_version'),
             'relevance_validated': False, 'constraints_evaluated': False,
-            'source_commit': '775329cee02d4dacd108bf41969b1d21d26750e0'}
+            **runtime_source_provenance()}
         write_json(output / 'summary.json', summary)
         return summary
     finally:

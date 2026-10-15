@@ -158,7 +158,8 @@ def test_generation_one_repair_preserves_both_raw_responses():
     assert result['rounds'][0]['effective_response'] is None
     assert result['rounds'][0]['error']
     assert result['rounds'][1]['effective_response'] == routes
-    assert planner.calls[1]['user_payload']['evidence_items'] == fixture()[2]
+    assert planner.calls[1]['user_payload']['evidence_items'] == rr.prompt_evidence_view(fixture()[2])
+    assert planner.calls[1]['user_payload']['evidence_items'] == planner.calls[0]['user_payload']['evidence_items']
 
 
 def test_generation_repair_limit_and_invalid_preservation():
@@ -196,7 +197,8 @@ def test_build_prompt_is_local_and_includes_exact_inputs():
     _, sheet, evidence, constraints = fixture()
     prompt = rr.build_prompt(sheet, evidence, design_constraints=constraints)
     assert prompt['user_payload']['task_sheet'] == sheet
-    assert prompt['user_payload']['evidence_items'] == evidence
+    assert prompt['user_payload']['evidence_items'] == rr.prompt_evidence_view(evidence)
+    assert [item['text'] for item in prompt['user_payload']['evidence_items']['items']] == [item['text'] for item in evidence['items']]
     assert 'not computed designs' in prompt['system_prompt']
     assert len(prompt['prompt_hash']) == 64
 

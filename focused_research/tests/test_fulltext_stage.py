@@ -145,3 +145,143 @@ def test_followon_formula_enrichment_preserves_original_without_retrieval(tmp_pa
     enhanced=json.loads(Path(outcome['exports'][0]).read_text())
     assert enhanced['local_formula_materials']['regions'][0]['latex']=='T=1'
     assert enhanced['material']==snapshot.as_material()
+
+
+def core_snapshot_and_result():
+    snapshot = SimpleNamespace(snapshot_id='S1', manifest={'identity_check': {'status': 'input_attributed', 'conflicts': []}},
+        reading_policy=lambda: {'material_scope': 'fulltext', 'eligible': True, 'identity_status': 'input_attributed'})
+    result = {'parser': 'core_text_jats', 'snapshot_id': 'S1', 'selected_route': 'core_fulltext',
+        'identity': {'status': 'conflict', 'conflicts': ['openalex:title', 'crossref:year'],
+                     'provider_audit': [{'provider': 'core', 'status': 'matched'}]},
+        'attempts': [{'route': 'core_fulltext', 'source': 'core', 'status': 'usable', 'content_kind': 'core_text_jats'}]}
+    return snapshot, result
+
+
+def test_core_rejected_candidate_history_is_not_selected_source_conflict():
+    snapshot, result = core_snapshot_and_result()
+    assert w.eligible(result, snapshot)
+    assert snapshot.manifest['identity_check']['status'] == 'input_attributed'
+    assert result['identity']['status'] == 'conflict'  # provenance is never rewritten
+    result['identity'] = {'status': 'provisional'}
+    assert w.eligible(result, snapshot)
+
+
+@pytest.mark.parametrize('mutation', ['selected_conflict', 'core_conflict', 'unbound', 'unmatched', 'no_attempt', 'policy_false'])
+def test_core_conflicts_and_ineligibility_fail_closed(mutation):
+    snapshot, result = core_snapshot_and_result()
+    if mutation == 'selected_conflict': snapshot.manifest['identity_check']['conflicts'] = [{'field': 'doi'}]
+    elif mutation == 'core_conflict': result['identity']['conflicts'] = ['core:title']
+    elif mutation == 'unbound': result['snapshot_id'] = 'another'
+    elif mutation == 'unmatched': result['identity']['provider_audit'] = []
+    elif mutation == 'no_attempt': result['attempts'] = []
+    elif mutation == 'policy_false': snapshot.reading_policy = lambda: {'material_scope': 'fulltext', 'eligible': False}
+    assert not w.eligible(result, snapshot)
+    assert w.eligibility_reason(result, snapshot)
+
+
+def test_offline_reexport_reverifies_final_docling_and_core_without_acquisition(tmp_path, monkeypatch):
+    import sys, hashlib
+    from types import ModuleType
+    source = tmp_path / 'old' / 'FULLTEXT_RESULT.json'; source.parent.mkdir()
+    snapshot, core = core_snapshot_and_result()
+    snapshot.root = tmp_path / 'core_snapshot'
+    snapshot.manifest['canonical_paper_id'] = 'core:1'
+    snapshot.as_material = lambda: {'snapshot_id': 'S1', 'manifest': snapshot.manifest, 'blocks': []}
+    core['snapshot_path'] = str(snapshot.root)
+    doc = SimpleNamespace(snapshot_id='D1', root=tmp_path/'doc_snapshot', manifest={'canonical_paper_id': 'paper:doc', 'identity_check': {'status': 'provisional'}},
+        reading_policy=lambda: {'material_scope': 'fulltext', 'eligible': True},
+        as_material=lambda: {'snapshot_id': 'D1', 'manifest': {}, 'blocks': []})
+    export_path = tmp_path/'old'/'doc_export.json'
+    record = {'canonical_paper_id': 'paper:doc'}
+    export_path.write_text(json.dumps({'review_commit': w.PIN, 'source_record': record,
+        'snapshot_path': str(doc.root), 'material': {'snapshot_id': 'D1'}, 'verified': False}))
+    payload = {'schema_version': 'focused_fulltext_result_v1', 'review_commit': w.PIN, 'records': [
+        {'record': {'canonical_paper_id': 'core:1'}, 'acquisition': core},
+        {'record': record, 'export_path': str(export_path), 'acquisition': {'parser': 'fitz', 'snapshot_path': 'DO_NOT_READ'},
+         'docling_acquisition': {'parser': 'docling', 'snapshot_id': 'D1', 'snapshot_path': str(doc.root)}}]}
+    source.write_text(json.dumps(payload)); original = source.read_bytes()
+    loaded = []
+    def provider(path):
+        loaded.append(str(path))
+        return SimpleNamespace(load=lambda: {str(snapshot.root): snapshot, str(doc.root): doc}[str(path)])
+    module = ModuleType('local_materials'); module.PreparedSnapshotProvider = provider
+    monkeypatch.setitem(sys.modules, 'optomind_research.runtime.upgrade3.local_materials', module)
+    monkeypatch.setattr(w, 'verify_review', lambda *a: tmp_path)
+    monkeypatch.setattr(w, 'provider_instances', lambda *a: pytest.fail('offline route invoked providers'))
+    request = {'review_root': str(tmp_path), 'reexport_result': str(source), 'output_root': str(tmp_path/'new'),
+        'reexport_sha256': hashlib.sha256(original).hexdigest()}
+    result = w.execute(request)
+    assert result['status'] == 'complete' and len(result['exports']) == 2
+    assert result['acquisition_calls'] == result['basic_parse_calls'] == result['paid_model_calls'] == 0
+    assert loaded == [str(snapshot.root), str(doc.root)]
+    assert source.read_bytes() == original
+    assert json.loads(Path(result['exports'][0]).read_text())['material']['manifest']['identity_check']['status'] == 'input_attributed'
+    with pytest.raises(ValueError, match='mixed'):
+        w.execute({**request, 'enrich_result': 'old'})
+    with pytest.raises(ValueError, match='source_changed'):
+        w.execute({**request, 'reexport_sha256': 'bad'})
+    payload['records'][1]['docling_acquisition']['snapshot_id'] = 'wrong'
+    source.write_text(json.dumps(payload)); request['reexport_sha256'] = hashlib.sha256(source.read_bytes()).hexdigest()
+    request['output_root'] = str(tmp_path/'another_new')
+    result = w.execute(request)
+    assert result['status'] == 'partial' and len(result['exports']) == 1
+    assert result['records'][1]['status'] == 'blocked_snapshot_reverification'
+
+
+def test_reexport_wrapper_rejects_mixed_modes_and_same_output(tmp_path):
+    for kwargs in ({'enrich_result': 'x'}, {'docling_config': 'x'}, {'local_formula_config': 'x'}):
+        with pytest.raises(ValueError, match='cannot mix'):
+            f.run_fulltext_stage([], [], tmp_path/'new', review_root=tmp_path, review_python='python', reexport_result='old', **kwargs)
+    with pytest.raises(ValueError, match='new output'):
+        f.run_fulltext_stage([], [], tmp_path, review_root=tmp_path, review_python='python', reexport_result=tmp_path/'FULLTEXT_RESULT.json')
+
+
+@pytest.mark.parametrize('destination', ['source_child', 'source_ancestor', 'snapshot_child', 'export_snapshot_child', 'occupied'])
+def test_reexport_preflight_never_writes_inside_old_materials(tmp_path, destination):
+    source = tmp_path/'old'/'FULLTEXT_RESULT.json'; source.parent.mkdir()
+    snap = tmp_path/'external_snapshot'; snap.mkdir()
+    exported_snap = tmp_path/'exported_snapshot'; exported_snap.mkdir()
+    old_export = source.parent/'export.json'
+    old_export.write_text(json.dumps({'snapshot_path': str(exported_snap)}))
+    source.write_text(json.dumps({'records': [{'acquisition': {'snapshot_path': str(snap)}, 'export_path': str(old_export)}]}))
+    output = {'source_child': source.parent/'new', 'source_ancestor': tmp_path,
+              'snapshot_child': snap/'new', 'export_snapshot_child': exported_snap/'new',
+              'occupied': tmp_path/'occupied'}[destination]
+    if destination == 'occupied':
+        output.mkdir(); (output/'FULLTEXT_RESULT.json').write_text('old result')
+    before = {str(p): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    with pytest.raises(ValueError, match='output'):
+        f.run_fulltext_stage([], [], output, review_root=tmp_path, review_python='python', reexport_result=source)
+    assert not (output/'FULLTEXT_REQUEST.json').exists()
+    assert before == {str(p): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
+    if destination not in {'source_ancestor', 'occupied'}:
+        assert not output.exists()
+
+
+def test_reexport_native_paper_identity_cannot_be_relabelled():
+    snapshot = SimpleNamespace(manifest={'canonical_paper_id': 'paper:REAL', 'identity_check': {}})
+    assert not w._reexport_identity_bound(snapshot, {'canonical_paper_id': 'paper:WRONG'}, {})
+    assert not w._reexport_identity_bound(snapshot, {'canonical_paper_id': 'paper:REAL'}, {'identity': {'canonical_paper_id': 'paper:WRONG'}})
+    assert w._reexport_identity_bound(snapshot, {'canonical_paper_id': 'paper:REAL'}, {})
+    snapshot.manifest['canonical_paper_id'] = 'https://doi.org/10.123/example'
+    assert w._reexport_identity_bound(snapshot, {'canonical_paper_id': 'doi:10.123/EXAMPLE'}, {})
+    snapshot.manifest['identity_check'] = {'provided': {'doi': '10.123/example'}}
+    assert not w._reexport_identity_bound(snapshot, {'canonical_paper_id': '10.123/example', 'doi': '10.123/wrong'}, {})
+
+
+def test_direct_reexport_rejects_existing_output_before_overwrite(tmp_path, monkeypatch):
+    import sys, hashlib
+    from types import ModuleType
+    module = ModuleType('local_materials')
+    module.PreparedSnapshotProvider = lambda *a: pytest.fail('must reject before load')
+    monkeypatch.setitem(sys.modules, 'optomind_research.runtime.upgrade3.local_materials', module)
+    source = tmp_path/'old'/'FULLTEXT_RESULT.json'; source.parent.mkdir()
+    source.write_text(json.dumps({'schema_version': 'focused_fulltext_result_v1', 'review_commit': w.PIN,
+                                 'records': [{'record': {}, 'acquisition': {}}]}))
+    output = tmp_path/'new'; output.mkdir()
+    (output/'exports').mkdir(); preserved = output/'exports'/'old.json'; preserved.write_text('original')
+    request = {'reexport_result': str(source), 'output_root': str(output),
+               'reexport_sha256': hashlib.sha256(source.read_bytes()).hexdigest()}
+    with pytest.raises(ValueError, match='existing_artifacts'):
+        w.reexport_existing(request)
+    assert preserved.read_text() == 'original'

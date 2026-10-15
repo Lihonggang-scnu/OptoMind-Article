@@ -136,3 +136,21 @@ def test_mixed_readiness_keeps_ready_instances(tmp_path):
     prepared = read(tmp_path, 'prepared_instances.json')
     assert len(prepared) == 2
     assert {item['route_id'] for item in prepared} == {'R1'}
+
+
+def test_quality_sidecar_and_contract_repair_audit(tmp_path):
+    broken = json.loads(response())
+    broken['routes'][0]['instances'][1]['parameters_nm'] = copy.deepcopy(broken['routes'][0]['instances'][0]['parameters_nm'])
+    planner = AuditedPlannerFixture([json.dumps(broken), response()])
+    assert route_stage.main(args(tmp_path), planner=planner) == 0
+    outcome = read(tmp_path, 'generation_outcome.json')
+    assert 'actual changed variables are empty' in outcome['rounds'][0]['error']
+    audit = outcome['rounds'][1]['repair_audit']
+    assert audit['classification'] == 'contract_repair_not_format_only'
+    assert audit['parsed_contract_changed']
+    assert audit['previous_contract_parseable']
+    quality = read(tmp_path, 'route_quality_report.json')
+    assert quality['scientific_review']['status'] == 'not_performed'
+    assert quality['routes_removed'] == []
+    assert 'coupled changes are allowed' in planner.calls[0]['user_payload']['route_count_request']
+    assert 'shared by s and p' in planner.calls[0]['system_prompt']

@@ -15,9 +15,11 @@ from pathlib import Path
 try:
     from . import task_sheet as task_contract
     from .material_evidence import prompt_evidence_view
+    from .route_quality import contract_change_audit
 except ImportError:
     import task_sheet as task_contract
     from material_evidence import prompt_evidence_view
+    from route_quality import contract_change_audit
 
 SCHEMA = 'focused_research.research_routes.v2'
 LEGACY_SCHEMA = 'focused_research.research_routes.v1'
@@ -263,6 +265,8 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
             baseline = instances[expectation['baseline_instance_id']]['parameters_nm']
             candidate = instances[expectation['candidate_instance_id']]['parameters_nm']
             changed = {key for key in baseline if baseline[key] != candidate[key]}
+            if not changed:
+                _fail('expectation.changed_variables', 'actual changed variables are empty: baseline and candidate parameters are identical; instance names cannot establish an intervention')
             _refs(expectation['changed_variables'], changed, 'expectation.changed_variables', 1)
             if set(expectation['changed_variables']) != changed:
                 _fail('expectation.changed_variables', 'must identify all actual parameter changes')
@@ -359,6 +363,10 @@ def generate(task_sheet, evidence_items, planner, *, design_constraints, max_rep
         try:
             parsed = _extract_json_object(raw)
             record['raw_research_routes'] = copy.deepcopy(parsed)
+            if number > 1:
+                previous = outcome['rounds'][-2].get('raw_research_routes')
+                record['repair_audit'] = contract_change_audit(previous, parsed)
+                record['repair_audit']['previous_contract_parseable'] = previous is not None
             validate(parsed, task_sheet, evidence_items, design_constraints=design_constraints)
             record.update(ok=True, effective_response=copy.deepcopy(parsed))
             status = 'ok' if parsed['routes'] and all(r['readiness'] == 'ready' for r in parsed['routes']) else 'needs_revision'
@@ -368,7 +376,7 @@ def generate(task_sheet, evidence_items, planner, *, design_constraints, max_rep
             record.update(ok=False, error=str(exc))
             outcome['errors'] = [str(exc)]
             prompt = {**prompt, 'user_payload': {**original_payload, 'previous_response': raw,
-                'validation_error': str(exc), 'instruction': 'Repair the full contract. Never invent evidence, task targets or executed results. Keep incomplete routes needs_revision.'}}
+                'validation_error': str(exc), 'instruction': 'Repair the full contract with the smallest justified changes. This is a contract repair, not necessarily a format-only repair: preserve valid scientific content, and do not invent a new physical explanation merely to satisfy syntax. Keep claim, actual intervention and expectation consistent. Never invent evidence, task targets or executed results. Keep incomplete routes needs_revision.'}}
     outcome['revision_rounds'] = max(0, len(outcome['rounds']) - 1)
     outcome['first_hit'] = outcome['status'] == 'ok' and len(outcome['rounds']) == 1
     return outcome

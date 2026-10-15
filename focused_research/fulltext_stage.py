@@ -17,16 +17,42 @@ REVIEW_COMMIT = 'd2deb4dbe18b23837d949822ad731afbaba9414b'
 HELPER = Path(__file__).with_name('review_fulltext_worker.py')
 
 
+
+def validate_reexport_output(source_path, output_root):
+    """Read-only preflight before any mkdir/request/log write."""
+    source_path, root = Path(source_path).resolve(), Path(output_root).resolve()
+    def overlaps(path):
+        path = Path(path).resolve()
+        return root == path or root in path.parents or path in root.parents
+    if overlaps(source_path.parent):
+        raise ValueError('offline reexport requires a new output directory outside source material directories')
+    source = json.loads(source_path.read_text(encoding='utf-8'))
+    for row in source.get('records', []):
+        paths = [row.get(k, {}).get('snapshot_path') for k in ('acquisition', 'docling_acquisition')]
+        if row.get('export_path'):
+            envelope = json.loads(Path(row['export_path']).read_text(encoding='utf-8'))
+            paths.append(envelope.get('snapshot_path'))
+        if any(path and overlaps(path) for path in paths):
+            raise ValueError('offline reexport output overlaps source snapshot directory')
+    if root.exists() and (not root.is_dir() or any(root.iterdir())):
+        raise ValueError('offline reexport output must be new or empty')
+
+
 def run_fulltext_stage(records, queries, output_root, *, review_root, review_python,
                        docling_python=None, docling_config=None, docling_batch_index=None,
                        providers=('openalex', 'unpaywall', 'core', 'crossref', 'arxiv'),
                        max_papers=5, deadline_seconds=180, local_formula_config=None,
-                       formula_selected_ids=(), resume=True, enrich_result=None):
+                       formula_selected_ids=(), resume=True, enrich_result=None, reexport_result=None):
     if not 1 <= int(max_papers) <= 5:
         raise ValueError('fulltext max_papers must be 1..5')
     if not 1 <= float(deadline_seconds) <= 1800:
         raise ValueError('deadline_seconds must be 1..1800')
+    if reexport_result and (enrich_result or local_formula_config or formula_selected_ids or records or queries
+                            or docling_python or docling_config or docling_batch_index):
+        raise ValueError('offline reexport cannot mix with discovery, parsing or enrichment')
     root = Path(output_root).resolve()
+    if reexport_result:
+        validate_reexport_output(reexport_result, root)
     root.mkdir(parents=True, exist_ok=True)
     request = dict(records=list(records), queries=list(queries), output_root=str(root),
         review_root=str(Path(review_root).resolve()), review_commit=REVIEW_COMMIT,
@@ -42,6 +68,9 @@ def run_fulltext_stage(records, queries, output_root, *, review_root, review_pyt
             raise ValueError('formula enrichment requires config and selected IDs')
         if root == Path(enrich_result).resolve().parent:
             raise ValueError('formula enrichment requires a new output directory')
+    if reexport_result:
+        source = Path(reexport_result).resolve()
+        request.update(reexport_result=str(source), reexport_sha256=hashlib.sha256(source.read_bytes()).hexdigest(), providers=[])
     request_path = root / 'FULLTEXT_REQUEST.json'
     identity = hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest()
     if request_path.is_file():
@@ -90,8 +119,15 @@ def enrich_selected_materials(result_path, output_root, *, review_root, review_p
         formula_selected_ids=formula_selected_ids,enrich_result=result_path)
 
 
+def reexport_materials(result_path, output_root, *, review_root, review_python):
+    """Reverify existing snapshots without providers, parsers or formula models."""
+    return run_fulltext_stage([], [], output_root, review_root=review_root,
+        review_python=review_python, providers=(), reexport_result=result_path)
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--reexport-result', type=Path, help='Offline reverify/re-export an existing FULLTEXT_RESULT.json')
     p.add_argument('--enrich-result', type=Path, help='Existing FULLTEXT_RESULT.json; selected formula-only phase')
     p.add_argument('--records', type=Path)
     p.add_argument('--queries', type=Path)
@@ -116,7 +152,7 @@ def main():
         review_python=a.review_python,docling_python=a.docling_python,docling_config=a.docling_config,
         docling_batch_index=a.docling_batch_index,providers=[x for x in a.providers.split(',') if x],
         max_papers=a.max_papers,deadline_seconds=a.deadline_seconds,
-        local_formula_config=a.local_formula_config,formula_selected_ids=a.formula_selected_id,resume=not a.no_resume,enrich_result=a.enrich_result)
+        local_formula_config=a.local_formula_config,formula_selected_ids=a.formula_selected_id,resume=not a.no_resume,enrich_result=a.enrich_result,reexport_result=a.reexport_result)
     print(json.dumps(result,ensure_ascii=False))
     return 0 if result['status'] != 'blocked' else 2
 
