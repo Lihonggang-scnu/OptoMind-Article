@@ -140,17 +140,18 @@ def test_mixed_readiness_keeps_ready_instances(tmp_path):
     assert {item['route_id'] for item in prepared} == {'R1'}
 
 
-def test_quality_sidecar_and_contract_repair_audit(tmp_path):
+def test_zero_change_sidecar_preserves_reference_without_paid_repair(tmp_path):
     broken = json.loads(response())
     broken['routes'][0]['instances'][1]['parameters_nm'] = copy.deepcopy(broken['routes'][0]['instances'][0]['parameters_nm'])
     planner = AuditedPlannerFixture([json.dumps(broken), response()])
     assert route_stage.main(args(tmp_path), planner=planner) == 0
     outcome = read(tmp_path, 'generation_outcome.json')
-    assert 'actual changed variables are empty' in outcome['rounds'][0]['error']
-    audit = outcome['rounds'][1]['repair_audit']
-    assert audit['classification'] == 'contract_repair_not_format_only'
-    assert audit['parsed_contract_changed']
-    assert audit['previous_contract_parseable']
+    assert len(planner.calls) == 1
+    assert outcome['raw_research_routes'] == broken
+    info = outcome['candidate_report']['routes']['R1']
+    assert all(row['classification'] == 'baseline_reference' for row in info['comparisons'])
+    assert any(w['code'] == 'zero_change_baseline_reference' for w in info['warnings'])
+    assert read(tmp_path, 'research_routes.raw.json') == broken
     quality = read(tmp_path, 'route_quality_report.json')
     assert quality['scientific_review']['status'] == 'not_performed'
     assert quality['routes_removed'] == []
@@ -187,9 +188,18 @@ def test_large_route_batch_still_checks_last_candidate(tmp_path, field, value):
     routes = many_routes()
     routes['routes'][-1]['expectations'][0][field] = value
     planner = AuditedPlannerFixture([json.dumps(routes)] * 2)
-    assert route_stage.main(args(tmp_path), planner=planner) == 2
-    assert read(tmp_path, 'prepared_instances.json') == []
-    assert read(tmp_path, 'generation_outcome.json')['status'] == 'invalid'
+    assert route_stage.main(args(tmp_path), planner=planner) == 0
+    assert len(planner.calls) == 1
+    outcome = read(tmp_path, 'generation_outcome.json')
+    if field == 'changed_variables':
+        assert outcome['status'] == 'ok'
+        assert len(read(tmp_path, 'prepared_instances.json')) == 24
+        assert any(w['code'] == 'changed_variables_derived' for w in outcome['candidate_report']['routes']['R12']['warnings'])
+    else:
+        assert outcome['status'] == 'partial_accepted'
+        assert outcome['candidate_report']['rejected_route_ids'] == ['R12']
+        assert len(read(tmp_path, 'prepared_instances.json')) == 22
+    assert read(tmp_path, 'research_routes.raw.json') == routes
 
 
 def test_zero_candidates_does_not_force_a_minimum(tmp_path):

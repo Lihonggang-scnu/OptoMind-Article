@@ -37,7 +37,10 @@ def _comparisons(route):
                     else layer['thickness_nm'] for layer in layers]
         baseline = expand(expectation['baseline_instance_id'])
         candidate = expand(expectation['candidate_instance_id'])
-        result.append({'metric': expectation['metric'],
+        result.append({'classification': 'thickness_intervention' if baseline != candidate else 'baseline_reference',
+            'actual_changed_variables': [key for key in instances[expectation['baseline_instance_id']]
+                if instances[expectation['baseline_instance_id']][key] != instances[expectation['candidate_instance_id']][key]],
+            'physical_prediction_status': 'untested', 'metric': expectation['metric'],
             'media': [family['incident_medium'], family['substrate']],
             'materials': [layer['material'] for layer in layers],
             'parameter_roles': roles,
@@ -46,7 +49,7 @@ def _comparisons(route):
     return result
 
 
-def quality_report(routes):
+def quality_report(routes, candidate_report=None):
     """Keep all routes; flag shared comparisons without claiming mechanism identity."""
     signatures = {route['id']: _comparisons(route) for route in routes['routes']}
     pairs = []
@@ -72,6 +75,7 @@ def quality_report(routes):
                           'interpretation': 'Shared executable comparison or intervention pattern; different source labels do not establish different mechanisms. Parameter variants may still be useful.'})
     return {'schema_version': 'focused_research.route_quality.v1',
             'blocking': False, 'routes_removed': [], 'simulation_performed': False,
+            'candidate_admission': candidate_report,
             'scientific_review': {'status': 'not_performed',
                 'scope': 'Descriptive recipe comparisons only; no mechanism, directional expectation, optical performance or scientific diversity is verified.'},
             'comparison_signatures': signatures, 'similar_route_pairs': pairs,

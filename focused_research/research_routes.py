@@ -182,7 +182,7 @@ def revision_reasons(route, sheet, design_constraints=None):
     return reasons
 
 
-def validate(routes, task_sheet, evidence_items, *, design_constraints):
+def validate(routes, task_sheet, evidence_items, *, design_constraints, candidate_mode=False):
     """Reject fabricated references or altered task metrics; retain incomplete routes.
 
     Missing recipe/claim may be null and missing collections empty, but such a route
@@ -203,8 +203,12 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
         if item.get('eligible_as_evidence') is not True or not isinstance(item.get('text'), str) or not item['text'].strip() or not isinstance(item.get('source_id'), str) or not item['source_id'].strip():
             _fail('decision_clue.evidence_id', 'requires eligible source-linked nonempty evidence text')
         for key in ('source_quote', 'structure_or_method', 'physical_effect', 'inference_bridge'):
-            _text(clue[key], 'decision_clue.' + key)
-        if clue['source_quote'] not in item['text']:
+            if candidate_mode and key == 'source_quote':
+                if clue[key] is not None and not isinstance(clue[key], str):
+                    _fail('decision_clue.source_quote', 'requires text or null')
+            else:
+                _text(clue[key], 'decision_clue.' + key)
+        if not candidate_mode and clue['source_quote'] not in item['text']:
             _fail('decision_clue.source_quote', 'must be an exact span of evidence text')
         _list(clue['conditions_and_unknowns'], 'conditions_and_unknowns')
         for value in clue['conditions_and_unknowns']:
@@ -265,9 +269,9 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
             baseline = instances[expectation['baseline_instance_id']]['parameters_nm']
             candidate = instances[expectation['candidate_instance_id']]['parameters_nm']
             changed = {key for key in baseline if baseline[key] != candidate[key]}
-            if not changed:
+            if not changed and not candidate_mode:
                 _fail('expectation.changed_variables', 'actual changed variables are empty: baseline and candidate parameters are identical; instance names cannot establish an intervention')
-            _refs(expectation['changed_variables'], changed, 'expectation.changed_variables', 1)
+            _refs(expectation['changed_variables'], changed, 'expectation.changed_variables', 0 if candidate_mode else 1)
             if set(expectation['changed_variables']) != changed:
                 _fail('expectation.changed_variables', 'must identify all actual parameter changes')
             _text(expectation['controlled_conditions'], 'expectation.controlled_conditions')
@@ -280,9 +284,181 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
     return routes
 
 
-def materialize(routes, route_id, task_sheet, evidence_items, *, design_constraints):
+def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints):
+    """Compile complete proposals independently, preserving all model-authored text.
+
+    Global input/envelope/ID ambiguity raises ValueError. Local clue/route failures
+    are reported and excluded from the accepted dependency closure. Acceptance is
+    executable syntax only, never endorsement of a quotation or physical claim.
+    Only evidence-ID sets, changed-variable sets and readiness are derived; no
+    material, layer, thickness, metric, prediction or explanation is repaired.
+    """
+    _, evidence = _inputs(task_sheet, evidence_items, design_constraints)
+    _obj(routes, ['schema_version', 'decision_clues', 'routes'], '$')
+    if routes['schema_version'] not in (SCHEMA, LEGACY_SCHEMA):
+        _fail('schema_version', 'unsupported version')
+    clues = _index(routes['decision_clues'], 'id', 'decision_clues')
+    indexed_routes = _index(routes['routes'], 'id', 'routes')
+    accepted_clues, accepted_routes = {}, []
+    report = {'schema_version': 'focused_research.candidate_report.v1',
+        'acceptance_scope': 'executable_candidate_only', 'scientific_status': 'untested',
+        'simulation_performed': False, 'generated_route_count': len(indexed_routes),
+        'accepted_route_ids': [], 'rejected_route_ids': [], 'needs_revision_route_ids': [],
+        'clues': {}, 'routes': {}, 'warnings': [], 'rejections': [],
+        'failure_semantics': {'global': 'Invalid inputs, envelope or ambiguous IDs abort the batch.',
+            'local': 'Invalid clues reject dependent routes; invalid recipes reject only their route.',
+            'soft': 'Unverified paraphrases, uncertain physics, citation-set and declared-diff mismatches do not reject executable candidates.',
+            'zero_change': 'A zero-change comparison is a baseline_reference, never a new intervention.'}}
+
+    def envelope(rows, clue_rows):
+        return {'schema_version': routes['schema_version'], 'decision_clues': clue_rows, 'routes': rows}
+
+    def rejection(kind, ident, path, exc):
+        item = {'entity': kind, 'id': ident, 'path': path,
+                'code': 'invalid_' + kind, 'reason': str(exc)}
+        report['rejections'].append(item)
+        return item
+
+    for position, (cid, clue) in enumerate(clues.items()):
+        path = '/decision_clues/' + str(position)
+        try:
+            validate(envelope([], [clue]), task_sheet, evidence_items,
+                     design_constraints=design_constraints, candidate_mode=True)
+        except (ValueError, TypeError, KeyError) as exc:
+            report['clues'][cid] = {'status': 'rejected', 'error': rejection('clue', cid, path, exc)}
+            continue
+        item = evidence[clue['evidence_id']]
+        quote = clue['source_quote']
+        exact = isinstance(quote, str) and bool(quote) and quote in item['text']
+        info = {'status': 'accepted', 'evidence_id': clue['evidence_id'],
+                'source_id': item['source_id'],
+                'source_confidence': 'directly_locatable_quote' if exact else 'unverified_paraphrase_or_inference',
+                'quote_verified': exact, 'semantic_support': 'not_verified',
+                'physical_explanation': 'untested', 'locator': None}
+        if exact:
+            start = item['text'].index(quote)
+            info['locator'] = {'text_sha256': hashlib.sha256(item['text'].encode('utf-8')).hexdigest(),
+                'start': start, 'end': start + len(quote), 'offset_unit': 'unicode_code_points',
+                'normalization': 'none', 'text_field': 'text'}
+        else:
+            report['warnings'].append({'entity': 'clue', 'id': cid, 'path': path + '/source_quote',
+                'code': 'unverified_paraphrase', 'reason': 'Original wording retained; not a verified source quotation.'})
+        report['clues'][cid] = info
+        accepted_clues[cid] = copy.deepcopy(clue)
+
+    for position, (rid, original) in enumerate(indexed_routes.items()):
+        path = '/routes/' + str(position)
+        route = copy.deepcopy(original)
+        info = {'status': 'rejected', 'scientific_status': 'untested', 'warnings': [], 'comparisons': []}
+        report['routes'][rid] = info
+        try:
+            _refs(route.get('clue_ids'), clues, path + '/clue_ids')
+            blocked = [cid for cid in route['clue_ids'] if cid not in accepted_clues]
+            if blocked:
+                _fail(path + '/clue_ids', 'invalid clue dependencies: ' + ', '.join(blocked))
+            linked = [accepted_clues[cid] for cid in route['clue_ids']]
+            derived_eids = list(dict.fromkeys(clue['evidence_id'] for clue in linked))
+            # Keep original order when the set is correct; otherwise record the
+            # program-owned dependency set explicitly, with original in raw draft.
+            if (not isinstance(route.get('evidence_ids'), list)
+                    or set(route['evidence_ids']) != set(derived_eids)
+                    or len(route['evidence_ids']) != len(derived_eids)):
+                info['warnings'].append({'code': 'evidence_ids_derived', 'path': path + '/evidence_ids',
+                    'declared': copy.deepcopy(route.get('evidence_ids')), 'actual': derived_eids})
+                route['evidence_ids'] = derived_eids
+            if route.get('family') is not None:
+                _family(route['family'], design_constraints, path + '/family')
+                instances = _instances(route.get('instances'), route['family'], path + '/instances')
+                _list(route.get('expectations'), path + '/expectations')
+                for index, expectation in enumerate(route['expectations']):
+                    if not isinstance(expectation, dict):
+                        _fail(path + '/expectations/' + str(index), 'requires an object')
+                    baseline = instances.get(expectation.get('baseline_instance_id'))
+                    candidate = instances.get(expectation.get('candidate_instance_id'))
+                    if baseline is None or candidate is None:
+                        _fail(path + '/expectations/' + str(index), 'comparison references an unknown instance')
+                    before, after = baseline['parameters_nm'], candidate['parameters_nm']
+                    actual = [key for key in before if before[key] != after[key]]
+                    declared = expectation.get('changed_variables')
+                    if (not isinstance(declared, list) or set(declared) != set(actual)
+                            or len(declared) != len(actual)):
+                        info['warnings'].append({'code': 'changed_variables_derived',
+                            'path': path + '/expectations/' + str(index) + '/changed_variables',
+                            'declared': copy.deepcopy(declared), 'actual': actual})
+                        expectation['changed_variables'] = actual
+                    family = route['family']
+                    def expand(params):
+                        return [{'material': layer['material'], 'thickness_nm':
+                                 params[layer['thickness_nm']] if isinstance(layer['thickness_nm'], str)
+                                 else layer['thickness_nm']} for layer in family['layers']]
+                    a, b = expand(before), expand(after)
+                    info['comparisons'].append({'expectation_index': index,
+                        'classification': 'thickness_intervention' if actual else 'baseline_reference',
+                        'baseline_instance_id': baseline['id'], 'candidate_instance_id': candidate['id'],
+                        'actual_changed_variables': actual,
+                        'parameter_changes_nm': {key: {'before': before[key], 'after': after[key]} for key in actual},
+                        'affected_layer_indices': [i for i, (left, right) in enumerate(zip(a, b)) if left != right],
+                        'layer_index_origin': 0, 'baseline_layers': a, 'candidate_layers': b,
+                        'layer_count_changed': False, 'material_order_changed': False,
+                        'incident_medium': family['incident_medium'], 'substrate': family['substrate'],
+                        'physical_prediction_status': 'untested'})
+                    if not actual:
+                        info['warnings'].append({'code': 'zero_change_baseline_reference',
+                            'path': path + '/expectations/' + str(index),
+                            'reason': 'No physical change. Retained only as a reference; intervention remains to be supplied.'})
+            # Validate before deriving readiness, so malformed goal/condition data
+            # cannot turn into an uncaught lookup failure or bypass a hard gate.
+            try:
+                validate(envelope([route], linked), task_sheet, evidence_items,
+                         design_constraints=design_constraints, candidate_mode=True)
+            except ValueError as exc:
+                if 'research routes route.readiness: must be ' not in str(exc):
+                    raise
+                readiness = 'needs_revision' if revision_reasons(route, task_sheet, design_constraints) else 'ready'
+                info['warnings'].append({'code': 'readiness_derived', 'declared': route.get('readiness'), 'actual': readiness})
+                route['readiness'] = readiness
+                validate(envelope([route], linked), task_sheet, evidence_items,
+                         design_constraints=design_constraints, candidate_mode=True)
+            info.update(status='accepted', readiness=route['readiness'],
+                basis_mode=route.get('basis_mode', 'external_evidence'),
+                source_confidence={cid: report['clues'][cid]['source_confidence'] for cid in route['clue_ids']},
+                model_knowledge_status='unverified' if route.get('basis_mode') in ('model_knowledge', 'hybrid') else 'not_declared')
+            accepted_routes.append(route)
+            report['accepted_route_ids'].append(rid)
+            if route['readiness'] != 'ready':
+                report['needs_revision_route_ids'].append(rid)
+        except (ValueError, TypeError, KeyError) as exc:
+            info['error'] = rejection('route', rid, path, exc)
+            report['rejected_route_ids'].append(rid)
+        report['warnings'].extend({'entity': 'route', 'id': rid, **warning} for warning in info['warnings'])
+    used_clues = {cid for route in accepted_routes for cid in route['clue_ids']}
+    accepted = envelope(accepted_routes, [clue for cid, clue in accepted_clues.items() if cid in used_clues])
+    validate(accepted, task_sheet, evidence_items, design_constraints=design_constraints, candidate_mode=True)
+    def fingerprint(value):
+        return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
+            ensure_ascii=False, allow_nan=False).encode('utf-8')).hexdigest()
+    report['accepted_contract_sha256'] = fingerprint(accepted)
+    report['input_sha256'] = {name: fingerprint(value) for name, value in [
+        ('task_sheet', task_sheet), ('evidence_items', evidence_items), ('design_constraints', design_constraints)]}
+    report['executable_route_ids'] = [route['id'] for route in accepted_routes if route['readiness'] == 'ready']
+    return {'raw_research_routes': copy.deepcopy(routes), 'accepted_contract': accepted, 'candidate_report': report}
+
+
+def materialize(routes, route_id, task_sheet, evidence_items, *, design_constraints, candidate_mode=False, candidate_report=None):
     """Return deterministic concrete stacks with inherited metrics, without execution."""
-    validate(routes, task_sheet, evidence_items, design_constraints=design_constraints)
+    supplied_report = candidate_report
+    candidate_report = None
+    if candidate_mode:
+        compiled = compile_candidates(routes, task_sheet, evidence_items, design_constraints=design_constraints)
+        routes = compiled['accepted_contract']
+        if supplied_report is not None and any(supplied_report.get(key) != compiled['candidate_report'][key]
+                for key in ('accepted_contract_sha256', 'input_sha256')):
+            _fail('candidate_report', 'must bind to the accepted contract and source/task inputs being materialized')
+        # Hashes bind the contract and inputs, not the caller's sidecar contents.
+        # Always recompute authoritative provenance and comparison facts.
+        candidate_report = compiled['candidate_report']
+    else:
+        validate(routes, task_sheet, evidence_items, design_constraints=design_constraints)
     matches = [r for r in routes['routes'] if r['id'] == route_id]
     if not matches:
         _fail('route_id', 'unknown route')
@@ -299,7 +475,7 @@ def materialize(routes, route_id, task_sheet, evidence_items, *, design_constrai
             if isinstance(thickness, str):
                 thickness = instance['parameters_nm'][thickness]
             layers.append({'material': layer['material'], 'thickness_nm': thickness})
-        output.append({'status': 'prepared', 'verification_scope': 'syntax_and_provenance_only',
+        output.append({'status': 'prepared', 'verification_scope': 'executable_candidate_only' if candidate_mode else 'syntax_and_provenance_only',
             'execution_authorized': False, 'design_constraints': copy.deepcopy(design_constraints),
             'task_explicit_constraints': copy.deepcopy(task_sheet['explicit_constraints']), 'route_id': route_id, 'instance_id': instance['id'],
             'incident_medium': family['incident_medium'], 'substrate': family['substrate'], 'layers': layers,
@@ -308,6 +484,18 @@ def materialize(routes, route_id, task_sheet, evidence_items, *, design_constrai
             'model_knowledge_rationale': route.get('model_knowledge_rationale'),
             'clue_ids': list(route['clue_ids']), 'evidence_ids': list(route['evidence_ids']),
             'objectives': [copy.deepcopy(goal['executable_metric']) for goal in task_sheet['subgoals']]})
+    if candidate_report is not None:
+        for item in output:
+            item['candidate_metadata'] = copy.deepcopy(candidate_report['routes'][route_id])
+            item['source_confidence'] = {cid: copy.deepcopy(candidate_report['clues'][cid]) for cid in route['clue_ids']}
+            if supplied_report is not None:
+                # Original declared-versus-derived warnings are useful history,
+                # but an unsigned supplied report cannot certify any facts.
+                prior = supplied_report.get('routes', {}).get(route_id, {})
+                item['proposal_derivation_audit'] = {
+                    'status': 'caller_supplied_history_not_authoritative',
+                    'warnings': copy.deepcopy(prior.get('warnings', [])),
+                    'comparisons': copy.deepcopy(prior.get('comparisons', []))}
     return output
 
 
@@ -327,7 +515,7 @@ def build_prompt(task_sheet, evidence_items, *, design_constraints):
 render_prompt = build_prompt
 
 
-def generate(task_sheet, evidence_items, planner, *, design_constraints, max_repairs=1):
+def generate(task_sheet, evidence_items, planner, *, design_constraints, max_repairs=1, candidate_mode=False):
     """Explicit, injected planner call; no implicit model or simulation execution."""
     # 未来可沉淀真实执行的条件、路线、预期、实际结果、原因与修订建议。
     # 此处生成提案不代表取得实测经验；失败也有价值，须保留适用边界。
@@ -378,10 +566,22 @@ def generate(task_sheet, evidence_items, planner, *, design_constraints, max_rep
                 previous = outcome['rounds'][-2].get('raw_research_routes')
                 record['repair_audit'] = contract_change_audit(previous, parsed)
                 record['repair_audit']['previous_contract_parseable'] = previous is not None
-            validate(parsed, task_sheet, evidence_items, design_constraints=design_constraints)
+            if candidate_mode:
+                compiled = compile_candidates(parsed, task_sheet, evidence_items, design_constraints=design_constraints)
+                outcome['candidate_report'] = compiled['candidate_report']
+                outcome['raw_research_routes'] = copy.deepcopy(parsed)
+                parsed = compiled['accepted_contract']
+            else:
+                validate(parsed, task_sheet, evidence_items, design_constraints=design_constraints)
             record.update(ok=True, effective_response=copy.deepcopy(parsed))
             status = 'ok' if parsed['routes'] and all(r['readiness'] == 'ready' for r in parsed['routes']) else 'needs_revision'
+            if candidate_mode and outcome['candidate_report']['rejected_route_ids']:
+                status = 'partial_accepted' if parsed['routes'] else 'invalid'
             outcome.update(status=status, research_routes=parsed, errors=[])
+            # Complete parseable candidate batches are final: do not spend another
+            # model call rewriting accepted designs or repairing scientific prose.
+            if candidate_mode:
+                outcome['errors'] = outcome['candidate_report']['rejections']
             break
         except (ValueError, TypeError, KeyError) as exc:
             record.update(ok=False, error=str(exc))

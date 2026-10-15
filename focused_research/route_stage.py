@@ -82,21 +82,26 @@ def main(argv=None, *, planner=None):
             [('task_sheet', sheet), ('evidence_items', evidence), ('design_constraints', constraints)]}
         called = False
         generation = None
+        candidate_report = None
         if args.stage == 'generate':
             # Validate input contracts before dispatch. Empty retrieval permits explicitly labeled model knowledge, never fabricated evidence.
             rr.build_prompt(sheet, evidence, design_constraints=constraints)
             injected = _RoutePlanner(planner)
-            generation = rr.generate(sheet, evidence, injected, design_constraints=constraints, max_repairs=1)
+            generation = rr.generate(sheet, evidence, injected, design_constraints=constraints, max_repairs=1, candidate_mode=True)
             called = injected.calls > 0
             save(args.output / 'generation_outcome.json', generation)
             routes = generation.get('research_routes')
+            candidate_report = generation.get('candidate_report')
+            if generation.get('raw_research_routes') is not None:
+                save(args.output / 'research_routes.raw.json', generation['raw_research_routes'])
             instances = []
             if routes:
                 save(args.output / 'research_routes.json', routes)
                 identity['research_routes'] = fingerprint(routes)
                 for route in routes['routes']:
                     if route['readiness'] == 'ready':
-                        instances.extend(rr.materialize(routes, route['id'], sheet, evidence, design_constraints=constraints))
+                        instances.extend(rr.materialize(routes, route['id'], sheet, evidence, design_constraints=constraints,
+                            candidate_mode=True, candidate_report=candidate_report))
             save(args.output / 'prepared_instances.json', instances)
             state = 'instances_prepared' if generation['status'] == 'ok' else generation['status']
         elif args.stage == 'prompt':
@@ -104,24 +109,36 @@ def main(argv=None, *, planner=None):
             state = 'prompt_prepared'
         else:
             routes = load(args.routes_file)
-            rr.validate(routes, sheet, evidence, design_constraints=constraints)
+            save(args.output / 'research_routes.raw.json', routes)
+            compiled = rr.compile_candidates(routes, sheet, evidence, design_constraints=constraints)
+            candidate_report = compiled['candidate_report']
+            save(args.output / 'candidate_report.json', candidate_report)
+            routes = compiled['accepted_contract']
             save(args.output / 'research_routes.json', routes)
             identity['research_routes'] = fingerprint(routes)
             if args.stage == 'materialize':
-                instances = rr.materialize(routes, args.route_id, sheet, evidence, design_constraints=constraints)
+                instances = rr.materialize(routes, args.route_id, sheet, evidence, design_constraints=constraints,
+                    candidate_mode=True, candidate_report=candidate_report)
                 save(args.output / 'prepared_instances.json', instances)
                 state = 'instances_prepared'
             else:
-                state = 'contract_validated'
+                state = ('partial_accepted' if candidate_report['accepted_route_ids'] else 'invalid') if candidate_report['rejected_route_ids'] else 'contract_validated'
+        if candidate_report is not None:
+            save(args.output / 'candidate_report.json', candidate_report)
         if args.stage != 'prompt' and routes:
-            save(args.output / 'route_quality_report.json', quality_report(routes))
+            save(args.output / 'route_quality_report.json', quality_report(routes, candidate_report=candidate_report))
         save(args.output / 'input_identity.json', identity)
         save(args.output / 'summary.json', {'status': state, 'live_model_called': called,
             'model_call_attempts': injected.calls if args.stage == 'generate' else 0,
             'generation_status': generation['status'] if generation else None,
+            'accepted_route_ids': candidate_report['accepted_route_ids'] if candidate_report else [],
+            'rejected_route_ids': candidate_report['rejected_route_ids'] if candidate_report else [],
+            'executable_route_ids': candidate_report['executable_route_ids'] if candidate_report else [],
             'simulation_performed': False, 'scientific_validity_established': False})
         print(state)
-        return 0 if generation is None or generation['status'] in ('ok', 'needs_revision') else 2
+        if candidate_report is not None and candidate_report['rejected_route_ids'] and not candidate_report['accepted_route_ids']:
+            return 2
+        return 0 if generation is None or generation['status'] in ('ok', 'needs_revision', 'partial_accepted') else 2
     except (ValueError, TypeError, KeyError, OSError) as exc:
         # Do not print arbitrary raw model responses, provider headers or secrets.
         print('Route preparation failed: ' + str(exc))
