@@ -72,7 +72,7 @@ def test_native_unicode_and_whitespace_are_preserved_exactly():
     assert ts.validate(result['task_sheet'], question=question) == result['task_sheet']
 
 
-@pytest.mark.parametrize('field', ['subgoals', 'application_intents', 'explicit_constraints', 'known_data', 'unsupported_requirements'])
+@pytest.mark.parametrize('field', ['subgoals', 'application_intents', 'explicit_constraints', 'unsupported_requirements'])
 def test_invalid_original_spans_still_fail_closed(field):
     analysis = example()
     question = analysis['original_question']

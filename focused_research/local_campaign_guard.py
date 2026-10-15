@@ -1,4 +1,4 @@
-"""Initial-run-only campaign adapter around an existing audited local planner.
+"""Initial-admission-only campaign adapters around an audited local planner.
 
 This is not a transport, HTTP counter, or money ledger. The caller must reconcile
 and reserve in its original ledger, disable transport retries, and persist the
@@ -48,6 +48,9 @@ class CampaignPlannerGuard:
     called. Actual HTTP and costs remain the original audited transport's facts.
     The constructor supports only a freshly admitted initial run, never resume.
     """
+    _stage_order = STAGES
+    _max_dispatch_attempts = 4
+
     def __init__(self, planner, *, case_id, audit_sink):
         if case_id not in CASE_PROTOCOLS:
             raise ValueError('unknown campaign case')
@@ -55,7 +58,7 @@ class CampaignPlannerGuard:
             raise ValueError('a durable audit_sink is required')
         self._planner, self.case_id, self._audit_sink = planner, case_id, audit_sink
         self._stage_index = -1
-        self._counts = dict.fromkeys(STAGES, 0)
+        self._counts = dict.fromkeys(self._stage_order, 0)
         self._repair_used = False
         self._events = []
         self._failed = False
@@ -78,19 +81,19 @@ class CampaignPlannerGuard:
     def set_stage(self, stage):
         if self._failed:
             raise ValueError('guard failed closed; reconcile original accounting, no automatic restart')
-        if stage not in STAGES:
+        if stage not in self._stage_order:
             raise ValueError('unknown stage')
-        index = STAGES.index(stage)
+        index = self._stage_order.index(stage)
         if index != self._stage_index + 1:
             raise ValueError('stages cannot reset, repeat, reverse, or skip')
-        if self._stage_index >= 0 and not self._counts[STAGES[self._stage_index]]:
+        if self._stage_index >= 0 and not self._counts[self._stage_order[self._stage_index]]:
             raise ValueError('previous stage has no dispatch')
         self._stage_index = index
 
     def _call_query_plan_model(self, prompt):
         if self._failed or self._stage_index < 0:
             raise ValueError('active admitted stage required; failed guards cannot retry')
-        stage = STAGES[self._stage_index]
+        stage = self._stage_order[self._stage_index]
         if not isinstance(prompt, dict) or not isinstance(prompt.get('user_payload'), dict):
             raise ValueError('prompt requires an object user_payload')
         count = self._counts[stage]
@@ -103,8 +106,8 @@ class CampaignPlannerGuard:
                 raise ValueError('shared contract repair already used; preserve revision allowance')
             if 'previous_response' not in payload or not isinstance(payload.get('validation_error'), str) or not payload['validation_error'].strip():
                 raise ValueError('second attempt requires explicit contract validation failure')
-        remaining_base_calls = len(STAGES) - self._stage_index - 1
-        if sum(self._counts.values()) + 1 + remaining_base_calls > 4:
+        remaining_base_calls = len(self._stage_order) - self._stage_index - 1
+        if sum(self._counts.values()) + 1 + remaining_base_calls > self._max_dispatch_attempts:
             raise ValueError('aggregate dispatch limit would consume reserved base calls')
         forwarded = copy.deepcopy(prompt)
         if 'execution_protocol' in forwarded['user_payload']:
@@ -131,6 +134,53 @@ class CampaignPlannerGuard:
             raise
         event['status'] = 'delegate_returned'
         return response
+
+
+class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
+    """One newly admitted continuation after offline task-sheet recovery.
+
+    Only route_generation (plus at most one explicit contract repair) and then
+    search_revision may dispatch: at most three conservative attempts total.
+    No task-sheet call, transport retry, automatic restart, or resume is added.
+
+    The caller must verify the recovered sheet and its recovery manifest, and
+    supply that manifest as recovered_task_sheet_binding. This constructor only
+    checks a matching case ID, a canonical SHA-256 string, and JSON audit data;
+    it does not read or independently verify the artifact. The full copied
+    binding accompanies every pre-dispatch durable audit without changing the
+    forwarded prompt beyond the inherited CASE_PROTOCOLS.
+
+    Counts cover this continuation only. Prior task-sheet attempts and costs
+    remain in the original durable ledger: admission must reconcile and reserve
+    against the cumulative per-case/project limits there. Never recreate this
+    object to reset attempts after a continuation failure or crash. The caller
+    must also persist the final audit in finally, as with CampaignPlannerGuard.
+    """
+    _stage_order = ('route_generation', 'search_revision')
+    _max_dispatch_attempts = 3
+
+    def __init__(self, planner, *, case_id, audit_sink, recovered_task_sheet_binding):
+        if not isinstance(recovered_task_sheet_binding, dict):
+            raise ValueError('explicit recovered_task_sheet_binding object is required')
+        if recovered_task_sheet_binding.get('case_id') != case_id:
+            raise ValueError('recovered task-sheet binding case_id must match the admitted case')
+        digest = recovered_task_sheet_binding.get('task_sheet_sha256')
+        if not isinstance(digest, str) or len(digest) != 64 or any(
+                char not in '0123456789abcdef' for char in digest):
+            raise ValueError('recovered task-sheet binding requires a canonical task_sheet_sha256')
+        try:
+            binding = copy.deepcopy(recovered_task_sheet_binding)
+            _hash(binding)  # Reject data that cannot be preserved in a JSON audit.
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError('recovered task-sheet binding must contain finite JSON audit data') from exc
+        self._recovered_task_sheet_binding = binding
+        super().__init__(planner, case_id=case_id, audit_sink=audit_sink)
+
+    @property
+    def audit(self):
+        snapshot = super().audit
+        snapshot['recovered_task_sheet_binding'] = copy.deepcopy(self._recovered_task_sheet_binding)
+        return snapshot
 
 
 def check_route_thickness_bounds(routes, *, case_id):

@@ -372,7 +372,9 @@ def test_contradictory_relationships_and_crosslinks_rejected():
     sheet=task_sheet(); sheet['goal_relationships']['priority_order']=['G1']
     with pytest.raises(ValueError): r.ts.validate(sheet)
     sheet=task_sheet(); sheet['research_questions'][0]['subgoal_ids']=['G1']
-    with pytest.raises(ValueError): r.ts.validate(sheet)
+    # Direct query goal links remain complete; indirect descriptive links need
+    # not repeat that coverage and must not be invented to satisfy a quota.
+    assert r.ts.validate(sheet) == sheet
     sheet=task_sheet(); sheet['search_queries'][0]['subgoal_ids']=['G3']
     with pytest.raises(ValueError): r.ts.validate(sheet)
 

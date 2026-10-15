@@ -1,0 +1,890 @@
+[
+  {
+    "case_id": "e2e-02-space-qkd-cband",
+    "question": "我负责星载量子密钥分发接收机前端防护窗口的研发。接收机需要尽可能完整地接收 1530–1565 nm 电信波段的单光子信号，同时尽可能反射 400–700 nm 波段的可见光太阳背景，以降低空间太阳散射和探测器杂散光对量子信号接收的影响。请在空气入射、熔融石英基底的条件下，仅使用 HfO2 和 SiO2 设计一个平面多层介质膜，膜系总层数不超过 30 层。",
+    "analysis": {
+      "schema_version": "focused_research.task_sheet.v2",
+      "task_type": "design/optimization",
+      "user_objective": "Design a planar HfO2/SiO2 multilayer coating for space-based QKD receiver protection, maximizing wavelength-integral mean transmittance in the C-band (1530–1565 nm) and reflectance in the visible solar background (400–700 nm) under air incidence on fused silica, subject to layer count limits.",
+      "subgoals": [
+        {
+          "id": "G1",
+          "objective": "Maximize C-band transmittance for single-photon signal reception",
+          "original_span": "尽可能完整地接收 1530–1565 nm 电信波段的单光子信号",
+          "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for equal-s/p unpolarized light at 0 degrees (execution assumption).",
+          "executable_metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "objective": "Maximize visible-band reflectance to suppress solar background",
+          "original_span": "尽可能反射 400–700 nm 波段的可见光太阳背景",
+          "operational_definition": "Wavelength integral of reflectance over the band, divided by band width, for equal-s/p unpolarized light at 0 degrees (execution assumption).",
+          "executable_metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        }
+      ],
+      "application_intents": [
+        {
+          "id": "A1",
+          "intent": "Space-based quantum key distribution (QKD) receiver front-end protection",
+          "original_span": "星载量子密钥分发接收机前端防护窗口",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "operational_definition": "Reduce space solar scattering and detector stray light impact on quantum signal reception."
+        }
+      ],
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": null,
+        "coupling": "G1 and G2 are distinct spectral goals for the same coating; high visible reflection and high C-band transmission may compete depending on material absorption and sideband leakage. Priority and weighting are unspecified."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "Transmission band: 1530–1565 nm",
+          "original_span": "1530–1565 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "Reflection band: 400–700 nm",
+          "original_span": "400–700 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "Incident medium: Air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C4",
+          "constraint": "Substrate: Fused silica",
+          "original_span": "熔融石英基底"
+        },
+        {
+          "id": "C5",
+          "constraint": "Only HfO2 and SiO2 coating materials",
+          "original_span": "仅使用 HfO2 和 SiO2"
+        },
+        {
+          "id": "C6",
+          "constraint": "Planar multilayer dielectric film",
+          "original_span": "平面多层介质膜"
+        },
+        {
+          "id": "C7",
+          "constraint": "No more than 30 layers",
+          "original_span": "膜系总层数不超过 30 层"
+        }
+      ],
+      "known_data": [
+        {
+          "statement": "Application is a space-based QKD receiver requiring single-photon signal integrity",
+          "original_span": "接收机需要尽可能完整地接收 1530–1565 nm 电信波段的单光子信号"
+        },
+        {
+          "statement": "Visible light source is solar background causing stray light",
+          "original_span": "可见光太阳背景...降低空间太阳散射和探测器杂散光对量子信号接收的影响"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "Execution protocol assumes 0 degree incidence and equal-s/p unpolarized light as these were not explicitly defined in the original question.",
+          "assumed_value": "0 degrees, unpolarized",
+          "needs_user_input": false
+        },
+        {
+          "kind": "assumption",
+          "statement": "Evaluation metric assumed to be wavelength-integral mean divided by band width, as no specific averaging method was provided.",
+          "assumed_value": "wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Optical constants/dispersion for HfO2/SiO2 at relevant wavelengths, fabrication tolerances, and individual layer thickness bounds are unresolved.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Numerical acceptance thresholds (e.g., minimum T%, maximum R%) and objective weights are unspecified; 'as high as possible' is not a fixed number.",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "research_questions": [
+        {
+          "id": "R1",
+          "question": "Which long-pass or band-pass coating designs demonstrate high visible rejection and high C-band transmission for space applications?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R2",
+          "question": "How do HfO2/SiO2 material properties and layer structures affect spectral edge steepness between visible and telecom bands?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R3",
+          "question": "What optimization methods effectively handle wide-band separation (visible vs C-band) with limited layer counts?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        }
+      ],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Interference in alternating high/low-index dielectric layers can form a visible stopband and C-band passband (long-pass filter topology)",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Material absorption edges and scattering losses in HfO2/SiO2 may limit maximum transmittance or reflectance",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        }
+      ],
+      "search_queries": [
+        {
+          "id": "Q1",
+          "endpoint": "paper_search",
+          "query": "HfO2 SiO2 long pass filter visible rejection telecom transmission design",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Find analogous complete coating designs that separate visible and telecom bands using HfO2/SiO2."
+        },
+        {
+          "id": "Q2",
+          "endpoint": "snippet_search",
+          "query": "Which multilayer coatings reflect visible sunlight and transmit 1550 nm signals for space quantum key distribution?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Seek specific application cases for space QKD front-end protection windows."
+        },
+        {
+          "id": "Q3",
+          "endpoint": "paper_search",
+          "query": "HfO2 SiO2 optical constants dispersion visible near infrared",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "material_structure",
+          "rationale": "Retrieve material data for HfO2 and SiO2 across the wide spectral range from visible to C-band."
+        },
+        {
+          "id": "Q4",
+          "endpoint": "snippet_search",
+          "query": "How are wide bandgap dielectric filters optimized for steep spectral edges between visible and infrared with limited layer counts?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R3"
+          ],
+          "purpose": "method_transfer",
+          "rationale": "Identify synthesis methods for achieving sharp cutoffs between widely separated bands under layer constraints."
+        },
+        {
+          "id": "Q5",
+          "endpoint": "snippet_search",
+          "query": "What are the absorption and scattering losses of HfO2 and SiO2 thin films at 1550 nm?",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "mechanism_ids": [
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "mechanism",
+          "rationale": "Investigate loss mechanisms that could degrade single-photon transmission efficiency in the C-band."
+        }
+      ],
+      "unsupported_requirements": [],
+      "readiness": "ready"
+    },
+    "source_commit": "35c60b9f016eee6ef53a1b266b48e6366e1ec52d",
+    "source_planning_sha256": "1f6f22289fdb0fafb14bf519b1bd350cb0a980637aef72e36692220b773adfc7"
+  },
+  {
+    "case_id": "e2e-08-advanced-packaging-uv",
+    "question": "我正在研发先进封装材料和光刻胶残留的紫外激发光学检测模块。模块以 355 nm 附近的光激发样品，需要压低收集通道中的激发光泄漏，同时保留可见波段的荧光信息，并抑制辅助近红外对准光进入可见探测通道。请设计空气入射、入射角 0 deg、非偏振 unpolarized、熔融石英基底上的平面多层介质滤光膜：在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率，在 420-700 nm 信号波段尽可能提高平均透射率。膜层仅允许 Ta2O5 和 SiO2，总层数不超过 36 层。\n单层膜厚（layer thickness）：20-350 nm。\n请通过实际仿真比较不同膜系，分析通带损耗与双阻带抑制的折中，给出材料顺序、厚度和各目标波段结果。评价对象是检测模块中的滤光元件。",
+    "analysis": {
+      "schema_version": "focused_research.task_sheet.v2",
+      "task_type": "design/optimization",
+      "user_objective": "Design a planar Ta2O5/SiO2 multilayer filter on fused silica for UV-excited fluorescence detection, minimizing wavelength-integral mean transmittance in dual stopbands (355-365 nm, 1030-1080 nm) and maximizing it in the signal passband (420-700 nm) at normal incidence with unpolarized light, subject to layer count and thickness constraints.",
+      "subgoals": [
+        {
+          "id": "G1",
+          "objective": "Minimize transmittance in the UV excitation leakage band",
+          "original_span": "在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率",
+          "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+          "executable_metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                355,
+                365
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "objective": "Maximize transmittance in the visible fluorescence signal band",
+          "original_span": "在 420-700 nm 信号波段尽可能提高平均透射率",
+          "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+          "executable_metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                420,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        },
+        {
+          "id": "G3",
+          "objective": "Minimize transmittance in the NIR alignment laser band",
+          "original_span": "在 355-365 nm 和 1030-1080 nm 两个干扰波段分别尽可能降低平均透射率",
+          "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for unpolarized light at 0 degrees.",
+          "executable_metric": {
+            "objective_id": "G3",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1030,
+                1080
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        }
+      ],
+      "application_intents": [
+        {
+          "id": "A1",
+          "intent": "UV-excited optical inspection module for advanced packaging and photoresist residue detection",
+          "original_span": "先进封装材料和光刻胶残留的紫外激发光学检测模块",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "operational_definition": null
+        }
+      ],
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": "User explicitly requests analysis of the tradeoff between passband loss and dual stopband suppression.",
+        "coupling": "G1, G2, and G3 are spectrally adjacent or separated goals for the same coating; achieving deep rejection in G1/G3 while maintaining high transmission in G2 requires careful management of spectral ripple and edge steepness."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "UV stopband: 355–365 nm",
+          "original_span": "355-365 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "Visible passband: 420–700 nm",
+          "original_span": "420-700 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "NIR stopband: 1030–1080 nm",
+          "original_span": "1030-1080 nm"
+        },
+        {
+          "id": "C4",
+          "constraint": "Incidence angle: 0 deg",
+          "original_span": "入射角 0 deg"
+        },
+        {
+          "id": "C5",
+          "constraint": "Incident medium: Air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C6",
+          "constraint": "Substrate: Fused silica",
+          "original_span": "熔融石英基底"
+        },
+        {
+          "id": "C7",
+          "constraint": "Coating materials: Only Ta2O5 and SiO2",
+          "original_span": "膜层仅允许 Ta2O5 和 SiO2"
+        },
+        {
+          "id": "C8",
+          "constraint": "Maximum total layers: 36",
+          "original_span": "总层数不超过 36 层"
+        },
+        {
+          "id": "C9",
+          "constraint": "Single layer thickness bounds: 20-350 nm",
+          "original_span": "单层膜厚（layer thickness）：20-350 nm"
+        },
+        {
+          "id": "C10",
+          "constraint": "Polarization: Unpolarized",
+          "original_span": "非偏振 unpolarized"
+        },
+        {
+          "id": "C11",
+          "constraint": "Evaluation metric definition: Wavelength-integral mean divided by band width (inferred from 'average' context)",
+          "original_span": "平均透射率"
+        }
+      ],
+      "known_data": [
+        {
+          "statement": "Excitation source is near 355 nm",
+          "original_span": "以 355 nm 附近的光激发样品"
+        },
+        {
+          "statement": "Auxiliary alignment light is in the NIR range",
+          "original_span": "辅助近红外对准光"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "The term 'average' in the user request is operationalized as wavelength-integral mean for executable consistency with the task schema, as no specific sampling method was defined.",
+          "assumed_value": "wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Optical constants (n, k) dispersion models for Ta2O5 and SiO2 in the UV-to-NIR range, and specific fabrication tolerance requirements, are not provided.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Specific numerical targets for 'as low as possible' or 'as high as possible' (e.g., OD values or %T thresholds) are unspecified.",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "research_questions": [
+        {
+          "id": "R1",
+          "question": "What multilayer design strategies effectively create dual non-harmonic stopbands (UV and NIR) while maintaining a broad visible passband?",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ]
+        },
+        {
+          "id": "R2",
+          "question": "How do Ta2O5/SiO2 layer thickness constraints (20-350 nm) impact the achievable rejection depth and bandwidth for UV and NIR blocks?",
+          "subgoal_ids": [
+            "G1",
+            "G3"
+          ]
+        },
+        {
+          "id": "R3",
+          "question": "Which optimization methods best handle the tradeoff between passband ripple and multi-band rejection under strict layer count limits?",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ]
+        }
+      ],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Interference stacks with tailored period sequences can generate multiple distinct stopbands without harmonic overlap in the passband.",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Thickness limiting constraints may restrict the number of quarter-wave pairs available for deep UV blocking, requiring non-quarter-wave or mismatched stack designs.",
+          "subgoal_ids": [
+            "G1",
+            "G3"
+          ],
+          "status": "candidate"
+        }
+      ],
+      "search_queries": [
+        {
+          "id": "Q1",
+          "endpoint": "paper_search",
+          "query": "dual band stop filter design UV visible NIR multilayer coating",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Find complete design cases for filters blocking two separate bands (UV and NIR) while transmitting visible light."
+        },
+        {
+          "id": "Q2",
+          "endpoint": "snippet_search",
+          "query": "How to design a multilayer filter that blocks 355 nm and 1064 nm while transmitting visible fluorescence?",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Seek specific examples matching the excitation (355 nm) and alignment (approx 1064 nm) wavelengths mentioned in similar applications."
+        },
+        {
+          "id": "Q3",
+          "endpoint": "paper_search",
+          "query": "Ta2O5 SiO2 thin film optical properties UV near infrared dispersion",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "mechanism_ids": [],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "material_structure",
+          "rationale": "Retrieve material data for Ta2O5 and SiO2 to verify transparency and refractive index contrast in the UV-to-NIR range."
+        },
+        {
+          "id": "Q4",
+          "endpoint": "snippet_search",
+          "query": "What optimization techniques manage tradeoffs between passband ripple and stopband depth in limited layer count dielectric filters?",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R3"
+          ],
+          "purpose": "method_transfer",
+          "rationale": "Identify synthesis methods that explicitly address the user-requested tradeoff analysis under layer count constraints."
+        },
+        {
+          "id": "Q5",
+          "endpoint": "snippet_search",
+          "query": "How does single layer thickness limitation affect the performance of UV blocking filters using Ta2O5 and SiO2?",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "mechanism_ids": [
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "mechanism",
+          "rationale": "Investigate the physical impact of the 20-350 nm thickness constraint specifically on the short-wavelength (UV) stopband design."
+        }
+      ],
+      "unsupported_requirements": [],
+      "readiness": "ready"
+    },
+    "source_commit": "35c60b9f016eee6ef53a1b266b48e6366e1ec52d",
+    "source_planning_sha256": "00ebda66a45873229b0b80f754c7fcf1c745ff8c2dfbb7f95e860af494c8aaaf"
+  },
+  {
+    "case_id": "e2e-09-si-photonics-ar-dualband",
+    "question": "我负责数据中心共封装光学模块中的硅微光学耦合元件。模块需要兼容 1260-1360 nm 和 1530-1565 nm 两个通信波段，希望采用一套镀膜降低空气与硅界面的反射，减少不同波段单独设计镀膜的复杂度。请为硅元件的入射表面设计平面多层介质减反膜：空气入射、入射角 0 deg、非偏振 unpolarized，硅作为半无限出射基底；在上述两个波段分别尽可能降低平均反射率，并报告进入硅基底的透射率。膜层仅允许 Ta2O5 和 SiO2，总层数不超过 12 层。\n单层膜厚（layer thickness）：20-400 nm。\n请比较宽带与双波段匹配方案，利用真实光谱结果调整膜厚，给出两波段之间的性能折中及最终结构。评价范围是局部平面界面的功率反射与透射。",
+    "analysis": {
+      "schema_version": "focused_research.task_sheet.v2",
+      "task_type": "mixed/unresolved",
+      "user_objective": "Design a planar Ta2O5/SiO2 multilayer anti-reflection coating for silicon in CPO modules, minimizing reflectance in two disjoint telecom bands (1260-1360 nm and 1530-1565 nm) at normal incidence with unpolarized light, while reporting transmission into the silicon substrate.",
+      "subgoals": [
+        {
+          "id": "G1",
+          "objective": "Minimize average reflectance in the 1260-1360 nm band",
+          "original_span": "在上述两个波段分别尽可能降低平均反射率",
+          "operational_definition": "Wavelength integral of reflectance over the band, divided by band width, for unpolarized light at 0 degrees. Original question specifies 'average' without defining reduction; wavelength-integral mean is adopted as the evaluation protocol per execution assumptions.",
+          "executable_metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1260,
+                1360
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        },
+        {
+          "id": "G2",
+          "objective": "Minimize average reflectance in the 1530-1565 nm band",
+          "original_span": "在上述两个波段分别尽可能降低平均反射率",
+          "operational_definition": "Wavelength integral of reflectance over the band, divided by band width, for unpolarized light at 0 degrees. Original question specifies 'average' without defining reduction; wavelength-integral mean is adopted as the evaluation protocol per execution assumptions.",
+          "executable_metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          }
+        }
+      ],
+      "application_intents": [
+        {
+          "id": "A1",
+          "intent": "Co-packaged optics (CPO) module silicon micro-optical coupling element",
+          "original_span": "数据中心共封装光学模块中的硅微光学耦合元件",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "operational_definition": null
+        }
+      ],
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": "User explicitly requests performance trade-off analysis between the two bands.",
+        "coupling": "G1 and G2 are coupled through the same multilayer stack; optimizing one band may affect the other due to limited layer count (12) and material dispersion."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "Band 1: 1260-1360 nm",
+          "original_span": "1260-1360 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "Band 2: 1530-1565 nm",
+          "original_span": "1530-1565 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "Incidence angle: 0 degrees",
+          "original_span": "入射角 0 deg"
+        },
+        {
+          "id": "C4",
+          "constraint": "Polarization: unpolarized",
+          "original_span": "非偏振 unpolarized"
+        },
+        {
+          "id": "C5",
+          "constraint": "Incident medium: air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C6",
+          "constraint": "Substrate: semi-infinite silicon",
+          "original_span": "硅作为半无限出射基底"
+        },
+        {
+          "id": "C7",
+          "constraint": "Materials: only Ta2O5 and SiO2",
+          "original_span": "膜层仅允许 Ta2O5 和 SiO2"
+        },
+        {
+          "id": "C8",
+          "constraint": "Total layers: no more than 12",
+          "original_span": "总层数不超过 12 层"
+        },
+        {
+          "id": "C9",
+          "constraint": "Single layer thickness bounds: 20-400 nm",
+          "original_span": "单层膜厚（layer thickness）：20-400 nm"
+        },
+        {
+          "id": "C10",
+          "constraint": "Compare broadband vs dual-band matching schemes",
+          "original_span": "请比较宽带与双波段匹配方案"
+        },
+        {
+          "id": "C11",
+          "constraint": "Report transmission into silicon substrate",
+          "original_span": "报告进入硅基底的透射率"
+        }
+      ],
+      "known_data": [
+        {
+          "statement": "Application context is data center co-packaged optics",
+          "original_span": "数据中心共封装光学模块"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "The term 'average' in the original question is interpreted as wavelength-integral mean divided by band width for executable metric definition, as specific sampling or arithmetic mean was not defined.",
+          "assumed_value": "wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Optical constants (n, k) for Ta2O5, SiO2, and Silicon across the specified bands are not provided in the prompt and must be retrieved.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Specific numerical targets for 'as low as possible' reflectance are not defined; no threshold is assumed.",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "research_questions": [
+        {
+          "id": "R1",
+          "question": "What are effective Ta2O5/SiO2 multilayer AR coating designs for dual-band operation on silicon substrates?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R2",
+          "question": "How do broadband AR designs compare to discrete dual-band optimized designs in terms of layer count and spectral performance trade-offs?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R3",
+          "question": "What optimization methods exist for constrained layer thickness (20-400 nm) and limited layer count (<=12) AR coatings?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        }
+      ],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Destructive interference in quarter-wave or non-quarter-wave stacks to minimize reflection at specific wavelengths",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Impedance matching using graded index profiles approximated by discrete layers",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        }
+      ],
+      "search_queries": [
+        {
+          "id": "Q1",
+          "endpoint": "paper_search",
+          "query": "Ta2O5 SiO2 dual band anti-reflection coating silicon telecom wavelengths",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Find existing designs specifically targeting dual-band AR on silicon with the requested materials."
+        },
+        {
+          "id": "Q2",
+          "endpoint": "snippet_search",
+          "query": "How to design a multilayer anti-reflection coating for silicon covering both 1300 nm and 1550 nm bands with limited layers?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1",
+            "R2"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Seek practical design strategies for bridging the gap between O-band and C/L-band on silicon."
+        },
+        {
+          "id": "Q3",
+          "endpoint": "paper_search",
+          "query": "broadband versus multiband anti-reflection coating design comparison silicon photonics",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1",
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "method_transfer",
+          "rationale": "Retrieve comparative studies on broadband vs. discrete multi-band approaches to inform the requested trade-off analysis."
+        },
+        {
+          "id": "Q4",
+          "endpoint": "snippet_search",
+          "query": "What optimization algorithms are used for thin film layer thickness constraints between 20 and 400 nm?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [],
+          "research_question_ids": [
+            "R3"
+          ],
+          "purpose": "method_transfer",
+          "rationale": "Identify methods capable of handling the specific hard constraints on layer thickness and count."
+        },
+        {
+          "id": "Q5",
+          "endpoint": "paper_search",
+          "query": "optical constants Ta2O5 SiO2 silicon near infrared dispersion",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [],
+          "research_question_ids": [],
+          "purpose": "material_structure",
+          "rationale": "Essential data retrieval for accurate simulation of the proposed stack; refractive indices are not provided in the prompt."
+        }
+      ],
+      "unsupported_requirements": [
+        {
+          "id": "UR1",
+          "requirement": "Report transmission into silicon substrate",
+          "original_span": "报告进入硅基底的透射率",
+          "reason": "Reporting transmission is an output requirement, not an optimization objective with a sense (min/max) in the supported metric vocabulary. It is preserved as a constraint (C11) but cannot be formulated as a subgoal executable_metric under the current contract which requires minimize/maximize."
+        }
+      ],
+      "readiness": "needs_revision"
+    },
+    "source_commit": "35c60b9f016eee6ef53a1b266b48e6366e1ec52d",
+    "source_planning_sha256": "e6e3dff45597fc5c05d1dcbce5719130202e1ffc441f688af2a36d627c09e57e"
+  }
+]

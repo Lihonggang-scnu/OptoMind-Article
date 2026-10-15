@@ -4,6 +4,7 @@ This validates structure/provenance, not scientific truth or search relevance.
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import math
@@ -18,10 +19,83 @@ METRICS = {'mean_reflectance', 'mean_transmittance', 'mean_absorption'}
 MEAN_REDUCTIONS = {'sample_mean', 'wavelength_integral_mean'}
 PURPOSES = ['analogous_case', 'material_structure', 'method_transfer', 'mechanism']
 ROOT = Path(__file__).resolve().parent
+UNVERIFIED_BACKGROUND = (
+    'Unverified model interpretation (not user-provided or accepted truth; '
+    'original_span is not an exact native-question quote): ')
+
+
+def prepare_analysis(question, analysis):
+    """Attach native input and audit a narrow, lossless metadata demotion.
+
+    Nonexact quotations in optional known_data are not established user facts.
+    Keep their statements as explicitly unverified model assumptions instead of
+    paying for another planning round. Raw rows remain in the audit; no quote is
+    reconstructed. Incomplete optional research-question links are retained with
+    an advisory, never invented. Executable goals, constraints and query text are
+    untouched and still require validate(). Repeated preparation is idempotent;
+    retained metadata advisories repeat, while completed demotions do not.
+    """
+    if not isinstance(analysis, dict):
+        raise ValueError('task sheet $: requires an analysis object')
+    sheet = copy.deepcopy(analysis)
+    sheet['original_question'] = question
+    audit = []
+    known = sheet.get('known_data')
+    assumptions = sheet.get('unknowns_assumptions')
+
+    def valid_text(value):
+        return isinstance(value, str) and bool(value.strip()) and value == value.strip()
+
+    if isinstance(question, str) and isinstance(known, list) and isinstance(assumptions, list):
+        retained = []
+        for index, row in enumerate(known):
+            # Only the provenance mismatch is tolerated. Malformed rows and
+            # malformed assumption containers remain visible to the validator.
+            if (isinstance(row, dict) and set(row) == {'statement', 'original_span'}
+                    and valid_text(row['statement']) and valid_text(row['original_span'])
+                    and row['original_span'] not in question):
+                assumption = {'kind': 'assumption',
+                    'statement': UNVERIFIED_BACKGROUND + row['statement'],
+                    'assumed_value': None, 'needs_user_input': False}
+                audit.append({'operation': 'demote_unverified_known_data',
+                    'source_path': f'known_data[{index}]',
+                    'destination_path': f'unknowns_assumptions[{len(assumptions)}]',
+                    'reason': 'original_span_not_exact_native_question',
+                    'raw_row': copy.deepcopy(row),
+                    'effective_row': copy.deepcopy(assumption)})
+                assumptions.append(assumption)
+            else:
+                retained.append(row)
+        sheet['known_data'] = retained
+    research = sheet.get('research_questions')
+    queries = sheet.get('search_queries')
+    if isinstance(research, list) and isinstance(queries, list):
+        linked_goals = {row['id']: row['subgoal_ids'] for row in research
+            if isinstance(row, dict) and isinstance(row.get('id'), str)
+            and isinstance(row.get('subgoal_ids'), list)
+            and all(isinstance(goal, str) for goal in row['subgoal_ids'])}
+        for index, row in enumerate(queries):
+            if not isinstance(row, dict):
+                continue
+            refs, goals = row.get('research_question_ids'), row.get('subgoal_ids')
+            if (not isinstance(refs, list) or not isinstance(goals, list)
+                    or any(not isinstance(ref, str) or ref not in linked_goals for ref in refs)
+                    or any(not isinstance(goal, str) for goal in goals)):
+                continue
+            covered = {goal for ref in refs for goal in linked_goals[ref]}
+            missing = [goal for goal in goals if goal not in covered]
+            if missing:
+                audit.append({'operation': 'retain_optional_query_links',
+                    'source_path': f'search_queries[{index}].research_question_ids',
+                    'reason': 'research_question_links_do_not_cover_all_query_subgoals',
+                    'raw_value': copy.deepcopy(refs), 'effective_value': copy.deepcopy(refs),
+                    'uncovered_subgoal_ids': missing,
+                    'status': 'advisory_not_evidence_of_relevance'})
+    return sheet, audit
 
 
 def validate(sheet, *, question=None):
-    """Reject rather than normalize, truncate, invent, or silently repair values."""
+    """Validate without mutation; optional provenance demotion is a separate audit."""
     def fail(path, reason):
         raise ValueError(f'task sheet {path}: {reason}')
     def obj(value, keys, path):
@@ -130,8 +204,13 @@ def validate(sheet, *, question=None):
         refs(rel['priority_order'], goals, 'priority_order', 1)
     text(rel['tradeoff'], 'tradeoff', nullable=True)
     text(rel['coupling'], 'coupling', nullable=True)
-    if rel['mode'] in ['all', 'any'] and (rel['priority_order'] is not None or rel['tradeoff'] is not None):
-        fail('goal_relationships', 'all/any cannot declare priorities or a tradeoff')
+    if rel['mode'] in ['all', 'any'] and rel['priority_order'] is not None:
+        fail('goal_relationships', 'all/any cannot declare priorities')
+    # Seeking all goals is compatible with a model's description of possible
+    # physical tension. This prose does not define weights, a compromise rule,
+    # or a new executable objective; subgoal metrics remain authoritative.
+    if rel['mode'] == 'any' and rel['tradeoff'] is not None:
+        fail('goal_relationships', 'any cannot declare a tradeoff')
     if rel['mode'] == 'priorities' and rel['priority_order'] is None:
         fail('priority_order', 'required for priorities')
     if rel['mode'] == 'tradeoff' and rel['tradeoff'] is None:
@@ -174,7 +253,7 @@ def validate(sheet, *, question=None):
         text(row['query'], 'query'); text(row['rationale'], 'rationale')
         refs(row['subgoal_ids'], goals, 'query.subgoal_ids', 1)
         refs(row['mechanism_ids'], mechanisms, 'query.mechanism_ids')
-        refs(row['research_question_ids'], research, 'query.research_question_ids', 1)
+        refs(row['research_question_ids'], research, 'query.research_question_ids')
         if row['endpoint'] == 'paper_search' and row['query'].endswith('?'):
             fail('query', 'paper_search expects a keyword phrase, not a natural question')
         if row['endpoint'] == 'snippet_search' and not row['query'].endswith('?'):
@@ -184,8 +263,9 @@ def validate(sheet, *, question=None):
         query_goals = set(row['subgoal_ids'])
         if any(not query_goals.intersection(r['subgoal_ids']) for r in linked_research + linked_mechanisms):
             fail('search_queries', 'linked research questions/mechanisms must share a query subgoal')
-        if not query_goals.issubset({g for r in linked_research for g in r['subgoal_ids']}):
-            fail('search_queries', 'research question links must cover query subgoals')
+        # Direct query-to-subgoal coverage is authoritative. Missing or partial
+        # optional research-question links are audited by prepare_analysis;
+        # filling them would invent associations without improving execution.
         covered.update(row['subgoal_ids'])
     if covered != goals:
         fail('search_queries', 'every user subgoal needs retrieval coverage')
@@ -253,7 +333,9 @@ def generate(question, planner):
             record['raw_task_sheet'] = analysis
             # Preserve model output for audit; the input is program-owned.
             record['ignored_model_fields'] = ['original_question'] if 'original_question' in analysis else []
-            sheet = {**analysis, 'original_question': question}
+            sheet, audit = prepare_analysis(question, analysis)
+            record['normalization_audit'] = audit
+            record['effective_task_sheet'] = copy.deepcopy(sheet)
             validate(sheet, question=question)
             if sheet['readiness'] == 'needs_revision':
                 outcome.update(status='needs_revision', task_sheet=sheet, plan={}, errors=[])
