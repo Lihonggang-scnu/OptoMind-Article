@@ -20,7 +20,7 @@ def _finite(x):
 
 
 def local_direction_facts(summary, objectives):
-    """Merge available top-k entries; never interpret omitted coordinates as zero."""
+    """Keep saved goal vectors for top-k coordinates; never fill omissions with zero."""
     result = {'status': 'unknown', 'limits': LIMITS[:], 'variables': [],
               'same_direction_opportunities': [], 'joint_direction': {'status': 'unknown', 'reason': 'insufficient_saved_derivatives'},
               'additional_forward_design_rows': 0, 'warnings': []}
@@ -39,30 +39,51 @@ def local_direction_facts(summary, objectives):
         result['reason'] = 'unrecognized saved derivative format'
         return result
     variables, invalid = {}, set()
+    def add_coordinate(v, gid, *, saved_vector=False):
+        name, bounds, value = v.get('name'), v.get('bounds_nm'), v.get('current_value_nm')
+        d = v.get('derivative_per_nm')
+        if (not isinstance(name, str) or not isinstance(bounds, (list, tuple)) or len(bounds) != 2
+                or not all(_finite(x) for x in [*bounds, value, d])
+                or not bounds[0] <= value <= bounds[1] or bounds[0] >= bounds[1]):
+            result['warnings'].append('invalid derivative coordinate omitted')
+            return
+        row = variables.setdefault(name, {'name': name, 'current_value_nm': value,
+            'bounds_nm': list(bounds), 'derivative_per_nm': {}, 'improvement_rate_normalized': {}})
+        if row['bounds_nm'] != list(bounds) or row['current_value_nm'] != value:
+            invalid.add(name)
+            return
+        if gid in row['derivative_per_nm']:
+            if not saved_vector or row['derivative_per_nm'][gid] != d:
+                invalid.add(name)
+            return
+        rate = d * (bounds[1]-bounds[0]) * (1 if goals[gid] == 'maximize' else -1)
+        if not math.isfinite(rate):
+            invalid.add(name)
+            result['warnings'].append('nonfinite normalized derivative omitted: ' + name)
+            return
+        row['derivative_per_nm'][gid] = d
+        row['improvement_rate_normalized'][gid] = rate
+
     for item in entries:
         gid = item.get('objective_id')
-        if gid not in goals:
+        if gid in goals:
+            for v in item.get('top_variables', []):
+                add_coordinate(v, gid)
+    # New summaries retain all already-computed goal derivatives for the same
+    # top-k union. Legacy summaries lack this field and remain honestly partial.
+    saved_vectors = summary.get('selected_variable_derivatives', [])
+    if not isinstance(saved_vectors, list):
+        result['warnings'].append('unrecognized saved derivative vector format omitted')
+        saved_vectors = []
+    for v in saved_vectors:
+        if not isinstance(v, dict) or not isinstance(v.get('derivative_per_nm'), dict):
+            result['warnings'].append('unrecognized saved derivative vector format omitted')
             continue
-        for v in item.get('top_variables', []):
-            name, bounds, value = v.get('name'), v.get('bounds_nm'), v.get('current_value_nm')
-            d = v.get('derivative_per_nm')
-            if (not isinstance(name, str) or not isinstance(bounds, (list, tuple)) or len(bounds) != 2
-                    or not all(_finite(x) for x in [*bounds, value, d])
-                    or not bounds[0] <= value <= bounds[1] or bounds[0] >= bounds[1]):
-                result['warnings'].append('invalid derivative coordinate omitted')
-                continue
-            row = variables.setdefault(name, {'name': name, 'current_value_nm': value,
-                'bounds_nm': list(bounds), 'derivative_per_nm': {}, 'improvement_rate_normalized': {}})
-            if row['bounds_nm'] != list(bounds) or row['current_value_nm'] != value or gid in row['derivative_per_nm']:
-                invalid.add(name)
-                continue
-            rate = d * (bounds[1]-bounds[0]) * (1 if goals[gid] == 'maximize' else -1)
-            if not math.isfinite(rate):
-                invalid.add(name)
-                result['warnings'].append('nonfinite normalized derivative omitted: ' + name)
-                continue
-            row['derivative_per_nm'][gid] = d
-            row['improvement_rate_normalized'][gid] = rate
+        if v.get('name') not in variables:
+            continue
+        for gid, derivative in v['derivative_per_nm'].items():
+            if gid in goals:
+                add_coordinate({**v, 'derivative_per_nm': derivative}, gid, saved_vector=True)
     tol = 1e-10
     complete = []
     for name, row in sorted(variables.items()):

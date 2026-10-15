@@ -87,13 +87,20 @@ def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=
         at_lower, at_upper = abs(value-lower) <= tolerance, abs(value-upper) <= tolerance
         variable_rows.append({'name': name, 'current_value_nm': value, 'bounds_nm': [lower, upper],
             'at_bound': 'both_fixed' if at_lower and at_upper else 'lower' if at_lower else 'upper' if at_upper else None})
-    sensitivities = []
+    sensitivities, selected = [], set()
     for i, goal in enumerate(goals):
         ranked = sorted((j for j in range(len(variable_names)) if spans[j] > 0),
                         key=lambda j: (-abs(jac[i, j]), j))[:top_k]
+        selected.update(ranked)
         sensitivities.append({'objective_id': goal['objective_id'], 'sense': goal['sense'],
             'top_variables': [{**variable_rows[j], 'derivative_per_nm': float(jac[i, j]/spans[j]),
                                'derivative_per_normalized_variable': float(jac[i, j])} for j in ranked]})
+    # Top-k chooses coordinates, not which known goals may be shown for them.
+    # Preserve each selected coordinate's complete saved vector without adding
+    # parameters, evaluating the solver, or changing the per-goal rankings.
+    selected_derivatives = [{**variable_rows[j],
+        'derivative_per_nm': {g['objective_id']: float(jac[i, j]/spans[j])
+                              for i, g in enumerate(goals)}} for j in sorted(selected)]
     signs = np.asarray([1. if g['sense'] == 'maximize' else -1. for g in goals])
     improvement_jac = jac * signs[:, None]
     zero_tolerance = 1e-10
@@ -108,6 +115,7 @@ def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=
                 'increasing_variable_worsens_goals': negative})
     output.update(status='local_derivative_uncertified', sensitivity_ranking='absolute_normalized_coordinate_derivative',
         goal_sensitivities=sensitivities,
+        selected_variable_derivatives=selected_derivatives,
         goal_gradient_conflicts={'status': 'observed' if conflicts else 'none_above_threshold',
             'improvement_orientation': 'maximize:+derivative; minimize:-derivative',
             'normalized_zero_tolerance': zero_tolerance, 'conflicting_variable_count': len(conflicts),
