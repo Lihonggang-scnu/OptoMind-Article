@@ -1,0 +1,55 @@
+{
+  "plans": [
+    {
+      "parent_design_id": "design:0dfa0da6805d956226e86249295b9c269130a4ed0247971be4bbc9df5382a2ea",
+      "action": "refine_family",
+      "diagnosis": {
+        "diagnosis_id": "diagnosis:077153019853a24197c4cffe2b2e062aeb6cde4e4d4b506f7f7fa31db12e8406",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "explanation": "Comparison D017 shows P002 improves G1 by +0.0073 and G2 by +0.0328 over baseline P017. Local derivatives for P002 indicate G1 increases with dH, dC1, dC2 (positive slopes ~0.00012-0.00014/nm) but G2 decreases with dH and dC1 (negative slopes). Since dH is at its lower bound (85nm) and dC1/dC2 are at upper bounds (550nm), the current gradient suggests moving dH up hurts G2 significantly (-0.01/nm) while helping G1 slightly. Moving spacers down helps G2 but hurts G1. The conflict prevents a simple joint ascent. Refining the family allows testing if adjusting the shared low-index layer thickness (dL), which currently lacks a complete G1 derivative in the saved data but shows a negative G2 derivative, can resolve the trade-off or if the bounds need re-evaluation.",
+        "verification": "verified_references"
+      },
+      "expected_goal_changes": {
+        "G1": "unknown",
+        "G2": "unknown"
+      }
+    },
+    {
+      "parent_design_id": "design:70e22dd4b5a7e4d2994e2e82adc140070870c2fe315b01db93423e872082ad34",
+      "action": "refine_family",
+      "diagnosis": {
+        "diagnosis_id": "diagnosis:3bf7803147b71d7d3b9e62dc6d1361a5c5a88616b0b839fd314eee4f9c7da061",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "explanation": "Diagnosis D018 reveals P012 achieves a massive G2 gain (+0.15) over P005 but suffers a G1 loss in the blue subband (400-499nm) despite overall G1 gain. Local derivatives show dH and dL have strong negative impacts on both G1 and G2 at their lower bounds (80nm, 130nm), suggesting increasing them is beneficial for both goals locally. However, the cavity thickness dC has a positive G1 derivative and negative G2 derivative. The current design has dC near the middle of its range. Refining the family parameters may allow decoupling the cavity resonance (tuning dC) from the mirror stopband strength (tuning dH/dL) to recover the blue-side reflection loss without sacrificing C-band transmission.",
+        "verification": "verified_references"
+      },
+      "expected_goal_changes": {
+        "G1": "increase",
+        "G2": "increase"
+      }
+    },
+    {
+      "parent_design_id": "design:117352d9f33e2b444a9c756ecb40fb9bd99c0ce410057d1396146c2773b17265",
+      "action": "refine_layers",
+      "diagnosis": {
+        "diagnosis_id": "diagnosis:eda8bf9d3ca0576912f8b9547916b1bdd41cdb41d0ec8e0c1cf129bb459ef446",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "explanation": "P020 (chirped stack F006) shows a G1 loss (-0.008) but a G2 gain (+0.042) compared to P003. The chirp mechanism aims to broaden the stopband. The loss in G1 suggests the passband ripple or edge steepness is suboptimal. By untying the shared variables (dH_start, dH_mid, etc.) into independent layer thicknesses, we can specifically adjust the layer thicknesses responsible for the C-band passband shape (likely the central layers) without disturbing the chirped profile that provides the wide visible rejection. This action tests if the specific chirp profile in F006 is too rigid to simultaneously optimize the narrow C-band pass.",
+        "verification": "verified_references"
+      },
+      "expected_goal_changes": {
+        "G1": "increase",
+        "G2": "unchanged"
+      }
+    }
+  ]
+}

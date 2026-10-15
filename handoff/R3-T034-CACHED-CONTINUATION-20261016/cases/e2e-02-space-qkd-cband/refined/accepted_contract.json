@@ -1,0 +1,1442 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_7668cafefd6a2c91b5884ce0c0ddc48282d803d8db757a08ebfce2e97646fe41",
+      "source_quote": "the sunlight contains a considerably large amount of 800 nm light compared to 1550 nm (in fact the intensity of 800 nm in sunlight is about 5 times that of 1550 nm). This reduces the possibility of false detection and allows us to simulate a situation where free-space quantum communication is performed in the daytime, too.",
+      "structure_or_method": "Selection of 1550 nm wavelength for free-space QKD to minimize solar background noise relative to signal.",
+      "physical_effect": "Reduced solar background intensity at telecom wavelengths compared to visible/NIR bands improves signal-to-noise ratio.",
+      "conditions_and_unknowns": [
+        "Discusses wavelength selection rationale, not coating design specifics.",
+        "Does not specify layer materials or thicknesses for filtering."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Supports the requirement for high visible rejection (G2) while maintaining high transmission at 1550 nm (G1), motivating a long-pass filter topology."
+    },
+    {
+      "id": "D2",
+      "evidence_id": "E_8d1b4fcb1eea425f147f67c61c20f751ce0b32a17de40dce39ab5a19e6efb930",
+      "source_quote": "Dispersion control over the ultraviolet-visible-near-infrared spectral range with HfO2/SiO2-chirped dielectric multilayers.",
+      "structure_or_method": "Chirped dielectric multilayers using HfO2 and SiO2.",
+      "physical_effect": "Control of dispersion and spectral response over a wide range (UV-VIS-NIR).",
+      "conditions_and_unknowns": [
+        "Title only; specific chirp profiles or layer counts not detailed in snippet.",
+        "Exact performance metrics for visible rejection vs. C-band transmission not provided."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Suggests that varying layer thicknesses (chirping) in HfO2/SiO2 stacks can tailor the spectral edge steepness between the visible stopband and C-band passband."
+    },
+    {
+      "id": "D3",
+      "evidence_id": "E_05609165b5d2f7bc83b963192b3f9ebcf98c4fe142e032c25ea081120c7fe89a",
+      "source_quote": "To achieve visible rejection, we turn to metal dielectric filters (MDFs)... the layered structure is designed to resonantly transmit light within a specific wavelength band, while out-of-band light is strongly reflected by the metal layers.",
+      "structure_or_method": "Metal-dielectric filters (Fabry-Perot structures) for spectral filtering.",
+      "physical_effect": "Resonant transmission in-band, strong reflection out-of-band.",
+      "conditions_and_unknowns": [
+        "Snippet discusses metal-dielectric filters; task constraints require all-dielectric (HfO2/SiO2).",
+        "Principle of resonant cavities and DBRs is transferable to all-dielectric designs."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "The concept of using a resonant cavity (spacer) between high-reflectivity mirrors (DBRs) to create a narrow or broad passband can be adapted using HfO2/SiO2 stacks instead of metal layers."
+    },
+    {
+      "id": "D5",
+      "evidence_id": "E_675773ef270e3eaa91df11cca6eba4383df369624e9ce539f86e934e8a37b0b3",
+      "source_quote": "The amorphous SiO2 films show very low optical losses within a spectral range of 200 nm to 1100 nm. Laser calorimetric measurements show absorption losses of 300 nm thick SiO2 films of about 1.5 parts per million at a wavelength of 1064 nm.",
+      "structure_or_method": "Atomic layer deposition (ALD) of SiO2 and HfO2 broadband antireflective multilayers.",
+      "physical_effect": "Very low optical losses (absorption) in SiO2 films extending into NIR.",
+      "conditions_and_unknowns": [
+        "Loss data at 1064 nm; extrapolation to 1550 nm assumes similar or lower loss.",
+        "Confirms suitability of SiO2 as a low-loss spacer/material for C-band."
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "inference_bridge": "Supports the use of SiO2 as the primary low-index material for thick spacers or matching layers in the C-band to minimize absorption losses."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A standard quarter-wave stack (QWS) designed with a center wavelength in the visible range will create a high-reflectance stopband for solar background while allowing transmission in the C-band due to higher-order passbands.",
+      "clue_ids": [
+        "D1",
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_7668cafefd6a2c91b5884ce0c0ddc48282d803d8db757a08ebfce2e97646fe41",
+        "E_8d1b4fcb1eea425f147f67c61c20f751ce0b32a17de40dce39ab5a19e6efb930"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "A QWS centered at ~550 nm will have its first higher-order passband near 1550 nm (approx 3x center wavelength), potentially aligning with the C-band.",
+        "HfO2/SiO2 index contrast is sufficient to create a wide visible stopband with fewer than 30 layers."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption for normal incidence."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task execution assumption for equal-s/p mean."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            80,
+            100
+          ],
+          "dL": [
+            130,
+            160
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH": 90,
+            "dL": 145
+          }
+        },
+        {
+          "id": "tuned_visible_center",
+          "parameters_nm": {
+            "dH": 95,
+            "dL": 150
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_visible_center",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Shifting the quarter-wave center wavelength closer to the peak solar intensity (~550 nm) should increase the overlap of the stopband with the visible goal region."
+        },
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_visible_center",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "unchanged",
+          "reason": "The third-order passband location shifts proportionally; if aligned correctly, transmission remains high, though slight detuning could reduce it. Direction is uncertain without simulation."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Standard thin-film theory predicts higher-order passbands at odd multiples of the fundamental design wavelength. A stack designed for ~550 nm reflection naturally transmits near 1650 nm (3x), requiring fine-tuning to hit 1550 nm."
+    },
+    {
+      "id": "R2",
+      "claim": "Introducing a thick SiO2 spacer layer between two Bragg mirrors creates a Fabry-Perot cavity that enhances transmission at the C-band while maintaining visible rejection via the mirrors.",
+      "clue_ids": [
+        "D3",
+        "D5"
+      ],
+      "evidence_ids": [
+        "E_05609165b5d2f7bc83b963192b3f9ebcf98c4fe142e032c25ea081120c7fe89a",
+        "E_675773ef270e3eaa91df11cca6eba4383df369624e9ce539f86e934e8a37b0b3"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "All-dielectric Fabry-Perot filters behave similarly to metal-dielectric ones but with lower absorption.",
+        "SiO2 low loss at NIR (evidence at 1064 nm) extends to 1550 nm."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dC"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            80,
+            100
+          ],
+          "dL": [
+            130,
+            160
+          ],
+          "dC": [
+            400,
+            600
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH": 90,
+            "dL": 145,
+            "dC": 500
+          }
+        },
+        {
+          "id": "resonant_cavity",
+          "parameters_nm": {
+            "dH": 90,
+            "dL": 145,
+            "dC": 535
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "resonant_cavity",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dC"
+          ],
+          "direction": "increase",
+          "reason": "Tuning the cavity thickness to match the half-wave condition at 1550 nm should create a transmission peak, increasing mean transmittance in the C-band."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "resonant_cavity",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dC"
+          ],
+          "direction": "unchanged",
+          "reason": "The cavity primarily affects the passband; the Bragg mirrors determine visible rejection. Changing dC should not significantly alter visible reflectance unless sidebands shift."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Fabry-Perot interference requires a specific optical path length in the spacer. Evidence D3 supports the cavity concept, while D5 confirms SiO2 is suitable for low-loss spacers in NIR."
+    },
+    {
+      "id": "R3",
+      "claim": "A chirped mirror design, where layer thicknesses gradually increase towards the substrate, can broaden the visible stopband to cover the entire 400-700 nm range more effectively than a periodic stack.",
+      "clue_ids": [
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_8d1b4fcb1eea425f147f67c61c20f751ce0b32a17de40dce39ab5a19e6efb930"
+      ],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Chirping layer thicknesses linearly or exponentially can superimpose multiple stopbands to cover a wider spectral range.",
+        "The specific chirp rate needed for 400-700 nm is a model hypothesis."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_start"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_start"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_mid"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_mid"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_end"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_end"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_end"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_end"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_end"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_end"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH_end"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_end"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH_start": [
+            70,
+            90
+          ],
+          "dL_start": [
+            110,
+            140
+          ],
+          "dH_mid": [
+            85,
+            105
+          ],
+          "dL_mid": [
+            135,
+            165
+          ],
+          "dH_end": [
+            100,
+            120
+          ],
+          "dL_end": [
+            160,
+            190
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH_start": 80,
+            "dL_start": 125,
+            "dH_mid": 95,
+            "dL_mid": 150,
+            "dH_end": 110,
+            "dL_end": 175
+          }
+        },
+        {
+          "id": "aggressive_chirp",
+          "parameters_nm": {
+            "dH_start": 75,
+            "dL_start": 120,
+            "dH_mid": 95,
+            "dL_mid": 150,
+            "dH_end": 115,
+            "dL_end": 185
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "aggressive_chirp",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH_start",
+            "dL_start",
+            "dH_end",
+            "dL_end"
+          ],
+          "direction": "increase",
+          "reason": "Increasing the spread between start and end thicknesses (chirp magnitude) should broaden the composite stopband, covering more of the 400-700 nm range."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R4",
+      "claim": "Adding a matching layer (single SiO2 layer) on top of the multilayer stack can reduce surface reflection losses in the C-band, improving overall transmittance without affecting visible rejection significantly.",
+      "clue_ids": [
+        "D5"
+      ],
+      "evidence_ids": [
+        "E_675773ef270e3eaa91df11cca6eba4383df369624e9ce539f86e934e8a37b0b3"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "An antireflection (AR) condition at the air-stack interface for 1550 nm can be achieved with a quarter-wave SiO2 layer.",
+        "This AR effect is narrowband enough not to compromise visible rejection."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "dAR"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dAR": [
+            250,
+            300
+          ],
+          "dH": [
+            90,
+            100
+          ],
+          "dL": [
+            140,
+            160
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dAR": 275,
+            "dH": 95,
+            "dL": 150
+          }
+        },
+        {
+          "id": "optimized_AR",
+          "parameters_nm": {
+            "dAR": 265,
+            "dH": 95,
+            "dL": 150
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "optimized_AR",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dAR"
+          ],
+          "direction": "increase",
+          "reason": "Adjusting the top layer thickness to satisfy the quarter-wave condition at 1550 nm minimizes Fresnel reflection at the entrance, boosting transmission."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Standard AR coating theory applied to the exit face of a filter. Evidence D5 confirms SiO2 is low loss, making it ideal for this surface layer."
+    },
+    {
+      "id": "R5",
+      "claim": "Using a 'double-cavity' structure (two spacers separated by a central mirror) can flatten the transmission peak in the C-band, ensuring high mean transmittance across the entire 35 nm bandwidth.",
+      "clue_ids": [
+        "D3"
+      ],
+      "evidence_ids": [
+        "E_05609165b5d2f7bc83b963192b3f9ebcf98c4fe142e032c25ea081120c7fe89a"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "Coupling two resonant cavities splits the transmission peak into two closely spaced peaks or broadens the flat-top region.",
+        "This topology fits within the 30-layer limit."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dC1"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dC2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            85,
+            95
+          ],
+          "dL": [
+            135,
+            155
+          ],
+          "dC1": [
+            500,
+            550
+          ],
+          "dC2": [
+            500,
+            550
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH": 90,
+            "dL": 145,
+            "dC1": 525,
+            "dC2": 525
+          }
+        },
+        {
+          "id": "detuned_cavities",
+          "parameters_nm": {
+            "dH": 90,
+            "dL": 145,
+            "dC1": 515,
+            "dC2": 535
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "detuned_cavities",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dC1",
+            "dC2"
+          ],
+          "direction": "increase",
+          "reason": "Slightly detuning the two cavity lengths spreads the resonance, potentially creating a broader flat-top transmission profile that integrates to a higher mean over the 35 nm band."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R6",
+      "claim": "Model-knowledge hypothesis: A non-periodic stack with a specific 'defect' layer thickness inserted in the middle of a Bragg mirror can create a narrow transmission window within the stopband, which might be tuned to the C-band if the stopband is shifted to NIR.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Defect modes in photonic crystals allow transmission at specific wavelengths within a forbidden gap.",
+        "This mechanism is being tested for feasibility in this specific HfO2/SiO2 system without prior evidence citation."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dDefect"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            100,
+            120
+          ],
+          "dL": [
+            160,
+            190
+          ],
+          "dDefect": [
+            200,
+            300
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH": 110,
+            "dL": 175,
+            "dDefect": 250
+          }
+        },
+        {
+          "id": "tuned_defect",
+          "parameters_nm": {
+            "dH": 110,
+            "dL": 175,
+            "dDefect": 270
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_defect",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dDefect"
+          ],
+          "direction": "increase",
+          "reason": "Changing the defect layer thickness shifts the resonant mode within the stopband. If aligned with 1550 nm, it could open a transmission channel."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_defect",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dDefect"
+          ],
+          "direction": "unchanged",
+          "reason": "The defect mode is localized; the surrounding Bragg mirrors should still reflect visible light, assuming the stopband covers 400-700 nm."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Photonic crystal theory suggests that breaking periodicity with a defect layer introduces a localized state in the bandgap. This is a theoretical exploration to see if a single defect can simultaneously satisfy the wide visible stopband and narrow C-band pass requirement."
+    },
+    {
+      "id": "R8",
+      "claim": "Model-knowledge hypothesis: Using a graded-index transition (simulated by varying HfO2/SiO2 ratios or thicknesses in sub-layers) at the air interface could reduce broadband reflection ripple in the C-band.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "Graded index profiles reduce Fresnel reflections over a wider band than single quarter-wave layers.",
+        "Discrete steps in thickness can approximate a continuous gradient."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "dGrad1"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dGrad2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dGrad1": [
+            20,
+            40
+          ],
+          "dGrad2": [
+            50,
+            80
+          ],
+          "dH": [
+            90,
+            100
+          ],
+          "dL": [
+            140,
+            160
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dGrad1": 30,
+            "dGrad2": 65,
+            "dH": 95,
+            "dL": 150
+          }
+        },
+        {
+          "id": "graded_transition",
+          "parameters_nm": {
+            "dGrad1": 25,
+            "dGrad2": 55,
+            "dH": 95,
+            "dL": 150
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1530,
+                1565
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "graded_transition",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dGrad1",
+            "dGrad2"
+          ],
+          "direction": "increase",
+          "reason": "Optimizing the thickness of the initial low-index layers to form a stepped index profile may suppress interference ripples in the passband, leading to a smoother and potentially higher average transmission."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Gradient index coatings are known to reduce reflection over broad bands. This route tests a discrete approximation using two variable SiO2 layers at the front."
+    },
+    {
+      "id": "R10",
+      "claim": "Model-knowledge hypothesis: Introducing a small amount of intentional disorder (random variation in layer thicknesses within a tight tolerance) might suppress coherent sideband lobes in the visible region, improving the mean reflectance stability.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Disordered photonic structures can exhibit robust bandgaps with suppressed sidelobes compared to perfect periodic crystals.",
+        "This is a speculative route to improve the integral mean by filling dips in the reflectance spectrum."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH2"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH3"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL3"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH4"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL4"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH5"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL5"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH6"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL6"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH1": [
+            85,
+            95
+          ],
+          "dL1": [
+            135,
+            155
+          ],
+          "dH2": [
+            85,
+            95
+          ],
+          "dL2": [
+            135,
+            155
+          ],
+          "dH3": [
+            85,
+            95
+          ],
+          "dL3": [
+            135,
+            155
+          ],
+          "dH4": [
+            85,
+            95
+          ],
+          "dL4": [
+            135,
+            155
+          ],
+          "dH5": [
+            85,
+            95
+          ],
+          "dL5": [
+            135,
+            155
+          ],
+          "dH6": [
+            85,
+            95
+          ],
+          "dL6": [
+            135,
+            155
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "periodic",
+          "parameters_nm": {
+            "dH1": 90,
+            "dL1": 145,
+            "dH2": 90,
+            "dL2": 145,
+            "dH3": 90,
+            "dL3": 145,
+            "dH4": 90,
+            "dL4": 145,
+            "dH5": 90,
+            "dL5": 145,
+            "dH6": 90,
+            "dL6": 145
+          }
+        },
+        {
+          "id": "disordered",
+          "parameters_nm": {
+            "dH1": 88,
+            "dL1": 142,
+            "dH2": 92,
+            "dL2": 148,
+            "dH3": 89,
+            "dL3": 144,
+            "dH4": 91,
+            "dL4": 146,
+            "dH5": 87,
+            "dL5": 143,
+            "dH6": 93,
+            "dL6": 147
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "periodic",
+          "candidate_instance_id": "disordered",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH1",
+            "dL1",
+            "dH2",
+            "dL2",
+            "dH3",
+            "dL3",
+            "dH4",
+            "dL4",
+            "dH5",
+            "dL5",
+            "dH6",
+            "dL6"
+          ],
+          "direction": "increase",
+          "reason": "Breaking strict periodicity may smear out sharp transmission leaks (sidelobes) within the stopband, raising the minimum reflectance and thus the integral mean over the wide visible band."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Disorder in photonic crystals is a known phenomenon that can lead to Anderson localization or simply broadening of spectral features. This is a bold hypothesis to test if randomness helps meet the wide-band reflection goal better than a perfect crystal."
+    }
+  ]
+}

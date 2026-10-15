@@ -1,0 +1,904 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_a8ed47ed98407c83539abecf89463f25739d0fea8191a974e3946831c8a54b0a",
+      "source_quote": "In order to obtain the desired specific wavelength in full visible region, two DBRs with 9 layers each were designed to stop the undesired band of wavelengths. TiO2 and SiO2 are chosen as high and low refractive index materials, respectively.",
+      "structure_or_method": "Two separate Distributed Bragg Reflectors (DBRs) combined to block undesired bands while transmitting a specific passband.",
+      "physical_effect": "Spectral rejection via constructive interference in high/low index stacks; transmission peak formation between stopbands.",
+      "conditions_and_unknowns": [
+        "Source uses TiO2/SiO2; task requires Ta2O5/SiO2 (index contrast difference).",
+        "Specific layer thicknesses for the dual-stopband case are not detailed in the snippet.",
+        "Angle of incidence not specified in snippet (assumed normal for transfer)."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "inference_bridge": "Hypothesize that replacing TiO2 with Ta2O5 and tuning layer thicknesses to quarter-wave conditions at 360nm and 1055nm will create the required dual stopbands, with the visible passband arising naturally from the spectral gap between the two reflection zones."
+    },
+    {
+      "id": "D2",
+      "evidence_id": "E_888ab510e51b1c1e69d44c9071140b68508c55db9ecb1af2c56dc234606d7b7a",
+      "source_quote": "In quarter-wave design, the most common problem is the pronounced ripples on the edges of the passband, normally called \"rabbit ears\" [7]. This problem could be resolved by proper matching of the top and bottom layers of the configuration with incident medium and substrate respectively.",
+      "structure_or_method": "Non-quarter-wave thickness tuning of the first and last layers (matching layers) to suppress passband ripple.",
+      "physical_effect": "Impedance matching at interfaces reduces Fresnel reflections that cause oscillatory ripple in the transmission band.",
+      "conditions_and_unknowns": [
+        "Snippet discusses TiO2/SiO2; transfer assumes validity for Ta2O5/SiO2.",
+        "Exact optimal thickness ratios for matching are not provided in the text.",
+        "Effect on deep UV stopband performance is not quantified."
+      ],
+      "goal_ids": [
+        "G2"
+      ],
+      "inference_bridge": "Propose varying the thickness of the air-side and substrate-side layers away from the quarter-wave condition to minimize ripple in the 420-700nm band, accepting a potential trade-off in stopband edge steepness."
+    },
+    {
+      "id": "D3",
+      "evidence_id": "E_c102c33b53ae0fbb86073877a825f6df0e17ce098e165a71a625e43913e143d0",
+      "source_quote": "During the design process, a constraint on layer thickness was introduced in order to ensure a minimum thickness of each layer above 10 nm... The limits on the maximum thickness of each layer were also monitored in order to achieve the desired result with minimum possible consumption of the two materials for economy.",
+      "structure_or_method": "Constrained optimization with explicit lower and upper bounds on individual layer thicknesses.",
+      "physical_effect": "Prevents physically unrealizable thin films and excessive stress/absorption in thick layers; may limit achievable stopband depth.",
+      "conditions_and_unknowns": [
+        "Source used 10nm minimum; task requires 20nm minimum.",
+        "Impact of the 20nm floor on the 355nm stopband (requiring very thin layers for higher orders) is unknown.",
+        "Economic motivation may conflict with optical performance goals."
+      ],
+      "goal_ids": [
+        "G1",
+        "G3"
+      ],
+      "inference_bridge": "Test whether the 20nm lower bound prevents achieving deep rejection at 355nm using standard quarter-wave stacks, necessitating non-quarter-wave designs or higher refractive index contrast utilization."
+    },
+    {
+      "id": "D4",
+      "evidence_id": "E_1c70db501d53207de700a03e4968adedab24d6516781f14e44f3074afdee787a",
+      "source_quote": "The transmission of the QNL design covers a wide useable range down to 280nm, whereas the short pass using standard Ta2O5 gets strongly absorbing below 310nm.",
+      "structure_or_method": "Quantized Nanolaminates (QNL) vs. Standard Bulk Ta2O5 layers for UV transparency.",
+      "physical_effect": "Nanostructuring or composition grading in QNL reduces absorption coefficient in the deep UV compared to bulk Ta2O5.",
+      "conditions_and_unknowns": [
+        "Task constraints specify only 'Ta2O5' and 'SiO2' materials; QNL may require specific deposition protocols not explicitly allowed as distinct materials.",
+        "Absorption mechanism difference is critical for UV excitation leakage (G1).",
+        "Standard Ta2O5 absorption edge might limit transmission in the lower visible if not managed."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Compare a route assuming standard bulk Ta2O5 optical constants (with potential UV absorption tail) against a hypothetical route assuming improved UV transparency (QNL-like behavior) to quantify the sensitivity of G1 to material dispersion models."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A dual-stack design consisting of a UV-blocking DBR followed by an NIR-blocking DBR can achieve the required spectral profile, with the visible passband emerging from the spectral separation of the two stopbands.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_a8ed47ed98407c83539abecf89463f25739d0fea8191a974e3946831c8a54b0a"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "transfer_assumptions": [
+        "Ta2O5/SiO2 index contrast is sufficient to replicate the TiO2/SiO2 performance described in evidence.",
+        "The spectral gap between a 360nm-centered stack and a 1055nm-centered stack naturally aligns with the 420-700nm requirement without additional complex coupling layers."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task specifies normal incidence."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task specifies unpolarized light."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_UV"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_UV"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_UV"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_UV"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_UV"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_UV"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_UV"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_UV"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_UV"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_UV"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_NIR"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_NIR"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_NIR"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_NIR"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_NIR"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_NIR"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_NIR"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_NIR"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH_NIR"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL_NIR"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH_UV": [
+            20,
+            60
+          ],
+          "dL_UV": [
+            20,
+            100
+          ],
+          "dH_NIR": [
+            100,
+            200
+          ],
+          "dL_NIR": [
+            150,
+            300
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline_dual_stack",
+          "parameters_nm": {
+            "dH_UV": 45,
+            "dL_UV": 75,
+            "dH_NIR": 140,
+            "dL_NIR": 230
+          }
+        },
+        {
+          "id": "tuned_gap_dual_stack",
+          "parameters_nm": {
+            "dH_UV": 40,
+            "dL_UV": 70,
+            "dH_NIR": 150,
+            "dL_NIR": 240
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                355,
+                365
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_dual_stack",
+          "candidate_instance_id": "tuned_gap_dual_stack",
+          "controlled_conditions": "Same material order, 20-layer count, normal incidence, unpolarized.",
+          "changed_variables": [
+            "dH_UV",
+            "dL_UV",
+            "dH_NIR",
+            "dL_NIR"
+          ],
+          "direction": "decrease",
+          "reason": "Shifting the UV stack center wavelength closer to 360nm and optimizing the NIR stack should deepen the respective stopbands; direction is hypothesized based on interference principles."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                420,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_dual_stack",
+          "candidate_instance_id": "tuned_gap_dual_stack",
+          "controlled_conditions": "Same material order, 20-layer count, normal incidence, unpolarized.",
+          "changed_variables": [
+            "dH_UV",
+            "dL_UV",
+            "dH_NIR",
+            "dL_NIR"
+          ],
+          "direction": "increase",
+          "reason": "Optimizing the separation between the UV and NIR reflection bands may reduce overlap into the visible passband, increasing mean transmission."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R2",
+      "claim": "Modifying the thickness of the first and last layers (matching layers) relative to the quarter-wave condition will reduce passband ripple ('rabbit ears') without significantly compromising stopband depth.",
+      "clue_ids": [
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_888ab510e51b1c1e69d44c9071140b68508c55db9ecb1af2c56dc234606d7b7a"
+      ],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The ripple reduction mechanism observed in TiO2/SiO2 systems applies to Ta2O5/SiO2 despite different dispersion.",
+        "The optimal matching thickness for the air interface differs from the substrate interface due to asymmetry in refractive indices."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d_match_air"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d_match_sub"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d_match_air": [
+            20,
+            100
+          ],
+          "dH": [
+            40,
+            60
+          ],
+          "dL": [
+            70,
+            100
+          ],
+          "d_match_sub": [
+            20,
+            100
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline_qw",
+          "parameters_nm": {
+            "d_match_air": 50,
+            "dH": 50,
+            "dL": 85,
+            "d_match_sub": 50
+          }
+        },
+        {
+          "id": "optimized_match",
+          "parameters_nm": {
+            "d_match_air": 35,
+            "dH": 50,
+            "dL": 85,
+            "d_match_sub": 65
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                420,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_qw",
+          "candidate_instance_id": "optimized_match",
+          "controlled_conditions": "Same internal stack periodicity, 23 layers, normal incidence.",
+          "changed_variables": [
+            "d_match_air",
+            "d_match_sub"
+          ],
+          "direction": "increase",
+          "reason": "Reducing impedance mismatch at boundaries should flatten the transmission curve, raising the integral mean by filling in ripple valleys."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R3",
+      "claim": "Enforcing a strict 20nm lower bound on layer thickness may force the UV stopband design into a higher-order harmonic mode or non-quarter-wave configuration, potentially reducing peak rejection depth compared to unconstrained designs.",
+      "clue_ids": [
+        "D3"
+      ],
+      "evidence_ids": [
+        "E_c102c33b53ae0fbb86073877a825f6df0e17ce098e165a71a625e43913e143d0"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "The 20nm constraint is hard and cannot be violated even for performance gains.",
+        "Standard quarter-wave layers for 360nm in Ta2O5 (n~2.3) would be ~39nm, so 20nm is feasible for fundamental but tight for some matching schemes."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            20,
+            50
+          ],
+          "dL": [
+            20,
+            90
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "thick_limit_uv",
+          "parameters_nm": {
+            "dH": 39,
+            "dL": 65
+          }
+        },
+        {
+          "id": "thin_limit_uv",
+          "parameters_nm": {
+            "dH": 20,
+            "dL": 35
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                355,
+                365
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "thick_limit_uv",
+          "candidate_instance_id": "thin_limit_uv",
+          "controlled_conditions": "18 layers, normal incidence, unpolarized.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Forcing layers to the 20nm minimum shifts the stopband center wavelength significantly away from 360nm (blue shift), likely reducing rejection in the target 355-365nm band."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R10",
+      "claim": "Optimizing the layer thicknesses for the 355-365nm band using a 'needle optimization' approach (locally inserting thin layers) will yield better performance than a pure periodic stack, especially under the 20nm thickness constraint.",
+      "clue_ids": [
+        "D3"
+      ],
+      "evidence_ids": [
+        "E_c102c33b53ae0fbb86073877a825f6df0e17ce098e165a71a625e43913e143d0"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Needle optimization can find non-intuitive thickness combinations that satisfy the 20nm floor while maintaining performance.",
+        "The local minima found by needle insertion are superior to the global minima of simple periodic designs in this constrained space."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d2"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d3"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d4"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d5"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d6"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d7"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d8"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d9"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d10"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d11"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d12"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d13"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d14"
+          },
+          {
+            "material": "Ta2O5",
+            "thickness_nm": "d15"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d16"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d1": [
+            20,
+            100
+          ],
+          "d2": [
+            20,
+            150
+          ],
+          "d3": [
+            20,
+            100
+          ],
+          "d4": [
+            20,
+            150
+          ],
+          "d5": [
+            20,
+            100
+          ],
+          "d6": [
+            20,
+            150
+          ],
+          "d7": [
+            20,
+            100
+          ],
+          "d8": [
+            20,
+            150
+          ],
+          "d9": [
+            20,
+            100
+          ],
+          "d10": [
+            20,
+            150
+          ],
+          "d11": [
+            20,
+            100
+          ],
+          "d12": [
+            20,
+            150
+          ],
+          "d13": [
+            20,
+            100
+          ],
+          "d14": [
+            20,
+            150
+          ],
+          "d15": [
+            20,
+            100
+          ],
+          "d16": [
+            20,
+            150
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "periodic_start",
+          "parameters_nm": {
+            "d1": 40,
+            "d2": 70,
+            "d3": 40,
+            "d4": 70,
+            "d5": 40,
+            "d6": 70,
+            "d7": 40,
+            "d8": 70,
+            "d9": 40,
+            "d10": 70,
+            "d11": 40,
+            "d12": 70,
+            "d13": 40,
+            "d14": 70,
+            "d15": 40,
+            "d16": 70
+          }
+        },
+        {
+          "id": "perturbed_needle",
+          "parameters_nm": {
+            "d1": 35,
+            "d2": 75,
+            "d3": 45,
+            "d4": 65,
+            "d5": 38,
+            "d6": 72,
+            "d7": 42,
+            "d8": 68,
+            "d9": 35,
+            "d10": 75,
+            "d11": 45,
+            "d12": 65,
+            "d13": 38,
+            "d14": 72,
+            "d15": 42,
+            "d16": 68
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                355,
+                365
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "periodic_start",
+          "candidate_instance_id": "perturbed_needle",
+          "controlled_conditions": "16 layers, same bounds.",
+          "changed_variables": [
+            "d1",
+            "d2",
+            "d3",
+            "d4",
+            "d5",
+            "d6",
+            "d7",
+            "d8",
+            "d9",
+            "d10",
+            "d11",
+            "d12",
+            "d13",
+            "d14",
+            "d15",
+            "d16"
+          ],
+          "direction": "decrease",
+          "reason": "Breaking the strict periodicity allows the design to escape local minima associated with quarter-wave stacks, potentially finding a configuration that better handles the 20nm constraint and improves UV rejection."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Evidence D3 mentions needle optimization is used to add layers or improve performance when simple designs hit limits. My reasoning adds that random or systematic perturbation of a periodic stack (simulating the result of needle optimization) is a valid testable hypothesis to see if non-periodic solutions offer significant gains under tight thickness constraints."
+    }
+  ]
+}
