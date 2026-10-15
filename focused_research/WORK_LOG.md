@@ -48,3 +48,13 @@ Covered invariants: tuned planner contract, prompt numeric limits,200-paper two-
 - Use a standalone process; generic vendored package names must not be mixed into an already-running Article process.
 
 Implementation editing stopped after this record; parent owns final validation and branch commit.
+
+## 2026-10-15 04:41 UTC — User review: provisional, revision required
+
+Source: user message Sentinel_962a5eabf8d88191a040b9629bb92d44.
+
+The current transplantation is an unfinished initial design for continued modification in this round, pending tuning. Offline correctness tests are not retrieval-quality acceptance. Reducing numeric breadth alone does not establish that review-tuned planning retrieves actionable problem-solving papers rather than background/survey material.
+
+User requests consideration of flexible fields such as user objective, subgoals, constraints and potential physical effects. These are reference directions, not a mandated rigid schema or compulsory decomposition. Preserve unusual questions and user freedom; prefer LLM-selected relevant fields and retrieval routes. For the RGB/NIR example, retain visible 450–650 nm high reflection and NIR 700–1000 nm high transmission as joint design goals, with 45 degree incidence, fused silica, TiO2/SiO2 and layer cap as user constraints. Retrieval can include nearby design, simulation and fabrication studies; do not force every search query to satisfy every design constraint simultaneously.
+
+Next design discussion must distinguish hard user requirements from tentative assumptions, and design-goal composition from search-result unions/intersections. No revised runtime schema is approved solely by recording this discussion. No paid evaluation performed. Current implementation commit: 837f5531eda3558fc6340b8ccfedef62bf953b8c.
