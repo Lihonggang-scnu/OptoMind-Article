@@ -295,6 +295,64 @@ def _aliases(previous):
             'diagnostics': {'D%03d' % (i+1): d['diagnosis_id'] for i,d in enumerate(previous['diagnostics'])}}
 
 
+def _validate_refinement_action(previous, parent, action):
+    """One execution gate shared by the compiler and advertised action choices."""
+    if action not in ('refine_family', 'refine_layers'):
+        raise ValueError('unsupported plan action')
+    if action == 'refine_family':
+        envelope = previous['envelopes'][parent]
+        route = next(r for r in previous['accepted']['routes'] if r['id'] == envelope['route_id'])
+        bindings = {}
+        for layer, physical in zip(route['family']['layers'], envelope['tmm_task']['stack']['layers']):
+            variable = layer['thickness_nm']
+            if isinstance(variable, str):
+                value = physical['thickness_nm']
+                if variable in bindings and bindings[variable] != value:
+                    raise ValueError('parent has independent layer values; use refine_layers to preserve it')
+                bindings[variable] = value
+
+
+def _refinement_action_availability(previous, parent):
+    available, unavailable = [], {}
+    for action in ('refine_family', 'refine_layers'):
+        try:
+            _validate_refinement_action(previous, parent, action)
+            available.append(action)
+        except (ValueError, TypeError, KeyError, StopIteration) as exc:
+            unavailable[action] = str(exc) or 'missing parent execution context'
+    return {'available_actions': available, 'unavailable_actions': unavailable}
+
+
+def _revision_decision_view(previous, aliases):
+    """Bind ephemeral display aliases and executable choices to this snapshot."""
+    view = dc.build_decision_context(previous, aliases, _latest_local_derivative)
+    payload = view['user_payload']
+    payload['identity_scope'] = {
+        'snapshot_manifest_sha256': previous['manifest_sha256'],
+        'stable_identity_fields': ['design_id', 'diagnosis_id'],
+        'parent_alias_index': 'certified_designs',
+        'diagnosis_alias_index': 'diagnostic_index',
+        'alias_lifetime': 'Current snapshot only. P/D labels can change after archive growth; '
+                          'never resolve a historical label using this snapshot.',
+        'selection_contract': 'Use a supplied stable design_id/diagnosis_id or its current alias. '
+                              'Choose an available action for that exact current parent.'}
+    for row in payload['certified_designs']:
+        parent = row['design_id']
+        row['lineage_parent_design_id'] = previous['archive']['designs'][parent].get('parent_design_id')
+        row.update(_refinement_action_availability(previous, parent))
+    diagnostics = {row['diagnosis_id']: row for row in previous['diagnostics']}
+    for name in ('diagnostic_index', 'physics_diagnostics'):
+        for row in payload[name]:
+            source = diagnostics[row['diagnosis_id']]
+            row.update({key: source[key] for key in ('design_id', 'comparison_baseline_design_id')})
+    # The measured size must cover the actual enriched payload, not its base view.
+    encoded = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
+    view['selection_report'].update(payload_characters=len(encoded),
+        payload_utf8_bytes=len(encoded.encode('utf-8')), snapshot_aliases_bound=True,
+        parent_action_availability_supplied=True)
+    return view
+
+
 def _compile_plans(payload, previous):
     """Tolerate imperfect reasoning, never imperfect execution identity or bounds."""
     if not isinstance(payload, dict) or not isinstance(payload.get('plans'), list):
@@ -316,19 +374,7 @@ def _compile_plans(payload, previous):
             if parent not in (previous['archive'] or {}).get('designs', {}):
                 raise ValueError('plan parent must be an already certified design_id or parent alias')
             action = source.get('action')
-            if action not in ('refine_family', 'refine_layers'):
-                raise ValueError('unsupported plan action')
-            if action == 'refine_family':
-                envelope = previous['envelopes'][parent]
-                route = next(r for r in previous['accepted']['routes'] if r['id'] == envelope['route_id'])
-                bindings = {}
-                for layer, physical in zip(route['family']['layers'], envelope['tmm_task']['stack']['layers']):
-                    variable = layer['thickness_nm']
-                    if isinstance(variable, str):
-                        value = physical['thickness_nm']
-                        if variable in bindings and bindings[variable] != value:
-                            raise ValueError('parent has independent layer values; use refine_layers to preserve it')
-                        bindings[variable] = value
+            _validate_refinement_action(previous, parent, action)
             diagnosis = source.get('diagnosis', {})
             if not isinstance(diagnosis, dict):
                 diagnosis = {'explanation': str(diagnosis)}
@@ -432,14 +478,16 @@ def revise(previous_search, *, output, planner):
         raise ValueError('certified designs and diagnostics required before revision')
     output = _new_output(output, [previous_search])
     aliases = _aliases(previous)
-    decision_view = dc.build_decision_context(previous,aliases,_latest_local_derivative)
+    decision_view = _revision_decision_view(previous, aliases)
     prompt = {'system_prompt':
         'Return JSON only, exactly {"plans":[...]}. Plan numerical refinement, never layer JSON. '
         'Each plan has parent_design_id, action (refine_family or refine_layers), diagnosis '
         '(diagnosis_id, observation_ids, explanation citing concrete measured changes), '
         'expected_goal_changes (every original objective_id mapped to increase/decrease/unchanged/unknown). '
-        'Use supplied short parent_alias P001 etc as parent_design_id, and diagnosis_alias D001 etc as diagnosis_id. '
+        'Use supplied stable design_id/diagnosis_id or current parent_alias P001 etc / diagnosis_alias D001 etc. '
+        'Short aliases belong only to the current identity_scope snapshot; historical labels are not current identities. '
         'Choose only supplied certified parents. Preserve all original objectives and physical conditions. '
+        'Choose only an action listed in that exact parent row available_actions; unavailable_actions explains exclusions. '
         'refine_family preserves shared variables; refine_layers explicitly creates independent layer variables '
         'within original family bounds. Expectations are untested, not outcomes. No route or plan-count ceiling. '
         'Interpret measurements, local derivative arithmetic, and hypotheses separately. '

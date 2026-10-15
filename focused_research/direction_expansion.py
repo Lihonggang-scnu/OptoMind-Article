@@ -15,6 +15,7 @@ from .scientific_stage import _new_output, digest, load, save
 from . import search_stage as ss
 
 SCHEMA = 'focused_research.direction_expansion.v1'
+SEARCH_BOUNDS_FIELDS = ('search_bounds_nm', 'optional_search_bounds_nm')
 
 
 def _finite(value):
@@ -59,6 +60,31 @@ def _parent_view(previous, plan, index):
             'parent_envelope': copy.deepcopy(envelope)}
 
 
+def _normalize_search_bounds(branch, variables):
+    """Accept the known optional-field alias without choosing between conflicts."""
+    source_fields = [key for key in SEARCH_BOUNDS_FIELDS if key in branch]
+    # Validate every supplied declaration before equality checks. In particular,
+    # Python considers True == 1, but booleans are never valid numeric bounds.
+    for key in source_fields:
+        overrides = branch[key]
+        if not isinstance(overrides, dict) or set(overrides) - set(variables):
+            raise ValueError(key + ' must map existing variable names to bounds')
+        for name, bounds in overrides.items():
+            original = variables[name]['bounds_nm']
+            if (not isinstance(bounds, list) or len(bounds) != 2 or
+                    not all(_finite(x) for x in bounds) or
+                    not original[0] <= bounds[0] <= bounds[1] <= original[1]):
+                raise ValueError(key + ' bounds must be finite ordered subsets of original bounds')
+    if len(source_fields) == 2 and branch[source_fields[0]] != branch[source_fields[1]]:
+        raise ValueError('conflicting search_bounds_nm and optional_search_bounds_nm')
+    overrides = copy.deepcopy(branch[source_fields[0]]) if source_fields else {}
+    audit = {'source_fields': source_fields,
+             'aliases_applied': {key: 'search_bounds_nm' for key in source_fields
+                                 if key != 'search_bounds_nm'},
+             'search_bounds_nm': copy.deepcopy(overrides)}
+    return overrides, audit
+
+
 def validate_expansion(payload, previous, coarse_plans):
     """Compile each branch independently; retain rejected proposals for audit.
 
@@ -70,7 +96,7 @@ def validate_expansion(payload, previous, coarse_plans):
     plans = _plan_list(coarse_plans)
     jobs, rejected, seen, audits = [], [], set(), []
     allowed = {'branch_id', 'plan_index', 'parent_design_id', 'hypothesis_id',
-               'parameterization', 'parameters_nm', 'search_bounds_nm', 'rationale'}
+               'parameterization', 'parameters_nm', 'rationale', *SEARCH_BOUNDS_FIELDS}
     for index, branch in enumerate(payload['branches']):
         try:
             if not isinstance(branch, dict):
@@ -93,15 +119,7 @@ def validate_expansion(payload, previous, coarse_plans):
             variables = view['variables']
             if not isinstance(params, dict) or set(params) != set(variables):
                 raise ValueError('parameters_nm must assign every executable variable exactly once')
-            overrides = branch.get('search_bounds_nm', {})
-            if not isinstance(overrides, dict) or set(overrides) - set(variables):
-                raise ValueError('search_bounds_nm contains unknown variables')
-            for name, bounds in overrides.items():
-                original = variables[name]['bounds_nm']
-                if (not isinstance(bounds, list) or len(bounds) != 2 or
-                        not all(_finite(x) for x in bounds) or
-                        not original[0] <= bounds[0] <= bounds[1] <= original[1]):
-                    raise ValueError('branch bounds must be finite ordered subsets of original bounds')
+            overrides, bounds_audit = _normalize_search_bounds(branch, variables)
             for name, value in params.items():
                 bounds = overrides.get(name, variables[name]['bounds_nm'])
                 if not _finite(value) or not bounds[0] <= value <= bounds[1]:
@@ -126,7 +144,8 @@ def validate_expansion(payload, previous, coarse_plans):
                          'rationale': copy.deepcopy(branch.get('rationale', ''))})
             audits.append({'source_index': index, 'branch_id': branch_id,
                            'ignored_fields': ignored, 'ignored_fields_executed': False,
-                           'bound_from_selected_plan': bindings})
+                           'bound_from_selected_plan': bindings,
+                           'search_bounds_normalization': bounds_audit})
             seen.add(branch_id)
         except (ValueError, TypeError, KeyError, StopIteration) as exc:
             rejected.append({'source_index': index, 'error': str(exc), 'raw_branch': copy.deepcopy(branch)})
@@ -190,10 +209,13 @@ def expand_directions(previous_search, plans, *, output, planner, max_forward_ev
     prompt = {'system_prompt':
         'Expand the supplied coarse scientific hypotheses into concrete numerical search branches. '
         'Return JSON only: {"branches":[...]}. Each branch has unique branch_id, plan_index, '
-        'parent_design_id, hypothesis_id, parameterization, parameters_nm, optional search_bounds_nm, '
-        'and rationale. Copy plan_index, parent_design_id, hypothesis_id and parameterization from '
+        'parent_design_id, hypothesis_id, parameterization, parameters_nm, and rationale. '
+        'A branch may also contain "search_bounds_nm": {"listed_variable": [30.0, 50.0]}; '
+        'substitute actual listed variable names and valid bounds. The exact JSON key is '
+        '"search_bounds_nm", never "optional_search_bounds_nm". '
+        'Copy plan_index, parent_design_id, hypothesis_id and parameterization from '
         'one supplied plan. parameters_nm assigns every listed variable a finite thickness in nm. '
-        'Optional search_bounds_nm maps existing variables to [lower_nm,upper_nm] inside their original '
+        'The search_bounds_nm field is optional and maps existing variables to [lower_nm,upper_nm] inside their original '
         'bounds; the seed must lie inside them. Preserve fixed layers, materials, layer count, all '
         'original goals and conditions. Do not emit layer JSON or new objective definitions. '
         'You perform the semantic interpretation: choose concrete diverse starts, step sizes and '

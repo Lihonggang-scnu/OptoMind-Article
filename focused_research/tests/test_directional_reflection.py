@@ -15,12 +15,19 @@ def test_real_saved_branch_feedback_is_forwarded_once_and_bound(tmp_path):
     assert len(planner.calls) == 1
     actual = st.load(tmp_path/'reflection/directional_reflection_prompt.json')
     assert planner.calls[0] == actual
-    assert actual['user_payload']['directional_branch_feedback'] == original
+    projected = actual['user_payload']['directional_branch_feedback']
+    assert projected == dr._feedback_decision_view(original,
+        st.read_search(tmp_path/'directional'), st._aliases(st.read_search(tmp_path/'directional')))
+    assert st.load(tmp_path/'reflection/directional_reflection_feedback_source.json') == original
     assert st.load(tmp_path/'directional/branch_feedback.json') == original
     binding = st.load(tmp_path/'reflection/directional_reflection_binding.json')
     assert binding['actual_forwarded_prompt_sha256'] == st.digest(actual)
+    assert binding['feedback_sha256'] == st.digest(original)
+    assert binding['feedback_view_sha256'] == st.digest(projected)
     assert binding['next_action_executed'] is False
-    assert 'directional_reflection_prompt.json' in st.load(tmp_path/'reflection/manifest.json')
+    manifest = st.load(tmp_path/'reflection/manifest.json')
+    assert 'directional_reflection_prompt.json' in manifest
+    assert manifest['directional_reflection_feedback_source.json'] == st.digest(original)
 
 
 def test_missing_or_tampered_feedback_stops_before_model_dispatch(tmp_path):
