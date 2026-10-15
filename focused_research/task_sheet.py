@@ -222,8 +222,11 @@ def validate_adapter(plan):
 
 def render_prompt(question):
     system = (ROOT / 'task_sheet_prompt.txt').read_text(encoding='utf-8')
-    example = (ROOT / 'examples' / 'rgb_nir_task_sheet.json').read_text(encoding='utf-8')
-    system += '\nFULL WORKED EXAMPLE (all fields required):\n' + example
+    example = json.loads((ROOT / 'examples' / 'rgb_nir_task_sheet.json').read_text(encoding='utf-8'))
+    example_question = example.pop('original_question')
+    system += '\nWORKED EXAMPLE INPUT:\n' + example_question
+    system += '\nWORKED EXAMPLE ANALYSIS OUTPUT (all shown fields required):\n' + json.dumps(
+        example, ensure_ascii=False, indent=2)
     return {'system_prompt': system, 'user_payload': {'original_question': question},
         'prompt_hash': hashlib.sha256(system.encode()).hexdigest()}
 
@@ -246,8 +249,11 @@ def generate(question, planner):
         if transport.get('fallback_used') or transport.get('transport_error'):
             outcome['status'] = 'transport_rejected'; outcome['errors'] = ['api_error']; break
         try:
-            sheet = _extract_json_object(raw)
-            record['raw_task_sheet'] = sheet
+            analysis = _extract_json_object(raw)
+            record['raw_task_sheet'] = analysis
+            # Preserve model output for audit; the input is program-owned.
+            record['ignored_model_fields'] = ['original_question'] if 'original_question' in analysis else []
+            sheet = {**analysis, 'original_question': question}
             validate(sheet, question=question)
             if sheet['readiness'] == 'needs_revision':
                 outcome.update(status='needs_revision', task_sheet=sheet, plan={}, errors=[])
@@ -260,7 +266,7 @@ def generate(question, planner):
             outcome['errors'] = [str(exc)]
             prompt = {**prompt, 'user_payload': {'original_question': question,
                 'previous_response': raw, 'validation_error': str(exc),
-                'instruction': 'Repair this contract without changing user constraints or inventing facts. Return the full sheet.'}}
+                'instruction': 'Repair this contract without changing user constraints or inventing facts. Return the full analysis JSON without original_question.'}}
     outcome['revision_rounds'] = len(outcome['rounds']) - 1
     outcome['first_hit'] = outcome['status'] == 'ok' and len(outcome['rounds']) == 1
     return outcome
