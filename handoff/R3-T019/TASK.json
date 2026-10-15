@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "message_id": "C2L-R3-0032",
+  "task_id": "R3-T019-FOCUSED-TASK-SHEET",
+  "direction": "cloud_to_local",
+  "kind": "task",
+  "status": "ready",
+  "created_at": "2026-10-15T06:03:00Z",
+  "in_reply_to": "C2L-R3-0031",
+  "instruction": "用户指定当前优先测试本步Qwen任务单生成。先读START_HERE去重并留claimed。暂停未启动T018排程；若已运行先在安全停点停止新调用、保留产物及核账回执，不杀未结算请求。本工单解除HANDOFF里的等待云端发布条件，仅按以下范围测试，绝不进行检索/物理/PDF。云端负责核心实现，本地只测试及简单环境兼容修复。",
+  "supersedes_schedule": "C2L-R3-0031 until user resumes; preserve all T018 artifacts",
+  "repositories": {
+    "Article": {
+      "base_sha": "59e10e64794f431e6de7d7656af9f5307710f4a9",
+      "implementation_sha": "713799fb55899b78427aed56cb643bc72526c19d",
+      "branch": "feature/focused-research-20261015"
+    },
+    "Review": {
+      "source_sha": "775329cee02d4dacd108bf41969b1d21d26750e0",
+      "unchanged": true
+    }
+  },
+  "artifact_folder_id": "1PE_WLKXE_yNyOyOpFBdER1k758eFJFps",
+  "files": {
+    "bundle": {
+      "id": "1LE241BpNnlTcxbqpox3D75-1oA5tASkP",
+      "sha256": "a9f28e88dbc3a24e44b718de34a084552ebbec6213492648dae066f68008a3f7"
+    },
+    "handoff": {
+      "id": "19Hd0GwnG0n4Jg97ujx_Pr71mfSwwF2mB",
+      "sha256": "ac6fa2627a3337d4075de8967fb179342268360c26829aa9ef0ff3d62ae42d97"
+    },
+    "zip": {
+      "id": "1iZ6PR2N86DeOKuStxMWMX4nXK23Edn2m",
+      "sha256": "286f1913b40c43eb238626322c64353eb118fdc665a02e792f7df4e83e2063aa"
+    }
+  },
+  "commands": [
+    "先在含59e10e6的独立短目录工作副本 git bundle verify <Focused.bundle>；缺基准时先从0031原bundle导入59e10e6，勿覆盖现工作区。",
+    "git fetch <Focused.bundle> HEAD:refs/heads/cloud/focused-task-sheet-713799f；创建独立worktree并核HEAD为713799fb55899b78427aed56cb643bc72526c19d。",
+    "python -m pytest -q --disable-socket focused_research/tests",
+    "python focused_research/run.py --help",
+    "仅原预算包装器确认覆盖新入口后，包装执行python focused_research/run.py plan --question <rgb_nir_question.v2.json中original_question完整字符串> --output <全新目录>；该命令本身不是预算包装器，禁止裸跑。"
+  ],
+  "acceptance": [
+    "本地离线定向测试及模块来源；云端76通过只作参考，不代表本地通过。",
+    "完整v2原题→Qwen原始响应→校验/修复→task_sheet.json，检查仅G1/G2，原波段450–650/700–1000，45度、非偏振s/p等权、wavelength_integral_mean；材料/层数不丢失。",
+    "原v1不覆盖，unsupported要求/未知必要条件应needs_revision，不能偷换成可执行proxy；代码和prompt不足回云端，不本地重写核心。",
+    "检索式作为待实测调优草案保留，不运行retrieve/run，不判断检索质量。",
+    "保留真实响应与费用/尝试次数脱敏汇总，无密钥/账本DB上传。"
+  ],
+  "budget": {
+    "task_limit_cny": 2,
+    "total_limit_cny": 140,
+    "max_http_attempts": 3,
+    "latest_reported_actual_cny": 17.329267,
+    "recheck_original_ledger": true,
+    "pending_held_uncertain_must_be_zero": true,
+    "cloud_paid_calls": false,
+    "condition": "仅离线通过且已有原账本包装器对新增独立Qwen入口的所有调用/嵌套重试真实生效时允许一次RGB新版plan生成；否则blocked返回，无付费。原模型与供应商不变，不创建新凭据。"
+  },
+  "expected_outputs": [
+    "claimed和终态回执绑定0032/T019；实际SHA及离线测试结果。",
+    "若预算入口已覆盖：一份真实Qwen任务单、原始响应、语义审查、费用结算及总尝试次数。否则准确blocked，不伪造结果。",
+    "源/配置/简单兼容差异和待云端修复点；所有历史产物保留。"
+  ]
+}
