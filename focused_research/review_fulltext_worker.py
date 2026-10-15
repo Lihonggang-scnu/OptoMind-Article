@@ -240,6 +240,28 @@ def _reexport_identity_bound(snapshot, record, acquisition):
     return True
 
 
+def _reexport_source_record_bound(exported, original, docling_acquisition):
+    """Accept only the legacy Docling batch's additive transport envelope.
+
+    Shared fields (even transport-named ones) remain exact source bindings.
+    Never normalize identities or drop arbitrary metadata to obtain a match.
+    """
+    if not isinstance(exported, dict) or not isinstance(original, dict):
+        return False
+    if exported == original:
+        return True
+    if not isinstance(docling_acquisition, dict) or docling_acquisition.get('parser') != 'docling':
+        return False
+    extra = exported.keys() - original.keys()
+    if not extra or not extra <= {'_index', 'label', 'local_pdf'}:
+        return False
+    index = exported.get('_index')
+    if (type(index) is not int or index < 0 or exported.get('label') != 'paper_' + str(index)
+            or not isinstance(exported.get('local_pdf'), str) or not exported['local_pdf'].strip()):
+        return False
+    return {key: value for key, value in exported.items() if key not in extra} == original
+
+
 def reexport_existing(request):
     """Offline native re-verification. Never instantiate an acquirer or parser."""
     from optomind_research.runtime.upgrade3.local_materials import PreparedSnapshotProvider
@@ -290,7 +312,8 @@ def reexport_existing(request):
             snapshot_path = acquisition.get('snapshot_path')
             if old.get('export_path'):
                 envelope = read(old['export_path'])
-                if envelope.get('review_commit') != PIN or envelope.get('source_record') != old.get('record'):
+                if envelope.get('review_commit') != PIN or not _reexport_source_record_bound(
+                        envelope.get('source_record'), old.get('record'), old.get('docling_acquisition')):
                     raise ValueError('existing_export_source_binding_mismatch')
                 snapshot_path = envelope.get('snapshot_path')
                 expected = (envelope.get('material') or {}).get('snapshot_id')
@@ -458,7 +481,7 @@ def execute(request):
                     outcome=parser.acquire_local(record,pdf_bytes=Path(record['local_pdf']).read_bytes(),source_name=Path(record['local_pdf']).name)
                     row['docling_acquisition']=outcome.to_dict()
                     if outcome.snapshot and outcome.parser=='docling' and eligible(outcome.to_dict(),outcome.snapshot):
-                        prepared[index]=(outcome.snapshot,record,row)
+                        prepared[index]=(outcome.snapshot,row['record'],row)
                     else: row['status']='docling_failed'
                 except Exception as exc:
                     row.update(status='docling_failed',error=type(exc).__name__)

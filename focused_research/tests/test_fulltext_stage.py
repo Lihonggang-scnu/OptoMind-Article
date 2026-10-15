@@ -179,7 +179,8 @@ def test_core_conflicts_and_ineligibility_fail_closed(mutation):
     assert w.eligibility_reason(result, snapshot)
 
 
-def test_offline_reexport_reverifies_final_docling_and_core_without_acquisition(tmp_path, monkeypatch):
+@pytest.mark.parametrize('legacy_batch_record', [False, True])
+def test_offline_reexport_reverifies_final_docling_and_core_without_acquisition(tmp_path, monkeypatch, legacy_batch_record):
     import sys, hashlib
     from types import ModuleType
     source = tmp_path / 'old' / 'FULLTEXT_RESULT.json'; source.parent.mkdir()
@@ -193,8 +194,10 @@ def test_offline_reexport_reverifies_final_docling_and_core_without_acquisition(
         as_material=lambda: {'snapshot_id': 'D1', 'manifest': {}, 'blocks': []})
     export_path = tmp_path/'old'/'doc_export.json'
     record = {'canonical_paper_id': 'paper:doc'}
-    export_path.write_text(json.dumps({'review_commit': w.PIN, 'source_record': record,
+    exported_record = _legacy_docling_record(record) if legacy_batch_record else record
+    export_path.write_text(json.dumps({'review_commit': w.PIN, 'source_record': exported_record,
         'snapshot_path': str(doc.root), 'material': {'snapshot_id': 'D1'}, 'verified': False}))
+    original_export = export_path.read_bytes()
     payload = {'schema_version': 'focused_fulltext_result_v1', 'review_commit': w.PIN, 'records': [
         {'record': {'canonical_paper_id': 'core:1'}, 'acquisition': core},
         {'record': record, 'export_path': str(export_path), 'acquisition': {'parser': 'fitz', 'snapshot_path': 'DO_NOT_READ'},
@@ -215,6 +218,8 @@ def test_offline_reexport_reverifies_final_docling_and_core_without_acquisition(
     assert result['acquisition_calls'] == result['basic_parse_calls'] == result['paid_model_calls'] == 0
     assert loaded == [str(snapshot.root), str(doc.root)]
     assert source.read_bytes() == original
+    assert export_path.read_bytes() == original_export
+    assert json.loads(Path(result['exports'][1]).read_text())['source_record'] == record
     assert json.loads(Path(result['exports'][0]).read_text())['material']['manifest']['identity_check']['status'] == 'input_attributed'
     with pytest.raises(ValueError, match='mixed'):
         w.execute({**request, 'enrich_result': 'old'})
@@ -285,3 +290,92 @@ def test_direct_reexport_rejects_existing_output_before_overwrite(tmp_path, monk
     with pytest.raises(ValueError, match='existing_artifacts'):
         w.reexport_existing(request)
     assert preserved.read_text() == 'original'
+
+
+def _legacy_docling_record(original):
+    return {**original, '_index': 1, 'label': 'paper_1',
+            'local_pdf': r'D:\cached\pdfs\fixture.pdf'}
+
+
+def test_legacy_docling_source_binding_is_additive_and_nonmutating():
+    original = {'canonical_paper_id': 'paper:doc', 'doi': '10.1/doc',
+                'title': 'Exact title', 'query_ids': ['Q1'], 'nested': {'value': 1}}
+    exported = _legacy_docling_record(original)
+    before = json.dumps([exported, original], sort_keys=True)
+    assert w._reexport_source_record_bound(exported, original, {'parser': 'docling'})
+    assert json.dumps([exported, original], sort_keys=True) == before
+    assert w._reexport_source_record_bound(original, original, None)
+    # An originally supplied transport field must still agree exactly.
+    for field in ('_index', 'label', 'local_pdf'):
+        assert w._reexport_source_record_bound(exported, {**original, field: exported[field]}, {'parser': 'docling'})
+        assert not w._reexport_source_record_bound(exported, {**original, field: 'different'}, {'parser': 'docling'})
+
+
+@pytest.mark.parametrize('mutation', [
+    'canonical_paper_id', 'doi', 'title', 'query_ids', 'nested', 'unknown_extra',
+    'missing_field', 'wrong_parser', 'no_docling', 'bad_index', 'bool_index',
+    'bad_label', 'bad_path', 'missing_transport', 'non_object',
+])
+def test_legacy_docling_source_binding_rejects_real_mismatches(mutation):
+    original = {'canonical_paper_id': 'paper:doc', 'doi': '10.1/doc',
+                'title': 'Exact title', 'query_ids': ['Q1'], 'nested': {'value': 1}}
+    exported = _legacy_docling_record(original)
+    acquisition = {'parser': 'docling'}
+    if mutation in original: exported[mutation] = 'changed'
+    elif mutation == 'unknown_extra': exported['unrecognized_metadata'] = 'extra'
+    elif mutation == 'missing_field': del exported['title']
+    elif mutation == 'wrong_parser': acquisition['parser'] = 'jats'
+    elif mutation == 'no_docling': acquisition = None
+    elif mutation == 'bad_index': exported['_index'] = -1
+    elif mutation == 'bool_index': exported['_index'] = True; exported['label'] = 'paper_True'
+    elif mutation == 'bad_label': exported['label'] = 'paper_2'
+    elif mutation == 'bad_path': exported['local_pdf'] = ''
+    elif mutation == 'missing_transport': del exported['label']
+    elif mutation == 'non_object': exported = None
+    assert not w._reexport_source_record_bound(exported, original, acquisition)
+
+
+def test_new_docling_export_uses_original_record_not_batch_transport(tmp_path, monkeypatch):
+    import sys
+    from types import ModuleType
+    pdf = tmp_path/'input.pdf'; pdf.write_bytes(b'%PDF-offline-fixture')
+    snapshot = SimpleNamespace(root=tmp_path/'snapshot', snapshot_id='D1',
+        manifest={'canonical_paper_id': 'paper:doc'},
+        reading_policy=lambda: {'material_scope': 'fulltext'},
+        as_material=lambda: {'snapshot_id': 'D1', 'blocks': []})
+    parsed_records = []
+    class Acquirer:
+        def __init__(self, output_root, **kwargs):
+            self.is_batch = Path(output_root).name == 'docling_materials'
+        def acquire_local(self, record, **kwargs):
+            if self.is_batch:
+                parsed_records.append(dict(record))
+                return SimpleNamespace(snapshot=snapshot, parser='docling',
+                    to_dict=lambda: {'parser': 'docling', 'snapshot_id': 'D1', 'snapshot_path': str(snapshot.root)})
+            return SimpleNamespace(snapshot=None,
+                artifacts=[SimpleNamespace(kind='pdf', data=pdf.read_bytes())],
+                to_dict=lambda: {'parser': 'fallback'})
+    acquisition = ModuleType('material_acquisition')
+    acquisition.MaterialAcquirer = Acquirer
+    acquisition.AcquisitionConfig = lambda **kw: SimpleNamespace(**kw)
+    snapshots = ModuleType('local_materials')
+    snapshots.PreparedSnapshotProvider = lambda path: SimpleNamespace(load=lambda: snapshot)
+    adapters = ModuleType('docling_adapter'); adapters.DoclingBatchAdapter = lambda *a, **kw: object()
+    for name, module in [('material_acquisition', acquisition), ('local_materials', snapshots), ('docling_adapter', adapters)]:
+        monkeypatch.setitem(sys.modules, 'optomind_research.runtime.upgrade3.' + name, module)
+    monkeypatch.setattr(w, 'verify_review', lambda *a: tmp_path)
+    monkeypatch.setattr(w, 'provider_instances', lambda *a: ({}, []))
+    monkeypatch.setattr(w.subprocess, 'run', lambda *a, **kw: pytest.fail('must not parse PDFs'))
+    batch = tmp_path/'BATCH_RESULT.json'; batch.write_text('{}')
+    request = {'review_root': str(tmp_path), 'output_root': str(tmp_path/'output'),
+        'records': [{'canonical_paper_id': 'paper:doc', 'local_pdf': str(pdf)}],
+        'queries': [], 'providers': [], 'max_papers': 5, 'deadline_seconds': 60,
+        'docling_batch_index': str(batch), 'resume': True}
+    result = w.execute(request)
+    assert len(result['exports']) == 1
+    original = result['records'][0]['record']
+    exported = json.loads(Path(result['exports'][0]).read_text())['source_record']
+    assert exported == original and exported['local_pdf'] == str(pdf)
+    assert '_index' not in exported and 'label' not in exported
+    assert parsed_records[0]['_index'] == 0 and parsed_records[0]['label'] == 'paper_0'
+    assert parsed_records[0]['local_pdf'] != str(pdf)
