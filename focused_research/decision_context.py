@@ -24,6 +24,12 @@ def local_direction_facts(summary, objectives):
     result = {'status': 'unknown', 'limits': LIMITS[:], 'variables': [],
               'same_direction_opportunities': [], 'joint_direction': {'status': 'unknown', 'reason': 'insufficient_saved_derivatives'},
               'additional_forward_design_rows': 0, 'warnings': []}
+    if isinstance(summary, dict):
+        result['direction_feasibility_scope'] = summary.get('bounds_role', 'recorded_bounds')
+        if 'original_family_bounds_nm' in summary:
+            result['original_family_bounds_nm'] = deepcopy(summary['original_family_bounds_nm'])
+        if summary.get('bounds_role') == 'search_policy_bounds':
+            result['limits'].append('Feasible directions and at-bound flags refer to the recorded search window, not a new user constraint; original family bounds are supplied separately.')
     if not isinstance(summary, dict) or summary.get('status') != 'local_derivative_uncertified':
         result['reason'] = 'no usable saved local derivative'
         return result

@@ -49,7 +49,8 @@ def _nondominated(rows, signs):
 
 
 
-def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=3):
+def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=3,
+                                original_family_bounds_nm=None, bounds_role='original_family_bounds'):
     """Summarize already-computed Jacobian; never dispatch a solver or probe.
 
     Sensitivity order uses normalized-coordinate magnitude (the entire declared
@@ -58,6 +59,9 @@ def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=
     aggregate for its tied layers and cannot diagnose individual layer effects.
     """
     output = {'status': 'unknown', 'additional_forward_design_rows': 0,
+        'bounds_role': bounds_role,
+        'original_family_bounds_nm': deepcopy(original_family_bounds_nm) if original_family_bounds_nm is not None else dict(zip(variable_names, np.asarray(bounds_nm).tolist())),
+        'at_bound_scope': 'effective search window only; not a new user physical constraint',
         'evaluation_index': row.get('evaluation_index'),
         'limits': ['Local sampled-grid derivatives only; not independently certified.',
                    'No finite-step improvement, mechanism, or global optimum guarantee.',
@@ -114,19 +118,28 @@ def summarize_local_derivatives(row, variable_names, bounds_nm, goals, *, top_k=
 
 def optimize_family(route, prepared_envelopes, *, max_forward_evaluations,
                     seed=42, search_weights=None, parameterization='family',
-                    backend='auto', candidate_limit=None):
+                    backend='auto', candidate_limit=None, search_bounds_nm=None,
+                    initialization_policy='space_filling'):
     """Return uncertified prepared candidates, full search records, and metering.
 
     ``family`` preserves repeated variable ties and literal fixed thicknesses.
     ``layerwise_refinement`` explicitly creates independent variables for each
     originally variable layer, using that variable's original bounds. Literal
     fixed layers remain fixed. This is a declared new parameterization branch.
+    ``search_bounds_nm`` optionally narrows named variables to subsets of the
+    immutable family bounds. These are search-policy bounds, not new physical
+    constraints. Every provided seed must lie in the effective search bounds.
+    ``provided_only`` disables the global Latin-hypercube screen: local starts
+    come only from provided seeds or their numerical continuation. Continuation
+    can use the entire original family range unless explicitly narrowed.
     No optimizer/search dependency is installed automatically.
     """
     if type(max_forward_evaluations) is not int or max_forward_evaluations < 0:
         raise ValueError('max_forward_evaluations must be a nonnegative integer')
     if parameterization not in ('family', 'layerwise_refinement'):
         raise ValueError('unsupported parameterization')
+    if initialization_policy not in ('space_filling', 'provided_only'):
+        raise ValueError('unsupported initialization_policy')
     if backend not in ('auto', 'torch', 'numpy'):
         raise ValueError('unsupported numerical backend')
     if candidate_limit is not None and (type(candidate_limit) is not int or candidate_limit < 1):
@@ -167,6 +180,27 @@ def optimize_family(route, prepared_envelopes, *, max_forward_evaluations,
     bounds = np.asarray(bounds, dtype=float).reshape(-1, 2)
     if not np.isfinite(bounds).all() or np.any(bounds <= 0) or np.any(bounds[:, 0] > bounds[:, 1]):
         raise ValueError('invalid family bounds')
+    original_bounds = bounds.copy()
+    if search_bounds_nm is not None:
+        if not isinstance(search_bounds_nm, dict) or set(search_bounds_nm) - set(names):
+            raise ValueError('search_bounds_nm must map existing variable names to bounds')
+        for name, narrowed in search_bounds_nm.items():
+            if (not isinstance(narrowed, (list, tuple)) or len(narrowed) != 2 or
+                    any(type(v) not in (int, float) or not math.isfinite(v) for v in narrowed)):
+                raise ValueError('search bounds must be finite numeric pairs')
+            j = names.index(name)
+            lower, upper = narrowed
+            if lower > upper or lower < original_bounds[j, 0] or upper > original_bounds[j, 1]:
+                raise ValueError('search bounds must be an ordered subset of original family bounds')
+            bounds[j] = narrowed
+    search_policy = {'initialization_policy': initialization_policy,
+        'provided_seed_instance_ids': [e['instance_id'] for e in envelopes],
+        'search_bounds_nm': dict(zip(names, bounds.tolist())),
+        'original_family_bounds_nm': dict(zip(names, original_bounds.tolist())),
+        'requested_search_bounds_nm': deepcopy(search_bounds_nm),
+        'bounds_role': 'numerical_search_policy_not_new_user_physical_constraints',
+        'continuation_scope': 'all effective search bounds; coarse hint sectors do not constrain numerical continuation',
+        'global_space_filling_initialization_enabled': initialization_policy == 'space_filling'}
     lo, span = bounds[:, 0], bounds[:, 1] - bounds[:, 0]
     seeds = []
     for envelope in envelopes:
@@ -191,8 +225,12 @@ def optimize_family(route, prepared_envelopes, *, max_forward_evaluations,
                 values[index] = value
             elif values[index] != value:
                 raise ValueError('seed violates shared variable binding')
-        if np.any(values < lo) or np.any(values > lo + span):
+        if not np.isfinite(values).all():
+            raise ValueError('seed parameters must be finite')
+        if np.any(values < original_bounds[:, 0]) or np.any(values > original_bounds[:, 1]):
             raise ValueError('seed outside declared family bounds')
+        if np.any(values < lo) or np.any(values > bounds[:, 1]):
+            raise ValueError('seed outside effective search bounds')
         seeds.append(np.divide(values-lo, span, out=np.zeros_like(values), where=span != 0))
     weights = search_weights
     if weights is None:
@@ -316,10 +354,13 @@ def optimize_family(route, prepared_envelopes, *, max_forward_evaluations,
                 stops.append({'status': 'seed_failed', 'instance_id': envelopes[i]['instance_id'], 'error': str(exc)})
         if names and np.any(span > 0) and meter['forward_design_rows'] < max_forward_evaluations:
             from scipy.optimize import minimize
-            from scipy.stats import qmc
-            # A bounded space-filling screen complements incumbent-local search.
-            count = min(max(4, 2*len(names)), max(0, (max_forward_evaluations-meter['forward_design_rows'])//8))
-            for z in qmc.LatinHypercube(d=len(names), seed=seed).random(count):
+            # The opt-in provided-only branch never constructs a global screen.
+            screen = []
+            if initialization_policy == 'space_filling':
+                from scipy.stats import qmc
+                count = min(max(4, 2*len(names)), max(0, (max_forward_evaluations-meter['forward_design_rows'])//8))
+                screen = qmc.LatinHypercube(d=len(names), seed=seed).random(count)
+            for z in screen:
                 try:
                     evaluate(z, 'space_filling_start')
                 except _BudgetExhausted:
@@ -386,13 +427,18 @@ def optimize_family(route, prepared_envelopes, *, max_forward_evaluations,
         for layer, d in zip(envelope['tmm_task']['stack']['layers'], row['thicknesses_nm']):
             layer['thickness_nm'] = d
         envelope['numerical_search'] = {'parameterization': parameterization, 'evaluation_index': row['evaluation_index'], 'parent_evaluation_index': row['parent_evaluation_index'], 'uncertified_metrics': dict(zip([g['objective_id'] for g in goals], row['metrics'])), 'physics_accepted': False}
-        envelope['numerical_search']['local_derivative_summary'] = summarize_local_derivatives(row, names, bounds, goals)
+        envelope['numerical_search']['search_policy'] = deepcopy(search_policy)
+        envelope['numerical_search']['local_derivative_summary'] = summarize_local_derivatives(
+            row, names, bounds, goals,
+            original_family_bounds_nm=search_policy['original_family_bounds_nm'],
+            bounds_role='search_policy_bounds' if search_bounds_nm is not None else 'original_family_bounds')
         candidates.append(envelope)
     meter['wall_seconds'] = time.perf_counter()-started
     return {'schema_version': 'focused_research.family_optimization.v1', 'route_id': route['id'],
         'status': 'candidates_proposed' if candidates else 'no_candidate',
         'backend': selected_backend, 'parameterization': parameterization,
         'variable_names': names, 'bounds_nm': bounds.tolist(), 'layer_variable_indices': indices,
+        'original_family_bounds_nm': original_bounds.tolist(), 'search_policy': search_policy,
         'search_weights': weights.tolist(), 'search_weights_are_user_preferences': False,
         'max_forward_evaluations': max_forward_evaluations, 'metering': meter,
         'objective_ids': [g['objective_id'] for g in goals], 'evaluations': records,

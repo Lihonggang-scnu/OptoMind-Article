@@ -209,3 +209,118 @@ def test_saved_derivative_summary_top_three_and_stationary():
     summary = fo.summarize_local_derivatives(row, names, [[1., 2.]]*4, goals)
     assert [v['name'] for v in summary['goal_sensitivities'][1]['top_variables']] == ['d', 'c', 'b']
     assert summary['goal_gradient_conflicts']['status'] == 'none_above_threshold'
+
+
+def test_provided_only_uses_concrete_seeds_without_latin_hypercube(monkeypatch):
+    from scipy.stats import qmc
+    route, envelopes = inputs()
+    original = copy.deepcopy((route, envelopes))
+    def forbidden(*args, **kwargs):
+        raise AssertionError('provided_only must not construct global LHS')
+    monkeypatch.setattr(qmc, 'LatinHypercube', forbidden)
+    result = fo.optimize_family(route, envelopes, max_forward_evaluations=24,
+        backend='numpy', initialization_policy='provided_only')
+    assert (route, envelopes) == original
+    assert not any(s.get('status') == 'failed' for s in result['optimizer_stops'])
+    assert not any(r['source'] == 'space_filling_start' for r in result['evaluations'])
+    assert [r['source_instance_ids'] for r in result['evaluations'][:2]] == [[e['instance_id']] for e in envelopes]
+    assert all(r.get('parent_evaluation_index') for r in result['evaluations'][2:])
+    assert result['metering']['forward_design_rows'] <= 24
+    assert result['metering']['forward_design_rows'] == len(result['evaluations'])
+    assert result['search_policy']['search_bounds_nm'] == route['family']['thickness_variables_nm']
+    assert result['search_policy']['global_space_filling_initialization_enabled'] is False
+    assert result['candidates']
+    assert all(c['parent_instance_id'] in [e['instance_id'] for e in envelopes] for c in result['candidates'])
+
+
+def test_narrow_search_bounds_are_policy_only_and_all_rows_respect_them():
+    route, envelopes = inputs()
+    requested = {'dH': [54., 66.]}
+    original = copy.deepcopy((route, envelopes, requested))
+    result = fo.optimize_family(route, envelopes, max_forward_evaluations=24,
+        backend='numpy', initialization_policy='provided_only', search_bounds_nm=requested)
+    assert (route, envelopes, requested) == original
+    assert result['search_policy']['search_bounds_nm']['dH'] == [54., 66.]
+    assert result['search_policy']['search_bounds_nm']['dL'] == route['family']['thickness_variables_nm']['dL']
+    assert result['search_policy']['original_family_bounds_nm'] == route['family']['thickness_variables_nm']
+    assert result['search_policy']['bounds_role'] == 'numerical_search_policy_not_new_user_physical_constraints'
+    assert all(54. <= r['parameters_nm']['dH'] <= 66. for r in result['evaluations'])
+    assert all(c['numerical_search']['search_policy'] == result['search_policy'] for c in result['candidates'])
+
+
+@pytest.mark.parametrize('override', [
+    {'unknown': [1, 2]}, {'dH': [44, 70]}, {'dH': [50, 86]}, {'dH': [66, 54]},
+    {'dH': [float('nan'), 70]}, {'dH': [50, float('inf')]}, {'dH': [True, 70]},
+    {'dH': ['54', 66]}, {'dH': [54]}, [54, 66], {'dH': [54, 60]},
+])
+def test_invalid_search_bounds_or_any_seed_outside_bounds_rejected_before_solver(monkeypatch, override):
+    route, envelopes = inputs()
+    _, _, Workbench, _, _ = fo._modules()
+    def forbidden(*args, **kwargs):
+        raise AssertionError('invalid search policy must not dispatch solver')
+    monkeypatch.setattr(Workbench, 'simulate', forbidden)
+    with pytest.raises(ValueError):
+        fo.optimize_family(route, envelopes, max_forward_evaluations=10, backend='numpy', search_bounds_nm=override)
+
+
+def test_layerwise_bound_keys_and_zero_budget_metadata():
+    route, envelopes = inputs()
+    result = fo.optimize_family(route, envelopes, max_forward_evaluations=0, backend='numpy',
+        parameterization='layerwise_refinement', initialization_policy='provided_only',
+        search_bounds_nm={'layer_0:dH': [54, 66]})
+    assert result['metering']['forward_design_rows'] == 0 and not result['evaluations']
+    assert result['search_policy']['search_bounds_nm']['layer_0:dH'] == [54, 66]
+    assert result['search_policy']['search_bounds_nm']['layer_2:dH'] == [45, 85]
+    with pytest.raises(ValueError, match='existing variable names'):
+        fo.optimize_family(route, envelopes, max_forward_evaluations=0, backend='numpy',
+            parameterization='layerwise_refinement', search_bounds_nm={'dH': [54, 66]})
+
+
+def test_default_initialization_remains_space_filling_and_cache_is_per_call():
+    route, envelopes = inputs()
+    a = fo.optimize_family(route, envelopes, max_forward_evaluations=18, backend='numpy')
+    b = fo.optimize_family(route, envelopes, max_forward_evaluations=18, backend='numpy',
+        initialization_policy='space_filling', search_bounds_nm=None)
+    assert a['evaluations'] == b['evaluations']
+    assert any(r['source'] == 'space_filling_start' for r in a['evaluations'])
+    assert a['metering']['forward_design_rows'] == b['metering']['forward_design_rows'] > 2
+    with pytest.raises(ValueError, match='initialization_policy'):
+        fo.optimize_family(route, envelopes, max_forward_evaluations=0, initialization_policy='unknown')
+
+
+def test_torch_provided_only_narrow_bounds_when_available():
+    pytest.importorskip('torch')
+    route, envelopes = inputs()
+    result = fo.optimize_family(route, envelopes, max_forward_evaluations=12, backend='torch',
+        initialization_policy='provided_only', search_bounds_nm={'dH': [54, 66]})
+    assert result['candidates'] and not result['metering']['failed_forward_design_rows']
+    assert result['metering']['forward_design_rows'] <= 12
+    assert not any(r['source'] == 'space_filling_start' for r in result['evaluations'])
+    assert all(54 <= r['parameters_nm']['dH'] <= 66 for r in result['evaluations'])
+    reference = fo.optimize_family(route, envelopes, max_forward_evaluations=1, backend='numpy',
+        initialization_policy='provided_only', search_bounds_nm={'dH': [54, 66]})
+    assert result['evaluations'][0]['metrics'] == pytest.approx(reference['evaluations'][0]['metrics'], abs=1e-7)
+
+
+def test_narrow_window_bound_is_not_original_physical_bound():
+    row = {'evaluation_index': 1, 'parameters_nm': {'dH': 60.},
+           'metric_jacobian_wrt_normalized_parameters': [[2.]]}
+    summary = fo.summarize_local_derivatives(row, ['dH'], [[50., 60.]],
+        [{'objective_id': 'G1', 'sense': 'maximize'}],
+        original_family_bounds_nm={'dH': [45., 85.]}, bounds_role='search_policy_bounds')
+    assert summary['bounds_role'] == 'search_policy_bounds'
+    assert summary['original_family_bounds_nm'] == {'dH': [45., 85.]}
+    assert 'not a new user physical constraint' in summary['at_bound_scope']
+    variable = summary['goal_sensitivities'][0]['top_variables'][0]
+    assert variable['at_bound'] == 'upper' and variable['bounds_nm'] == [50., 60.]
+    assert variable['current_value_nm'] < summary['original_family_bounds_nm']['dH'][1]
+    assert variable['derivative_per_nm'] == pytest.approx(.2)
+    route, envelopes = inputs()
+    narrowed = fo.optimize_family(route, envelopes[:1], max_forward_evaluations=1, backend='numpy',
+        initialization_policy='provided_only', search_bounds_nm={'dH': [55., 65.]})
+    delivered = narrowed['candidates'][0]['numerical_search']['local_derivative_summary']
+    assert delivered['status'] == 'unknown'
+    assert delivered['bounds_role'] == 'search_policy_bounds'
+    assert delivered['original_family_bounds_nm'] == route['family']['thickness_variables_nm']
+    default = fo.optimize_family(route, envelopes[:1], max_forward_evaluations=1, backend='numpy')
+    assert default['candidates'][0]['numerical_search']['local_derivative_summary']['bounds_role'] == 'original_family_bounds'

@@ -178,3 +178,15 @@ def test_missing_or_zero_gradients_are_not_reported_as_searched_and_not_found():
     assert local_direction_facts({}, GOALS)['joint_direction']['status'] == 'unknown'
     assert local_direction_facts(summary([[0., 0.], [1., 1.]]), GOALS)['joint_direction']['status'] == 'unknown'
     assert local_direction_facts(summary([[1., 1.], [-1., -1.]]), GOALS)['joint_direction']['status'] == 'not_found'
+
+
+def test_t030_narrow_window_is_not_reported_as_user_physical_constraint():
+    s = summary([[-1., 1.], [-2., 1.]], values=(50., 130.), bounds=((50., 60.), (70., 130.)))
+    s['bounds_role'] = 'search_policy_bounds'
+    s['original_family_bounds_nm'] = {'dH': [40., 80.], 'dL': [70., 130.]}
+    f = local_direction_facts(s, GOALS)
+    assert f['direction_feasibility_scope'] == 'search_policy_bounds'
+    assert f['original_family_bounds_nm']['dH'] == [40., 80.]
+    assert f['variables'][0]['bounds_nm'] == [50., 60.]
+    assert 'decrease' not in f['variables'][0]['feasible_directions']
+    assert 'not a new user constraint' in ' '.join(f['limits'])
