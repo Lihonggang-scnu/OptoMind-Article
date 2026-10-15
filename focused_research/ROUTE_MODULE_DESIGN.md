@@ -12,7 +12,7 @@ Execute the task sheet's exact endpoint-specific queries. Default to 10 hits per
 
 Keep the original retrieved text, its type (title, abstract, body or unknown), source identity/URL, original query and associated goal IDs. Missing author, year or DOI is acceptable. Missing text or a usable source locator is not usable scientific evidence; retain such records for diagnostics without inventing contents. Never label every S2 snippet as body text. The snippet service does not replace figures, captions or full-paper inspection.
 
-Deduplicate evidence without discarding the multiple queries/goals that found it. Distinct passages from the same paper remain distinct. Preserve raw public provider records separately; never persist request headers, secrets or the user's billing database. No automatic PDF parsing or metadata-completion pipeline.
+Deduplicate evidence without discarding the multiple queries/goals that found it. Distinct passages from the same paper remain distinct. Preserve raw public provider records separately; never persist request headers, secrets or the user's billing database. Selected full-paper acquisition and local parsing are added in T022 via the mature Review bridge; metadata completion is not a gate.
 
 ## 2. Decision clues, not paper summaries
 
@@ -47,3 +47,9 @@ Response diversity does not itself establish different mechanisms. Different lay
 ## Evidence and testing boundaries
 
 Offline tests exercise parsing, source/goal linkage, missing metadata, exact excerpt anchoring, constraints, deterministic materialization and transport failure handling. Synthetic fixtures must be explicitly labeled; they establish no actual literature retrieval quality, route novelty or optical performance. Live Qwen/S2 testing is performed only in the user's original local configuration and billing controls under a separately released task cap. This cloud implementation must not use project paid keys.
+
+## T022 amendment: endogenous knowledge and complete-paper materials
+
+Route provenance can be external evidence, model knowledge/experience, or a hybrid. Model knowledge is an admissible proposal basis even when no literature is retrieved. It must explain its physical reasoning without inventing a citation or presenting memory as a verified external observation. It is not ranked below literature by a fixed confidence score. More capable models can improve proposal quality while the executable representation stays stable. All provenance modes retain parameter bounds, user goals, a comparison baseline and reasoned directional expectations. Future physical evaluation compares them on the same task.
+
+Complete papers add native XML or parsed PDF body, tables and local formula sidecars to S2 title/abstract/body snippets. Preserve original sources and the source-bound block/region locators. Snapshot selection is an explicit input view; skipped text remains stored and must not be described as read. Local Docling inference uses cached weights, not paid parser providers.

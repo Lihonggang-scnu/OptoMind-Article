@@ -81,12 +81,18 @@ def test_format_repair_keeps_real_evidence_and_soft_route_request(tmp_path):
     assert first['user_payload']['route_count_request'] == second['user_payload']['route_count_request']
 
 
-def test_no_eligible_evidence_blocks_dispatch(tmp_path):
+def test_empty_retrieval_generates_explicit_model_knowledge(tmp_path):
     path = tmp_path / 'empty.json'
     path.write_text(json.dumps({'schema_version':'focused_evidence_items_v1', 'items':[]}))
-    planner = AuditedPlannerFixture([response()])
-    assert route_stage.main(args(tmp_path, path), planner=planner) == 2
-    assert planner.calls == []
+    routes = json.loads(response())
+    routes['decision_clues'] = []
+    routes['routes'][0].update(basis_mode='model_knowledge', evidence_ids=[], clue_ids=[],
+        model_knowledge_rationale='Remembered interference principles suggest a thickness-controlled band shift; this reasoning has no retrieved verification.')
+    planner = AuditedPlannerFixture([json.dumps(routes)])
+    assert route_stage.main(args(tmp_path, path), planner=planner) == 0
+    assert len(planner.calls) == 1
+    assert 'Empty retrieval still permits model_knowledge' in planner.calls[0]['user_payload']['route_count_request']
+    assert all(row['basis_mode'] == 'model_knowledge' for row in read(tmp_path, 'prepared_instances.json'))
 
 
 def test_revision_route_is_retained_without_preparation(tmp_path):

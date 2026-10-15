@@ -1,7 +1,8 @@
-"""Evidence-grounded hypotheses and deterministic stack recipes, never simulation.
+"""Source-labeled hypotheses and deterministic stack recipes, never simulation.
 
 Validation establishes provenance and executable syntax, not scientific correctness.
-A ready hypothesis may have weak evidence; its predicted direction remains untested.
+A ready hypothesis may use weak evidence or explicit model knowledge; its predicted
+direction remains untested. Legacy v1 contracts retain external-evidence semantics.
 """
 from __future__ import annotations
 
@@ -13,10 +14,13 @@ from pathlib import Path
 
 try:
     from . import task_sheet as task_contract
+    from .material_evidence import prompt_evidence_view
 except ImportError:
     import task_sheet as task_contract
+    from material_evidence import prompt_evidence_view
 
-SCHEMA = 'focused_research.research_routes.v1'
+SCHEMA = 'focused_research.research_routes.v2'
+LEGACY_SCHEMA = 'focused_research.research_routes.v1'
 ROOT = Path(__file__).resolve().parent
 
 
@@ -155,7 +159,14 @@ def revision_reasons(route, sheet, design_constraints=None):
     for field in ('claim', 'family'):
         if route[field] is None:
             reasons.append('missing ' + field)
-    for field in ('clue_ids', 'evidence_ids', 'goal_ids', 'transfer_assumptions', 'compatibility_conditions', 'instances', 'expectations'):
+    mode = route.get('basis_mode', 'external_evidence')
+    if mode in ('external_evidence', 'hybrid'):
+        for field in ('clue_ids', 'evidence_ids'):
+            if not route[field]:
+                reasons.append('missing ' + field)
+    if mode in ('model_knowledge', 'hybrid') and route['model_knowledge_rationale'] is None:
+        reasons.append('missing model_knowledge_rationale')
+    for field in ('goal_ids', 'transfer_assumptions', 'compatibility_conditions', 'instances', 'expectations'):
         if not route[field]:
             reasons.append('missing ' + field)
     if route['open_requirements']:
@@ -177,7 +188,7 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
     """
     goals, evidence = _inputs(task_sheet, evidence_items, design_constraints)
     _obj(routes, ['schema_version', 'decision_clues', 'routes'], '$')
-    if routes['schema_version'] != SCHEMA:
+    if routes['schema_version'] not in (SCHEMA, LEGACY_SCHEMA):
         _fail('schema_version', 'unsupported version')
     clues = _index(routes['decision_clues'], 'id', 'decision_clues')
     for clue in clues.values():
@@ -200,7 +211,17 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints):
     _index(routes['routes'], 'id', 'routes')
     for route in routes['routes']:
         _obj(route, ['id', 'claim', 'clue_ids', 'evidence_ids', 'goal_ids', 'transfer_assumptions',
-            'compatibility_conditions', 'family', 'instances', 'expectations', 'open_requirements', 'readiness'], 'route')
+            'compatibility_conditions', 'family', 'instances', 'expectations', 'open_requirements', 'readiness']
+            + (['basis_mode', 'model_knowledge_rationale'] if routes['schema_version'] == SCHEMA else []), 'route')
+        mode = route.get('basis_mode', 'external_evidence')
+        if mode not in ('external_evidence', 'model_knowledge', 'hybrid'):
+            _fail('route.basis_mode', 'requires external_evidence, model_knowledge or hybrid')
+        if routes['schema_version'] == SCHEMA:
+            _text(route['model_knowledge_rationale'], 'route.model_knowledge_rationale', nullable=True)
+            if mode == 'external_evidence' and route['model_knowledge_rationale'] is not None:
+                _fail('route.model_knowledge_rationale', 'external_evidence uses null; select hybrid for a separate model-knowledge basis')
+        if mode == 'model_knowledge' and (route['clue_ids'] != [] or route['evidence_ids'] != []):
+            _fail('route.basis_mode', 'model_knowledge cannot claim external citations; select hybrid to cite evidence')
         _text(route['claim'], 'route.claim', nullable=True)
         _refs(route['clue_ids'], clues, 'route.clue_ids')
         _refs(route['evidence_ids'], evidence, 'route.evidence_ids')
@@ -279,6 +300,9 @@ def materialize(routes, route_id, task_sheet, evidence_items, *, design_constrai
             'task_explicit_constraints': copy.deepcopy(task_sheet['explicit_constraints']), 'route_id': route_id, 'instance_id': instance['id'],
             'incident_medium': family['incident_medium'], 'substrate': family['substrate'], 'layers': layers,
             'targeted_goal_ids': list(route['goal_ids']),
+            'basis_mode': route.get('basis_mode', 'external_evidence'),
+            'model_knowledge_rationale': route.get('model_knowledge_rationale'),
+            'clue_ids': list(route['clue_ids']), 'evidence_ids': list(route['evidence_ids']),
             'objectives': [copy.deepcopy(goal['executable_metric']) for goal in task_sheet['subgoals']]})
     return output
 
@@ -289,7 +313,7 @@ def build_prompt(task_sheet, evidence_items, *, design_constraints):
     example = (ROOT / 'examples' / 'research_routes_example.json').read_text(encoding='utf-8')
     system += '\nSCHEMA EXAMPLE (illustrative, not evidence; never copy its evidence IDs):\n' + example
     return {'system_prompt': system, 'user_payload': {'task_sheet': task_sheet,
-        'evidence_items': evidence_items, 'design_constraints': design_constraints},
+        'evidence_items': prompt_evidence_view(evidence_items), 'design_constraints': design_constraints},
         'prompt_hash': hashlib.sha256(system.encode()).hexdigest()}
 
 

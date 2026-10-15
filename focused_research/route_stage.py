@@ -48,7 +48,7 @@ class _RoutePlanner:
             raise ValueError('route stage model-call limit exceeded')
         self.calls += 1
         prompt = {**prompt, 'user_payload': {**prompt['user_payload'],
-            'route_count_request': 'Aim for 2–3 distinct evidence-grounded routes; return at most 3. This is a soft target: return fewer or none when supported clues are insufficient. Keep each route compact: a few explicit thickness variables, one baseline and one single-variable-change candidate. Never fabricate evidence or duplicate a route just to meet the count.'}}
+            'route_count_request': 'Aim for 2–3 distinct testable routes from external_evidence, model_knowledge or hybrid bases; return at most 3. This is a soft target: return fewer or none when useful testable hypotheses are insufficient. Empty retrieval still permits model_knowledge routes with explicit unverified physical reasoning and no citations. Keep each route compact: a few explicit thickness variables, one baseline and one single-variable-change candidate. Never fabricate evidence or duplicate a route just to meet the count.'}}
         return self.planner._call_query_plan_model(prompt)
 
 
@@ -82,13 +82,8 @@ def main(argv=None, *, planner=None):
         called = False
         generation = None
         if args.stage == 'generate':
-            # Validate input contracts before dispatch, and never pay to invent evidence.
+            # Validate input contracts before dispatch. Empty retrieval permits explicitly labeled model knowledge, never fabricated evidence.
             rr.build_prompt(sheet, evidence, design_constraints=constraints)
-            if not any(item.get('eligible_as_evidence') is True and
-                       isinstance(item.get('text'), str) and item['text'].strip() and
-                       isinstance(item.get('source_id'), str) and item['source_id'].strip()
-                       for item in evidence['items']):
-                raise ValueError('no eligible source-linked evidence; generation blocked')
             injected = _RoutePlanner(planner)
             generation = rr.generate(sheet, evidence, injected, design_constraints=constraints, max_repairs=1)
             called = injected.calls > 0

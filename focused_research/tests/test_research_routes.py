@@ -221,3 +221,117 @@ def test_focused_route_materializes_all_user_goals():
         assert stack['targeted_goal_ids'] == ['G1']
         assert stack['objectives'] == [goal['executable_metric'] for goal in sheet['subgoals']]
         assert [metric['objective_id'] for metric in stack['objectives']] == ['G1', 'G2']
+
+
+def knowledge_fixture():
+    values = fixture()
+    routes, _, evidence, _ = values
+    evidence['items'] = []
+    routes['decision_clues'] = []
+    routes['routes'][0].update(basis_mode='model_knowledge', clue_ids=[], evidence_ids=[],
+        model_knowledge_rationale='From remembered optical interference principles, increased high-index optical thickness could shift the reflection band. This is an exploratory physical inference, not retrieved evidence or an executed result.')
+    return values
+
+
+def test_model_knowledge_needs_no_external_evidence_or_probability():
+    routes, sheet, evidence, constraints = values = knowledge_fixture()
+    check(values)
+    prepared = rr.materialize(routes, 'R1', sheet, evidence, design_constraints=constraints)
+    assert prepared
+    assert all(row['basis_mode'] == 'model_knowledge' and row['evidence_ids'] == [] and row['clue_ids'] == [] for row in prepared)
+    assert all(row['model_knowledge_rationale'] == routes['routes'][0]['model_knowledge_rationale'] for row in prepared)
+    assert prepared[0]['objectives'] == [goal['executable_metric'] for goal in sheet['subgoals']]
+
+
+def test_hybrid_preserves_both_bases():
+    routes, sheet, evidence, constraints = values = fixture()
+    route = routes['routes'][0]
+    route.update(basis_mode='hybrid', model_knowledge_rationale='The source states only qualitative reflection; my remembered interference reasoning motivates the specific thickness perturbation, without retrieved validation of its sign.')
+    check(values)
+    prepared = rr.materialize(routes, 'R1', sheet, evidence, design_constraints=constraints)
+    assert prepared[0]['basis_mode'] == 'hybrid'
+    assert prepared[0]['evidence_ids'] == route['evidence_ids']
+    assert prepared[0]['model_knowledge_rationale'] == route['model_knowledge_rationale']
+
+
+@pytest.mark.parametrize('mode', ['model_knowledge', 'hybrid'])
+def test_missing_knowledge_rationale_is_revision_not_ready(mode):
+    values = knowledge_fixture() if mode == 'model_knowledge' else fixture()
+    route = values[0]['routes'][0]
+    route.update(basis_mode=mode, model_knowledge_rationale=None)
+    with pytest.raises(ValueError, match='must be needs_revision'):
+        check(values)
+    route['readiness'] = 'needs_revision'
+    check(values)
+
+
+@pytest.mark.parametrize('mode', ['external_evidence', 'hybrid'])
+def test_external_and_hybrid_cannot_be_ready_without_citations(mode):
+    values = knowledge_fixture()
+    route = values[0]['routes'][0]
+    route['basis_mode'] = mode
+    if mode == 'external_evidence':
+        route['model_knowledge_rationale'] = None
+    with pytest.raises(ValueError, match='must be needs_revision'):
+        check(values)
+    route['readiness'] = 'needs_revision'
+    check(values)
+
+
+def test_model_only_cannot_claim_real_external_references():
+    values = fixture()
+    values[0]['routes'][0].update(basis_mode='model_knowledge', model_knowledge_rationale='Remembered interference reasoning.')
+    with pytest.raises(ValueError, match='cannot claim external citations'):
+        check(values)
+
+
+def test_external_mode_cannot_disguise_separate_model_basis():
+    values = fixture()
+    values[0]['routes'][0]['model_knowledge_rationale'] = 'Separate memory-based proposal.'
+    with pytest.raises(ValueError, match='select hybrid'):
+        check(values)
+
+
+def test_legacy_v1_keeps_external_only_semantics_without_mutation():
+    routes, sheet, evidence, constraints = values = fixture()
+    routes['schema_version'] = rr.LEGACY_SCHEMA
+    route = routes['routes'][0]
+    del route['basis_mode']
+    del route['model_knowledge_rationale']
+    before = copy.deepcopy(routes)
+    check(values)
+    assert rr.materialize(routes, 'R1', sheet, evidence, design_constraints=constraints)[0]['basis_mode'] == 'external_evidence'
+    assert routes == before
+    routes['decision_clues'] = []
+    route.update(clue_ids=[], evidence_ids=[])
+    with pytest.raises(ValueError, match='must be needs_revision'):
+        check(values)
+
+
+@pytest.mark.parametrize('mutation', [
+    lambda route: route['family']['layers'][0].update(material='Au'),
+    lambda route: route['expectations'][0]['metric'].update(metric='invented_metric'),
+    lambda route: route.update(expectations=[]),
+    lambda route: route.update(family=None, instances=[], expectations=[]),
+])
+def test_model_knowledge_does_not_bypass_structure_or_goal_validation(mutation):
+    values = knowledge_fixture()
+    mutation(values[0]['routes'][0])
+    with pytest.raises(ValueError):
+        check(values)
+
+
+def test_prompt_excludes_archive_and_duplicate_text_without_mutating_input():
+    _, sheet, evidence, constraints = fixture()
+    evidence['material_exports'] = [{'full_archive': 'must not enter prompt'}]
+    evidence['items'][0]['material_block'] = {'id': 'B1', 'text_raw': 'duplicate raw',
+        'text_normalized': 'duplicate normalized', 'locator': {'page': 3}}
+    evidence['items'][0]['material_assets'] = {'formulas': [{'latex': 'R+T+A=1'}]}
+    before = copy.deepcopy(evidence)
+    view = rr.build_prompt(sheet, evidence, design_constraints=constraints)['user_payload']['evidence_items']
+    assert 'material_exports' not in view
+    assert view['items'][0]['text'] == evidence['items'][0]['text']
+    assert view['items'][0]['evidence_id'] == evidence['items'][0]['evidence_id']
+    assert view['items'][0]['material_block'] == {'id': 'B1', 'locator': {'page': 3}}
+    assert view['items'][0]['material_assets'] == evidence['items'][0]['material_assets']
+    assert evidence == before

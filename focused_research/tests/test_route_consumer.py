@@ -78,3 +78,15 @@ def test_material_presence_is_not_bypassed_by_invalid_type(value):
     m=media();m['SiO2']={'material':value,'constant_n':1.5}
     with pytest.raises(ValueError,match='exactly one'):
         prepare_tmm_inputs(instance(),optical_media=m,wavelengths_nm=[450,550,650,700,850,1000])
+
+
+@pytest.mark.parametrize('mode', ['external_evidence', 'model_knowledge', 'hybrid'])
+def test_consumer_preserves_route_basis(mode):
+    row = instance()
+    row.update(basis_mode=mode, model_knowledge_rationale=None if mode == 'external_evidence' else 'Remembered interference hypothesis; not externally verified.',
+        evidence_ids=[] if mode == 'model_knowledge' else ['E1'],
+        clue_ids=[] if mode == 'model_knowledge' else ['D1'], targeted_goal_ids=['G1'])
+    output = prepare_tmm_inputs(row, optical_media=media(), wavelengths_nm=[450,550,650,700,850,1000])
+    for key in ['basis_mode', 'model_knowledge_rationale', 'evidence_ids', 'clue_ids', 'targeted_goal_ids']:
+        assert output[key] == row[key]
+    assert output['simulation_performed'] is False

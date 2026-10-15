@@ -63,6 +63,11 @@ def prepare_tmm_inputs(instance, *, optical_media, wavelengths_nm):
         'status': 'prepared_requires_material_and_numerical_preflight',
         'route_id': instance['route_id'], 'instance_id': instance['instance_id'],
         'simulation_performed': False, 'objectives': objectives,
+        'basis_mode': instance.get('basis_mode', 'external_evidence'),
+        'model_knowledge_rationale': instance.get('model_knowledge_rationale'),
+        'clue_ids': deepcopy(instance.get('clue_ids', [])),
+        'evidence_ids': deepcopy(instance.get('evidence_ids', [])),
+        'targeted_goal_ids': deepcopy(instance.get('targeted_goal_ids', [])),
         'tmm_task': {
             'stack': {'name': instance['instance_id'], 'layers': layers,
                 'incident': medium(instance['incident_medium']), 'exit': medium(instance['substrate'])},

@@ -5,6 +5,10 @@ from __future__ import annotations
 import argparse
 from dataclasses import replace
 import hashlib
+import math
+from email.utils import parsedate_to_datetime
+import urllib.error
+import urllib.request
 import json
 import sys
 import time
@@ -19,6 +23,7 @@ sys.path.insert(0, str(VENDOR))
 import task_sheet as ts
 from evidence_store import build_evidence_items, serialize_record
 from optomind_research.runtime.upgrade3 import query_plan as qp
+from optomind_research.s2_key_router import S2KeyRouter
 from optomind_research.runtime.upgrade3.candidate_corpus import (
     SnippetTextStore, build_candidate_corpus, plan_queries as _vendor_plan_queries,
 )
@@ -75,10 +80,77 @@ def generate_plan(question, output, planner=None):
     return outcome
 
 
+S2_MAX_RECONNECTS = 15
+
+
+def retry_after_seconds(value, *, wall_time=None):
+    """Parse the server's full delay, without the vendored transport's 120s cap."""
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        try:
+            seconds = parsedate_to_datetime(str(value)).timestamp() - (
+                time.time() if wall_time is None else wall_time)
+        except (TypeError, ValueError, OverflowError):
+            return None
+    return max(0.0, seconds) if math.isfinite(seconds) else None
+
+
+class RetryAfterOpener:
+    """Capture only safe rate-limit metadata; never retain headers or credentials."""
+    def __init__(self, opener=urllib.request.urlopen):
+        self.opener = opener
+        self.retry_after = None
+        self.request_count = 0
+
+    def __call__(self, *args, **kwargs):
+        self.request_count += 1
+        try:
+            return self.opener(*args, **kwargs)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                delay = retry_after_seconds(exc.headers.get('Retry-After'))
+                if delay is not None:
+                    self.retry_after = max(self.retry_after or 0.0, delay)
+            raise
+
+
+class FocusedS2KeyRouter(S2KeyRouter):
+    """The outer focused-query loop is the sole owner of 429 cooldowns.
+
+    Keep vendor lane acquisition, pacing, and authentication quarantine intact.
+    Its additional exponential 429 penalty would otherwise double-wait and
+    consume the active deadline after our full Retry-After wait.
+    """
+    def rate_limit_cool_lane(self, lane, base_seconds):
+        pass
+
+
+def make_s2_gateway(output, *, opener=None, sleep=None, clock=None):
+    from optomind_research.s2_intelligence_gateway import S2IntelligenceGateway, S2Transport
+    capture = RetryAfterOpener(opener or urllib.request.urlopen)
+    transport = S2Transport(cache_path=output / 'provider_cache.sqlite',
+        timeout_seconds=30, max_attempts=1, opener=capture, sleep_fn=sleep or time.sleep)
+    transport.router = FocusedS2KeyRouter(transport.keys,
+        min_interval_seconds=transport.min_interval_seconds, max_attempts=1,
+        sleep_fn=sleep or time.sleep, now_fn=clock or time.monotonic,
+        reserve_fn=transport._reserve_lane)
+    gateway = S2IntelligenceGateway(transport)
+    gateway._focused_retry_capture = capture
+    return gateway
+
+
 class AuditedGateway:
     """Bound and audit the real gateway; one failed query cannot erase other hits."""
-    def __init__(self, gateway, *, deadline, query_specs=None):
+    def __init__(self, gateway, *, deadline, query_specs=None,
+                 clock=None, sleep=None, checkpoint=None):
         self.gateway = gateway
+        self.clock = clock or time.monotonic
+        self.sleep = sleep or time.sleep
+        self.checkpoint = checkpoint
+        self.retry_progress = []
         self.query_specs = query_specs
         self.deadline = deadline
         self.calls = []
@@ -94,28 +166,104 @@ class AuditedGateway:
             if method != expected or query != spec.query_text.strip():
                 raise ValueError('provider call differs from validated query sequence')
             query = spec.query_text
-        started = time.monotonic()
+        started = self.clock()
         identity = (method, query, limit)
         if identity in self.query_cache:
             rows, response, original_index = self.query_cache[identity]
             self.calls.append({**self.calls[original_index], 'query': query,
                 'deduplicated_query': True, 'reused_call_index': original_index,
-                'elapsed_seconds': 0.0})
+                'elapsed_seconds': 0.0, 'attempt_count': 0, 'reconnect_count': 0,
+                'cooldown_seconds': 0.0, 'http_requests': 0, 'attempts': []})
             self.raw_records.append({'call_index': len(self.calls) - 1, 'rows':
                 self.raw_records[original_index]['rows'], 'reused_call_index': original_index,
                 'accepted_limit': limit, 'returned': len(self.raw_records[original_index]['rows'])})
             return rows, response
-        if started >= self.deadline:
-            rows, response = [], SimpleNamespace(ok=False, status_code=0,
-                status_category='deadline_exceeded', cache_hit=False, audit={})
-        else:
-            try:
-                rows, response = getattr(self.gateway, method)(
-                    query, limit=limit, deadline=self.deadline, **kwargs)
-            except Exception as exc:
-                # Exception messages may contain request headers/secrets. Persist only class.
+        attempts = []
+        cooldown_total = 0.0
+        retained_rows = []
+        exhausted = False
+        capture = getattr(self.gateway, '_focused_retry_capture', None)
+        for retry_index in range(S2_MAX_RECONNECTS + 1):
+            attempt_started = self.clock()
+            if capture is not None:
+                capture.retry_after = None
+                capture.request_count = 0
+            if attempt_started >= self.deadline:
                 rows, response = [], SimpleNamespace(ok=False, status_code=0,
-                    status_category='exception:' + type(exc).__name__, cache_hit=False, audit={})
+                    status_category='deadline_exceeded', cache_hit=False, audit={})
+            else:
+                try:
+                    rows, response = getattr(self.gateway, method)(
+                        query, limit=limit, deadline=self.deadline, **kwargs)
+                except Exception as exc:
+                    # Exceptions may contain request headers/secrets; persist only class.
+                    response = getattr(exc, 'response', None)
+                    if response is None:
+                        response = SimpleNamespace(ok=False,
+                            status_code=getattr(exc, 'code', 0),
+                            status_category='exception:' + type(exc).__name__,
+                            cache_hit=False, audit={})
+                        if isinstance(exc, urllib.error.HTTPError) and exc.code == 429:
+                            response.audit['retry_after_seconds'] = retry_after_seconds(
+                                exc.headers.get('Retry-After'))
+                    rows = []
+            attempt_audit = getattr(response, 'audit', {}) or {}
+            status = getattr(response, 'status_code', 0)
+            rate_limited = status == 429 or any(
+                page.get('status_code') == 429 for key in ('page_runs', 'batch_runs')
+                for page in attempt_audit.get(key, []))
+            # Preserve partial pages if a later attempt fails before returning them.
+            if len(rows) > len(retained_rows):
+                retained_rows = rows
+            attempt = {'attempt': retry_index + 1, 'reconnect': retry_index,
+                'status_code': status, 'ok': bool(getattr(response, 'ok', False)),
+                'rate_limited': rate_limited, 'returned': len(rows),
+                'status_category': getattr(response, 'status_category', ''),
+                'page_runs': attempt_audit.get('page_runs', []),
+                'batch_runs': attempt_audit.get('batch_runs', []),
+                'http_requests': capture.request_count if capture is not None else None,
+                'elapsed_seconds': round(self.clock() - attempt_started, 3),
+                'cooldown_seconds': 0.0}
+            attempts.append(attempt)
+            delay = None
+            if rate_limited:
+                delay = capture.retry_after if capture is not None else None
+                if delay is None:
+                    delay = retry_after_seconds(attempt_audit.get('retry_after_seconds'))
+                if delay is None:
+                    delay = retry_after_seconds(attempt_audit.get('retry_after'))
+                attempt['cooldown_source'] = 'retry_after' if delay is not None else 'exponential'
+                if delay is None:
+                    delay = min(60.0, 5.0 * (2 ** retry_index))
+                exhausted = retry_index == S2_MAX_RECONNECTS
+                attempt['retry_exhausted'] = exhausted
+                if not exhausted:
+                    attempt['cooldown_seconds'] = delay
+            progress = {'call_index': len(self.calls), 'method': method, 'query': query,
+                'requested_limit': limit, 'attempts': attempts,
+                'retry_exhausted': exhausted,
+                'complete': bool(getattr(response, 'ok', False)) and not rate_limited
+                    and not attempt_audit.get('truncated_reason'),
+                'rows': [serialize_record(r) for r in
+                    (rows if getattr(response, 'ok', False) and not rate_limited else retained_rows)]}
+            if self.checkpoint is not None:
+                self.checkpoint(self.retry_progress + [progress])
+            if not rate_limited or exhausted:
+                if rate_limited:
+                    self.deadline += self.clock() - attempt_started
+                break
+            # A 429 is recovery time, not active retrieval work. Neither its request
+            # latency nor the full server-mandated cooldown spends the active budget.
+            self.sleep(delay)
+            cooldown_total += delay
+            self.deadline += self.clock() - attempt_started
+        self.retry_progress.append(progress)
+        if rate_limited:
+            rows = retained_rows
+            response.ok = False
+            response.status_category = 'rate_limit_retry_exhausted'
+        elif not getattr(response, 'ok', False) and retained_rows:
+            rows = retained_rows
         audit = getattr(response, 'audit', {}) or {}
         reason = str(getattr(response, 'status_category', '') or '')
         ok = bool(getattr(response, 'ok', False))
@@ -135,13 +283,18 @@ class AuditedGateway:
             'page_runs': audit.get('page_runs', []),
             'provider_total': audit.get('provider_total'),
             'truncated_reason': audit.get('truncated_reason', ''),
-            'elapsed_seconds': round(time.monotonic() - started, 3),
+            'elapsed_seconds': round(self.clock() - started, 3),
+            'attempt_count': len(attempts), 'reconnect_count': len(attempts) - 1,
+            'max_reconnects': S2_MAX_RECONNECTS, 'retry_exhausted': exhausted,
+            'cooldown_seconds': cooldown_total, 'attempts': attempts,
+            'http_requests': sum(a['http_requests'] for a in attempts) if capture is not None else None,
         })
         self.raw_records.append({'call_index': len(self.calls) - 1,
             'rows': [serialize_record(row) for row in rows],
             'accepted_limit': limit, 'returned': len(rows)})
         bounded = rows[:limit]
-        self.query_cache[identity] = (bounded, response, len(self.calls) - 1)
+        if ok and not self.calls[-1]['partial']:
+            self.query_cache[identity] = (bounded, response, len(self.calls) - 1)
         return bounded, response
 
     def search_papers(self, query, **kwargs):
@@ -168,10 +321,10 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=10, seconds=300):
     write_json(output / 'query_plan.json', plan)
     write_json(output / 'queries.json', [dict(vars(q), task_query=mappings.get(q.query_id)) for q in plan_queries(plan)])
     if gateway is None:
-        from optomind_research.s2_intelligence_gateway import S2IntelligenceGateway, S2Transport
-        gateway = S2IntelligenceGateway(S2Transport(
-            cache_path=output / 'provider_cache.sqlite', timeout_seconds=30, max_attempts=2))
-    adapter = AuditedGateway(gateway, deadline=time.monotonic() + seconds, query_specs=plan_queries(plan))
+        gateway = make_s2_gateway(output)
+    adapter = AuditedGateway(gateway, deadline=time.monotonic() + seconds,
+        query_specs=plan_queries(plan),
+        checkpoint=lambda progress: write_json(output / 'provider_retry_checkpoint.json', progress))
     store = SnippetTextStore(output / 'snippets.sqlite')
     try:
         corpus = build_candidate_corpus(plan, gateway=adapter, per_query_limit=per_query_limit,
@@ -255,6 +408,9 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=10, seconds=300):
             'ineligible_evidence_items': sum(not i['eligible_as_evidence'] for i in evidence['items']),
             'missing_facets': missing_facets, 'fulltext_retrieved': False,
             'per_query_limit': per_query_limit, 'retrieval_seconds': seconds,
+            'retrieval_budget_scope': 'active work excluding 429 recovery requests and cooldown',
+            'max_s2_reconnects_per_query': S2_MAX_RECONNECTS,
+            'rate_limit_exhausted_queries': sum(c.get('retry_exhausted', False) for c in adapter.calls),
             'task_sheet_contract': plan.get('task_sheet', {}).get('schema_version'),
             'relevance_validated': False, 'constraints_evaluated': False,
             'source_commit': '775329cee02d4dacd108bf41969b1d21d26750e0'}

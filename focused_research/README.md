@@ -1,6 +1,6 @@
 # Focused Research: provisional task sheets, evidence and candidate routes
 
-The default flow is **natural question → research task sheet → validated query adapter → retrieval**. This first version is fixed-domain (optical thin-film research), not a universal taxonomy. The new standalone route stage turns source-linked passages into decision clues and parameterized candidate routes. It stops at prepared, unexecuted structures and directional expectations. No full-paper extraction, design execution, PDF generation, citation/reference expansion or downstream T018 changes are implemented. The earlier T019 task-sheet checkout remains unchanged.
+The default flow is **natural question → research task sheet → validated query adapter → retrieval**. This first version is fixed-domain (optical thin-film research), not a universal taxonomy. The new standalone route stage turns source-linked passages into decision clues and parameterized candidate routes. It stops at prepared, unexecuted structures and directional expectations. The T022 extension adds an explicit bridge to the mature pinned Review full-text acquisition and local Docling pipeline. S2 is complementary rather than mandatory. PDF input parsing and report PDF typesetting are separate concerns: paper parsing is supported by that bridge; design execution and report typesetting remain out of scope. The earlier T019 task-sheet checkout remains unchanged.
 
 ## Query quality is provisional: empirical tuning is still pending
 
@@ -109,7 +109,7 @@ The local dependency path is a test-environment convenience. Tests inject respon
 
 Read [ROUTE_MODULE_DESIGN.md](ROUTE_MODULE_DESIGN.md) for the design and known limits. This module is provisional and requires actual model/retrieval tuning. It does not claim that a generated route works.
 
-`route_stage.py` performs only offline prompt preparation, contract validation or deterministic stack materialization. It never constructs a model client. Inputs are the upstream task sheet, the retrieval output `evidence_items.json`, and a source-linked structural configuration. The latter is explicit because the upstream sheet stores layer/material constraints as natural language; parsing a configuration does not prove its semantic correspondence to the question. The RGB/NIR example configuration records air incidence as a configuration assumption.
+`route_stage.py` supports offline prompt preparation, contract validation and deterministic stack materialization, plus `generate` only with an explicitly injected audited local planner. It never constructs a model client. Inputs are the upstream task sheet, the retrieval output `evidence_items.json`, and a source-linked structural configuration. The latter is explicit because the upstream sheet stores layer/material constraints as natural language; parsing a configuration does not prove its semantic correspondence to the question. The RGB/NIR example configuration records air incidence as a configuration assumption.
 
 ```bash
 python focused_research/route_stage.py prompt --task-sheet focused_research/examples/rgb_nir_task_sheet.json --evidence-file local_runs/focused_materials/evidence_items.json --constraints-file focused_research/examples/rgb_nir_design_constraints.json --output local_runs/route_prompt
@@ -124,3 +124,10 @@ For the later local metered caller, `research_routes.generate(sheet, evidence, p
 `route_consumer.prepare_tmm_inputs` takes a prepared instance, explicit optical-medium mappings and an explicit wavelength grid. It preserves task objectives without adding weights/targets and checks exact band endpoints plus interior samples. It constructs the existing VeriTMM task shape; it does not query optical constants or run a solver. Material dataset coverage, convergence, appropriate sampling density and physical verification remain prerequisites for future execution. The accompanying subprocess test uses the actual existing `simulation_task_from_dict` and `ObjectivePreference` consumers, without computation.
 
 First-version route expectations compare parameter settings within the same explicit layer sequence; topology-changing comparisons, adaptive budget allocation and intervention-response archives are future work. A route need not invent an expected direction for every goal. The task's remaining goals must still be evaluated by any later design selection.
+
+## T022: full-text materials and model-knowledge routes
+
+See `FULLTEXT_INTEGRATION.md` and the current `LOCAL_TEST_HANDOFF.md`. Full-text acquisition and local parsing reuse Review commit `d2deb4dbe18b23837d949822ad731afbaba9414b` in a separate local environment, preserving its parallel parser, native-crash recovery and successful caches. Do not substitute report-PDF compilation for paper parsing. Model-knowledge routes are permitted without external citations; external-evidence and hybrid routes remain source-linked. All still require executable families and reasoned, reference-based expectations. An empty external search need not stop the research proposal stage.
+
+### Rate-limited S2 queries
+HTTP 429 is retryable transport state, not an empty-search observation. Successful queries are retained; only rate-limited queries cool down and reconnect, honoring Retry-After or backoff, up to 15 reconnections after the initial request per query. Exhaustion remains partial/incomplete. This is separate from the local paid-model attempt limit and does not expand the separately authorized Qwen attempts.

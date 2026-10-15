@@ -144,12 +144,17 @@ def test_real_gateway_paper_200_is_two_pages_and_snippet_200_single_call():
     assert t.calls[-1][2]['params']['limit']==200
 
 
-def test_real_gateway_later_page_failure_is_partial(tmp_path):
+def test_real_gateway_later_page_failure_is_partial(tmp_path, monkeypatch):
+    now = [0.0]
+    monkeypatch.setattr(r.time, 'monotonic', lambda: now[0])
+    monkeypatch.setattr(r.time, 'sleep', lambda seconds: now.__setitem__(0, now[0] + seconds))
     g=S2IntelligenceGateway(Transport(fail_second=True))
     out=r.retrieve(plan(),tmp_path,gateway=g,per_query_limit=200)
     assert out['status']=='partial' and out['hits']==100
     calls=json.loads((tmp_path/'provider_calls.json').read_text())
     assert calls[0]['truncated_reason']=='later_page_unavailable'
+    assert calls[0]['retry_exhausted'] and calls[0]['reconnect_count'] == 15
+    assert calls[0]['status_category'] == 'rate_limit_retry_exhausted'
 
 
 def test_mock_planning_rejected(tmp_path):
