@@ -1,0 +1,354 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_5fab0d2d054d4ad39eff1e936329d90f63301cbfe72daca1c2be8e1be7f08b6d",
+      "source_quote": "For a quarter-wave Bragg's stack composed of alternating materials with refractive indices H and L and thicknesses dH and dL, the central stopband wavelength is given by the equation:",
+      "structure_or_method": "Quarter-wave Bragg stack with alternating high/low index layers.",
+      "physical_effect": "Formation of a photonic band gap (stopband) at a central wavelength determined by layer optical thickness.",
+      "conditions_and_unknowns": [
+        "Equation text not fully rendered in source snippet; specific formula values missing.",
+        "Source discusses NIR reflection for TPV, not visible reflection/NIR transmission dichroic specifically.",
+        "Normal incidence implied by basic formula; oblique incidence effects not detailed in this specific quote."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Hypothesize that tuning the physical thicknesses dH and dL in a TiO2/SiO2 stack can shift the central stopband to cover the visible range (450-650 nm), thereby creating high reflection there while allowing transmission at longer NIR wavelengths."
+    },
+    {
+      "id": "D2",
+      "evidence_id": "E_5795be857a172a26c0b244073a2d2092b5d3ad750880cf9d1128662b2afacfce",
+      "source_quote": "There is an angular dependence of stop bands, which can lead to reduced reflectivity compared to normal incidence. This angular dependence indicates a blue shift (a shift towards shorter wavelengths) with an increase in angle of incidence, as illustrated in Figs. 3 and 4.",
+      "structure_or_method": "Multilayer dielectric stack at oblique incidence.",
+      "physical_effect": "Blue shift of the reflection band and potential reduction in reflectivity as incidence angle increases.",
+      "conditions_and_unknowns": [
+        "Specific magnitude of shift depends on polarization and index contrast.",
+        "Source illustrates shift from normal to 60 degrees; task requires 45 degrees.",
+        "Does not specify exact material pair performance at 45 degrees unpolarized."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Since the task requires operation at 45 degrees, the design must target a slightly longer central wavelength at normal incidence so that the blue shift moves the band into the desired 450-650 nm range during actual use. Failure to account for this may result in the reflection band shifting out of the visible spectrum."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A periodic quarter-wave stack of TiO2 and SiO2 can be tuned to reflect the visible band while transmitting NIR, provided the layer thicknesses are adjusted to compensate for the blue shift at 45 degrees incidence.",
+      "clue_ids": [
+        "D1",
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_5fab0d2d054d4ad39eff1e936329d90f63301cbfe72daca1c2be8e1be7f08b6d",
+        "E_5795be857a172a26c0b244073a2d2092b5d3ad750880cf9d1128662b2afacfce"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The blue shift observed in the source (normal to 60 deg) applies qualitatively to the 45-degree case, requiring a red-shifted design target.",
+        "TiO2/SiO2 index contrast is sufficient to create a broad enough stopband to cover 450-650 nm with a moderate number of layers.",
+        "Unpolarized performance is approximated by the average of s and p responses, which may broaden the effective edge but reduce peak reflectivity compared to single polarization."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "Task specifies 45-degree incidence; the route relies on angular shift physics."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task specifies equal-s/p unpolarized light."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            90
+          ],
+          "dL": [
+            80,
+            130
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline_normal_target",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 100
+          }
+        },
+        {
+          "id": "red_shifted_compensation",
+          "parameters_nm": {
+            "dH": 70,
+            "dL": 100
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_normal_target",
+          "candidate_instance_id": "red_shifted_compensation",
+          "controlled_conditions": "Same material order (12 layers), substrate, incident medium, 45-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "increase",
+          "reason": "Increasing the high-index layer thickness shifts the normal-incidence stopband to longer wavelengths. Due to the blue shift at 45 degrees, this thicker design should align the reflected band better with the 450-650 nm target than the thinner baseline, which may shift too far into the UV/blue."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_normal_target",
+          "candidate_instance_id": "red_shifted_compensation",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "decrease",
+          "reason": "Shifting the reflection band to longer wavelengths (to correct for angular blue shift) risks extending the stopband tail into the lower NIR region (700-750 nm), potentially reducing transmittance in that specific sub-band compared to the baseline."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R2",
+      "claim": "Optimizing the thickness ratio of high-to-low index layers away from the standard quarter-wave condition can improve unpolarized performance at oblique incidence by balancing s- and p-polarization stopbands.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "At oblique incidence, the effective optical thickness differs for s- and p-polarizations, causing their stopbands to split.",
+        "A standard quarter-wave design optimized for normal incidence will suffer from this splitting at 45 degrees, reducing the common high-reflection bandwidth for unpolarized light.",
+        "Adjusting the physical thickness ratio dH/dL can partially re-align the s and p stopbands or maximize their overlap in the visible region."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "The hypothesis specifically addresses oblique incidence effects."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "The goal is to improve the average performance of both polarizations."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            60,
+            80
+          ],
+          "dL": [
+            90,
+            120
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "quarter_wave_approx",
+          "parameters_nm": {
+            "dH": 65,
+            "dL": 108
+          }
+        },
+        {
+          "id": "ratio_optimized",
+          "parameters_nm": {
+            "dH": 72,
+            "dL": 108
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "quarter_wave_approx",
+          "candidate_instance_id": "ratio_optimized",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination, wavelength bands and reduction.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "increase",
+          "reason": "Increasing the high-index layer thickness relative to the low-index layer may compensate for the larger phase shift experienced by p-polarized light at oblique incidence, thereby widening the overlapping stopband for unpolarized light and increasing mean reflectance."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Retrieved evidence confirms angular dependence and blue shift but does not provide specific thickness ratios for optimizing unpolarized TiO2/SiO2 stacks at 45 degrees. This route relies on general thin-film physics: at oblique incidence, the admittance of s and p polarizations diverges. A standard quarter-wave stack (optical thickness = lambda/4) designed for normal incidence will have mismatched phase conditions for s and p waves at 45 degrees, leading to split stopbands. By empirically adjusting the physical thickness of the high-index layer (dH) while keeping dL constant (or vice versa), one attempts to find a compromise thickness that maximizes the constructive interference overlap for both polarizations in the target visible band. This is a heuristic optimization strategy common in filter design when exact analytic solutions for unpolarized oblique incidence are complex."
+    }
+  ]
+}
