@@ -308,6 +308,9 @@ def materialize(routes, route_id, task_sheet, evidence_items, *, design_constrai
 
 
 def build_prompt(task_sheet, evidence_items, *, design_constraints):
+    # 未来经验输入尚未实现：按条件参考真实研究的成功与失败，不盲目复用路线。
+    # 模型内部知识不是实测经验；来源、预期与实际结果应明确区分。
+    # 数据结构、索引及检索算法仍待讨论，见 FUTURE_LOCAL_EXPERIENCE_MEMO.md。
     _inputs(task_sheet, evidence_items, design_constraints)
     system = (ROOT / 'research_routes_prompt.txt').read_text(encoding='utf-8')
     example = (ROOT / 'examples' / 'research_routes_example.json').read_text(encoding='utf-8')
@@ -322,6 +325,9 @@ render_prompt = build_prompt
 
 def generate(task_sheet, evidence_items, planner, *, design_constraints, max_repairs=1):
     """Explicit, injected planner call; no implicit model or simulation execution."""
+    # 未来可沉淀真实执行的条件、路线、预期、实际结果、原因与修订建议。
+    # 此处生成提案不代表取得实测经验；失败也有价值，须保留适用边界。
+    # 当前只留备注，不实现经验读写、不扩展本次 T022 联调范围。
     from optomind_research.query_planner import _extract_json_object
     if type(max_repairs) is not int or max_repairs not in (0, 1):
         raise ValueError('max_repairs must be 0 or 1')

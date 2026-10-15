@@ -305,6 +305,9 @@ class AuditedGateway:
 
 
 def retrieve(plan, output, *, gateway=None, per_query_limit=10, seconds=300):
+    # 未来方向（尚未实现）：先检查本地文献原文/解析缓存与科研经验，再按缺口外检。
+    # 现有 provider/parser 缓存不等于科研经验库；复用须匹配条件，不能照搬历史结论。
+    # 仅记录讨论入口，不改变本次 T022 范围；见 FUTURE_LOCAL_EXPERIENCE_MEMO.md。
     validate_limits(per_query_limit, seconds)
     if plan.get('schema_version') == ts.SCHEMA:
         plan = ts.adapt(plan)
