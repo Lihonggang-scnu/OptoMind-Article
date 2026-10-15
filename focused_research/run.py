@@ -13,7 +13,9 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parent
 VENDOR = ROOT / 'vendor' / 'review'
 # This is a standalone process, deliberately not an in-process Article plugin.
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(VENDOR))
+import task_sheet as ts
 from optomind_research.runtime.upgrade3 import query_plan as qp
 from optomind_research.runtime.upgrade3.candidate_corpus import (
     SnippetTextStore, build_candidate_corpus, plan_queries,
@@ -47,8 +49,8 @@ def generate_plan(question, output, planner=None):
         raise ValueError('question must not be empty')
     if planner is None:
         from optomind_research.query_planner import QueryPlannerAgent
-        planner = QueryPlannerAgent()
-    outcome = planner.query_plan_v2(question)
+        planner = QueryPlannerAgent(max_tokens=7000)
+    outcome = ts.generate(question, planner)
     if any(u.get('mock_llm') or u.get('mock') for u in outcome.get('round_usages', [])):
         outcome['status'] = 'mock_rejected'
     transport = outcome.get('transport') or {}
@@ -57,10 +59,11 @@ def generate_plan(question, output, planner=None):
     plan = outcome.get('plan') or {}
     write_json(output / 'planning.json', outcome)
     write_json(output / 'query_plan.json', plan)
+    write_json(output / 'task_sheet.json', outcome.get('task_sheet', {}))
     write_json(output / 'subproblems.json', [
         {'facet_id': f['id'], 'question': f['ask']} for f in plan.get('facets', [])
     ])
-    write_json(output / 'queries.json', [vars(q) for q in plan_queries(plan)])
+    write_json(output / 'queries.json', [dict(vars(q), task_query=plan.get('task_query_mappings', {}).get(q.query_id)) for q in plan_queries(plan)])
     return outcome
 
 
@@ -126,10 +129,20 @@ class AuditedGateway:
 
 def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
     validate_limits(per_query_limit, seconds)
-    report = qp.validate_plan(plan)
-    # Never silently accept validator truncation or an externally edited over-budget plan.
-    if not report['ok'] or report['plan'] != plan:
-        raise ValueError('retrieval requires the exact validated focused query_plan.json')
+    if plan.get('schema_version') == ts.SCHEMA:
+        plan = ts.adapt(plan)
+    if plan.get('schema_version') == ts.ADAPTER_SCHEMA:
+        ts.validate_adapter(plan)
+    else:
+        report = qp.validate_plan(plan)
+        # Legacy replay only; reject any truncation or silent normalization.
+        if not report['ok'] or report['plan'] != plan:
+            raise ValueError('retrieval requires the exact validated focused query_plan.json')
+    mappings = plan.get('task_query_mappings', {})
+    if 'task_sheet' in plan:
+        write_json(output / 'task_sheet.json', plan['task_sheet'])
+    write_json(output / 'query_plan.json', plan)
+    write_json(output / 'queries.json', [dict(vars(q), task_query=mappings.get(q.query_id)) for q in plan_queries(plan)])
     if gateway is None:
         from optomind_research.s2_intelligence_gateway import S2IntelligenceGateway, S2Transport
         gateway = S2IntelligenceGateway(S2Transport(
@@ -138,7 +151,18 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
     store = SnippetTextStore(output / 'snippets.sqlite')
     try:
         corpus = build_candidate_corpus(plan, gateway=adapter, per_query_limit=per_query_limit,
-            enrich=False, snippet_store=store, snippet_discovery_target=0)
+            enrich=False, snippet_store=store, snippet_discovery_target=0,
+            allow_degraded=plan.get('schema_version') == ts.ADAPTER_SCHEMA)
+        if plan.get('schema_version') == ts.ADAPTER_SCHEMA:
+            corpus['legacy_channel_diagnostic'] = corpus['input_state']
+            corpus['input_state'] = {
+                'planner_status': 'validated_task_sheet', 'plan_state': 'complete',
+                'degraded': False, 'channel_selection': 'intentional_per_query',
+                'note': 'Task sheets do not require both endpoints; legacy dual-channel diagnostic retained separately.'}
+        # Preserve task provenance on hits/audits as well as the executable query list.
+        for row in corpus['retrieval_hits'] + corpus['query_audit']:
+            if row['query_id'] in mappings:
+                row['task_query'] = mappings[row['query_id']]
         # Produce readable retrieved materials in addition to the original hash/locator store.
         papers = {p['paper_id'] or ('corpus:' + str(p['corpus_id'])): p for p in corpus['papers']}
         materials = []
@@ -165,10 +189,14 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
             unique_materials[material_id]['source_mappings'].append({key: material[key] for key in
                 ('hit_id', 'facet_id', 'query_id', 'query_text', 'retrieval_source', 'provider',
                  'snippet_locator', 'text_hash')})
+            if 'task_query' in material:
+                unique_materials[material_id]['source_mappings'][-1]['task_query'] = material['task_query']
         write_json(output / 'unique_materials.json', list(unique_materials.values()))
         # Query occurrences and evidence passages remain separate; paper identity is deduped upstream.
         for audit, call in zip(corpus['query_audit'], adapter.calls):
             audit['provider_response'] = call
+            if audit['query_id'] in mappings:
+                call['task_query'] = mappings[audit['query_id']]
         unsupported_filters = [f['id'] for f in plan['facets'] if any(f['filters'].values())]
         constraints = list(plan.get('additional_constraints') or [])
         constraints.extend(plan.get('criteria', {}).get('must_exclude_domain') or [])
@@ -183,6 +211,7 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
         corpus['focused_status'] = status
         corpus['filter_execution'] = {'applied': False, 'facets_with_unapplied_filters': unsupported_filters,
             'unapplied_additional_constraints': constraints,
+            'task_sheet_constraints_for_later_evaluation': plan.get('task_sheet', {}).get('explicit_constraints', []),
             'note': 'Candidate retrieval only; explicit constraints preserved for later acceptance, not asserted satisfied.'}
         corpus['configuration']['corpus_target'] = None
         corpus['configuration']['focused_maximum_hits'] = len(plan_queries(plan)) * per_query_limit
@@ -195,6 +224,8 @@ def retrieve(plan, output, *, gateway=None, per_query_limit=200, seconds=300):
             'unique_materials': len(unique_materials),
             'missing_facets': missing_facets, 'fulltext_retrieved': False,
             'per_query_limit': per_query_limit, 'retrieval_seconds': seconds,
+            'task_sheet_contract': plan.get('task_sheet', {}).get('schema_version'),
+            'relevance_validated': False, 'constraints_evaluated': False,
             'source_commit': '775329cee02d4dacd108bf41969b1d21d26750e0'}
         write_json(output / 'summary.json', summary)
         return summary

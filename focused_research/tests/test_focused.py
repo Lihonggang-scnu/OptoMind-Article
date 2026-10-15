@@ -153,7 +153,7 @@ def test_real_gateway_later_page_failure_is_partial(tmp_path):
 
 
 def test_mock_planning_rejected(tmp_path):
-    fake=SimpleNamespace(query_plan_v2=lambda q: {'status':'ok','plan':plan(),'round_usages':[{'mock_llm':True}]})
+    fake=SimpleNamespace(_call_query_plan_model=lambda p: '{}', last_usage={'mock_llm':True}, last_transport={})
     assert r.generate_plan('Question',tmp_path,planner=fake)['status']=='mock_rejected'
 
 
@@ -186,16 +186,16 @@ def test_original_planner_uses_tuned_prompt_and_real_provider_contract(monkeypat
     calls=[]
     def offline_call(agent,messages,**kwargs):
         calls.append((agent,messages,kwargs))
-        return {'content':json.dumps(plan()),'_llm_usage':{'mock_llm':False},'fallback_used':False}
+        return {'content':json.dumps(task_sheet()),'_llm_usage':{'mock_llm':False},'fallback_used':False}
     monkeypatch.setattr(planner_module,'call_qwen_chat',offline_call)
-    out=r.generate_plan('How does cycling degradation affect sodium ion battery cathodes?',tmp_path)
+    out=r.generate_plan(task_sheet()['original_question'],tmp_path)
     assert out['status']=='ok' and len(calls)==1
     assert calls[0][2]['force_mock'] is False
     assert calls[0][2]['response_format']=={'type':'json_object'}
-    assert 'STEP 1 --' in calls[0][1][0]['content']
-    assert 'STEP 2 --' in calls[0][1][0]['content']
-    assert json.loads((tmp_path/'subproblems.json').read_text())[0]['facet_id']=='F1'
-    assert len(json.loads((tmp_path/'queries.json').read_text()))==2
+    assert 'research task sheet' in calls[0][1][0]['content']
+    assert task_sheet()['original_question'] in calls[0][1][0]['content']
+    assert json.loads((tmp_path/'subproblems.json').read_text())[0]['facet_id']=='Q1'
+    assert len(json.loads((tmp_path/'queries.json').read_text()))==5
 
 
 @pytest.mark.parametrize('location', ['facet', 'criteria'])
@@ -242,6 +242,128 @@ def test_transport_failure_prevents_retrieval_even_with_valid_shape(monkeypatch,
 
 
 def test_valid_looking_transport_fallback_is_rejected(tmp_path):
-    fake=SimpleNamespace(query_plan_v2=lambda q: {'status':'ok','plan':plan(),
-        'round_usages':[], 'transport':{'fallback_used':True}})
+    fake=SimpleNamespace(_call_query_plan_model=lambda p: json.dumps(task_sheet()),
+        last_usage={}, last_transport={'fallback_used':True})
     assert r.generate_plan('Question',tmp_path,planner=fake)['status']=='transport_rejected'
+
+
+def task_sheet():
+    return json.loads((ROOT/'examples/rgb_nir_task_sheet.json').read_text())
+
+
+def test_task_sheet_full_example_contract():
+    sheet = task_sheet()
+    assert r.ts.validate(sheet) == sheet
+    assert '99%' not in str(sheet['explicit_constraints'])
+    assert sheet['goal_relationships'] == {'mode':'all','priority_order':None,'tradeoff':None}
+    assert all(m['status']=='candidate' for m in sheet['candidate_mechanisms'])
+    assert not any('polarization' in str(x) for x in sheet['known_data'])
+    assert len(sheet['explicit_constraints']) == 7
+    prompt = r.ts.render_prompt('Other question')['system_prompt']
+    assert sheet['original_question'] in prompt
+    assert '/paper/search' in prompt and '/snippet/search' in prompt
+
+
+def test_task_adapter_executes_exact_queries_and_links(tmp_path):
+    sheet = task_sheet(); gateway = Gateway()
+    result = r.retrieve(sheet, tmp_path, gateway=gateway)
+    assert result['queries'] == 5 and result['status'] == 'complete'
+    assert result['constraints_evaluated'] is False
+    assert [call[1] for call in gateway.calls] == [q['query'] for q in sheet['search_queries']]
+    assert [call[0] for call in gateway.calls] == ['paper','snippet','paper','snippet','snippet']
+    assert all(call[2]['limit']==200 for call in gateway.calls)
+    for artifact in ['materials.json','queries.json','provider_calls.json']:
+        rows=json.loads((tmp_path/artifact).read_text())
+        assert all(row['task_query']['subgoal_ids']==['G1','G2','G3'] for row in rows)
+    corpus=json.loads((tmp_path/'candidate_corpus.json').read_text())
+    assert corpus['filter_execution']['task_sheet_constraints_for_later_evaluation']==sheet['explicit_constraints']
+    unique=json.loads((tmp_path/'unique_materials.json').read_text())
+    assert all(m['task_query']['id'] for row in unique for m in row['source_mappings'])
+
+
+@pytest.mark.parametrize('mutation', ['query','mapping','budget','span','missing','endpoint','subgoal','mechanism','question','padded'])
+def test_task_contract_fail_closed_before_calls(tmp_path, mutation):
+    sheet=task_sheet(); p=r.ts.adapt(sheet)
+    if mutation=='query': p['facets'][0]['keyword_queries'][0]='silently changed'
+    elif mutation=='mapping': p['task_query_mappings']['Q1_KQ_01']['purpose']='mechanism'
+    elif mutation=='budget':
+        for i in range(2):
+            sheet['search_queries'].append({**sheet['search_queries'][0], 'id':f'EXTRA{i}'})
+        p=sheet
+    elif mutation=='span': sheet['explicit_constraints'][0]['original_span']='99%'; p=sheet
+    elif mutation=='missing': del sheet['goal_relationships']; p=sheet
+    elif mutation=='endpoint': sheet['search_queries'][0]['endpoint']='paper_search_bulk'; p=sheet
+    elif mutation=='subgoal': sheet['search_queries'][0]['subgoal_ids']=['BAD']; p=sheet
+    elif mutation=='mechanism': sheet['candidate_mechanisms'][0]['status']='proven'; p=sheet
+    elif mutation=='question': sheet['search_queries'][0]['query']='Which coating?'; p=sheet
+    else: sheet['search_queries'][0]['query']=' padded query '; p=sheet
+    gateway=Gateway()
+    with pytest.raises(ValueError): r.retrieve(p,tmp_path,gateway=gateway)
+    assert not gateway.calls
+
+
+def test_task_repair_and_raw_history(monkeypatch,tmp_path):
+    import optomind_research.query_planner as pm
+    good=task_sheet(); bad=task_sheet(); bad['original_question']='short surrogate'
+    outputs=iter([bad,good]); calls=[]
+    def fake(*args,**kwargs):
+        calls.append(args)
+        return {'content':json.dumps(next(outputs)), '_llm_usage':{}}
+    monkeypatch.setattr(pm,'call_qwen_chat',fake)
+    out=r.generate_plan(good['original_question'],tmp_path)
+    assert out['status']=='ok' and out['revision_rounds']==1
+    assert out['rounds'][0]['raw_task_sheet']['original_question']=='short surrogate'
+    assert 'validation_error' in json.loads(calls[1][1][1]['content'])
+
+
+def test_mixed_unresolved_nullable_contract():
+    sheet=task_sheet()
+    sheet['task_type']='mixed/unresolved'
+    sheet['goal_relationships']={'mode':'mixed/unresolved','priority_order':None,'tradeoff':None}
+    sheet['candidate_mechanisms']=[]
+    for q in sheet['search_queries']: q['mechanism_ids']=[]
+    assert r.ts.validate(sheet)==sheet
+    for mode in ['all','any','priorities','tradeoff']:
+        sheet['goal_relationships']={'mode':mode,'priority_order':['G1','G2','G3'] if mode=='priorities' else None,
+            'tradeoff':'Priority tradeoff unresolved' if mode=='tradeoff' else None}
+        assert r.ts.validate(sheet)==sheet
+
+
+def test_repeated_papers_cannot_escape_relevance_window():
+    class RepeatedTransport:
+        def __init__(self): self.calls=[]
+        def request_json(self,*a,**kw):
+            self.calls.append(kw['params'])
+            return S2GatewayResponse(ok=True,status_code=200,status_category='ok',payload={
+                'total':10000, 'data':[{'paperId':'P1','title':'same'}]*kw['params']['limit']})
+    t=RepeatedTransport(); g=S2IntelligenceGateway(t)
+    papers,response=g.search_papers('coating',limit=200)
+    assert len(papers)==1 and len(t.calls)==10
+    assert all(c['offset']+c['limit']<=1000 for c in t.calls)
+    assert response.audit['truncated_reason']=='relevance_result_window'
+
+
+@pytest.mark.parametrize('query_index', [0, 1])
+def test_single_endpoint_task_needs_no_filler(tmp_path, query_index):
+    sheet=task_sheet(); sheet['search_queries']=[sheet['search_queries'][query_index]]
+    gateway=Gateway()
+    result=r.retrieve(sheet,tmp_path,gateway=gateway)
+    assert result['status']=='complete' and result['queries']==1
+    assert len(gateway.calls)==1
+    corpus=json.loads((tmp_path/'candidate_corpus.json').read_text())
+    assert corpus['input_state']['degraded'] is False
+    assert corpus['input_state']['channel_selection']=='intentional_per_query'
+
+
+def test_preserve_original_question_whitespace():
+    sheet=task_sheet(); sheet['original_question']=' \n'+sheet['original_question']+'\n'
+    assert r.ts.validate(sheet,question=sheet['original_question'])==sheet
+
+
+def test_contradictory_relationships_and_crosslinks_rejected():
+    sheet=task_sheet(); sheet['goal_relationships']['priority_order']=['G1']
+    with pytest.raises(ValueError): r.ts.validate(sheet)
+    sheet=task_sheet(); sheet['research_questions'][0]['subgoal_ids']=['G1']
+    with pytest.raises(ValueError): r.ts.validate(sheet)
+    sheet=task_sheet(); sheet['search_queries'][0]['subgoal_ids']=['G3']
+    with pytest.raises(ValueError): r.ts.validate(sheet)

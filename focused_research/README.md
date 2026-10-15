@@ -1,74 +1,77 @@
-# Focused Review retrieval (isolated entrypoint)
+# Focused Research: provisional task-sheet retrieval
 
-This transplant stops at subproblems, executable queries, and retrieved materials with source mappings. It does not answer the scientific question, read full papers, create cards/plans, or produce PDFs. The existing Article/T018 consumer is unchanged.
+The default flow is **natural question → research task sheet → validated query adapter → retrieval**. This first version is fixed-domain (optical thin-film research), not a universal taxonomy. It stops at retrieved metadata, abstracts and snippets. No full-paper extraction, evidence cards, scientific answer, design execution, PDF generation, citation/reference expansion or downstream T018 changes are implemented.
 
 ## Run
 
-From the repository root, using Python 3.10+ with `ftfy` and `PyYAML` installed:
+From the repository root, Python 3.10+ with `ftfy` and `PyYAML`:
 
 ```bash
-python focused_research/run.py plan --question 'Your single research question' --output local_runs/focused_plan
-python focused_research/run.py retrieve --plan-file local_runs/focused_plan/query_plan.json --output local_runs/focused_materials
-# Or execute both stages:
-python focused_research/run.py run --question 'Your single research question' --output local_runs/focused_run
+python focused_research/run.py plan --question 'Your complete research question' --output local_runs/focused_plan
+python focused_research/run.py retrieve --plan-file local_runs/focused_plan/task_sheet.json --output local_runs/focused_materials
+# query_plan.json is also accepted; its adapter must match the embedded sheet exactly.
+python focused_research/run.py run --question 'Your complete research question' --output local_runs/focused_run
 ```
 
-Every output directory must be new/empty. Exit 0 means planned or retrieval completed within the declared scope; exit 2 means failure, partial retrieval, no results, or invalid configuration. Inspect `summary.json` rather than interpreting the exit status as scientific success. A successful retrieval is not a relevance/evidence acceptance verdict.
+Output directories must be new/empty. Exit 0 means planned or retrieval completed in scope; exit 2 means invalid configuration/planning, partial retrieval, failure or no results. A retrieval `complete` status means calls/coverage completed, **not** that scientific constraints are satisfied or the hits are relevant. Every retrieval summary says `relevance_validated=false` and `constraints_evaluated=false`.
 
-The planner uses the original Review Qwen client, model-tier policy, JSON response contract, repair limit, and secret resolution. The retrieval uses the original Review Semantic Scholar transport, key router, cache, and pagination implementation. This is real executable provider wiring, not a synthetic pipeline; **no live or paid calls were made during implementation**. Offline tests inject provider responses; they do not validate online availability or scientific relevance.
+Planning uses Review's original Qwen client, model-tier policy, JSON response mode and credential resolution through `_call_query_plan_model`; the new task planner requests a bounded 7,000-token output and permits at most one explicit contract repair. It retains both raw responses, errors, usage and transport outcomes. Mock/fallback/transport-failed plans never proceed to retrieval. This replaces the old Review prompt as the default; it is a substantive contract change, not numeric-only tuning.
 
-Configure existing supported environment variables such as `QWEN_API_KEY` and `SEMANTIC_SCHOLAR_API_KEY`/`SEMANTIC_SCHOLAR_API_KEYS_FILE` outside committed files. Original model/provider settings are isolated under `vendor/review/config`; existing `code/config` is neither imported nor overwritten. Original project-relative credential lookup now resolves relative to this vendored root, so an existing key file in `code/api_keys` is not silently reused; use environment variables or the supported explicit key-file setting. No credentials are included. Do not import this runner into a process already using Article's generic `config`, `llm`, or `optomind_research` packages; launch it as the standalone process above.
+## Fixed contract
 
-## Numeric breadth/depth profile
+`task_sheet.py` defines the strict required keys and validates types, IDs, references, original spans, query budget and adapter fidelity. `task_sheet_prompt.txt` supplies the planning guidance. `examples/rgb_nir_task_sheet.json` is a complete worked example with the **full actual RGB/NIR question**. The example is injected into the actual runtime prompt, not an unused fixture.
 
-| Control | Original Review | Focused default |
-|---|---:|---:|
-| Facets | 1–10 | 1–2 |
-| Keyword queries per facet | 1–3 | 1 |
-| Semantic questions per facet | 1–3 | 1–2 |
-| Maximum query occurrences | 60 | 6 |
-| Initial per-query results | 100 | 200 |
-| Snippet distinct-paper expansion target | 60 | 0 (disabled) |
-| Seed allowance | 3, only user-supplied | unchanged; no seed expansion executed |
+Fields:
+- `task_type`: design/optimization, explanation, diagnosis, comparison, feasibility, mixed/unresolved
+- `original_question`, `user_objective`, and source-grounded `subgoals`
+- `goal_relationships`: all, any, priorities, tradeoff, mixed/unresolved; nullable priority order/tradeoff
+- `explicit_constraints`: individually retained with verbatim original spans
+- `known_data`: source-grounded statements, separated from `unknowns_assumptions`
+- `research_questions` linked to subgoals
+- `candidate_mechanisms` linked to subgoals, explicitly candidates rather than proven conclusions
+- `search_queries`: exact executable text, endpoint, subgoal/mechanism/research-question links, retrieval purpose and rationale
 
-These are upper bounds, never padding targets. The `plan` stage preserves the original combined STEP 1 relation/subproblem decomposition and STEP 2 query generation, then exports each separately; this is not an invented extra LLM decomposition pass. Original raw plans, validation/revision rounds and final effective plans are retained in `planning.json`, including any upstream validator truncation. Retrieval refuses a supplied plan if validation would change it.
+All keys remain present. Empty lists represent no information/not applicable; nullable fields represent unspecified/not applicable values. Missing mechanisms are permitted; their query references are then empty. Priorities and weights must not be invented. For the example, both spectral bands and crosstalk are simultaneous objectives; polarization is unknown, and “as high as possible” is not an invented 99% threshold. Validation establishes structural consistency and exact source-span occurrence, not that every user intent was correctly interpreted. Human/empirical review remains necessary.
 
-Depth here means more metadata/abstract candidates or body snippets per fixed query: 100 → 200. It does not mean deeper full-text reading. Paper search pages at at most 100 records per request, so 200 distinct results normally requires two pages; duplicate identities can require further pages within the original gateway's 10,000-offset bound and the shared deadline. Semantic search requests `limit=200` once; it does not pretend to paginate. Provider exhaustion may return fewer. Failed/rejected requests, later-page failures and deadline cutoffs are recorded explicitly. The original snippet broadening 120→360→400 is disabled rather than relabeled as depth.
+Query guidance prioritizes analogous complete design/simulation/fabrication cases, then material/structure evidence, transferable methods and mechanisms where useful. It does not force category ratios or coverage of every query purpose. Exact numeric requirements remain in the sheet for later evaluation instead of being stuffed into every query. This is **provisional and pending empirical retrieval tuning**; offline tests cannot demonstrate relevance, recall or improved scientific outcomes.
 
-`--per-query-limit` is bounded to 1–200, default 200. `--retrieval-seconds` is bounded to 1–1800, default 300. Each retrieval request uses the same monotonic deadline; actual socket timeout is at most 30 seconds or time remaining. The original transport's attempts are capped at 2. Exact normalized repeated queries reuse the same response without another network call; each facet/query mapping is still kept. No metadata-enrichment, full-text, citation-walk or downstream model calls occur.
+## Executable consumer and bounds
 
-## Artifacts and honesty
+The deterministic adapter maps each task query to one collector execution facet. These facets are execution slots, not a new decomposition of user goals. Exact query strings are never regenerated from titles. The adapter keeps task-query IDs and full source links on exported queries, provider audits, retrieval hits, materials and unique-material source mappings. Retrieval rejects edited adapter text or mappings that differ from the validated sheet before calling a provider. Original Review-v2 plans remain accepted only for legacy replay/compatibility under their original exact validation; the default planner emits task sheets.
 
-- `subproblems.json`, `queries.json`, `query_plan.json`: subquestions and exact dual-channel queries.
-- `planning.json`: original tuned planner output, validation, repair, usage, raw/effective plans.
-- `candidate_corpus.json`: unique papers, per-query/per-facet hits, identity-merge diagnostics and response audits.
-- `snippets.sqlite`: actual retrieved snippet text keyed by hit ID, with hash/locator retained in corpus JSON.
-- `materials.json`: readable per-hit metadata/abstract/snippet data. Every row declares material type and `fulltext_retrieved=false`.
-- `unique_materials.json`: deduplicated material text plus all source mappings. Distinct passages from one paper remain distinct material.
-- `provider_calls.json`: limits, HTTP/category, cache flag, pagination, query reuse and missing-result reasons. Exception messages are not saved because they can contain credentials.
-- `summary.json`, `provenance.json`: outcome/budgets and source hashes.
+- 1–6 task queries total, never padding targets or six per subgoal; either endpoint alone is valid without filler queries
+- Default 200 results per query; configurable 1–200
+- Shared monotonic deadline, default 300 seconds; configurable 1–1800
+- Socket timeout at most 30 seconds or remaining time, transport attempts at most 2
+- Paper relevance search pages at most 100 rows/request and never requests beyond its first 1,000-result window; duplicate IDs may cause extra bounded pages
+- Snippet search requests the configured limit once; no invented pagination or 120→360→400 broadening
+- Normalized repeat queries reuse their response while retaining every original query/source mapping
+- No metadata enrichment, seed expansion, references/citations traversal or downstream model calls
 
-Partial failures retain successful materials. All-provider failure is `failed`, healthy empty search is `no_results`, and a missing facet is `partial`. A metadata-only hit is explicitly labeled and is not represented as retrieved full text. Identity deduplication uses S2 ID, DOI, corpus ID, not title guessing. Duplicate S2 IDs sharing DOI preserve merged aliases in upstream statistics.
+The supported ordinary Semantic Scholar `/paper/search` and `/snippet/search` endpoints specify **no special query syntax**. Paper queries use compact plain-text scholarly terms; snippet queries use natural-language questions. The provider recommends replacing hyphens with spaces for ordinary paper queries: prompt guidance does this before generation, without silently rewriting executable strings. `/paper/search/bulk` is a distinct endpoint with its own Boolean/phrase operators; it is not added or implicitly substituted here. See the [official Graph API documentation](https://api.semanticscholar.org/api-docs/) and [snippet documentation](https://api.semanticscholar.org/api-docs/snippets). Endpoint-aware phrase/question guidance is an engineering heuristic, not a claim that the API requires those linguistic forms.
 
-Review's candidate collector does not execute facet metadata filters or semantic exclusions. This entrypoint preserves them, marks them not applied and reports `partial` when an explicit filter or additional constraint needs later acceptance. It does not claim filtered compliance. Semantic relevance checking and scientific answering remain out of scope.
+## Outputs and honest status
 
-## Exact transplantation and necessary adapters
+- `task_sheet.json`: complete intent, constraints, research questions, candidate mechanisms and executable queries
+- `query_plan.json`: exact deterministic adapter with embedded sheet and mappings
+- `queries.json`, `subproblems.json`: execution queries and adapter slots; use the task sheet for user subgoals
+- `planning.json`: raw/effective planning results, validation/repair history and usage
+- `candidate_corpus.json`: deduplicated paper identities, all query hits, audits and preserved constraints for later evaluation
+- `materials.json`, `unique_materials.json`: readable metadata/abstract/snippet material and all source mappings; every row declares `fulltext_retrieved=false`
+- `snippets.sqlite`: actual snippet text keyed by hit ID, with hash/locator in corpus
+- `provider_calls.json`: limits, endpoint method, status, cache, pagination, query reuse and missing-result reasons
+- `summary.json`, `provenance.json`: scope, budgets and vendored source hashes
 
-`PROVENANCE.json` records SHA-256 of each original and vendored file, Review commit `775329cee02d4dacd108bf41969b1d21d26750e0`, and Article base `59e10e64794f431e6de7d7656af9f5307710f4a9`.
+Failed calls, later-page failures, result-window/deadline cutoffs and missing execution slots are explicit; partial runs retain successful hits. All-provider failure is `failed`; healthy empty search is `no_results`. Review-v2 metadata filters/exclusions remain unapplied and cause `partial` when requested. Task-sheet constraints are retained separately for later scientific evaluation; retrieval does not claim filtering or compliance. Identity deduplication uses S2 ID, DOI and corpus ID, not title guessing.
 
-Prompt content is retained except the numeric phrase `Use up to three only` → `Use up to two only`; numeric field-dictionary limits above also change the rendered prompt. No scientific wording, examples, exclusion logic, canonical-object rules or complementary-form guidance was rewritten.
+## Isolation, provenance and verification
 
-Necessary nonnumeric changes, explicitly not described as numeric-only:
-1. New isolated process/CLI and minimal package initializers prevent replacing active Article configuration and importing downstream Review modules.
-2. New orchestration exports the existing combined planner as subproblem/query artifacts, enforces limits and exact-plan validation, rejects mocked planning, records provenance, and stops at retrieval.
-3. New gateway wrapper preserves errors/partial results/deadline/query reuse, plus explicit material formats and source mappings. Upstream corpus otherwise drops much of the transport status.
-4. The copied gateway's discovery field list adds `corpusId`, connecting paper-search IDs to snippet-search IDs without extra enrichment requests. Other gateway code is unchanged.
-5. The wrapper removes the inherited 500–800 survey corpus target from the focused output; the copied source constant is retained as provenance, not a runtime target.
+`PROVENANCE.json` retains original source hashes and current vendored hashes. The copied gateway adds `corpusId` for identity joins and now corrects the inherited 10,000-offset loop to the ordinary relevance endpoint's 1,000-result window. The new task-sheet implementation is outside the vendor tree. Existing Article code/configuration and T018 are unchanged.
 
-## Offline checks
+Configure existing `QWEN_API_KEY`, `SEMANTIC_SCHOLAR_API_KEY`/`SEMANTIC_SCHOLAR_API_KEYS_FILE` outside committed files. Model/provider settings remain under `vendor/review/config`; original project-relative credential lookup resolves there, not `code/api_keys`. No credentials are included. Run standalone, not in a process already importing Article's generic `config`, `llm` or `optomind_research` packages.
 
 ```bash
 PYTHONPATH=/tmp/optomind-core-testdeps python -m pytest -q --disable-socket focused_research/tests
 ```
 
-The local dependency directory is a test-environment convenience, not shipped runtime dependencies. Provider socket access is disabled. Tests cover actual planner contract wiring, numeric prompts, 200-result paper pagination, snippet limit forwarding, identity and material deduplication, source mapping, failure/partial/empty distinctions, deadline cutoff, mock rejection, hash provenance, output reuse and budget validation.
+The local dependency path is a test-environment convenience. Tests inject responses with sockets disabled and cover actual planner wiring, full example, nullable/unresolved shapes, relationships/candidate status, validation/repair, exact task-query execution and provenance, no-network rejection, 200-result pagination, relevance-window exhaustion, deduplication and failure states. **No paid calls or live provider tests were run.** Online availability and retrieval quality are unverified.

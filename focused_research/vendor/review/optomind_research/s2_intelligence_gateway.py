@@ -536,11 +536,11 @@ class S2IntelligenceGateway:
         truncated_reason = ""
         response: S2GatewayResponse | None = None
 
-        while len(papers) < requested_limit and offset < 10_000:
+        while len(papers) < requested_limit and offset < 1_000:
             if deadline is not None and time.monotonic() >= deadline:
                 truncated_reason = "deadline"
                 break
-            page_limit = min(100, requested_limit - len(papers))
+            page_limit = min(100, requested_limit - len(papers), 1_000 - offset)
             params: dict[str, Any] = {
                 "query": query,
                 "limit": page_limit,
@@ -607,6 +607,9 @@ class S2IntelligenceGateway:
             offset += len(raw_items)
             if provider_total is not None and offset >= provider_total:
                 break
+
+        if offset >= 1_000 and len(papers) < requested_limit:
+            truncated_reason = "relevance_result_window"
 
         if aggregate_response is None:  # deadline may expire before first page
             aggregate_response = S2GatewayResponse(
