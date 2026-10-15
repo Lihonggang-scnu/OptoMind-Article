@@ -223,6 +223,7 @@ def execute_prepared_batch(prepared_instances, *, cache_dir, max_new_evals,
                     key = _hash({'identity': identity, 'task': task})
                     evaluation_key = _hash({'simulation_key': key, 'objectives': instance['objectives']})
                     row.update(simulation_key=key, evaluation_key=evaluation_key,
+                               physical_input=deepcopy(instance['tmm_task']),
                                objectives=deepcopy(instance['objectives']),
                                parameters={'thicknesses_nm': [x['thickness_nm'] for x in task['stack']['layers']],
                                            'layer_materials': [x.get('material') or {'constant_n': x.get('constant_n'), 'constant_k': x.get('constant_k')} for x in task['stack']['layers']]})

@@ -124,3 +124,10 @@ Route schema v2 allows external_evidence, model_knowledge and hybrid. Model know
 S2 429 is pending transport state. Query-level cooldown honors Retry-After and permits at most15 reconnections after the initial query request, preserving successes and partial pages. It is independent of the paid model-attempt cap. Exhaustion is incomplete, never a false zero-hit/relevance judgment. This is a provisional integrated module, awaiting one bounded local real run, not accepted optical performance.
 
 Final T022 cloud validation: `PYTHONPATH=/tmp/optomind-core-testdeps python -m pytest -q --disable-socket focused_research/tests` → **222 passed, 6 subtests passed in 4.97 s**. Includes actual vendored S2 transport/gateway with fake HTTP/clock (uncapped Retry-After and successful-page reuse), and source-mode/input-boundary regressions. No live S2/model, GPU parser or scientific simulation is implied. Separate native-XML smoke used real pinned Review snapshot code with test-side eager-import isolation, preserving source hashes/table/formula text. `git diff --check` clean.
+
+
+## 2026-10-15 T027 numerical physical search
+
+User authorized a strong implementation after T026 revision performance failed. Cloud claimed RCP-CLOUD-T027-CLAIM-20261015T164700Z before edits; base 5786e08575b19020a6aece338436406884d3542d. Added bounded family numerical optimization, certified Pareto/parent archives, actionable subband and polarization feedback, and plan-only model revision with parent-preserving refinement. Existing main and historical outputs untouched. Numerical search rows and certification tasks are separate explicit budgets. Optional PyTorch path remains for local validation; cloud NumPy synthetic fixture and native certification are recorded in T027_OFFLINE_VALIDATION.json.
+
+Final cloud offline validation: 450 passed, 3 skipped (PyTorch unavailable), 6 subtests passed in 38.03 seconds; network disabled. Local real-material/Qwen acceptance is pending.

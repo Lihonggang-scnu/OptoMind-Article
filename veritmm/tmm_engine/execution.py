@@ -495,12 +495,16 @@ def execute_task(
             certified = certify_simulation(workbench, task, certificate_settings)
             certificate = certified.certificate
             forward = certified.result
-            write_verification_artifacts(
-                output,
-                certified.evidence,
-                certificate_settings,
-                run_id,
-            )
+            # Failed evidence collection may return a diagnostic certificate
+            # without evidence (for example a missing optional referee). Keep
+            # that original failure; never replace it with replace(None).
+            if certified.evidence is not None:
+                write_verification_artifacts(
+                    output,
+                    certified.evidence,
+                    certificate_settings,
+                    run_id,
+                )
         elif mode == "optimize":
             if not isinstance(task, OptimizationTask):
                 raise TypeError("optimize mode requires OptimizationTask")
