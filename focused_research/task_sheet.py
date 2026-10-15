@@ -6,13 +6,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from pathlib import Path
 
-SCHEMA = 'focused_research.task_sheet.v1'
+SCHEMA = 'focused_research.task_sheet.v2'
 ADAPTER_SCHEMA = 'focused_research.task_queries.v1'
 TASK_TYPES = ['design/optimization', 'explanation', 'diagnosis', 'comparison', 'feasibility', 'mixed/unresolved']
 ENDPOINTS = {'paper_search': 'keyword_queries', 'snippet_search': 'question_queries'}
+METRICS = {'mean_reflectance', 'mean_transmittance', 'mean_absorption'}
+MEAN_REDUCTIONS = {'sample_mean', 'wavelength_integral_mean'}
 PURPOSES = ['analogous_case', 'material_structure', 'method_transfer', 'mechanism']
 ROOT = Path(__file__).resolve().parent
 
@@ -51,7 +54,7 @@ def validate(sheet, *, question=None):
         if value not in sheet['original_question']:
             fail(path, 'must be an exact span of original_question')
 
-    obj(sheet, ['schema_version', 'original_question', 'task_type', 'user_objective', 'subgoals',
+    obj(sheet, ['schema_version', 'original_question', 'task_type', 'user_objective', 'subgoals', 'application_intents', 'unsupported_requirements', 'readiness',
         'goal_relationships', 'explicit_constraints', 'known_data', 'unknowns_assumptions',
         'research_questions', 'candidate_mechanisms', 'search_queries'], '$')
     if sheet['schema_version'] != SCHEMA:
@@ -63,18 +66,70 @@ def validate(sheet, *, question=None):
     if sheet['task_type'] not in TASK_TYPES:
         fail('task_type', 'unsupported task type')
     text(sheet['user_objective'], 'user_objective')
-    goals = identifiers(sheet['subgoals'], ['id', 'objective', 'original_span'], 'subgoals')
-    if not goals:
-        fail('subgoals', 'at least one goal required')
+    goals = identifiers(sheet['subgoals'], ['id', 'objective', 'original_span', 'operational_definition', 'executable_metric'], 'subgoals')
     for row in sheet['subgoals']:
         text(row['objective'], 'subgoal.objective'); span(row['original_span'], 'subgoal.original_span')
+        text(row['operational_definition'], 'subgoal.operational_definition', nullable=True)
+        metric = row['executable_metric']
+        obj(metric, ['objective_id', 'metric', 'sense', 'mean_reduction', 'region'], 'executable_metric')
+        if metric['objective_id'] != row['id']:
+            fail('executable_metric.objective_id', 'must equal the subgoal ID')
+        if not isinstance(metric['metric'], str) or metric['metric'] not in METRICS:
+            fail('executable_metric.metric', 'unsupported metric; preserve requirement under unsupported_requirements')
+        if metric['sense'] not in ['minimize', 'maximize']:
+            fail('executable_metric.sense', 'requires minimize or maximize')
+        if metric['mean_reduction'] not in list(MEAN_REDUCTIONS):
+            fail('executable_metric.mean_reduction', 'requires an explicit supported reduction')
+        region = metric['region']
+        obj(region, ['wavelength_nm', 'angle_deg', 'polarization'], 'executable_metric.region')
+        band = region['wavelength_nm']
+        def finite_number(value):
+            return type(value) in (int, float) and math.isfinite(value)
+        if (not isinstance(band, list) or len(band) != 2
+                or not all(finite_number(v) for v in band) or not 0 < band[0] < band[1]):
+            fail('executable_metric.region.wavelength_nm', 'requires positive finite lo < hi in nm')
+        if not finite_number(region['angle_deg']) or not 0 <= region['angle_deg'] < 90:
+            fail('executable_metric.region.angle_deg', 'requires an explicit finite angle in [0, 90)')
+        if region['polarization'] not in ['s', 'p', 'unpolarized']:
+            fail('executable_metric.region.polarization', 'requires explicit s, p or unpolarized')
+    # Only obvious textual duplicates can be rejected mechanically; semantic
+    # redundancy and whether a definition is justified still require review.
+    objectives = [' '.join(row['objective'].casefold().split()) for row in sheet['subgoals']]
+    if len(objectives) != len(set(objectives)):
+        fail('subgoals', 'duplicate objectives are not separate score targets')
+    metric_signatures = []
+    for row in sheet['subgoals']:
+        metric = row['executable_metric']
+        region = metric['region']
+        metric_signatures.append((metric['metric'], metric['sense'], metric['mean_reduction'],
+            tuple(float(v) for v in region['wavelength_nm']), float(region['angle_deg']),
+            region['polarization']))
+    if len(metric_signatures) != len(set(metric_signatures)):
+        fail('subgoals', 'duplicate executable metrics are not separate score targets')
+    identifiers(sheet['application_intents'], ['id', 'intent', 'original_span',
+        'subgoal_ids', 'operational_definition'], 'application_intents')
+    for row in sheet['application_intents']:
+        text(row['intent'], 'application_intent.intent')
+        span(row['original_span'], 'application_intent.original_span')
+        refs(row['subgoal_ids'], goals, 'application_intent.subgoal_ids', 1)
+        text(row['operational_definition'], 'application_intent.operational_definition', nullable=True)
+    identifiers(sheet['unsupported_requirements'], ['id', 'requirement', 'original_span', 'reason'],
+        'unsupported_requirements')
+    for row in sheet['unsupported_requirements']:
+        text(row['requirement'], 'unsupported.requirement')
+        span(row['original_span'], 'unsupported.original_span')
+        text(row['reason'], 'unsupported.reason')
+    expected_readiness = 'needs_revision' if sheet['unsupported_requirements'] or not goals else 'ready'
+    if sheet['readiness'] != expected_readiness:
+        fail('readiness', 'must be ' + expected_readiness)
     rel = sheet['goal_relationships']
-    obj(rel, ['mode', 'priority_order', 'tradeoff'], 'goal_relationships')
+    obj(rel, ['mode', 'priority_order', 'tradeoff', 'coupling'], 'goal_relationships')
     if rel['mode'] not in ['all', 'any', 'priorities', 'tradeoff', 'mixed/unresolved']:
         fail('goal_relationships.mode', 'unsupported mode')
     if rel['priority_order'] is not None:
         refs(rel['priority_order'], goals, 'priority_order', 1)
     text(rel['tradeoff'], 'tradeoff', nullable=True)
+    text(rel['coupling'], 'coupling', nullable=True)
     if rel['mode'] in ['all', 'any'] and (rel['priority_order'] is not None or rel['tradeoff'] is not None):
         fail('goal_relationships', 'all/any cannot declare priorities or a tradeoff')
     if rel['mode'] == 'priorities' and rel['priority_order'] is None:
@@ -98,8 +153,8 @@ def validate(sheet, *, question=None):
         if row['kind'] == 'unknown' and row['assumed_value'] is not None:
             fail('assumed_value', 'unknowns cannot assert a value')
     research = identifiers(sheet['research_questions'], ['id', 'question', 'subgoal_ids'], 'research_questions')
-    if not research:
-        fail('research_questions', 'at least one research question required')
+    if goals and not research:
+        fail('research_questions', 'at least one research question required for supported goals')
     for row in sheet['research_questions']:
         text(row['question'], 'research_question'); refs(row['subgoal_ids'], goals, 'research.subgoal_ids', 1)
     mechanisms = identifiers(sheet['candidate_mechanisms'], ['id', 'mechanism', 'subgoal_ids', 'status'], 'candidate_mechanisms')
@@ -110,8 +165,8 @@ def validate(sheet, *, question=None):
     queries = sheet['search_queries']
     identifiers(queries, ['id', 'endpoint', 'query', 'subgoal_ids', 'mechanism_ids',
         'research_question_ids', 'purpose', 'rationale'], 'search_queries')
-    if not 1 <= len(queries) <= 6:
-        fail('search_queries', 'requires 1..6 executable queries total')
+    if not (1 if goals else 0) <= len(queries) <= 6:
+        fail('search_queries', 'requires 1..6 queries for supported goals; zero allowed only without goals')
     covered = set()
     for row in queries:
         if row['endpoint'] not in list(ENDPOINTS) or row['purpose'] not in PURPOSES:
@@ -140,6 +195,8 @@ def validate(sheet, *, question=None):
 def adapt(sheet):
     """One execution facet per query; no query rewriting or hidden fan-out."""
     validate(sheet)
+    if sheet['readiness'] != 'ready':
+        raise ValueError('task sheet needs_revision: unsupported or insufficiently specified requirements')
     facets = []
     mapping = {}
     for row in sheet['search_queries']:
@@ -192,7 +249,10 @@ def generate(question, planner):
             sheet = _extract_json_object(raw)
             record['raw_task_sheet'] = sheet
             validate(sheet, question=question)
-            outcome.update(status='ok', task_sheet=sheet, plan=adapt(sheet), errors=[])
+            if sheet['readiness'] == 'needs_revision':
+                outcome.update(status='needs_revision', task_sheet=sheet, plan={}, errors=[])
+            else:
+                outcome.update(status='ok', task_sheet=sheet, plan=adapt(sheet), errors=[])
             record['ok'] = True
             break
         except (ValueError, TypeError) as exc:

@@ -255,10 +255,13 @@ def test_task_sheet_full_example_contract():
     sheet = task_sheet()
     assert r.ts.validate(sheet) == sheet
     assert '99%' not in str(sheet['explicit_constraints'])
-    assert sheet['goal_relationships'] == {'mode':'all','priority_order':None,'tradeoff':None}
+    assert sheet['goal_relationships']['mode'] == 'all'
+    assert sheet['goal_relationships']['priority_order'] is None
+    assert sheet['goal_relationships']['tradeoff'] is None
+    assert 'coupled' in sheet['goal_relationships']['coupling']
     assert all(m['status']=='candidate' for m in sheet['candidate_mechanisms'])
     assert not any('polarization' in str(x) for x in sheet['known_data'])
-    assert len(sheet['explicit_constraints']) == 7
+    assert len(sheet['explicit_constraints']) == 9
     prompt = r.ts.render_prompt('Other question')['system_prompt']
     assert sheet['original_question'] in prompt
     assert '/paper/search' in prompt and '/snippet/search' in prompt
@@ -274,7 +277,7 @@ def test_task_adapter_executes_exact_queries_and_links(tmp_path):
     assert all(call[2]['limit']==200 for call in gateway.calls)
     for artifact in ['materials.json','queries.json','provider_calls.json']:
         rows=json.loads((tmp_path/artifact).read_text())
-        assert all(row['task_query']['subgoal_ids']==['G1','G2','G3'] for row in rows)
+        assert all(row['task_query']['subgoal_ids']==['G1','G2'] for row in rows)
     corpus=json.loads((tmp_path/'candidate_corpus.json').read_text())
     assert corpus['filter_execution']['task_sheet_constraints_for_later_evaluation']==sheet['explicit_constraints']
     unique=json.loads((tmp_path/'unique_materials.json').read_text())
@@ -319,13 +322,13 @@ def test_task_repair_and_raw_history(monkeypatch,tmp_path):
 def test_mixed_unresolved_nullable_contract():
     sheet=task_sheet()
     sheet['task_type']='mixed/unresolved'
-    sheet['goal_relationships']={'mode':'mixed/unresolved','priority_order':None,'tradeoff':None}
+    sheet['goal_relationships']={'mode':'mixed/unresolved','priority_order':None,'tradeoff':None,'coupling':None}
     sheet['candidate_mechanisms']=[]
     for q in sheet['search_queries']: q['mechanism_ids']=[]
     assert r.ts.validate(sheet)==sheet
     for mode in ['all','any','priorities','tradeoff']:
-        sheet['goal_relationships']={'mode':mode,'priority_order':['G1','G2','G3'] if mode=='priorities' else None,
-            'tradeoff':'Priority tradeoff unresolved' if mode=='tradeoff' else None}
+        sheet['goal_relationships']={'mode':mode,'priority_order':['G1','G2'] if mode=='priorities' else None,
+            'tradeoff':'Priority tradeoff unresolved' if mode=='tradeoff' else None,'coupling':None}
         assert r.ts.validate(sheet)==sheet
 
 
@@ -367,3 +370,136 @@ def test_contradictory_relationships_and_crosslinks_rejected():
     with pytest.raises(ValueError): r.ts.validate(sheet)
     sheet=task_sheet(); sheet['search_queries'][0]['subgoal_ids']=['G3']
     with pytest.raises(ValueError): r.ts.validate(sheet)
+
+
+def test_distinct_goals_preserve_application_intent_and_original_input():
+    sheet=task_sheet()
+    assert [g['id'] for g in sheet['subgoals']]==['G1','G2']
+    assert all(g['executable_metric']['mean_reduction']=='wavelength_integral_mean' for g in sheet['subgoals'])
+    intent=sheet['application_intents'][0]
+    assert intent['original_span']=='多光谱成像相机'
+    assert '降低通道间串扰' not in sheet['original_question']
+    assert intent['subgoal_ids']==['G1','G2'] and intent['operational_definition'] is None
+    assert '450-650 nm' in sheet['original_question'] and '455' not in sheet['original_question']
+    for section in ['research_questions','candidate_mechanisms','search_queries']:
+        assert all(set(row['subgoal_ids']) <= {'G1','G2'} for row in sheet[section])
+    adapted=r.ts.adapt(sheet)
+    assert adapted['task_sheet']['application_intents']==sheet['application_intents']
+    prompt=r.ts.render_prompt(sheet['original_question'])['system_prompt']
+    assert 'NOT a promise of physical or statistical independence' in prompt
+    assert 'QUERY QUALITY IS PROVISIONAL' in prompt
+
+
+@pytest.mark.parametrize('mutation', ['intent_link','intent_span','missing_definition','numeric_definition','duplicate_goal','old_schema'])
+def test_intent_and_goal_contract_rejects_invalid_shapes_before_calls(tmp_path,mutation):
+    sheet=task_sheet()
+    if mutation=='intent_link': sheet['application_intents'][0]['subgoal_ids']=['G3']
+    elif mutation=='intent_span': sheet['application_intents'][0]['original_span']='invented intent'
+    elif mutation=='missing_definition': del sheet['subgoals'][0]['operational_definition']
+    elif mutation=='numeric_definition': sheet['subgoals'][0]['operational_definition']=0.99
+    elif mutation=='old_schema': sheet['schema_version']='focused_research.task_sheet.v1'
+    else:
+        sheet['subgoals'][1]['objective']=sheet['subgoals'][0]['objective'].upper()
+    gateway=Gateway()
+    with pytest.raises(ValueError): r.retrieve(sheet,tmp_path,gateway=gateway)
+    assert not gateway.calls
+
+
+def test_qualitative_requirement_requires_revision_without_proxy():
+    sheet=task_sheet()
+    sheet['task_type']='explanation'
+    sheet['application_intents']=[]
+    sheet['subgoals']=[]
+    sheet['research_questions']=[]
+    sheet['candidate_mechanisms']=[]
+    sheet['search_queries']=[]
+    sheet['unsupported_requirements']=[{'id':'U1','requirement':'Qualitative explanation requested',
+        'original_span':'多光谱成像相机','reason':'No supported executable metric specified'}]
+    sheet['readiness']='needs_revision'
+    assert r.ts.validate(sheet)==sheet
+    with pytest.raises(ValueError,match='needs_revision'): r.ts.adapt(sheet)
+
+
+@pytest.mark.parametrize('field,value', [
+    ('metric','crosstalk'),('metric','1-R'),('metric','max(R,T)'),('metric',{}),
+    ('mean_reduction','mean'),('mean_reduction',None),('sense','match'),
+    ('weight',1),('target',0.99),('objective_id','not_G1'),
+])
+def test_unsupported_metric_expressions_rejected_before_calls(tmp_path,field,value):
+    sheet=task_sheet(); sheet['subgoals'][0]['executable_metric'][field]=value
+    gateway=Gateway()
+    with pytest.raises(ValueError): r.retrieve(sheet,tmp_path,gateway=gateway)
+    assert not gateway.calls
+
+
+@pytest.mark.parametrize('field,value', [
+    ('wavelength_nm',[450,450]),('wavelength_nm',[650,450]),('wavelength_nm',[0,650]),
+    ('wavelength_nm',[float('nan'),650]),('wavelength_nm',[450,float('inf')]),
+    ('angle_deg',None),('angle_deg',True),('angle_deg',float('nan')),('angle_deg',90),
+    ('polarization',None),('polarization','average'),('formula','R+T'),
+])
+def test_invalid_or_missing_metric_conditions_rejected(field,value):
+    sheet=task_sheet(); sheet['subgoals'][0]['executable_metric']['region'][field]=value
+    with pytest.raises(ValueError): r.ts.validate(sheet)
+
+
+def test_unsupported_original_requirement_blocks_execution_and_is_preserved(tmp_path):
+    sheet=task_sheet()
+    historical=json.loads((ROOT/'examples/rgb_nir_question.v1.json').read_text())
+    sheet['original_question']=historical['original_question']
+    sheet['explicit_constraints']=sheet['explicit_constraints'][:7]
+    # Original v1 has no specified reducer/polarization, so neither spectral
+    # goal is executable without revision; do not keep the v2 metric defaults.
+    sheet['subgoals']=[]; sheet['application_intents']=[]
+    sheet['research_questions']=[];sheet['candidate_mechanisms']=[];sheet['search_queries']=[]
+    sheet['unsupported_requirements']=[
+        {'id':'U1','requirement':'Reduce interchannel crosstalk','original_span':'降低通道间串扰',
+         'reason':'No supported independent crosstalk metric; no proxy substitution'},
+        {'id':'U2','requirement':'Visible reflection and NIR transmission objectives',
+         'original_span':'可见光波段 450-650 nm 尽可能高的反射率（用于 RGB 通道成像）',
+         'reason':'Polarization and band reduction are unspecified; request revision'}]
+    sheet['readiness']='needs_revision'
+    assert r.ts.validate(sheet,question=historical['original_question'])==sheet
+    gateway=Gateway()
+    with pytest.raises(ValueError,match='needs_revision'): r.retrieve(sheet,tmp_path,gateway=gateway)
+    assert not gateway.calls
+    fake=SimpleNamespace(_call_query_plan_model=lambda p:json.dumps(sheet),last_usage={},last_transport={})
+    out=r.generate_plan(sheet['original_question'],tmp_path,planner=fake)
+    assert out['status']=='needs_revision' and out['plan']=={} and len(out['rounds'])==1
+    assert json.loads((tmp_path/'task_sheet.json').read_text())==sheet
+    sheet['readiness']='ready'
+    with pytest.raises(ValueError,match='readiness'):r.ts.validate(sheet)
+
+
+def test_versioned_demo_question_preserves_history_and_states_new_conditions():
+    v1=json.loads((ROOT/'examples/rgb_nir_question.v1.json').read_text())
+    v2=json.loads((ROOT/'examples/rgb_nir_question.v2.json').read_text())
+    assert '，降低通道间串扰。' in v1['original_question']
+    assert v2['original_question'].startswith(v1['original_question'].replace('，降低通道间串扰',''))
+    assert '非偏振光（s、p 偏振等权平均）' in v2['original_question']
+    assert '按波长积分后除以波段宽度' in v2['original_question']
+    assert task_sheet()['original_question']==v2['original_question']
+
+
+def test_existing_objective_consumer_in_isolated_offline_process():
+    import os
+    import subprocess
+    env=dict(os.environ)
+    env['PYTHONPATH']=os.pathsep.join([str(ROOT.parent/'code'),str(ROOT.parent/'veritmm'),
+        env.get('PYTHONPATH','')])
+    result=subprocess.run([sys.executable,'-m','pytest','-q','--disable-socket',
+        str(ROOT/'tests/objective_consumer_check.py')],cwd=ROOT.parent,env=env,
+        capture_output=True,text=True,timeout=60)
+    assert result.returncode==0, result.stdout+'\n'+result.stderr
+    assert '4 passed' in result.stdout
+
+
+def test_duplicate_executable_metric_is_not_a_distinct_goal():
+    sheet=task_sheet()
+    copied=json.loads(json.dumps(sheet['subgoals'][0]['executable_metric']))
+    copied['objective_id']='G2'
+    copied['region']['wavelength_nm']=[450.0,650.0]
+    copied['region']['angle_deg']=45.0
+    sheet['subgoals'][1]['executable_metric']=copied
+    with pytest.raises(ValueError,match='duplicate executable metrics'):
+        r.ts.validate(sheet)
