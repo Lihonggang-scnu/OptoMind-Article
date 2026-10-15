@@ -1,0 +1,76 @@
+{
+  "task_id": "R3-T019-FOCUSED-TASK-SHEET",
+  "message_id": "C2L-R3-0032",
+  "source_commit": "713799fb55899b78427aed56cb643bc72526c19d",
+  "commands": [
+    {
+      "name": "module-origins",
+      "argv": [
+        "D:\\OptoMind-Article-3\\local-integration\\20261013\\envs\\tensor\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-c",
+        "\nimport importlib, importlib.metadata, importlib.util, json, pathlib, sys\nsource = pathlib.Path.cwd().resolve()\nfocus = source / 'focused_research'\nspec = importlib.util.spec_from_file_location('focused_runner', focus / 'run.py')\nrunner = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(runner)\nmodules = {}\nfor name in ('task_sheet', 'config', 'llm.qwen_chat_client', 'optomind_research.query_planner'):\n    module = importlib.import_module(name)\n    actual = pathlib.Path(module.__file__).resolve()\n    allowed = focus if name == 'task_sheet' else focus / 'vendor' / 'review'\n    assert actual.is_relative_to(allowed), (name, str(actual), str(allowed))\n    modules[name] = str(actual)\nassert 'optomind_optics' not in sys.modules\nassert 'tmm_engine' not in sys.modules\nprint(json.dumps({'python': sys.executable, 'version': sys.version,\n                 'modules': modules,\n                 'dependencies': {n: importlib.metadata.version(n)\n                    for n in ('ftfy', 'PyYAML', 'pytest', 'pytest-socket', 'numpy')},\n                 'no_physics_modules_imported': True}, indent=2))\n"
+      ],
+      "cwd": "D:\\OptoMind-Article-3\\r3t019a",
+      "started_at": "2026-10-15T07:31:28.913752+00:00",
+      "finished_at": "2026-10-15T07:31:29.037749+00:00",
+      "exit_code": 0,
+      "stdout_file": "module-origins.stdout.txt",
+      "stderr_file": "module-origins.stderr.txt",
+      "stdout_sha256": "2c92f179925f9cd102b1ffba016e68be2a644337772e48e0240a3de2c61cebbc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "focused-tests",
+      "argv": [
+        "D:\\OptoMind-Article-3\\local-integration\\20261013\\envs\\tensor\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "-m",
+        "pytest",
+        "-q",
+        "--disable-socket",
+        "focused_research/tests",
+        "--basetemp",
+        "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T019-FOCUSED-TASK-SHEET\\offline\\pytest-temp",
+        "-o",
+        "cache_dir=D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T019-FOCUSED-TASK-SHEET\\offline\\pytest-cache"
+      ],
+      "cwd": "D:\\OptoMind-Article-3\\r3t019a",
+      "started_at": "2026-10-15T07:31:29.037749+00:00",
+      "finished_at": "2026-10-15T07:31:31.167561+00:00",
+      "exit_code": 0,
+      "stdout_file": "focused-tests.stdout.txt",
+      "stderr_file": "focused-tests.stderr.txt",
+      "stdout_sha256": "769b42796691189e8e31b5b41f238384380c6770721f848076aa3ac5c2cb6eaa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "cli-help",
+      "argv": [
+        "D:\\OptoMind-Article-3\\local-integration\\20261013\\envs\\tensor\\Scripts\\python.exe",
+        "-X",
+        "utf8",
+        "focused_research/run.py",
+        "--help"
+      ],
+      "cwd": "D:\\OptoMind-Article-3\\r3t019a",
+      "started_at": "2026-10-15T07:31:31.167561+00:00",
+      "finished_at": "2026-10-15T07:31:31.238656+00:00",
+      "exit_code": 0,
+      "stdout_file": "cli-help.stdout.txt",
+      "stderr_file": "cli-help.stderr.txt",
+      "stdout_sha256": "e3e0aba9f3c51a057a64ed5d7f3f7164cc81b111fc2b1a195639bec628003773",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "all_passed": true,
+  "live_model_calls": 0,
+  "real_retrieval_calls": 0,
+  "physical_computations": 0,
+  "pdf_executions": 0,
+  "credentials_inherited": false,
+  "dependencies_installed": false,
+  "nested_consumer_fixture": "four scalar-reduction checks using synthetic arrays; no forward solver"
+}

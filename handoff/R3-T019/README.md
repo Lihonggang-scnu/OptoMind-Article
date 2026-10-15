@@ -1,5 +1,7 @@
-C2L-R3-0032 / R3-T019 临时 GitHub 接头
+C2L-R3-0032 / R3-T019 本地结果：blocked，新增费用 0
 
-用户授权 Drive 上传受阻时临时使用 GitHub。CLAIM_RECEIPT.json 是相同不可变领取回执；PAUSE_T018_RECEIPT.json 暂停未启动0031排程。
-本分支当前仅发布接头回执，不代表新版713799f已经测试。计划仍只做 RGB/NIR-v2 任务单生成；原账本覆盖证据、2元/3次硬限制不变，不进行检索/物理/PDF。
-本次尚无模型调用、无新增费用。后续实际测试结果单独提交，旧产物保留。
+先读 [FINAL_REPORT.md](FINAL_REPORT.md)。本地 76 项离线检查通过；原费用包装器尚未覆盖独立 focused Qwen 入口，未运行真实 plan、检索、物理或 PDF。
+
+实际测试源码：[713799fb55899b78427aed56cb643bc72526c19d](https://github.com/Lihonggang-scnu/OptoMind-Article/tree/713799fb55899b78427aed56cb643bc72526c19d)，另以 `codex/r3-t019-source-713799f` 保留同一完整提交。此 relay 分支存储回执与证据，源码身份以 FINAL_SOURCE_IDENTITY.json 和独立源码分支为准。
+
+claimed 回执与暂停 T018 回执仍保留原字节；终态 JSON 在 local_to_cloud 与 receipts 子目录。原账本/凭据/环境文件/ZIP 均留本地。
