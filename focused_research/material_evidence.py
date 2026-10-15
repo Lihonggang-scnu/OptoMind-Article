@@ -261,6 +261,15 @@ def prompt_evidence_view(payload, *, max_text_chars=48000, max_payload_chars=192
         raise ValueError('prompt evidence budgets must be positive integers')
     if not isinstance(payload, dict) or payload.get('schema_version') != SCHEMA or not isinstance(payload.get('items'), list):
         raise ValueError('focused evidence payload required')
+    view = _prompt_evidence_projection(payload)
+    if (sum(len(item['text']) for item in view['items']) > max_text_chars or
+            len(json.dumps(view, ensure_ascii=False, allow_nan=False)) > max_payload_chars):
+        raise ValueError('prompt evidence exceeds budget; provide an explicit smaller block selection')
+    return view
+
+
+def _prompt_evidence_projection(payload):
+    """Project all supplied items; callers enforce their declared budgets."""
     sources, snapshots = {}, {}
     def intern(table, value, prefix):
         serial = json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False)
@@ -335,10 +344,142 @@ def prompt_evidence_view(payload, *, max_text_chars=48000, max_payload_chars=192
         items.append(item)
     view = {'schema_version': SCHEMA, 'prompt_view_version': 2,
             'sources': sources, 'snapshots': snapshots, 'items': items}
-    if (sum(len(item['text']) for item in items) > max_text_chars or
-            len(json.dumps(view, ensure_ascii=False, allow_nan=False)) > max_payload_chars):
-        raise ValueError('prompt evidence exceeds budget; provide an explicit smaller block selection')
     return view
+
+
+def select_prompt_evidence(payload, *, goal_ids=(), query_ids=(),
+                           max_text_chars=48000, max_payload_chars=192000):
+    """Choose a bounded whole-item reading view without changing the archive.
+
+    Coverage is association coverage, not a scientific relevance score. On
+    overflow, source-linked non-title passages (including unknown snippets) get
+    first opportunity; goals and queries receive round-robin opportunities.
+    Missing title/authors/year/DOI never disqualify an original passage. Each
+    admission measures the actual projected text and serialized metadata. Items
+    which do not fit remain intact in the caller's archive and in the audit.
+    """
+    if any(type(v) is not int or v <= 0 for v in (max_text_chars, max_payload_chars)):
+        raise ValueError('prompt evidence budgets must be positive integers')
+    if not isinstance(payload, dict) or payload.get('schema_version') != SCHEMA or not isinstance(payload.get('items'), list):
+        raise ValueError('focused evidence payload required')
+    originals = payload['items']
+    ids = [item.get('evidence_id') if isinstance(item, dict) else None for item in originals]
+    if any(not _text(eid) for eid in ids) or len(set(ids)) != len(ids):
+        raise ValueError('prompt selection requires unique nonempty evidence IDs')
+    goals, queries = _ids(goal_ids, 'goal_ids'), _ids(query_ids, 'query_ids')
+    associations = {}
+    for index, item in enumerate(originals):
+        associations[index] = {'goal_ids': _ids(item.get('goal_ids', []), 'item.goal_ids'),
+                               'query_ids': _ids(item.get('query_ids', []), 'item.query_ids')}
+        for name, ordered in [('goal_ids', goals), ('query_ids', queries)]:
+            ordered.extend(value for value in associations[index][name] if value not in ordered)
+    full = _prompt_evidence_projection(payload)
+
+    def sizes(view):
+        return (sum(len(item['text']) for item in view['items']),
+                len(json.dumps(view, ensure_ascii=False, allow_nan=False)))
+
+    def fits(view):
+        chars, serialized = sizes(view)
+        return chars <= max_text_chars and serialized <= max_payload_chars
+
+    def view_for(indices):
+        items = [item for n, item in enumerate(full['items']) if n in indices]
+        source_refs = {item['source_ref'] for item in items}
+        snapshot_refs = {item['snapshot_ref'] for item in items if 'snapshot_ref' in item}
+        return {**full, 'items': items,
+                'sources': {key: value for key, value in full['sources'].items() if key in source_refs},
+                'snapshots': {key: value for key, value in full['snapshots'].items() if key in snapshot_refs}}
+
+    if not fits(view_for(set())):
+        raise ValueError('prompt evidence budget cannot hold even the empty reading view')
+    included = set(range(len(originals))) if fits(full) else set()
+    strategy = 'all_items_fit' if included or not originals else 'whole_item_coverage_round_robin_v1'
+    if strategy != 'all_items_fit':
+        # Unknown snippet types have the same opportunity as labelled body or
+        # abstract text. Provider order is the stable tie break, not inferred quality.
+        ranked = sorted(range(len(originals)), key=lambda n: (
+            not bool(originals[n].get('eligible_as_evidence')),
+            originals[n].get('snippet_type') == 'title', n))
+        buckets = [[n for n in ranked if value in associations[n][name]]
+                   for name, values in [('goal_ids', goals), ('query_ids', queries)] for value in values]
+
+        def admit(bucket):
+            for index in bucket:
+                if index not in included and fits(view_for(included | {index})):
+                    included.add(index)
+                    return True
+            return False
+
+        # Seed uncovered associations first; one item can cover several buckets.
+        for bucket in buckets:
+            if not included.intersection(bucket):
+                admit(bucket)
+        # Fill by query round robin. Repeating goal buckets here would favor
+        # early queries merely because their items share many goal associations.
+        # Goal-only passages still get their own round-robin opportunity.
+        fill_buckets = [[n for n in ranked if value in associations[n]['query_ids']]
+                        for value in queries]
+        fill_buckets.extend([n for n in ranked if value in associations[n]['goal_ids']
+                             and not associations[n]['query_ids']] for value in goals)
+        while True:
+            progress = False
+            for bucket in fill_buckets:
+                progress = admit(bucket) or progress
+            if not progress:
+                break
+        # Unassociated evidence remains useful and may fill remaining space.
+        while admit(ranked):
+            pass
+    selected_view = view_for(included)
+    selected = {'schema_version': SCHEMA,
+                'items': [deepcopy(item) for n, item in enumerate(originals) if n in included]}
+    deferred = []
+    for index, item in enumerate(originals):
+        if index in included:
+            continue
+        trial_chars, trial_payload = sizes(view_for(included | {index}))
+        reasons = []
+        if trial_chars > max_text_chars:
+            reasons.append('text_budget')
+        if trial_payload > max_payload_chars:
+            reasons.append('payload_budget')
+        deferred.append({'evidence_id': item['evidence_id'], 'reasons': reasons,
+                         'text_chars': len(item['text'])})
+
+    def coverage(name, values):
+        result = {}
+        for value in values:
+            available = [n for n in range(len(originals)) if value in associations[n][name]]
+            active = [n for n in available if n in included]
+            substantive = lambda n: (bool(originals[n].get('eligible_as_evidence')) and
+                bool(originals[n]['text'].strip()) and originals[n].get('snippet_type') != 'title')
+            result[value] = {'available_item_count': len(available), 'included_item_count': len(active),
+                'available_substantive_item_count': sum(substantive(n) for n in available),
+                'included_substantive_item_count': sum(substantive(n) for n in active)}
+        return result
+
+    def fingerprint(value):
+        return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
+            separators=(',', ':'), allow_nan=False).encode('utf-8')).hexdigest()
+
+    input_chars, input_payload = sizes(full)
+    selected_chars, selected_payload = sizes(selected_view)
+    audit = {'schema_version': 'focused_prompt_evidence_selection_v1', 'strategy': strategy,
+        'archive_sha256': fingerprint(payload), 'selected_evidence_sha256': fingerprint(selected),
+        'prompt_view_sha256': fingerprint(selected_view),
+        'max_text_chars': max_text_chars, 'max_payload_chars': max_payload_chars,
+        'input_item_count': len(originals), 'input_text_chars': input_chars,
+        'input_projected_payload_chars': input_payload,
+        'included_item_count': len(included), 'included_text_chars': selected_chars,
+        'included_projected_payload_chars': selected_payload,
+        'included_evidence_ids': [item['evidence_id'] for item in selected['items']],
+        'deferred_items': deferred, 'goals': coverage('goal_ids', goals),
+        'queries': coverage('query_ids', queries),
+        'selection_scope': 'whole original items; deferred content was not supplied to the model',
+        'relevance_validated': False, 'scientific_truth_validated': False}
+    return {'evidence_items': selected, 'prompt_view': selected_view, 'selection_audit': audit}
+
 
 def main(argv=None):
     """Offline archive/selection CLI; never invokes Review, networks, or models."""

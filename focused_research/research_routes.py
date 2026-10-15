@@ -14,11 +14,11 @@ from pathlib import Path
 
 try:
     from . import task_sheet as task_contract
-    from .material_evidence import prompt_evidence_view
+    from .material_evidence import prompt_evidence_view, select_prompt_evidence
     from .route_quality import contract_change_audit
 except ImportError:
     import task_sheet as task_contract
-    from material_evidence import prompt_evidence_view
+    from material_evidence import prompt_evidence_view, select_prompt_evidence
     from route_quality import contract_change_audit
 
 SCHEMA = 'focused_research.research_routes.v2'
@@ -507,8 +507,16 @@ def build_prompt(task_sheet, evidence_items, *, design_constraints):
     system = (ROOT / 'research_routes_prompt.txt').read_text(encoding='utf-8')
     example = (ROOT / 'examples' / 'research_routes_example.json').read_text(encoding='utf-8')
     system += '\nSCHEMA EXAMPLE (illustrative, not evidence; never copy its evidence IDs):\n' + example
+    selection = select_prompt_evidence(evidence_items,
+        goal_ids=[goal['id'] for goal in task_sheet['subgoals']],
+        query_ids=[query['id'] for query in task_sheet['search_queries']])
+    if selection['selection_audit']['deferred_items']:
+        system += ('\nEvidence is a bounded whole-item selection from a larger saved archive. '
+            'Only supplied items have been read here. Cite only supplied evidence IDs; '
+            'do not infer anything about deferred text or assume complete retrieval coverage.\n')
     return {'system_prompt': system, 'user_payload': {'task_sheet': task_sheet,
-        'evidence_items': prompt_evidence_view(evidence_items), 'design_constraints': design_constraints},
+        'evidence_items': selection['prompt_view'], 'design_constraints': design_constraints},
+        'evidence_selection': selection['selection_audit'],
         'prompt_hash': hashlib.sha256(system.encode()).hexdigest()}
 
 
@@ -524,9 +532,17 @@ def generate(task_sheet, evidence_items, planner, *, design_constraints, max_rep
     if type(max_repairs) is not int or max_repairs not in (0, 1):
         raise ValueError('max_repairs must be 0 or 1')
     prompt = build_prompt(task_sheet, evidence_items, design_constraints=design_constraints)
+    # The compiler must see exactly the original items that the model saw, not
+    # unseen-but-real IDs in the complete archive. Keep full source structures;
+    # the prompt's source_ref projection is not a compiler input.
+    selected_ids = {item['evidence_id'] for item in prompt['user_payload']['evidence_items']['items']}
+    evidence_items = {'schema_version': evidence_items['schema_version'],
+        'items': [copy.deepcopy(item) for item in evidence_items['items'] if item['evidence_id'] in selected_ids]}
     original_payload = copy.deepcopy(prompt['user_payload'])
     outcome = {'status': 'invalid', 'research_routes': {}, 'rounds': [], 'round_usages': [],
-        'transport': {}, 'errors': [], 'prompt_hash': prompt['prompt_hash']}
+        'transport': {}, 'errors': [], 'prompt_hash': prompt['prompt_hash'],
+        'selected_evidence_items': copy.deepcopy(evidence_items),
+        'evidence_selection': copy.deepcopy(prompt['evidence_selection'])}
     for number in range(1, max_repairs + 2):
         try:
             raw = planner._call_query_plan_model(prompt)

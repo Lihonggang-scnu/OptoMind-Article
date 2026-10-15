@@ -224,6 +224,14 @@ def main(argv=None, *, planner=None):
             '--evidence-file', str(args.evidence_file), '--constraints-file', str(args.constraints_file),
             '--output', str(args.output)], planner=ObservationPlanner(planner, context))
         action_errors = []
+        # Route generation may select a whole-item subset. Bind its actual saved
+        # evidence for the next run rather than silently restoring the archive.
+        selected_path = args.output / 'evidence_items.json'
+        selected_binding = None
+        if selected_path.is_file():
+            selected_binding = {'path': str(selected_path.resolve()),
+                'sha256': digest(load(selected_path)),
+                'selection_path': str((args.output / 'evidence_selection.json').resolve())}
         next_contract = load(args.output / 'research_routes.json') if (args.output / 'research_routes.json').is_file() else None
         if next_contract and next_contract.get('routes'):
             for entry in context:
@@ -232,7 +240,8 @@ def main(argv=None, *, planner=None):
                     'physical_basis_refs': [g['observation_id'] for g in entry['observation']['goals'] if g['status'] == 'observed'],
                     'basis_refs_source': 'provided_context_not_verified_model_use',
                     'proposed_edit': {'contract_sha256': digest(next_contract), 'contract_path': str((args.output / 'research_routes.json').resolve()),
-                        'route_ids': [r['id'] for r in next_contract['routes']]},
+                        'route_ids': [r['id'] for r in next_contract['routes']],
+                        'evidence_binding': selected_binding},
                     'predictions': [{**p, 'route_id': r['id']} for r in next_contract['routes'] for p in r['expectations']]}
                 if proposed['physical_basis_refs'] and proposed['predictions']:
                     try:
@@ -241,6 +250,7 @@ def main(argv=None, *, planner=None):
                         action_errors.append({'proposal_id': entry['proposal']['proposal_id'], 'error': str(exc)})
         save(args.output / 'revision_parent.json', {'previous_run': str(args.previous_run.resolve()),
             'observation_sha256': digest(context), 'input_bindings': old_bindings,
+            'next_evidence_binding': selected_binding,
             'next_action_executed': False, 'action_record_errors': action_errors})
         return 2 if action_errors else result
     except (ValueError, TypeError, KeyError, OSError) as exc:

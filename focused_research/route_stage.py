@@ -11,6 +11,7 @@ This module never retrieves evidence or runs a simulation.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -83,13 +84,24 @@ def main(argv=None, *, planner=None):
         called = False
         generation = None
         candidate_report = None
+        if args.stage in ('generate', 'prompt'):
+            # Keep the complete incoming archive independently of the active subset.
+            save(args.output / 'evidence_items.full.json', evidence)
+            source_bytes = args.evidence_file.read_bytes()
+            (args.output / 'evidence_items.source.json').write_bytes(source_bytes)
+            identity['evidence_items_full'] = fingerprint(evidence)
+            identity['evidence_source_bytes_sha256'] = hashlib.sha256(source_bytes).hexdigest()
         if args.stage == 'generate':
-            # Validate input contracts before dispatch. Empty retrieval permits explicitly labeled model knowledge, never fabricated evidence.
-            rr.build_prompt(sheet, evidence, design_constraints=constraints)
+            # Generation performs validated whole-item selection before prompt limits.
             injected = _RoutePlanner(planner)
             generation = rr.generate(sheet, evidence, injected, design_constraints=constraints, max_repairs=1, candidate_mode=True)
             called = injected.calls > 0
             save(args.output / 'generation_outcome.json', generation)
+            evidence = generation['selected_evidence_items']
+            save(args.output / 'evidence_items.json', evidence)
+            save(args.output / 'evidence_selection.json', generation['evidence_selection'])
+            identity['evidence_items'] = fingerprint(evidence)
+            identity['evidence_selection'] = fingerprint(generation['evidence_selection'])
             routes = generation.get('research_routes')
             candidate_report = generation.get('candidate_report')
             if generation.get('raw_research_routes') is not None:
@@ -105,7 +117,15 @@ def main(argv=None, *, planner=None):
             save(args.output / 'prepared_instances.json', instances)
             state = 'instances_prepared' if generation['status'] == 'ok' else generation['status']
         elif args.stage == 'prompt':
-            save(args.output / 'route_prompt.json', rr.build_prompt(sheet, evidence, design_constraints=constraints))
+            prompt = rr.build_prompt(sheet, evidence, design_constraints=constraints)
+            save(args.output / 'route_prompt.json', prompt)
+            selected_ids = {item['evidence_id'] for item in prompt['user_payload']['evidence_items']['items']}
+            evidence = {'schema_version': evidence['schema_version'],
+                'items': [copy.deepcopy(item) for item in evidence['items'] if item['evidence_id'] in selected_ids]}
+            save(args.output / 'evidence_items.json', evidence)
+            save(args.output / 'evidence_selection.json', prompt['evidence_selection'])
+            identity['evidence_items'] = fingerprint(evidence)
+            identity['evidence_selection'] = fingerprint(prompt['evidence_selection'])
             state = 'prompt_prepared'
         else:
             routes = load(args.routes_file)
