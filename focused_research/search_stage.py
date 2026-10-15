@@ -10,17 +10,18 @@ import argparse
 import copy
 import json
 import math
+import time
 from pathlib import Path
 import uuid
 
 try:
     from .scientific_stage import load, save, digest, _new_output
     from . import research_routes as rr, route_consumer as rc, research_execution as ex
-    from . import family_optimization as fo, design_archive as da, physics_diagnostics as pd
+    from . import family_optimization as fo, design_archive as da, physics_diagnostics as pd, decision_context as dc
 except ImportError:
     from scientific_stage import load, save, digest, _new_output
     import research_routes as rr, route_consumer as rc, research_execution as ex
-    import family_optimization as fo, design_archive as da, physics_diagnostics as pd
+    import family_optimization as fo, design_archive as da, physics_diagnostics as pd, decision_context as dc
 
 SCHEMA = 'focused_research.search_stage.v1'
 CONTEXT_FILES = {'routes': 'raw_proposals.json', 'sheet': 'task_sheet.json',
@@ -111,6 +112,95 @@ def rank_candidates(candidates):
         ordered += chosen
         pending = [i for i in pending if i not in front]
     return [candidates[i] for i in ordered]
+
+
+def select_certification_candidates(candidates, archive, *, max_new_evals,
+                                    objective_tolerance=1e-4, relative_thickness_tolerance=1e-3,
+                                    verified_cached_instance_ids=None):
+    """Bound certification to meaningful proposals; retain every deferred proposal.
+
+    Tolerances are scheduling heuristics, never physical equivalence, acceptance,
+    dominance, or success thresholds. A nearby structure is deferred only when
+    ALL objective changes and ALL relative layer-thickness changes are small.
+    Exact archived rediscoveries remain eligible for cached derivative ingestion.
+    """
+    _budget(max_new_evals,'max_new_evals')
+    for value in (objective_tolerance,relative_thickness_tolerance):
+        if type(value) not in (int,float) or not math.isfinite(value) or value < 0:
+            raise ValueError('finite nonnegative shortlist tolerances required')
+    verified_cached_instance_ids = set(verified_cached_instance_ids or ())
+    ranked = rank_candidates(candidates)
+    designs = (archive or {}).get('designs',{})
+    def physical(task):
+        return da._physical(task)
+    def shape(task):
+        t = copy.deepcopy(task)
+        for layer in t['stack']['layers']:
+            layer.pop('thickness_nm')
+        return t
+    reference = []
+    exact = {}
+    for design_id,design in designs.items():
+        task = physical(design['physical_input'])
+        key = digest(task)
+        exact[key] = design_id
+        reference.append({'id':design_id,'task':task,'shape':shape(task),
+                          'metrics':{k:v['value'] for k,v in design['metrics'].items()}})
+    selected, deferred, decisions = [], [], []
+    new_keys = {}
+    for envelope in ranked:
+        task = physical(envelope['tmm_task'])
+        key = digest(task)
+        metrics = envelope['numerical_search']['uncertified_metrics']
+        ident = envelope['instance_id']
+        if key in exact:
+            if ident in verified_cached_instance_ids:
+                selected.append(envelope)
+                decisions.append({'instance_id':ident,'decision':'selected_verified_cache_rediscovery',
+                                  'reference_design_id':exact[key],'reserved_new_evaluations':0})
+            else:
+                record = {'instance_id':ident,'decision':'deferred_unvalidated',
+                    'reason':'archived_rediscovery_cache_unavailable', 'reference_id':exact[key],
+                    'reserved_new_evaluations':0}
+                deferred.append(record); decisions.append(record)
+            continue
+        reason, reference_id = None, None
+        if key in new_keys:
+            reason, reference_id = 'exact_duplicate_proposal',new_keys[key]
+        else:
+            topology = shape(task)
+            for other in reference:
+                if topology != other['shape']:
+                    continue
+                if not all(abs(metrics[g]-other['metrics'][g]) <= objective_tolerance for g in metrics):
+                    continue
+                near = all(abs(a['thickness_nm']-b['thickness_nm']) / max(1.0,abs(a['thickness_nm']),abs(b['thickness_nm']))
+                           <= relative_thickness_tolerance
+                           for a,b in zip(task['stack']['layers'],other['task']['stack']['layers']))
+                if near:
+                    reason,reference_id = 'near_duplicate_structure_and_objectives',other['id']
+                    break
+        if reason is None and len(new_keys) >= max_new_evals:
+            reason = 'certification_budget_reserved_for_more_distinct_candidates'
+        if reason is not None:
+            record = {'instance_id':ident,'decision':'deferred_unvalidated','reason':reason,
+                      'reference_id':reference_id,'reserved_new_evaluations':0}
+            deferred.append(record)
+            decisions.append(record)
+            continue
+        selected.append(envelope)
+        new_keys[key] = ident
+        reference.append({'id':ident,'task':task,'shape':topology,'metrics':metrics})
+        decisions.append({'instance_id':ident,'decision':'selected_new_candidate','reserved_new_evaluations':1})
+    return selected, {'schema_version':'focused_research.certification_selection.v1',
+        'candidate_count':len(candidates),'selected_count':len(selected),
+        'reserved_new_evaluations':len(new_keys),'max_new_evals':max_new_evals,
+        'deferred_unvalidated_count':len(deferred),
+        'objective_tolerance':objective_tolerance,'relative_thickness_tolerance':relative_thickness_tolerance,
+        'decisions':decisions,
+        'limits':['Scheduling heuristics only; deferred designs remain unvalidated, not scientific failures.',
+                  'No objective, certification, physics, or archive dominance threshold is relaxed.',
+                  'Additional disk-cache hits may leave some certification budget unused.']}
 
 
 def _family(route, parameterization):
@@ -272,8 +362,35 @@ def _compile_plans(payload, previous):
             audits.append({'source_index':index,'accepted_index':len(accepted)-1,'warnings':warnings})
         except (ValueError,TypeError,KeyError,StopIteration) as exc:
             rejected.append({'source_index':index,'error':str(exc),'raw_plan':copy.deepcopy(source)})
+    quality_warnings = []
+    for i,plan in enumerate(accepted):
+        current = previous['archive']['designs'][plan['parent_design_id']]
+        if not plan['diagnosis']['explanation'].strip():
+            quality_warnings.append({'plan_index':i,'code':'missing_interpretation',
+                'message':'No interpretation supplied; execution remains an exploratory numerical test.'})
+        for j,other in enumerate(accepted[:i]):
+            before = previous['archive']['designs'][other['parent_design_id']]
+            exact = plan['parent_design_id'] == other['parent_design_id']
+            if exact and plan['action'] == other['action']:
+                quality_warnings.append({'plan_indices':[j,i],'code':'repeated_parent_and_action',
+                    'message':'Repeated search may be intentional but needs a distinct scientific reason; not rejected.'})
+                continue
+            a,b = current['physical_input']['stack']['layers'],before['physical_input']['stack']['layers']
+            same_topology = len(a)==len(b) and all(
+                {k:v for k,v in x.items() if k!='thickness_nm'} == {k:v for k,v in y.items() if k!='thickness_nm'}
+                for x,y in zip(a,b))
+            if not same_topology:
+                continue
+            objective_distance = max(abs(current['metrics'][g]['value']-before['metrics'][g]['value']) for g in goals)
+            thickness_distance = max(abs(x['thickness_nm']-y['thickness_nm'])/max(1.0,abs(x['thickness_nm']),abs(y['thickness_nm'])) for x,y in zip(a,b))
+            if objective_distance <= 1e-3 and thickness_distance <= 5e-3:
+                quality_warnings.append({'plan_indices':[j,i],'code':'nearby_parent_searches',
+                    'max_absolute_objective_difference':objective_distance,
+                    'max_relative_layer_thickness_difference':thickness_distance,
+                    'message':'Nearby parents selected; inspect whether their proposed tests add information. No rejection or diversity quota.'})
     return {'plans':accepted}, {'accepted_count':len(accepted),'rejected_count':len(rejected),
-                                'rejected_plans':rejected,'normalization_audit':audits}
+        'rejected_plans':rejected,'normalization_audit':audits,'quality_warnings':quality_warnings,
+        'quality_scope':'Advisory factual warnings only. Numerical progress and scientific reasoning are assessed separately; negative or exploratory hypotheses remain legitimate.'}
 
 
 def _validate_plans(payload, previous):
@@ -315,20 +432,7 @@ def revise(previous_search, *, output, planner):
         raise ValueError('certified designs and diagnostics required before revision')
     output = _new_output(output, [previous_search])
     aliases = _aliases(previous)
-    parent_alias = {v:k for k,v in aliases['parents'].items()}
-    diagnosis_alias = {v:k for k,v in aliases['diagnostics'].items()}
-    families = {}
-    design_briefs = []
-    for design_id, design in previous['archive']['designs'].items():
-        family_id = design['family']['family_key']
-        families.setdefault(family_id, design['family']['specification'])
-        design_briefs.append({'parent_alias':parent_alias[design_id], 'design_id':design_id,
-            'metrics':{k:v['value'] for k,v in design['metrics'].items()},
-            'thicknesses_nm':[l['thickness_nm'] for l in design['physical_input']['stack']['layers']],
-            'family_id':family_id,'parameterization':design['family']['specification']['parameterization'],
-            'parent_design_id':design['parent_design_id'],
-            'local_derivative_summary':_latest_local_derivative(previous['envelopes'][design_id],design_id)})
-    diagnostic_briefs = [_compact_diagnostic(item,parent_alias,diagnosis_alias) for item in previous['diagnostics']]
+    decision_view = dc.build_decision_context(previous,aliases,_latest_local_derivative)
     prompt = {'system_prompt':
         'Return JSON only, exactly {"plans":[...]}. Plan numerical refinement, never layer JSON. '
         'Each plan has parent_design_id, action (refine_family or refine_layers), diagnosis '
@@ -338,16 +442,14 @@ def revise(previous_search, *, output, planner):
         'Choose only supplied certified parents. Preserve all original objectives and physical conditions. '
         'refine_family preserves shared variables; refine_layers explicitly creates independent layer variables '
         'within original family bounds. Expectations are untested, not outcomes. No route or plan-count ceiling. '
+        'Interpret measurements, local derivative arithmetic, and hypotheses separately. '
+        'For a decreasing variable reverse the derivative sign; respect each goal sense and the supplied bounds. '
+        'Local directional estimates do not establish finite-step outcomes or a unique mechanism. '
+        'Explain why the chosen parent and action are informative; nearby parents need a reason, not a diversity quota. '
+        'Exploratory actions, predicted tradeoffs, and unsuccessful hypotheses are legitimate; do not promise improvement. '
         'An empty plans list is allowed. Do not fabricate observations, material identities or new bounds.',
-        'user_payload': {'task_sheet': previous['context']['sheet'],
-            'constraints': previous['context']['constraints'],
-            'objectives': previous['archive']['objectives'],
-            'route_rationales': [{k:r.get(k) for k in ('id','claim','basis_mode','model_knowledge_rationale','clue_ids','evidence_ids')} for r in previous['accepted']['routes']],
-            'decision_clues': [{k:c.get(k) for k in ('id','evidence_id','physical_effect','inference_bridge','conditions_and_unknowns')} for c in previous['accepted'].get('decision_clues',[])],
-            'certified_designs': design_briefs, 'family_catalog':families,
-            'pareto_parent_aliases': [parent_alias[k] for k in previous['archive']['pareto_design_ids']],
-            'diagnostic_scope':'Certified sampled grid only; subband and polarization summaries use sample means, not the objective reduction. Full diagnostics remain saved. No mechanism or continuous-band guarantee.',
-            'physics_diagnostics': diagnostic_briefs}}
+        'user_payload':decision_view['user_payload']}
+    save(output / 'decision_context_report.json',decision_view['selection_report'])
     save(output / 'revision_aliases.json', aliases)
     save(output / 'revision_prompt.json', prompt)
     save(output / 'revision_parent.json', {'previous_search': str(Path(previous_search).resolve()),
@@ -390,6 +492,7 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
     """Run search or refine; failed and un-certified designs remain explicit artifacts."""
     _budget(max_forward_evaluations, 'max_forward_evaluations')
     _budget(max_new_evals, 'max_new_evals')
+    started_wall, started_cpu = time.perf_counter(), time.process_time()
     if type(max_workers) is not int or max_workers < 1:
         raise ValueError('positive worker count required')
     if parameterization not in ('family','layerwise_refinement'):
@@ -510,11 +613,36 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
             failures.append({'stage':'search','job_index':i,'route_id':job['route']['id'],
                              'reserved_forward_design_rows':quotas[i], 'error':str(exc)})
     remaining = max_new_evals - seed_batch['metering']['new_evaluations']
-    ranked = rank_candidates(candidates)
-    candidate_batch = ex.execute_prepared_batch(ranked,cache_dir=cache_dir,max_new_evals=remaining,max_workers=max_workers)
+    archived_physics = {digest(da._physical(d['physical_input'])) for d in (archive or {}).get('designs',{}).values()}
+    rediscoveries = [e for e in candidates if digest(da._physical(e['tmm_task'])) in archived_physics]
+    # Zero-budget executor probe validates the actual current source/material/
+    # verifier identity and cache files. Archive membership alone never proves a hit.
+    cache_probe = ex.execute_prepared_batch(rediscoveries,cache_dir=cache_dir,max_new_evals=0,max_workers=max_workers)
+    save(output / 'rediscovery_cache_probe.json',cache_probe)
+    verified_cached = {r['instance_id']:r for r in cache_probe['results'] if r.get('physics_accepted') and r.get('cache_hit')}
+    selected, selection_report = select_certification_candidates(candidates,archive,max_new_evals=remaining,
+        verified_cached_instance_ids=verified_cached)
+    candidates_by_id = {e['instance_id']:e for e in candidates}
+    ranked = [candidates_by_id[d['instance_id']] for d in selection_report['decisions']]
+    save(output / 'certification_selection.json',selection_report)
+    candidate_batch = ex.execute_prepared_batch([e for e in selected if e['instance_id'] not in verified_cached],
+        cache_dir=cache_dir,max_new_evals=remaining,max_workers=max_workers)
+    dispatched = {r['instance_id']:r for r in candidate_batch['results']}
+    candidate_batch['results'] = [verified_cached[e['instance_id']] if e['instance_id'] in verified_cached
+                                  else dispatched[e['instance_id']] for e in selected]
     all_envelopes += ranked
-    all_results += candidate_batch['results']
-    for envelope,result in zip(ranked,candidate_batch['results']):
+    result_by_id = {r['instance_id']:r for r in candidate_batch['results']}
+    deferred_by_id = {r['instance_id']:r for r in selection_report['decisions'] if r['decision']=='deferred_unvalidated'}
+    for envelope in ranked:
+        ident = envelope['instance_id']
+        if ident in result_by_id:
+            all_results.append(result_by_id[ident])
+        else:
+            all_results.append({'instance_id':ident,'route_id':envelope['route_id'],
+                'status':'deferred_unvalidated','physics_accepted':False,'certification_attempted':False,
+                'reason':deferred_by_id[ident]['reason'],'selection_reference':deferred_by_id[ident].get('reference_id'),
+                'metering':{'new_evaluations':0}})
+    for envelope,result in zip(selected,candidate_batch['results']):
         relation = ancestry[envelope['instance_id']]
         try:
             archive, design_id = _record(archive,design_envelopes,result,envelope,parent=relation['parent'],
@@ -534,15 +662,25 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
         'numerical_search_jobs':len(jobs),'candidate_count':len(candidates),
         'certified_design_count':len(archive['designs']) if archive else 0,
         'pareto_design_ids':archive['pareto_design_ids'] if archive else [],
-        'uncertified_candidate_count':sum(not r.get('physics_accepted') for r in candidate_batch['results']),
-        'metering':{'search_forward_design_rows':forward_rows,'search_solver_channel_rows':solver_rows,
+        'uncertified_candidate_count':len(deferred_by_id)+sum(not r.get('physics_accepted') for r in candidate_batch['results']),
+        'deferred_unvalidated_candidate_count':len(deferred_by_id),
+        'certification_attempted_candidate_count':len(candidate_batch['results']),
+        'certification_coverage':'partial' if deferred_by_id or failures or any(not r.get('physics_accepted') for r in seed_batch['results']+candidate_batch['results']) else 'complete',
+        'scientific_outcome':'Not inferred from execution status; compare certified metrics and reasoning separately.',
+        'metering':{'parent_process_cpu_seconds':time.process_time()-started_cpu,
+            'stage_wall_seconds':time.perf_counter()-started_wall,
+            'cpu_scope':'Parent process only, including serial optimization; excludes certification child-process CPU. Not total pipeline CPU.',
+            'search_forward_design_rows':forward_rows,'search_solver_channel_rows':solver_rows,
             'search_backward_passes':sum(s['search']['metering'].get('backward_passes',0) for s in searches),
             'search_metering_complete':not search_failures,
             'search_failed_job_reserved_rows':sum(f['reserved_forward_design_rows'] for f in search_failures),
             'search_max_forward_design_rows':max_forward_evaluations,
             'certification_new_evaluations':seed_batch['metering']['new_evaluations']+candidate_batch['metering']['new_evaluations'],
             'certification_max_new_evaluations':max_new_evals,
-            'seed_certification':seed_batch['metering'],'candidate_certification':candidate_batch['metering']},
+            'certification_cache_hits_total':seed_batch['metering'].get('cache_hits',0)+candidate_batch['metering'].get('cache_hits',0)+cache_probe['metering'].get('cache_hits',0),
+            'certification_metering_scope':'Seed execution, new candidate dispatch, and zero-budget rediscovery cache probe are disjoint counters.',
+            'seed_certification':seed_batch['metering'],'candidate_certification':candidate_batch['metering'],
+            'rediscovery_cache_probe':cache_probe['metering']},
         'mechanism_proven':False,'claim_scope':'certified_sampled_grid_only'}
     for name,value in [('execution_inputs',all_envelopes),('execution_results',all_results),
         ('numerical_search',searches),('candidate_ancestry',ancestry),('design_archive',archive),

@@ -55,6 +55,11 @@ def test_true_search_revision_refinement_and_cache(tmp_path):
     assert summary['metering']['search_forward_design_rows']==12
     assert summary['metering']['search_solver_channel_rows']>=24
     assert summary['metering']['certification_new_evaluations']>=2
+    meter=summary['metering']
+    assert meter['rediscovery_cache_probe']['cache_hits']>=1
+    assert meter['rediscovery_cache_probe']['new_evaluations']==0
+    assert meter['certification_cache_hits_total']==sum(meter[k].get('cache_hits',0)
+        for k in ('seed_certification','candidate_certification','rediscovery_cache_probe'))
     previous = st.read_search(tmp_path/'first')
     assert len(previous['archive']['designs'])>2
     assert len(previous['archive']['objectives'])==2
@@ -89,14 +94,15 @@ def test_true_search_revision_refinement_and_cache(tmp_path):
 
 def test_small_certification_budget_keeps_all_uncertified_candidates(tmp_path):
     result=run(tmp_path,max_new_evals=2)
-    assert result['status']=='partial'
+    assert result['status']=='search_complete'
+    assert result['certification_coverage']=='partial'
     assert result['metering']['certification_new_evaluations']==2
     assert result['uncertified_candidate_count']>0
     assert result['candidate_count']>2
     archive=st.load(tmp_path/'first/design_archive.json')
     assert len(archive['designs'])==2
     results=st.load(tmp_path/'first/execution_results.json')
-    assert any(r['status']=='budget_exhausted' for r in results)
+    assert any(r['status']=='deferred_unvalidated' for r in results)
     assert len(st.load(tmp_path/'first/execution_inputs.json'))==2+result['candidate_count']
 
 
@@ -104,6 +110,7 @@ def test_zero_budget_does_not_claim_certification(tmp_path):
     result=run(tmp_path,max_new_evals=0,max_forward_evaluations=0)
     assert result['status']=='partial'
     assert result['certified_design_count']==0
+    assert result['certification_coverage']=='partial'
     assert st.load(tmp_path/'first/design_archive.json') is None
 
 
@@ -216,7 +223,8 @@ def test_mixed_plans_keep_valid_alias_and_unchosen_designs(tmp_path):
     assert st.load(tmp_path/'revision/plan_report.json')['rejected_count']==1
     prompt=planner.calls[0]['user_payload']
     assert prompt['family_catalog'] and prompt['route_rationales'] and prompt['decision_clues']
-    assert all('thicknesses_nm' in d for d in prompt['certified_designs'])
+    assert all('thickness_reference' in d for d in prompt['certified_designs'])
+    assert all('thicknesses_nm' in d for d in prompt['representative_decisions'])
     result=st.run_search(output=tmp_path/'second',cache_dir=tmp_path/'cache',previous_search=tmp_path/'first',
         plans=plans,max_forward_evaluations=4,max_new_evals=10,backend='numpy')
     assert result['status']=='search_complete'
@@ -283,7 +291,8 @@ def test_rediscovered_seed_retains_latest_same_design_derivative(tmp_path,monkey
         rediscovered['instance_id']='rediscovered_'+str(index)
         rediscovered['numerical_search']={'parameterization':'family','evaluation_index':index,
             'local_derivative_summary':{'status':'local_derivative_uncertified',
-                'goal_sensitivities':{'G1':{'fixture_derivative_per_nm':index}},
+                'goal_sensitivities':[{'objective_id':'G1','top_variables':[{'name':'dH',
+                    'derivative_per_nm':index,'bounds_nm':[45,85],'current_value_nm':55}]}],
                 'additional_forward_design_rows':0}}
         archive, actual_id=st._record(archive,envelopes,result,rediscovered,parent=design_id,
             family=archive['designs'][design_id]['family']['specification'],role='candidate')
@@ -300,11 +309,10 @@ def test_rediscovered_seed_retains_latest_same_design_derivative(tmp_path,monkey
     monkeypatch.setattr(st,'read_search',lambda directory:copy.deepcopy(previous))
     planner=Planner('{"plans":[]}')
     assert st.revise(tmp_path/'first',output=tmp_path/'revision',planner=planner)['status']=='plans_recorded'
-    brief=next(d for d in planner.calls[0]['user_payload']['certified_designs'] if d['design_id']==design_id)
-    summary=brief['local_derivative_summary']
-    assert summary['source_instance_id']=='rediscovered_2'
-    assert summary['observation_design_id']==design_id
-    assert summary['goal_sensitivities']['G1']['fixture_derivative_per_nm']==2
+    brief=next(d for d in planner.calls[0]['user_payload']['representative_decisions'] if d['design_id']==design_id)
+    assert brief['derivative_source']['source_instance_id']=='rediscovered_2'
+    assert brief['derivative_source']['observation_design_id']==design_id
+    assert brief['local_direction_facts']['variables'][0]['derivative_per_nm']['G1']==2
 
 
 def test_incomplete_model_finish_is_partial_without_retry(tmp_path):
@@ -317,3 +325,83 @@ def test_incomplete_model_finish_is_partial_without_retry(tmp_path):
     assert summary['generation_complete'] is False
     assert len(planner.calls)==1
     assert st.load(tmp_path/'revision/refinement_plans.json')['plans']
+
+
+def test_shortlist_defers_near_duplicates_but_retains_distinct_tradeoffs(tmp_path):
+    run(tmp_path,max_forward_evaluations=0,max_new_evals=2)
+    previous=st.read_search(tmp_path/'first'); archive=previous['archive']
+    seed=next(iter(previous['envelopes'].values()))
+    design=next(d for d in archive['designs'].values() if d['certified_result']['instance_id']==seed['instance_id'])
+    values={k:v['value'] for k,v in design['metrics'].items()}
+    candidates=[]
+    for name,thickness_delta,metric_delta in [('exact',0,0),('tiny',1e-7,1e-8),
+                                             ('distinct_a',2,.02),('distinct_b',-2,-.02)]:
+        e=copy.deepcopy(seed);e['instance_id']=name
+        for layer in e['tmm_task']['stack']['layers']:layer['thickness_nm']+=thickness_delta
+        e['numerical_search']={'uncertified_metrics':{k:v+(metric_delta if k=='G1' else -metric_delta) for k,v in values.items()}}
+        candidates.append(e)
+    selected,report=st.select_certification_candidates(candidates,archive,max_new_evals=2,verified_cached_instance_ids={'exact'})
+    assert {e['instance_id'] for e in selected}=={'exact','distinct_a','distinct_b'}
+    tiny=next(d for d in report['decisions'] if d['instance_id']=='tiny')
+    assert tiny['decision']=='deferred_unvalidated'
+    assert tiny['reason']=='near_duplicate_structure_and_objectives'
+    assert report['reserved_new_evaluations']==2
+    assert report['candidate_count']==4 and len(report['decisions'])==4
+    assert len(archive['designs'])==2
+
+
+def test_shortlist_preserves_metric_change_even_when_thickness_is_close(tmp_path):
+    run(tmp_path,max_forward_evaluations=0,max_new_evals=2)
+    previous=st.read_search(tmp_path/'first'); archive=previous['archive']
+    e=copy.deepcopy(next(iter(previous['envelopes'].values())))
+    d=next(d for d in archive['designs'].values() if d['certified_result']['instance_id']==e['instance_id'])
+    e['instance_id']='sensitive_structure'
+    for layer in e['tmm_task']['stack']['layers']:layer['thickness_nm']+=1e-4
+    e['numerical_search']={'uncertified_metrics':{k:v['value']+.01 for k,v in d['metrics'].items()}}
+    selected,report=st.select_certification_candidates([e],archive,max_new_evals=1)
+    assert selected==[e] and report['reserved_new_evaluations']==1
+
+
+def test_repeated_exploratory_plans_warn_without_blanket_rejection(tmp_path):
+    run(tmp_path,max_forward_evaluations=0,max_new_evals=2)
+    previous=st.read_search(tmp_path/'first')
+    payload=plan(previous)
+    payload['plans'][0]['expected_goal_changes']={'G1':'decrease','G2':'unknown'}
+    payload['plans'].append(copy.deepcopy(payload['plans'][0]))
+    accepted,report=st._compile_plans(payload,previous)
+    assert len(accepted['plans'])==2 and report['rejected_count']==0
+    assert any(w['code']=='repeated_parent_and_action' for w in report['quality_warnings'])
+    assert accepted['plans'][0]['expected_goal_changes']['G1']=='decrease'
+
+
+def test_revision_persists_context_selection_and_sign_guidance(tmp_path):
+    run(tmp_path,max_forward_evaluations=0,max_new_evals=2)
+    planner=Planner('{"plans":[]}')
+    summary=st.revise(tmp_path/'first',output=tmp_path/'revision',planner=planner)
+    assert summary['planner_calls']==1
+    report=st.load(tmp_path/'revision/decision_context_report.json')
+    assert report['all_parent_identities_retained'] and report['additional_forward_design_rows']==0
+    prompt=planner.calls[0]
+    assert 'reverse the derivative sign' in prompt['system_prompt']
+    assert prompt['user_payload']['representative_decisions']
+    assert prompt['user_payload']['diagnostic_index']
+    assert len(prompt['user_payload']['objectives'])==2
+
+
+def test_archived_rediscovery_without_verified_cache_cannot_consume_novel_budget(tmp_path):
+    run(tmp_path,max_forward_evaluations=0,max_new_evals=2)
+    previous=st.read_search(tmp_path/'first'); archive=previous['archive']
+    e=copy.deepcopy(next(iter(previous['envelopes'].values())))
+    d=next(d for d in archive['designs'].values() if d['certified_result']['instance_id']==e['instance_id'])
+    e['numerical_search']={'uncertified_metrics':{k:v['value'] for k,v in d['metrics'].items()}}
+    selected,report=st.select_certification_candidates([e],archive,max_new_evals=1)
+    assert selected==[] and report['reserved_new_evaluations']==0
+    assert report['decisions'][0]['reason']=='archived_rediscovery_cache_unavailable'
+    # New cache is actually empty; max-new-evals=0 prevents physical recomputation.
+    result=st.run_search(output=tmp_path/'second',cache_dir=tmp_path/'empty_cache',previous_search=tmp_path/'first',
+        plans=plan(previous),max_forward_evaluations=2,max_new_evals=0,backend='numpy')
+    assert result['metering']['certification_new_evaluations']==0
+    assert result['metering']['rediscovery_cache_probe']['new_evaluations']==0
+    assert result['certification_coverage']=='partial'
+    selection=st.load(tmp_path/'second/certification_selection.json')
+    assert all(d['decision']=='deferred_unvalidated' for d in selection['decisions'])
