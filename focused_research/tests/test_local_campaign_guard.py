@@ -1,0 +1,175 @@
+import copy
+import hashlib
+import json
+
+import pytest
+
+from focused_research.local_campaign_guard import CampaignPlannerGuard, check_route_thickness_bounds
+
+AR = 'e2e-09-si-photonics-ar-dualband'
+UV = 'e2e-08-advanced-packaging-uv'
+QKD = 'e2e-02-space-qkd-cband'
+
+
+class Planner:
+    last_usage = {'actual': 'delegated'}
+    last_transport = {'transport': 'original'}
+    def __init__(self, fail=False):
+        self.calls = []
+        self.fail = fail
+    def _call_query_plan_model(self, prompt):
+        self.calls.append(copy.deepcopy(prompt))
+        if self.fail:
+            raise RuntimeError('transport failed')
+        return 'unchanged response'
+
+
+def setup_guard(case_id=AR, fail=False):
+    planner, snapshots = Planner(fail), []
+    return CampaignPlannerGuard(planner, case_id=case_id, audit_sink=snapshots.append), planner, snapshots
+
+
+def prompt(repair=False):
+    payload = {'original_question': '原题\n  preserve spaces'}
+    if repair:
+        payload.update(previous_response='bad JSON', validation_error='invalid contract')
+    return {'system_prompt': 'system', 'user_payload': payload, 'prompt_hash': 'upstream-system-only'}
+
+
+def test_preserves_prompt_and_forwards_protocol_with_actual_hash_before_call():
+    guard, planner, snapshots = setup_guard(QKD)
+    original = prompt(); before = copy.deepcopy(original)
+    guard.set_stage('task_sheet')
+    assert guard._call_query_plan_model(original) == 'unchanged response'
+    assert original == before
+    actual = planner.calls[0]
+    assert actual['user_payload']['original_question'] == before['user_payload']['original_question']
+    assert actual['user_payload']['execution_protocol']['case_id'] == QKD
+    event = snapshots[0]['events'][0]
+    assert event['status'] == 'dispatch_attempt_recorded'
+    assert event['forwarded_prompt'] == actual
+    expected = hashlib.sha256(json.dumps(actual, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+    assert event['forwarded_prompt_sha256'] == expected
+    assert event['original_prompt'] == before
+    assert event['original_prompt_sha256'] != expected
+    assert guard.last_usage is planner.last_usage
+    assert guard.last_transport is planner.last_transport
+    guard.audit['events'].clear()
+    assert len(guard.audit['events']) == 1
+
+
+@pytest.mark.parametrize('repair_stage', ['task_sheet', 'route_generation'])
+def test_four_dispatches_one_shared_repair_preserves_all_base_calls(repair_stage):
+    guard, planner, snapshots = setup_guard()
+    for stage in ['task_sheet', 'route_generation', 'search_revision']:
+        guard.set_stage(stage)
+        guard._call_query_plan_model(prompt())
+        if stage == repair_stage:
+            guard._call_query_plan_model(prompt(True))
+        elif stage == 'route_generation' and repair_stage == 'task_sheet':
+            with pytest.raises(ValueError, match='shared contract repair'):
+                guard._call_query_plan_model(prompt(True))
+    assert guard.audit['dispatch_attempts'] == len(planner.calls) == 4
+    with pytest.raises(ValueError, match='stage dispatch limit'):
+        guard._call_query_plan_model(prompt(True))
+    assert guard.audit['dispatch_attempts'] == 4
+
+
+def test_stage_reset_skip_unknown_and_unstarted_rejected():
+    guard, planner, _ = setup_guard()
+    with pytest.raises(ValueError): guard._call_query_plan_model(prompt())
+    for invalid in ['route_generation', 'search_revision', 'unknown']:
+        with pytest.raises(ValueError): guard.set_stage(invalid)
+    guard.set_stage('task_sheet')
+    for invalid in ['task_sheet', 'search_revision', 'route_generation']:
+        with pytest.raises(ValueError): guard.set_stage(invalid)
+    guard._call_query_plan_model(prompt())
+    guard.set_stage('route_generation')
+    with pytest.raises(ValueError): guard.set_stage('task_sheet')
+    assert len(planner.calls) == 1
+
+
+def test_second_dispatch_requires_validation_failure_and_no_third_attempt():
+    guard, planner, _ = setup_guard()
+    guard.set_stage('task_sheet'); guard._call_query_plan_model(prompt())
+    with pytest.raises(ValueError, match='explicit contract'):
+        guard._call_query_plan_model(prompt())
+    guard._call_query_plan_model(prompt(True))
+    with pytest.raises(ValueError, match='stage dispatch limit'):
+        guard._call_query_plan_model(prompt(True))
+    assert len(planner.calls) == 2
+
+
+def test_transport_failure_charged_and_no_retry_or_stage_advance():
+    guard, planner, snapshots = setup_guard(fail=True)
+    guard.set_stage('task_sheet')
+    with pytest.raises(RuntimeError): guard._call_query_plan_model(prompt())
+    assert guard.audit['dispatch_attempts'] == 1
+    assert snapshots[0]['dispatch_attempts'] == 1
+    assert guard.audit['failed_closed']
+    with pytest.raises(ValueError): guard._call_query_plan_model(prompt(True))
+    with pytest.raises(ValueError): guard.set_stage('route_generation')
+    assert len(planner.calls) == 1
+
+
+def test_audit_failure_prevents_transport_and_consumes_conservative_attempt():
+    planner = Planner()
+    def fail(_): raise OSError('disk unavailable')
+    guard = CampaignPlannerGuard(planner, case_id=AR, audit_sink=fail)
+    guard.set_stage('task_sheet')
+    with pytest.raises(OSError): guard._call_query_plan_model(prompt())
+    assert not planner.calls
+    assert guard.audit['dispatch_attempts'] == 1
+    assert guard.audit['failed_closed']
+
+
+@pytest.mark.parametrize('payload', [None, [], {'execution_protocol': {}}])
+def test_malformed_or_colliding_prompt_does_not_dispatch(payload):
+    guard, planner, _ = setup_guard(); guard.set_stage('task_sheet')
+    with pytest.raises(ValueError): guard._call_query_plan_model({'user_payload': payload})
+    assert not planner.calls
+    assert guard.audit['dispatch_attempts'] == 0
+
+
+def route(rid='R1', bounds=None, fixed=20):
+    return {'id': rid, 'family': {'layers': [{'thickness_nm': 'd'}, {'thickness_nm': fixed}],
+                                'thickness_variables_nm': {'d': [20, 400] if bounds is None else bounds}}}
+
+
+def test_per_route_bounds_do_not_clip_or_mutate():
+    rows = [route('ok'), route('low', [19, 100]), route('high', [20, 401]), route('fixed', fixed=401)]
+    original = copy.deepcopy(rows)
+    report = check_route_thickness_bounds({'routes': rows}, case_id=AR)
+    assert [x['accepted'] for x in report['route_results']] == [True, False, False, False]
+    assert rows == original
+    assert not report['mutated']
+    assert check_route_thickness_bounds([route(bounds=[20, 350], fixed=350)], case_id=UV)['route_results'][0]['accepted']
+    assert not check_route_thickness_bounds([route(bounds=[20, 351])], case_id=UV)['route_results'][0]['accepted']
+
+
+def test_qkd_has_no_invented_manufacturing_bounds():
+    report = check_route_thickness_bounds([route(bounds=[1, 10000], fixed=9000)], case_id=QKD)
+    assert report['explicit_user_bounds_nm'] is None
+    assert report['route_results'][0]['accepted']
+
+
+@pytest.mark.parametrize('bounds', [[0, 20], [30, 20], [20, float('inf')], [True, 30], ['20', 30], None])
+def test_invalid_intervals_rejected(bounds):
+    row = route(); row['family']['thickness_variables_nm']['d'] = bounds
+    assert not check_route_thickness_bounds([row], case_id=AR)['route_results'][0]['accepted']
+
+
+def test_missing_family_variable_and_invalid_fixed_values_rejected():
+    rows = [None, {'id': 'missing'}, route(fixed=False), route(fixed=float('nan')), route(fixed=-1)]
+    row = route(); row['family']['layers'][0]['thickness_nm'] = 'unknown'; rows.append(row)
+    assert all(not x['accepted'] for x in check_route_thickness_bounds(rows, case_id=AR)['route_results'])
+
+
+def test_unknown_case_and_missing_sink_rejected():
+    with pytest.raises(ValueError): CampaignPlannerGuard(Planner(), case_id='unknown', audit_sink=list().append)
+    with pytest.raises(ValueError): CampaignPlannerGuard(Planner(), case_id=AR, audit_sink=None)
+    with pytest.raises(ValueError): check_route_thickness_bounds([], case_id='unknown')
+
+
+def test_degenerate_fixed_variable_interval_matches_existing_route_contract():
+    assert check_route_thickness_bounds([route(bounds=[20, 20])], case_id=AR)["route_results"][0]["accepted"]
