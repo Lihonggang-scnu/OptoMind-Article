@@ -13,12 +13,17 @@ def load(p):
 question = load(SOURCE / 'focused_research/examples/rgb_nir_question.v2.json')['original_question']
 sheet = load(RUN / 'task_sheet.json')
 planning = load(RUN / 'planning.json')
+official_sheet = sheet
+using_rejected_raw_candidate = not sheet and bool(planning.get('rounds'))
+if using_rejected_raw_candidate:
+    sheet = planning['rounds'][-1].get('raw_task_sheet') or {}
 query_plan = load(RUN / 'query_plan.json')
 queries = load(RUN / 'queries.json')
 sys.path[:0] = [str(SOURCE / 'focused_research/vendor/review'), str(SOURCE / 'focused_research')]
 import task_sheet
 
 checks = {'actual_planning_status_ok': planning.get('status') == 'ok',
+          'official_task_sheet_accepted': bool(official_sheet) and not using_rejected_raw_candidate,
           'original_question_verbatim': sheet.get('original_question') == question,
           'readiness_ready': sheet.get('readiness') == 'ready',
           'unsupported_requirements_empty': sheet.get('unsupported_requirements') == [],
@@ -61,24 +66,28 @@ checks['adapted_plan_matches_generated_sheet'] = (
 actual_query_texts = [row.get('query_text') for row in queries]
 declared_query_texts = [row.get('query') for row in sheet.get('search_queries', [])]
 checks['exact_query_texts_preserved'] = actual_query_texts == declared_query_texts
-checks['query_links_preserved'] = all(
+checks['query_links_preserved'] = bool(queries) and all(
     row.get('task_query') == query_plan.get('task_query_mappings', {}).get(row.get('query_id'))
     for row in queries)
 report = {'task_id': 'R3-T019-DEDICATED20',
           'source_sha': '713799fb55899b78427aed56cb643bc72526c19d',
           'checks': checks, 'constraint_span_coverage': coverage,
           'validation_error': validation_error,
+          'reviewed_artifact': 'rejected raw second-round draft' if using_rejected_raw_candidate else 'official task_sheet.json',
+          'production_outputs_preserved': True,
           'programmatic_acceptance_passed': all(checks.values()),
           'rounds': len(planning.get('rounds', [])),
           'first_hit': planning.get('first_hit'),
           'model_usages': planning.get('round_usages', []),
           'query_count': len(sheet.get('search_queries', [])),
-          'sheet_sha256': hashlib.sha256((RUN / 'task_sheet.json').read_bytes()).hexdigest(),
+          'official_sheet_sha256': hashlib.sha256((RUN / 'task_sheet.json').read_bytes()).hexdigest(),
+          'reviewed_raw_sheet_canonical_sha256': hashlib.sha256(json.dumps(sheet, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
           'evidence_limits': [
               'Parent semantic review required; source-span containment alone is not semantic proof',
               'The frozen prompt includes a worked example of this exact demonstration question; successful generation is not an unseen-task generalization claim',
               'No retrieval relevance, physical feasibility, s/p forward calculation or coating optimization established']}
-with (ROOT / 'TASK_SHEET_AUDIT.json').open('x', encoding='utf-8', newline='\n') as handle:
+audit_path = ROOT / ('TASK_SHEET_AUDIT.v2.json' if (ROOT / 'TASK_SHEET_AUDIT.json').exists() else 'TASK_SHEET_AUDIT.json')
+with audit_path.open('x', encoding='utf-8', newline='\n') as handle:
     json.dump(report, handle, ensure_ascii=False, indent=2)
     handle.write('\n')
 print(json.dumps(report, ensure_ascii=False, indent=2))
