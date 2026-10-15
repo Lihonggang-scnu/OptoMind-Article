@@ -201,6 +201,7 @@ def test_orchestrator_observation_reflection_and_belief_use_frozen_scores(tmp_pa
     client = RecordedClient({"observed_vs_expected": "Regression", "deviation_mechanism": "Unresolved",
         "continue_recommended": True, "continue_rationale": "Try another bounded initialization",
         "insight_for_next": "Change initialization", "insight_grounding": "Measured regression"})
+    track.executed_history = tuple(json.dumps({"iteration_id": f"iteration_{i:02}", "execution_facts": {"iteration_id": f"iteration_{i:02}", "physics_executed": True, "optimizer_performed": False, "source": "synthetic_observation_fixture"}}) for i in (1, 2))
     harness._reflection_client = client
     reflection = harness._reflect_track(ctx, {})
     payload = client.requests[-1]
@@ -209,7 +210,7 @@ def test_orchestrator_observation_reflection_and_belief_use_frozen_scores(tmp_pa
     assert payload["observed_metrics"]["rounds_executed"] == 2
     verdict = harness._resolve_track_verdict(ctx, reflection, True)
     assert verdict["decision"].action == "refine_route"
-    assert harness._track_confidence["r1"] <= 0.5
+    assert harness._track_confidence == {}
 
 
 def test_thickness_range_and_angle_uncertainty_do_not_become_metric_region():
@@ -237,5 +238,6 @@ def test_insight_appendage_uses_frozen_scale_without_inventing_a_bound():
     text = build_insight_appendage(route_id="r1", observations=rows, directives=[])
     assert "delta -0.1500" in text
     assert "headroom to 1.0" not in text
-    assert update_belief(0.5, -0.15, None).after == 0.5
-    assert update_belief(0.5, -0.15, 0.1).after < 0.5
+    assert update_belief(0.5, -0.15, None).after is None
+    assert update_belief(0.5, -0.15, 0.1).after is None
+    assert update_belief(0.5, -0.15, 0.1).status == "unresolved"

@@ -20,7 +20,6 @@ from typing import Any, Literal, Mapping, Protocol
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from config.qwen_config import get_cost_tracker
-from .text_safety import repair_scientific_payload
 
 
 DEFAULT_REFLECTION_PROMPT = (
@@ -44,11 +43,34 @@ DEFAULT_REFLECTION_PROMPT = (
 REFLECTION_MODEL = "qwen3.7-flash"
 
 
+class FactualAssertion(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    fact_id: str
+    value: Any
+
+
+class NextDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, str_max_length=2000)
+    observation_ids: list[str] = Field(min_length=1, max_length=16)
+    unresolved_question: str = Field(min_length=1)
+    intervention: str = Field(min_length=1)
+    fixed_conditions: list[str] = Field(min_length=1, max_length=16)
+    predicted_observable_change: str = Field(min_length=1)
+    basis: str = Field(min_length=1)
+    alternative: str = Field(min_length=1)
+    outcome_changing_decision: str = Field(min_length=1)
+
+
 class RouteReflection(BaseModel):
     """Structured LLM reflection on a completed route."""
 
     model_config = ConfigDict(extra="forbid", frozen=True, str_max_length=8000)
 
+    fact_contract_version: Literal[0, 1] = 0
+    factual_assertions: list[FactualAssertion] = Field(default_factory=list, max_length=64)
+    factual_validation: Literal["unavailable_legacy", "validated_structured"] = "unavailable_legacy"
+    factual_limitations: str = "Legacy prose has no machine-checkable factual assertions."
+    next_decision: NextDecision | None = None
     observed_vs_expected: str
     deviation_mechanism: str
     continue_recommended: bool = Field(strict=True)
@@ -140,6 +162,120 @@ def _safe_json(text: str) -> dict[str, Any]:
     return {}
 
 
+def _bounded_evidence(value: Any, *, max_chars: int = 10000) -> Any:
+    remaining = max_chars
+
+    def omitted(raw: Any, path: str, reason: str) -> dict[str, Any]:
+        encoded = json.dumps(raw, sort_keys=True, ensure_ascii=False, default=str)
+        return {"unavailable_in_projection": reason, "raw_ref": path,
+                "source_sha256": hashlib.sha256(encoded.encode()).hexdigest()}
+
+    def visit(raw: Any, path: str, depth: int) -> Any:
+        nonlocal remaining
+        encoded = json.dumps(raw, ensure_ascii=False, default=str)
+        if depth > 10 or remaining < 200:
+            return omitted(raw, path, "projection_budget")
+        if isinstance(raw, Mapping):
+            result = {}
+            for index, (key, child) in enumerate(raw.items()):
+                if index >= 24 or remaining < 200:
+                    result["omitted_remainder"] = omitted(raw, path, "mapping_limit")
+                    break
+                remaining -= len(str(key)) + 8
+                child_path = path + "/" + str(key).replace("~", "~0").replace("/", "~1")
+                if key in {"spectrum", "spectra", "wavelengths_nm", "values_nm", "raw_blocks"}:
+                    result[key] = omitted(child, child_path, "raw_array")
+                    remaining -= 180
+                else:
+                    result[key] = visit(child, child_path, depth + 1)
+            return result
+        if isinstance(raw, (list, tuple)):
+            result = []
+            for index, child in enumerate(raw[:12]):
+                if remaining < 200:
+                    break
+                result.append(visit(child, path + "/" + str(index), depth + 1))
+            if len(result) < len(raw):
+                result.append({**omitted(raw, path, "record_limit"), "source_count": len(raw)})
+                remaining -= 200
+            return result
+        if len(encoded) > min(2000, remaining):
+            remaining -= 180
+            return omitted(raw, path, "whole_value_omitted")
+        remaining -= len(encoded)
+        return raw
+
+    return visit(value, "#", 0)
+
+
+def _mechanism_evidence(update: Any) -> dict[str, Any]:
+    if not isinstance(update, Mapping):
+        return {"status": "unavailable", "reason": "No mechanism update supplied.",
+                "posterior": None, "predictive_support": None, "remaining_uncertainty": None}
+    keys = (
+        "status", "updated", "reason", "belief_scope", "belief_id", "belief_binding",
+        "intervention_id", "condition_id", "hypothesis_ids", "prior", "posterior",
+        "remaining_uncertainty", "predictive_support", "conditional_independence_group",
+        "consumed_observation_ids", "observation_bindings", "prediction_hash",
+        "mechanism_claim", "empirical_action_utility", "next_action_value",
+    )
+    selected = {"raw_ref": "observation.mechanism_update",
+                "source_sha256": hashlib.sha256(json.dumps(update, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest(),
+                **{key: update[key] for key in keys if key in update}}
+    return _bounded_evidence(selected, max_chars=7000)
+
+
+def _visible_facts(payload: Mapping[str, Any]) -> dict[str, Any]:
+    facts = {}
+
+    def visit(value: Any, path: str):
+        if isinstance(value, Mapping):
+            if "unavailable_in_projection" in value:
+                return
+            for key, child in value.items():
+                visit(child, path + "/" + str(key).replace("~", "~0").replace("/", "~1"))
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, path + "/" + str(index))
+        else:
+            facts[path] = value
+
+    for key in ("execution_facts", "execution_evidence", "observed_metrics", "scientific_evidence", "execution_identity", "semantic_facts", "executed_history", "mechanism_evidence"):
+        visit(payload.get(key), "/" + key)
+    return facts
+
+
+def _validate_factual_assertions(reflection: RouteReflection, payload: Mapping[str, Any]) -> RouteReflection:
+    if reflection.fact_contract_version == 0:
+        if payload.get("execution_facts", {}).get("schema_version") == "execution-facts.v1":
+            raise ValueError("versioned execution facts require fact_contract_version=1")
+        return reflection.model_copy(update={
+            "factual_validation": "unavailable_legacy",
+            "factual_limitations": "Legacy prose is preserved but not semantically verified; structured factual assertions unavailable.",
+        })
+    facts = _visible_facts(payload)
+    assertions = {item.fact_id: item.value for item in reflection.factual_assertions}
+    if len(assertions) != len(reflection.factual_assertions):
+        raise ValueError("duplicate factual assertion IDs")
+    required = {"/semantic_facts/optimization_occurred", "/semantic_facts/physical_hypothesis_refuted", "/semantic_facts/local_optimum_established", "/semantic_facts/prior_optimization_occurred"}
+    if not required.issubset(assertions):
+        raise ValueError("missing required execution and physical-evidence assertions")
+    for fact_id, value in assertions.items():
+        if fact_id not in facts:
+            raise ValueError(f"assertion references unavailable fact: {fact_id}")
+        if json.dumps(value, sort_keys=True) != json.dumps(facts[fact_id], sort_keys=True):
+            raise ValueError(f"assertion contradicts visible evidence: {fact_id}")
+    if reflection.next_decision is not None:
+        if not reflection.continue_recommended:
+            raise ValueError("stop recommendation cannot propose a next decision")
+        if any(ref not in facts for ref in reflection.next_decision.observation_ids):
+            raise ValueError("next decision references unavailable observation facts")
+    return reflection.model_copy(update={
+        "factual_validation": "validated_structured",
+        "factual_limitations": "Exact cited structured facts checked; free-text mechanisms and predictions remain hypotheses, not verified facts.",
+    })
+
+
 def _build_reflection_payload(
     pre_declarations: Mapping[str, Any],
     observation: Mapping[str, Any],
@@ -151,21 +287,48 @@ def _build_reflection_payload(
     """Build the user payload for the reflection prompt."""
     from .research_feedback import decision_score
     from .science.observation_adapter import reflection_evidence
-    return {
-        "immutable_research_charter": dict(charter or {}),
-        "executed_history": json.loads(json.dumps(executed_history or [])),
-        "execution_evidence": observation.get("execution_evidence", {}),
+    from .execution_facts import project_execution_history
+    current_id = observation.get("iteration_id")
+    history = executed_history or []
+    history_view = project_execution_history(history, current_iteration_id=current_id,
+        current_status=observation.get("run_status"), attempted_round_count=observation.get("attempted_round_count"))
+    prior = history_view["prior_executions"]
+    execution_facts = observation.get("execution_facts") or {"availability": "unavailable", "reason": "No execution fact record supplied."}
+    evidence = observation.get("execution_evidence") or {}
+    optimizers = evidence.get("optimizers") if isinstance(evidence, Mapping) else None
+    optimization_occurred = True if any(
+        isinstance(item, Mapping) and isinstance(item.get("evaluation_count"), (int, float))
+        and item["evaluation_count"] > 0 for item in (optimizers or [])
+    ) else None
+    if isinstance(execution_facts, Mapping):
+        explicit = execution_facts.get("optimizer_performed")
+        if isinstance(explicit, bool):
+            optimization_occurred = explicit
+    payload = {
+        "immutable_research_charter": _bounded_evidence(dict(charter or {}), max_chars=5000),
+        "executed_history": _bounded_evidence(prior[-4:], max_chars=6000),
+        "history_projection": _bounded_evidence({key: value for key, value in history_view.items() if key not in {"prior_executions", "current_execution"}}, max_chars=2000),
+        "execution_identity": {"current_iteration_id": current_id, "current_run_status": observation.get("run_status"),
+            "attempted_round_count": observation.get("attempted_round_count"),
+            "executed_round_count": observation.get("physics_executed_round_count", observation.get("executed_round_count", observation.get("rounds_executed"))),
+            "scored_round_count": len(score_history)},
+        "execution_facts": _bounded_evidence(execution_facts, max_chars=10000),
+        "mechanism_evidence": _mechanism_evidence(observation.get("mechanism_update")),
+        "execution_evidence": _bounded_evidence(evidence, max_chars=6000),
+        "semantic_facts": {"optimization_occurred": optimization_occurred,
+            "physical_hypothesis_refuted": False, "local_optimum_established": False,
+            "prior_optimization_occurred": True if any(row.get("optimizer_performed") is True for row in prior) else None},
         "history_interpretation": (
             "Execution records are immutable measured history. Equal execution signatures "
             "are deterministic repeats, not independent evidence of search exhaustion. "
             "Nominal budget limits are not optimizer allocations. A budget termination "
             "does not establish convergence or a local optimum."
         ),
-        "scientific_evidence": reflection_evidence(observation),
-        "pre_declarations": {
+        "scientific_evidence": _bounded_evidence(reflection_evidence(observation), max_chars=8000),
+        "pre_declarations": _bounded_evidence({
             "expected_observations": list(pre_declarations.get("expected_observations") or []),
             "stop_conditions": list(pre_declarations.get("stop_conditions") or []),
-        },
+        }, max_chars=4000),
         "observed_metrics": {
             "decision_score": decision_score(observation),
             "score_basis": observation.get("score_basis", "legacy_target"),
@@ -175,7 +338,7 @@ def _build_reflection_payload(
             "legacy_target_score_diagnostic": observation.get("best_target_score"),
             "valid_candidates": observation.get("physically_valid_candidate_count"),
             "run_status": observation.get("run_status"),
-            "rounds_executed": observation.get("rounds_executed", len(score_history)),
+            "rounds_executed": observation.get("rounds_executed"),
             "tightest_margin": observation.get("best_robustness_score"),
             "candidate_thicknesses_nm": [
                 c.get("thicknesses_nm")
@@ -183,11 +346,19 @@ def _build_reflection_payload(
                 if isinstance(c, Mapping) and c.get("thicknesses_nm") is not None
             ][:4],
         },
-        "score_history": list(score_history),
+        "score_history": list(score_history[-32:]),
+        "score_history_total_count": len(score_history),
         "score_history_basis": observation.get("score_basis", "legacy_target"),
         "score_history_basis_fingerprint": observation.get("score_basis_fingerprint"),
         "reference_epsilon": epsilon,
     }
+    payload["observed_metrics"] = _bounded_evidence(payload["observed_metrics"], max_chars=5000)
+    payload["fact_contract"] = {
+        "version": 1, "fact_id_format": "JSON pointer into this payload; scalar leaves only",
+        "required_assertions": ["/semantic_facts/optimization_occurred", "/semantic_facts/physical_hypothesis_refuted", "/semantic_facts/local_optimum_established", "/semantic_facts/prior_optimization_occurred"],
+        "limitations": "Omitted evidence is unavailable, not negative evidence. Null means unknown. No physical-refutation or local-optimum certificate is implemented.",
+    }
+    return payload
 
 
 def reflect_on_route(
@@ -280,7 +451,7 @@ def reflect_on_route(
         optimum_claim = re.search(r"(?:reached|converged to|is at|at a) (?:a |the )?local (?:optimum|minimum)", prose)
         if optimum_claim:
             raise ValueError("local-optimum claims require evidence outside the reflection contract")
-        return reflection
+        return _validate_factual_assertions(reflection, user_payload)
     except Exception as exc:
         return RouteReflection.degraded(f"Validation failed: {type(exc).__name__}: {str(exc)[:500]}")
 

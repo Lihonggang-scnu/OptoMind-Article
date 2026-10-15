@@ -9,6 +9,8 @@ owned by code.
 from __future__ import annotations
 
 import hashlib
+import inspect
+from copy import deepcopy
 import json
 import random
 import shutil
@@ -1059,6 +1061,9 @@ class TMMResearchHarness:
         scoring_standard_builder: Any | None = None,
         route_planner: Any | None = None,
         control_route_planner: Any | None = None,
+        scientific_prediction_provider: Any | None = None,
+        scientific_action_problem: Any | None = None,
+        scientific_actions: Iterable[Mapping[str, Any]] = (),
         route_literature_client: Any | None = None,
         config: TMMResearchHarnessConfig | None = None,
         run_id: str | None = None,
@@ -1068,6 +1073,13 @@ class TMMResearchHarness:
         self.run_id = run_id or self.work_dir.name
         self.problem_analyzer = problem_analyzer
         self.method_researcher = method_researcher
+        self.scientific_prediction_provider = scientific_prediction_provider
+        self.scientific_action_problem = scientific_action_problem
+        self.scientific_actions = deepcopy(list(scientific_actions))
+        self._mechanism_states = {}
+        self._followup_queries_seen = set()
+        self._followup_research_reports = []
+        self._followup_research_calls = 0
         self.strategy_planner = strategy_planner
         self.task_compiler = task_compiler or QwenTMMTaskCompiler()
         self.config = config or TMMResearchHarnessConfig()
@@ -1877,13 +1889,104 @@ class TMMResearchHarness:
             "online": self.config.online_method_research,
             "explicit_queries": list(feedback_queries),
         }
+        method = self.method_researcher.research
+        parameters = inspect.signature(method).parameters
+        if not any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values()):
+            kwargs = {key: value for key, value in kwargs.items() if key in parameters}
+        return method(problem, **kwargs)
+
+    def _research_for_decision(self, problem, observation, route, initial_report):
+        eligible = {"material_data", "numerical_convergence", "solver_disagreement", "physics_violation", "search_progress", "objective_shortfall", "budget_exhausted"}
+        if not eligible.intersection(observation.failure_categories):
+            return initial_report
+        queries = _scientific_followup_queries(problem, observation, route)
+        with self._state_lock:
+            cap = max(0, self.config.maximum_method_research_rounds - 1)
+            queries = [q for q in queries if q not in self._followup_queries_seen]
+            if not queries or self._followup_research_calls >= cap:
+                return _merge_method_reports([initial_report, *self._followup_research_reports])
+            self._followup_research_calls += 1
+            call_index = self._followup_research_calls
+            self._followup_queries_seen.update(queries)
+            atomic_write_json(self.work_dir / "FOLLOWUP_RESEARCH_STATE.json", {
+                "queries": sorted(self._followup_queries_seen), "calls": self._followup_research_calls,
+                "reports": self._followup_research_reports})
         try:
-            return self.method_researcher.research(problem, **kwargs)
-        except TypeError:
-            try:
-                return self.method_researcher.research(problem, explicit_queries=list(feedback_queries))
-            except TypeError:
-                return self.method_researcher.research(problem)
+            result = self._research(problem, queries)
+            _, report, envelope = _unwrap(result, "report")
+            with self._state_lock:
+                self._usage.extend(_usage_rows(result))
+                self._service_telemetry.append(dict(report.get("telemetry") or {}))
+                self._followup_research_reports.append(report)
+                atomic_write_json(self.work_dir / "FOLLOWUP_RESEARCH_STATE.json", {
+                    "queries": sorted(self._followup_queries_seen), "calls": self._followup_research_calls,
+                    "reports": self._followup_research_reports})
+                merged = _merge_method_reports([initial_report, *self._followup_research_reports])
+            self._write(f"FOLLOWUP_RESEARCH_{call_index:03d}.json", {
+                "trigger_observation": observation.iteration_id, "queries": queries,
+                "route_id": route.get("route_id"), "result": envelope,
+                "evidence_ids_for_next_plan": [r.get("evidence_id") for r in merged.get("evidence", [])]})
+            return merged
+        except Exception as exc:
+            self._write(f"FOLLOWUP_RESEARCH_{call_index:03d}.json", {
+                "trigger_observation": observation.iteration_id, "queries": queries,
+                "status": "unavailable", "error": f"{type(exc).__name__}: {exc}"})
+            return initial_report
+
+    def _freeze_scientific_prediction(self, task, route, iteration_dir, iteration_id):
+        if self.scientific_prediction_provider is None or task is None:
+            return None
+        try:
+            prediction = self.scientific_prediction_provider.predict(
+                task=deepcopy(task), route=deepcopy(route), iteration_id=iteration_id)
+            prediction = json.loads(json.dumps(prediction, allow_nan=False))
+            frozen = {"prediction": prediction, "prediction_hash": stable_sha256(prediction),
+                      "iteration_id": iteration_id, "stage": "before_execution"}
+            atomic_write_json(iteration_dir / "SCIENTIFIC_PREDICTION.json", frozen)
+            return frozen
+        except Exception as exc:
+            atomic_write_json(iteration_dir / "SCIENTIFIC_PREDICTION.json", {
+                "status": "unresolved", "error": f"{type(exc).__name__}: {exc}"})
+            return None
+
+    def _update_scientific_prediction(self, pre_ctx, run_payload):
+        from .science.research_belief import update_research_belief
+        frozen = pre_ctx.get("scientific_prediction")
+        if not frozen or not run_payload:
+            return {"status": "unresolved", "reason": "no_frozen_physical_prediction_or_execution", "posterior": None}
+        if not pre_ctx.get("execution_signature") or (pre_ctx.get("execution_facts") or {}).get("physics_executed") is not True:
+            return {"status": "unresolved", "reason": "no_bound_physical_execution", "posterior": None}
+        prediction = frozen["prediction"]
+        if stable_sha256(prediction) != frozen["prediction_hash"]:
+            return {"status": "unresolved", "reason": "prediction_changed_after_freeze", "posterior": None}
+        try:
+            measured = self.scientific_prediction_provider.observe(
+                task=deepcopy(pre_ctx["task"]), run_payload=deepcopy(run_payload),
+                iteration_id=pre_ctx["iteration_id"], prediction=json.loads(json.dumps(prediction)),
+                execution_signature=pre_ctx["execution_signature"],
+                execution_dir=pre_ctx["iteration_dir"] / "tmm_run")
+            if measured.get("execution_signature") != pre_ctx["execution_signature"]:
+                raise ValueError("measurement_execution_signature_mismatch")
+            source = measured.get("source_artifact") or {}
+            root = (pre_ctx["iteration_dir"] / "tmm_run").resolve()
+            path = (root / str(source.get("path") or "")).resolve()
+            if not path.is_relative_to(root) or not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != source.get("sha256"):
+                raise ValueError("measurement_requires_verified_current_execution_artifact")
+            identity = prediction.get("belief_id")
+            with self._state_lock:
+                result = update_research_belief(prediction, measured, self._mechanism_states.get(identity))
+                if result.get("status") == "updated":
+                    self._mechanism_states[identity] = result
+                    atomic_write_json(self.work_dir / "SCIENTIFIC_BELIEF_STATE.json", self._mechanism_states)
+            problem = getattr(self, "scientific_action_problem", None)
+            if problem is not None and result.get("status") in {"updated", "duplicate_observation"}:
+                from .science.research_belief import choose_research_action
+                result["next_action_value"] = choose_research_action(problem, result, self.scientific_actions)
+            result = {**result, "prediction_hash": frozen["prediction_hash"]}
+        except Exception as exc:
+            result = {"status": "unresolved", "reason": f"{type(exc).__name__}: {exc}", "posterior": None}
+        atomic_write_json(pre_ctx["iteration_dir"] / "SCIENTIFIC_BELIEF_UPDATE.json", result)
+        return result
 
     def _plan(
         self,
@@ -2365,9 +2468,11 @@ class TMMResearchHarness:
                 if lineage_relative not in self._artifacts:
                     self._artifacts.append(lineage_relative)
             track.lineage_parent_sha = task_sha256
+        scientific_prediction = self._freeze_scientific_prediction(task, route, iteration_dir, iteration_id)
         return {
             "track": track,
             "route": route,
+            "scientific_prediction": scientific_prediction,
             "route_id": route_id,
             "iteration_id": iteration_id,
             "iteration_dir": iteration_dir,
@@ -2581,18 +2686,21 @@ class TMMResearchHarness:
                     self.work_dir / "GRADIENT_COMPUTE.sqlite", self.config.gradient_compute_limits, scoring_standard=self.scoring_standard)
             except Exception as exc:
                 gradient_summary = {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:200]}
-        certificate_payload = _read_json_if_present(
-            iteration_dir / "tmm_run" / "PHYSICS_ACCEPTANCE_CERTIFICATE.json"
-        )
-        if certificate_payload is None:
-            # Workbench layout: certificates live in experiment/candidate
-            # subdirs (any depth under experiments/).
-            nested = sorted(
-                (iteration_dir / "tmm_run" / "experiments").glob(
-                    "**/PHYSICS_ACCEPTANCE_CERTIFICATE.json"
-                )
-            )
-            certificate_payload = _read_json_if_present(nested[0]) if nested else None
+        from .execution_facts import build_execution_facts, selected_candidate_certificate
+        execution_facts = build_execution_facts(iteration_dir, run_payload,
+            observation=observation_payload, gradient_summary=gradient_summary)
+        observation_payload["execution_facts"] = execution_facts
+        selected_ids = set(observation_payload.get("best_frozen_candidate_ids") or ())
+        selected_candidates = [c for c in observation_payload.get("candidate_summaries", [])
+                               if c.get("candidate_id") in selected_ids]
+        certificate_payload = None
+        if len(selected_candidates) == 1:
+            candidate = selected_candidates[0]
+            binding = selected_candidate_certificate(execution_dir, candidate["candidate_id"],
+                experiment_id=candidate.get("experiment_id"),
+                artifact_ids=candidate.get("artifact_ids") or (), certificate_id=candidate.get("certificate_id"))
+            certificate_payload = binding["payload"]
+            observation_payload["selected_certificate_binding"] = {k:v for k,v in binding.items() if k != "payload"}
         if isinstance(certificate_payload, Mapping):
             block = certificate_payload.get("energy_accounting")
             if isinstance(block, Mapping):
@@ -2622,11 +2730,16 @@ class TMMResearchHarness:
                 "iteration_id": pre_ctx["iteration_id"], "route_id": route_id,
                 "execution_signature": signature, "replicate_reason": pre_ctx.get("replicate_reason") or "",
                 "execution": canonical_execution_payload(task.model_dump(mode="json"), scoring_standard=self.scoring_standard),
-                "evidence": _execution_evidence(iteration_dir, run_payload, gradient_summary=gradient_summary),
+                "evidence": {**_execution_evidence(iteration_dir, run_payload, gradient_summary=gradient_summary),
+                             "execution_facts": execution_facts},
+                "execution_facts": execution_facts,
                 "decision_score": observation.decision_score,
             }
             track.executed_history += (json.dumps(record, sort_keys=True),)
             atomic_write_json(iteration_dir / "EXECUTION_RECORD.json", record)
+        pre_ctx["execution_facts"] = execution_facts
+        mechanism_update = self._update_scientific_prediction(pre_ctx, run_payload)
+        observation_payload["mechanism_update"] = mechanism_update
         from .science.migration import commit_legacy_observation
         request_payload = self._load_json_path(self.work_dir / "REQUEST.json")
         with self._state_lock:
@@ -2726,6 +2839,7 @@ class TMMResearchHarness:
             "gradient_summary": gradient_summary,
             "observation_payload": observation_payload,
             "scientific_observation_ref": scientific_ref,
+            "mechanism_update": mechanism_update,
         }
 
     def _execute_track_round(
@@ -2784,10 +2898,18 @@ class TMMResearchHarness:
             if key in {"best_frozen_score", "best_frozen_candidate_ids", "score_basis",
                        "score_basis_fingerprint", "score_available", "candidate_summaries"}
         })
-        observation_dump["rounds_executed"] = track.rounds_used
+        from .execution_facts import project_execution_history
         history = [json.loads(row) for row in track.executed_history]
-        if history:
-            observation_dump["execution_evidence"] = history[-1]["evidence"]
+        projected = project_execution_history(history, current_iteration_id=ctx["iteration_id"],
+            current_status=observation.run_status, attempted_round_count=track.rounds_used)
+        observation_dump["iteration_id"] = ctx["iteration_id"]
+        observation_dump["attempted_round_count"] = track.rounds_used
+        observation_dump["physics_executed_round_count"] = projected["physics_executed_round_count"]
+        observation_dump["rounds_executed"] = projected["physics_executed_round_count"]
+        observation_dump["execution_facts"] = (ctx.get("observation_payload") or {}).get("execution_facts", projected["current_execution"])
+        current_record = next((row for row in history if row.get("iteration_id") == ctx["iteration_id"]), None)
+        observation_dump["execution_evidence"] = current_record.get("evidence", {}) if current_record else {}
+        observation_dump["mechanism_update"] = ctx.get("mechanism_update")
         def save_context(payload):
             if scientific_ref is not None:
                 from .science.migration import commit_legacy_context
@@ -2913,7 +3035,7 @@ class TMMResearchHarness:
             status = TRACK_ELIMINATED_PHYSICS
             termination_reason = (
                 "VeriTMMResult.outcome == physics_rejected (is_route_eliminable "
-                "semantics): the scientific hypothesis was refuted by experiment"
+                "semantics): the candidate failed physical or numerical validation; mechanism status remains unresolved"
             )
 
         if status is not None:
@@ -2951,6 +3073,11 @@ class TMMResearchHarness:
         # only score-bearing rounds lets a failing route exceed the declared
         # six-round cap through repeated unscored retries.
         rounds_this_route = int(track.rounds_used)
+        from .execution_facts import project_execution_history
+        counted = project_execution_history([json.loads(r) for r in track.executed_history],
+            current_iteration_id=ctx["iteration_id"], current_status=observation.run_status,
+            attempted_round_count=rounds_this_route)
+        physics_rounds = counted["physics_executed_round_count"]
         gate_max_rounds = rounds_this_route < max_rounds_per_route
         gate_budget = budget_ok
         # Physics gate at THIS layer stays open (R-04FIX D-1 ruling kept):
@@ -2978,7 +3105,7 @@ class TMMResearchHarness:
         explicit_no_benefit_stop = bool(
             reflection_available
             and not llm_continue
-            and rounds_this_route >= minimum_rounds
+            and physics_rounds >= minimum_rounds
             and stop_basis
             in {"search_exhausted", "marginal_gains_too_low"}
             and stop_rationale
@@ -2987,7 +3114,7 @@ class TMMResearchHarness:
         early_llm_stop = bool(
             reflection_available
             and not llm_continue
-            and rounds_this_route < minimum_rounds
+            and physics_rounds < minimum_rounds
         )
         ambiguous_llm_stop = bool(
             reflection_available
@@ -3127,6 +3254,9 @@ class TMMResearchHarness:
                     "The deterministic stagnation signal is advisory only; test a new physical direction instead of stopping on score flatness."
                 )
             insight = str(reflection.insight_for_next or "").strip()
+            next_decision = getattr(reflection, "next_decision", None)
+            if next_decision:
+                base_directives.append("Use this observation-bound next decision without changing the original objective: " + json.dumps(_mapping(next_decision), ensure_ascii=False))
             if insight:
                 base_directives.append(
                     "Ground the revision in this route's reflected deviation mechanism: "
@@ -3202,6 +3332,7 @@ class TMMResearchHarness:
             expected_claim="; ".join(str(row) for row in expected_rows)[:500],
             expected_metric="frozen_score" if observation.score_basis == "frozen_standard" else "legacy_target_score",
             expected_delta=None,
+            mechanism_update=ctx.get("mechanism_update"),
             gradient_basis=ctx.get("gradient_summary"),
             run_status=str(observation.run_status),
             certificate_id=str(
@@ -3216,9 +3347,6 @@ class TMMResearchHarness:
             decision_action=str(decision.action),
             replan_trigger=replan_mode == "continue",
             decision_reason=str(decision.reason)[:500],
-        )
-        self._track_confidence[track.route_id] = float(
-            entry.belief_update.after
         )
         self._track_directives[track.route_id] = tuple(directives)
         self._event(
@@ -3262,7 +3390,17 @@ class TMMResearchHarness:
             if str(row.route_id) == track.route_id
         ]
         executed = {row["iteration_id"]: row for row in (json.loads(item) for item in track.executed_history)}
-        own_rows = [{**row, "executed_record": executed.get(row.get("iteration_id"))} for row in own_rows]
+        from .execution_facts import bounded_projection, compact_candidate
+        compact_rows = []
+        for row in own_rows:
+            record = executed.get(row.get("iteration_id")) or {}
+            payload = _read_json_if_present(self.work_dir / "iterations" / str(row.get("iteration_id")) / "ITERATION_OBSERVATION.json") or {}
+            compact_rows.append({**row,
+                "candidate_summaries": [compact_candidate(c) for c in row.get("candidate_summaries", [])[:8]],
+                "executed_record": record.get("execution_facts") or bounded_projection(record.get("evidence") or {}),
+                "mechanism_update": bounded_projection(payload.get("mechanism_update")),
+                "gradient_summary": bounded_projection(payload.get("gradient_summary"))})
+        own_rows = compact_rows
         # O-05: the Robin-style appendage re-flows THIS chain's verified
         # results (deltas, mechanical insights, exclusions) into the next
         # candidate generation. Template-generated; no LLM-authored numbers.
@@ -3277,6 +3415,10 @@ class TMMResearchHarness:
             appendage = (
                 build_failure_memory_summary(own_rows) + "\n\n" + appendage
             )
+        if track.source != CONTROL_ROUTE_SOURCE:
+            latest = next((row for row in reversed(self._observations) if str(row.route_id) == track.route_id), None)
+            if latest is not None:
+                merged_research = self._research_for_decision(problem, latest, track.current_route, merged_research)
         try:
             if track.source == CONTROL_ROUTE_SOURCE:
                 replanning, replan_pre_declarations = self._plan_control_continuation(
@@ -3492,6 +3634,11 @@ class TMMResearchHarness:
                 self._event_sequence = sum(1 for line in handle if line.strip())
         else:
             self._event_sequence = 0
+        self._mechanism_states = _read_json_if_present(self.work_dir / "SCIENTIFIC_BELIEF_STATE.json") or {}
+        followup_state = _read_json_if_present(self.work_dir / "FOLLOWUP_RESEARCH_STATE.json") or {}
+        self._followup_queries_seen = set(followup_state.get("queries") or [])
+        self._followup_research_calls = int(followup_state.get("calls") or 0)
+        self._followup_research_reports = list(followup_state.get("reports") or [])
         return self._resume_loaded_checkpoint(
             checkpoint,
             question=question,
@@ -3857,7 +4004,8 @@ class TMMResearchHarness:
                "decision_id": f"{latest.iteration_id}:resume:{safe_run}:{attempt}", "observation": latest,
                "observation_payload": observation_payload, "run_payload": run_payload,
                "compilation_payload": _read_json_if_present(source_dir / "TASK_COMPILATION.json") or {},
-               "gradient_summary": observation_payload.get("gradient_summary"), "wave_index": wave_index}
+               "gradient_summary": observation_payload.get("gradient_summary"), "wave_index": wave_index,
+               "mechanism_update": observation_payload.get("mechanism_update")}
         self._event("resume_pending_decision_started", route_id=track.route_id,
                     iteration_id=latest.iteration_id, phase=track.phase)
         saved = _read_json_if_present(source_dir / "ROUTE.REFLECTION.json") or {}

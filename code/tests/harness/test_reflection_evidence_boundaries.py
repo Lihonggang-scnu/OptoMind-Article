@@ -229,6 +229,12 @@ def test_explicit_search_exhaustion_remains_a_nonphysical_stop(tmp_path):
 
     observation = ResearchIterationObservation.model_validate(_load("ITERATION_HISTORY.json")[-1])
     track = RouteTrack(route_id=observation.route_id, source="planned", rounds_used=2, score_history=[0.96, 0.53])
+    track.executed_history = tuple(json.dumps({
+        "iteration_id": f"iteration_{number:02d}",
+        "execution_facts": {"schema_version": "execution-facts.v1",
+            "iteration_id": f"iteration_{number:02d}", "physics_executed": True,
+            "run_status": "completed", "budget_usage": {"forward_evaluations": 1}},
+    }) for number in (1, 2))
     harness = object.__new__(TMMResearchHarness)
     harness.config = SimpleNamespace(max_rounds_per_route=5, minimum_rounds_before_llm_stop=2)
     harness._track_confidence = {}

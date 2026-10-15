@@ -70,8 +70,14 @@ class RecordingTurboClient:
 
     def call(self, messages, *, max_tokens: int = 4000, force_mock=None):
         self.sent_payloads.append(json.loads(next(m for m in messages if m["role"] == "user")["content"]))
+        response = self.payloads.pop(0)
+        sent = self.sent_payloads[-1]
+        if sent.get("execution_facts", {}).get("schema_version") == "execution-facts.v1":
+            response = {**response, "fact_contract_version": 1, "factual_assertions": [
+                {"fact_id": ref, "value": sent["semantic_facts"][ref.rsplit("/", 1)[-1]]}
+                for ref in sent["fact_contract"]["required_assertions"]]}
         return {
-            "content": json.dumps(self.payloads.pop(0)),
+            "content": json.dumps(response),
             "_llm_usage": {
                 "model_name": self.model_name,
                 "prompt_tokens": 10,
@@ -950,6 +956,7 @@ def test_early_llm_stop_is_ignored_and_route_keeps_exploring(tmp_path):
             budget={},
             model_dump=Mock(return_value={
                 "status": "completed",
+                "budget_usage": {"forward_evaluations": 1},
                 "experiment_results": [{
                     "experiment_id": "e1",
                     "mode": "optimize",
@@ -1025,6 +1032,19 @@ def test_explicit_no_benefit_stop_is_honored_only_after_two_rounds(tmp_path):
             "max_rounds_per_route": 5,
         },
     )
+    harness._reflection_client = RecordingTurboClient([stop_payload, stop_payload])
+    def executed_factory(directory, run_id):
+        engine = _factory(directory, run_id)
+        original_run = engine.run
+        def run_with_evidence(*args, **kwargs):
+            result = original_run(*args, **kwargs)
+            payload = result.model_dump(mode="json")
+            payload["budget_usage"] = {"forward_evaluations": 1}
+            result.model_dump = Mock(return_value=payload)
+            return result
+        engine.run = run_with_evidence
+        return engine
+    harness.tmm_harness_factory = executed_factory
     original_compile = harness.task_compiler.compile
     compile_calls = 0
     def changed_initialization(*args, **kwargs):
@@ -1324,6 +1344,7 @@ def test_renamed_revision_keeps_declarations_and_score_history(tmp_path):
             budget={},
             model_dump=Mock(return_value={
                 "status": "completed",
+                "budget_usage": {"forward_evaluations": 1},
                 "experiment_results": [{
                     "experiment_id": "e1",
                     "mode": "optimize",

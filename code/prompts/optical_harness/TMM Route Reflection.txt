@@ -13,7 +13,7 @@ You are given:
 - The number of executed rounds for this route. The score-history length may be
   shorter when a round failed to compile or run.
 
-Your job is to compare observations against expectations, distinguish measured facts from unresolved explanations, and recommend whether to continue this route. You must output exactly one JSON object with the following seven keys:
+Your job is to compare observations against expectations, distinguish measured facts from unresolved explanations, and recommend whether to continue this route. You must output exactly one JSON object with the following seven prose/decision keys plus the structured fact contract described below:
 
 1. observed_vs_expected (string)
    Compare each expected_observation against the actual measurements. State clearly whether they are consistent, and if not, the DIRECTION (higher/lower/flat) and MAGNITUDE (cite actual numbers) of deviation.
@@ -111,3 +111,54 @@ recorded compiler or engine failure. Do not write "continue optimizing" without
 specifying what will change. A route may be stopped by the scheduler's hard
 round or wall-time limit even when you recommend continuing; that is a resource
 stop, not a claim of physical infeasibility.
+
+
+STRUCTURED FACT CONTRACT (version 1, required for new responses):
+Set fact_contract_version to 1. Return factual_assertions as objects with fact_id
+and value. A fact_id is an exact JSON pointer to a visible scalar in the input,
+for example /execution_facts/optimizer_performed or /observed_metrics/decision_score.
+Copy the value exactly, with its original JSON type. Include each required_assertions
+entry from fact_contract, even if its value is null. Also cite the observation
+facts supporting your recommendation. Never cite an omitted record, an unavailable
+field, or a value associated with another candidate or iteration.
+
+The semantic_facts encode what the available execution evidence establishes.
+optimization_occurred=true means an actual optimizer evaluation or committed run
+was recorded in the CURRENT iteration. prior_optimization_occurred separately
+records optimizer evidence in the selected PRIOR iterations. Do not describe this as no optimization, a baseline-only run, or an
+unexecuted search. Null means unknown; absence of evidence does not establish false.
+physical_hypothesis_refuted=false means physical refutation is NOT established;
+it does not mean a physical hypothesis was proven true. A compilation, adapter,
+certificate lookup, budget, or execution failure cannot refute a physical hypothesis.
+local_optimum_established=false means no supported local-optimum certificate exists.
+Finite search budget exhaustion does not establish convergence.
+All prose must agree with these factual assertions. Explanations remain hypotheses.
+
+execution_identity distinguishes current iteration, attempted rounds, physics-executed
+rounds and scored rounds. executed_history contains prior records only when current
+identity is available. A previous successful optimizer run is not evidence that the
+current failed compilation executed. Never replace a missing current measurement
+with a prior one. Counts may be null when old records cannot establish them.
+Evidence projections omit whole values and provide raw_ref and source_sha256.
+They never authorize reconstructing missing numbers, signs, or negations.
+
+Optional next_decision: null or an object with observation_ids (JSON pointers to
+visible observation facts), unresolved_question, intervention, fixed_conditions
+(list), predicted_observable_change, basis, alternative, and outcome_changing_decision.
+Use it to distinguish a learning-oriented test from retrying without an expectation:
+what remains unknown, what changes, what stays fixed, what measurable difference
+would distinguish the explanations, and which result would change your next choice.
+Predictions are not measured observations. Omit this object if unavailable; never
+claim that a discriminating experiment or Bayesian update has already happened.
+Do not set factual_validation or factual_limitations: deterministic code supplies them.
+
+mechanism_evidence contains a computed conditional belief update only when its
+status and updated fields establish that. Use its hypothesis_ids with the aligned
+prior/posterior values, predictive_support, remaining_uncertainty, condition_id,
+intervention_id, and observation_bindings to motivate a discriminating next_decision.
+Cite these fields by JSON pointer in factual_assertions and observation_ids.
+The posterior is conditional on the declared finite hypotheses and observation model;
+it does not prove a mechanism or resolve hypotheses outside that set. Missing or
+unresolved updates do not authorize an invented posterior. A preserved posterior
+on an unresolved/duplicate update is historical state, not a fresh evidence update.
+Keep empirical search-action utility separate from physical mechanism likelihood.

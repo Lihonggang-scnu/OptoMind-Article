@@ -859,7 +859,7 @@ def test_empty_hypothesis_updates_derive_decisions_from_context() -> None:
         [_obs("obs-partial", metrics={"R_mean": 0.004})],
         experiment_context=_context(),
     )
-    assert partial.hypothesis_updates[0].to_status == HypothesisStatus.partially_supported
+    assert partial.hypothesis_updates[0].to_status == HypothesisStatus.under_test
 
 
 def test_experiment_card_context_derives_route_from_stage() -> None:
@@ -879,7 +879,7 @@ def test_experiment_card_context_derives_route_from_stage() -> None:
         [_obs("obs-1", metrics={"R_mean": 0.004})],
         experiment_context=card,
     )
-    assert result.hypothesis_updates[0].to_status == HypothesisStatus.partially_supported
+    assert result.hypothesis_updates[0].to_status == HypothesisStatus.under_test
 
 
 def test_journal_recovers_graph_failure_then_memory_failure(tmp_path) -> None:

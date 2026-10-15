@@ -2,7 +2,7 @@
 
 Every feedback decision point records one structured entry: the pre-registered
 expectation, the execution trace, the measured effect (program-computed), a
-rule-table belief update (the LLM may explain, never write numbers), and the
+conditional scientific belief record, kept separate from action utility, and the
 decision. Entries chain by stable state hashes.
 
 The Robin-style INSIGHT_APPENDAGE re-flows verified results into the next
@@ -13,7 +13,7 @@ feedback directives verbatim.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -55,9 +55,12 @@ class ObservedEffect(BaseModel):
 class BeliefUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    before: float = 0.5
-    after: float = 0.5
-    rule: str = "no_signal"
+    before: Optional[float] = None
+    after: Optional[float] = None
+    rule: str = "unresolved_no_probabilistic_evidence"
+    status: str = "unresolved"
+    mechanism_update: Dict[str, Any] = Field(default_factory=dict)
+    semantics: str = "objective_delta_is_action_utility_not_mechanistic_evidence"
 
 
 class Decision(BaseModel):
@@ -87,44 +90,27 @@ class ActionEffectLedgerEntry(BaseModel):
         return bool(self.child_state_hash) and self.child_state_hash != self.parent_state_hash
 
 
-# ---------------------------------------------------------------------------
-# Belief rule table -- numbers come ONLY from here, never from an LLM.
-# ---------------------------------------------------------------------------
-
-#: (rule name, delta/expected_delta relationship) -> confidence delta.
-BELIEF_RULES: Tuple[Tuple[str, str], ...] = (
-    ("confirmed", "same_sign_over_threshold"),
-    ("contradicted", "opposite_sign"),
-    ("flat", "below_threshold"),
-)
-CONFIRM_THRESHOLD = 0.01
-CONFIRM_STEP = 0.1
-CONTRADICT_STEP = -0.2
-FLAT_STEP = -0.05
-CONFIDENCE_FLOOR = 0.0
-CONFIDENCE_CEILING = 1.0
-
-
-def _rule_for(delta: Optional[float], expected: Optional[float]) -> Tuple[str, float]:
-    """The mechanical belief rule. Same-sign & over threshold confirms."""
-
-    if delta is None or expected is None:
-        return ("no_signal", 0.0)
-    if expected == 0:
-        return ("confirmed", CONFIRM_STEP) if abs(delta) < CONFIRM_THRESHOLD else ("contradicted", CONTRADICT_STEP)
-    same_sign = (delta > 0) == (expected > 0)
-    magnitude_over = abs(delta) >= CONFIRM_THRESHOLD
-    if same_sign and magnitude_over:
-        return ("confirmed", CONFIRM_STEP)
-    if not same_sign:
-        return ("contradicted", CONTRADICT_STEP)
-    return ("flat", FLAT_STEP)
-
-
 def update_belief(before: float, delta: Optional[float], expected: Optional[float]) -> BeliefUpdate:
-    rule, step = _rule_for(delta, expected)
-    after = max(CONFIDENCE_FLOOR, min(CONFIDENCE_CEILING, before + step))
-    return BeliefUpdate(before=round(before, 4), after=round(after, 4), rule=rule)
+    return BeliefUpdate()
+
+
+def _mechanism_belief_update(payload: Optional[Mapping[str, Any]]) -> BeliefUpdate:
+    if not isinstance(payload, Mapping):
+        return BeliefUpdate()
+    status = str(payload.get("status") or "unresolved")
+    if status in ("updated", "duplicate_observation"):
+        from .science.terminal_problem import probability_vector
+        hypotheses = payload.get("hypothesis_ids") or []
+        if not payload.get("belief_binding") or not payload.get("consumed_observation_ids") or len(hypotheses) < 2:
+            raise ValueError("scientific belief result lacks explicit hypotheses and evidence binding")
+        probability_vector(payload.get("posterior"), len(hypotheses))
+    else:
+        status = "unresolved"
+    return BeliefUpdate(
+        rule="finite_model_bayes" if status == "updated" else "duplicate_observation" if status == "duplicate_observation" else "unresolved_no_probabilistic_evidence",
+        status=status,
+        mechanism_update=dict(payload),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -180,6 +166,7 @@ def build_ledger_entry(
     certificate_id: str = "",
     verification_overall: Optional[str] = None,
     confidence_before: float = 0.5,
+    mechanism_update: Optional[Mapping[str, Any]] = None,
     decision_action: str = "refine_route",
     replan_trigger: bool = False,
     decision_reason: str = "",
@@ -191,7 +178,7 @@ def build_ledger_entry(
         if best_score_before is None or best_score_after is None
         else round(float(best_score_after) - float(best_score_before), 6)
     )
-    belief = update_belief(confidence_before, delta, expected_delta)
+    belief = _mechanism_belief_update(mechanism_update)
     return ActionEffectLedgerEntry(
         action_id=action_id,
         parent_state_hash=_state_hash(hypothesis_id, rounds_used, best_score_before),

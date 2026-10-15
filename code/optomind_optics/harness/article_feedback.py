@@ -775,6 +775,9 @@ class ArticleFeedbackController:
                     f"observation {observation.observation_id}: no explicit "
                     "disconfirming observation is represented in metrics"
                 )
+        elif kind == "observable_available":
+            if observation.status != ExperimentStatus.physically_valid or to_status != HypothesisStatus.under_test:
+                return "observable availability alone only permits under_test for a valid observation"
         elif kind == "execution_failure":
             if observation.status not in {
                 ExperimentStatus.rejected_physics,
@@ -877,9 +880,9 @@ class ArticleFeedbackController:
                     entries.append(
                         {
                             "hypothesis_id": hypothesis_id,
-                            "to_status": "partially_supported",
-                            "evidence_kind": "partial_support",
-                            "reason": "declared observable keys present in trusted metrics",
+                            "to_status": "under_test",
+                            "evidence_kind": "observable_available",
+                            "reason": "observable present, but no matched prospective prediction or discriminator",
                         }
                     )
                     continue

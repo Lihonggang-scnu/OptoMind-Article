@@ -27,7 +27,7 @@ DEBUG_DEPTH_HARD_LIMIT = 3
 
 TREE_EVENT_NODE_CREATED = "tree_node_created"
 TREE_EVENT_NODE_UPDATED = "tree_node_updated"
-TREE_EVENT_FALSIFIED = "tree_hypothesis_falsified"
+TREE_EVENT_FALSIFIED = "tree_search_branch_exhausted"
 
 #: Mechanical falsification rule (AutoScientists-style counters). A branch
 #: whose hypothesis kept rotating without a single supported keep, across at
@@ -45,6 +45,7 @@ class FalsificationRecord(BaseModel):
     supported_keeps: int = 0
     refuted_discards: int = 0
     rotations: int = 0
+    semantics: str = "search_scheduling_counters_not_mechanistic_evidence"
 
 
 class HypothesisNode(BaseModel):
@@ -163,9 +164,9 @@ class HypothesisTree:
         updates: Dict[str, Any] = {}
         if rotated:
             updates["rotations"] = record.rotations + 1
-        if is_buggy or (metric is not None and metric <= 0.0):
+        if node.is_buggy:
             updates["refuted_discards"] = record.refuted_discards + 1
-        elif metric is not None and metric > 0.0:
+        elif metric is not None:
             updates["supported_keeps"] = record.supported_keeps + 1
         if updates:
             node.falsification = record.model_copy(update=updates)
@@ -175,7 +176,7 @@ class HypothesisTree:
             and node.falsification.supported_keeps == 0
             and node.falsification.refuted_discards >= FALSIFY_MIN_REFUTED
         ):
-            node.status = "falsified"
+            node.status = "search_exhausted"
             self.events.append(
                 {
                     "event_type": TREE_EVENT_FALSIFIED,
@@ -215,7 +216,7 @@ class HypothesisTree:
             node = self.nodes[nid]
             if (
                 node.is_buggy
-                and node.status != "falsified"
+                and node.status not in {"falsified", "search_exhausted"}
                 and node.debug_depth < DEBUG_DEPTH_HARD_LIMIT
                 and not node.children_ids
             ):
@@ -228,7 +229,7 @@ class HypothesisTree:
             for node in (self.nodes[nid] for nid in self.order)
             if not node.is_buggy
             and node.metric is not None
-            and node.status != "falsified"
+            and node.status not in {"falsified", "search_exhausted"}
         ]
         if not good:
             return None

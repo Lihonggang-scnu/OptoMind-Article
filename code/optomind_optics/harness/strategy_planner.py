@@ -427,7 +427,7 @@ def _compact_prior_iterations(
                         "selected_incumbent", "executed_decision", "executed_record",
                         "execution_evidence", "budget_usage", "gradient_summary",
                         "diagnostic_availability", "errors", "stop_reason",
-                        "insight_for_next", "insight_grounding",
+                        "insight_for_next", "insight_grounding", "mechanism_update", "execution_facts",
                     )
                     if key in item
                 },
@@ -440,7 +440,7 @@ def _compact_prior_iterations(
                             "robustness_score",
                             "simplicity_score",
                             "thicknesses_nm",
-                            "optimizer_id",
+                            "optimizer_id", "band_metrics", "frozen_metric_values", "verification", "raw_ref",
                         )
                     }
                     | {
