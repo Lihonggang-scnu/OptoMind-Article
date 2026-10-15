@@ -1,12 +1,12 @@
-# T029 three original-case research test — DRAFT, NOT RELEASED
+# T029 three original-case research test — release instructions
 
-Parent review and a pinned implementation SHA are required before any execution. No paid calls, scientific answer generation or publication occurred in preparing this packet. Execution order: 09 silicon AR, 08 packaging UV, 02 QKD. Case10 is preserved solely as a no-fee blocked record. These are three different applications; do not substitute duplicate01/03 or02/07 to inflate coverage.
+Execute only after the accompanying ready message binds the reviewed implementation SHA. The T028 review found usable feedback decisions and remaining hypotheses; differences of opinion do not block this new-case test. Execution order: 09 silicon AR, 08 packaging UV, 02 QKD. Case10 is preserved solely as a no-fee blocked record. These are three different applications; do not substitute duplicate01/03 or02/07 to inflate coverage.
 
 ## Inputs and provenance
 
 `INPUT_PROVENANCE.json` binds exact original question strings and files to Article commit `032bd651b32dfce075a046f2214248c5dcbb491a`, `replay_data/runs/<case_id>.json#summary.question`. Every FRESH_REQUEST.question was compared directly with git show at that commit. FRESH_QUESTION.txt has the same text plus one terminal newline. Use the JSON question field for program-owned verbatim original_question. No old champion structures, scores or answers are in this packet.
 
-Implementation inspection started at b5f8a1dc2cfe8a203b74a742963bef7f9ac9a57b; root is developing T028 in the same checkout. This is NOT an execution pin. Release must bind the finished reviewed T028/current implementation and local wrapper hashes, using a new independent execution directory.
+T029 builds on tested T028 implementation b6f641edea1fe124c98921251bc5f14a3dc53466. Use the final T029 SHA bound by C2L-R3-0043, in a new independent directory; record the local wrapper hash and imports before any paid call. Do not import an older F: planner by accident.
 
 ## Original physical goals and protocol choices
 
@@ -31,11 +31,11 @@ Suggested finite sampling, recorded as numerical protocol:09 includes1260–1360
 
 ## Money, attempts and numerical budgets
 
-BUDGET_PROPOSAL.json is a draft allocation, not authorization. Each case≤CNY3 and≤4actual modelHTTP attempts; three cases≤CNY9. Standard calls: task sheet, route generation, search revision. Allow at most ONE explicit contract-format repair shared across task-sheet and route generation; search revise has no retry. Both generation functions presently permit their own repair, so the external audited wrapper MUST enforce the shared repair token, stage labels and aggregate4HTTP ceiling before every dispatch. Zero transport retries. Reserve the revision attempt rather than allowing two independent format repairs to consume it. Preserve malformed/incomplete originals.
+The accompanying ready message authorizes the allocation in BUDGET_PROPOSAL.json; without that ready message this document alone does not dispatch work. Each case≤CNY3 and≤4actual modelHTTP attempts; three cases≤CNY9. Standard calls: task sheet, route generation, search revision. Allow at most ONE explicit contract-format repair shared across task-sheet and route generation; search revise has no retry. Both generation functions presently permit their own repair, so the external audited wrapper MUST enforce the shared repair token, stage labels and aggregate4HTTP ceiling before every dispatch. Zero transport retries. Reserve the revision attempt rather than allowing two independent format repairs to consume it. Preserve malformed/incomplete originals.
 
 Per case search and refine together≤4096forward design rows and≤64new certifications. Stage1≤2048rows/32certifications; stage2≤2048rows/32certifications;≤2certification processes. Failed evaluations and finite differences count. Keep channel rows/solver work/backprop counts separate. No budget reset, silent quota transfer or hidden retry.
 
-Parent-provided original-chain remaining CNY14.1086784 minus T028 reserve2 minus T0299 leaves3.1086784 nominal margin. Before release and every dispatch, reconcile original ledgers' settled+pending+held+uncertain and enforce all intersecting limits atomically, including current cumulativeCNY120 (never stale140), original chain/subpool and per-case caps. Historical actual18.2538974 is not a live balance. Keys remain local. If enforcement cannot be proven, stop paid steps.
+T028 settled0.0548232 CNY; the last reported project cumulative is18.3087206 CNY, original15-CNY chain spent0.9461448 and20-CNY pool spent0.9794536. These snapshots require fresh reconciliation; T029 maximum9 CNY fits the last known chain remainder14.0538552 CNY. Before release and every dispatch, reconcile original ledgers' settled+pending+held+uncertain and enforce all intersecting limits atomically, including current cumulativeCNY120 (never stale140), original chain/subpool and per-case caps. Historical actual18.3087206 is not a live balance. Keys remain local. If enforcement cannot be proven, stop paid steps.
 
 ## Existing CLI / injected entry points
 
@@ -92,7 +92,7 @@ No valid revision plans: preserve raw response, stop that case without an extra 
 
 Stop each case after one search→model decision→refinement cycle or honest blocker. Preserve seeds, certified incumbent/parent, child, spectra, certificates and raw prompts/responses. Show concrete observation→model hypothesis→chosen parent/variables→numerical result, with expectation direction checked against metric sense. Separate improvement, tradeoff, regression and unsupported explanation. Preserve good earlier designs. Return per-case status, actual attempts/cost/liabilities, numerical counters, source hashes and limitations; aggregate distinct application count. No claim of≥3worthy outcomes merely because3cases ran, no performance guarantee, no extra iteration to conceal failure. Root reviews results before any publication.
 
-## T029 guard integration (new files; root review pending)
+## T029 guard integration (reviewed offline; local integration required)
 
 `focused_research/local_campaign_guard.py` supplies CampaignPlannerGuard and check_route_thickness_bounds. It does not replace the original money accounting, establish actual HTTP counts, create credentials or reset budgets. Admission must establish a genuinely new case and reconcile persisted original ledger state. Never automatically recreate the object after a crash/failure or restart a partially dispatched case; this initial-run adapter has no resume protocol.
 
@@ -139,3 +139,12 @@ finally:
 The guard injects separate execution_protocol into a deep copy of actual forwarded user_payload, retaining the original question and raw prompt unchanged. Its audit includes BOTH original and actual forwarded prompts and canonical hashes. Production upstream prompt_hash describes its own upstream prompt; it must not be presented as the actual post-injection request hash. The audit sink receives the actual forwarded snapshot before the underlying planner is called. Audit or delegate exceptions fail the guard closed, consuming one conservative dispatch_attempt; actual networkHTTP/cost are established only by the original transport ledger. A second sheet/route attempt requires explicit previous_response and validation_error and consumes the single shared repair token. Stage reset, skip and extra revision calls are rejected.
 
 The pure thickness check verifies each route's fixed layer values and entire variable intervals against09[20,400] or08[20,350]. It supplies no QKD manufacturing range and does not replace full route-schema/instance validation. Valid routes can continue after individual failures; preserve every original rejected contract and reason. Local launcher must wire this guard explicitly; merely adding the module changes no existing pipeline execution behavior.
+
+
+## 用户最新验收口径
+
+允许模型提出不同观点、经验判断和大胆假设，不因与云端观点不一致或假设未实现而判失败。不要围绕“必须”“必要”等措辞反复修改或追加调用。优先修可核实的数据读反、虚构已发生结果、违反明确约束、程序与计划不一致。保存原文并标明哪些是观点、哪些是观测即可。性能退步与未兑现预期可以构成有效研究过程，不阻塞其他案例；不得将这种宽容扩展为放宽用户硬约束或伪造通过。
+
+## 交接保持现状
+
+按用户最新指令，原 Agent 继续执行，Drive 为主，GitHub 备用 codex/r3-handoff-relay/handoff/relay。候选代理暂不使用。C2L-R3-0042 本地优先协议已撤回；不要应用其路径优先级或切换收件流程。本任务编号 R3-T029，配套 ready 使用 C2L-R3-0043。

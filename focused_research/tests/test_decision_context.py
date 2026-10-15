@@ -136,3 +136,45 @@ def test_original_question_and_extremes_survive_many_families():
     ids=list(p['archive']['designs'])
     assert ids[0] in selected and ids[-1] in selected
     assert r['user_payload']['task_sheet']['original_question']=='原始问题，保留全部条件。'
+
+
+def test_t028_zero_complete_coordinates_is_unknown_not_failed_search():
+    s = {'status': 'local_derivative_uncertified',
+         'goal_gradient_conflicts': {'variable_count': 12},
+         'goal_sensitivities': []}
+    for i, goal in enumerate(GOALS):
+        s['goal_sensitivities'].append({'objective_id': goal['objective_id'],
+            'top_variables': [{'name': 'layer%d' % j, 'current_value_nm': 60.,
+                'bounds_nm': [40., 80.], 'derivative_per_nm': .001}
+                for j in range(i * 6, (i + 1) * 6)]})
+    before = copy.deepcopy(s)
+    f = local_direction_facts(s, GOALS)
+    assert s == before
+    assert f['derivative_coverage']['declared_variable_count'] == 12
+    assert f['derivative_coverage']['available_complete_coordinates'] == 0
+    assert f['joint_direction']['status'] == 'unknown'
+    assert f['joint_direction']['reason'] == 'insufficient_saved_derivatives'
+    assert not f['same_direction_opportunities']
+
+
+def test_three_objective_joint_assessment_is_unsupported_not_not_found():
+    goals = GOALS + [{'objective_id': 'G3', 'sense': 'minimize'}]
+    s = summary([[1., 2.], [2., 1.]])
+    third = copy.deepcopy(s['goal_sensitivities'][0])
+    third['objective_id'] = 'G3'
+    for v in third['top_variables']:
+        v['derivative_per_nm'] *= -1
+    s['goal_sensitivities'].append(third)
+    f = local_direction_facts(s, goals)
+    assert f['derivative_coverage']['available_complete_coordinates'] == 2
+    assert f['joint_direction']['status'] == 'unsupported'
+    assert f['joint_direction']['reason'] == 'objective_count_not_supported'
+    assert set(f['variables'][0]['derivative_per_nm']) == {'G1', 'G2', 'G3'}
+    # Valid per-coordinate facts remain useful even when the joint helper is unsupported.
+    assert f['same_direction_opportunities']
+
+
+def test_missing_or_zero_gradients_are_not_reported_as_searched_and_not_found():
+    assert local_direction_facts({}, GOALS)['joint_direction']['status'] == 'unknown'
+    assert local_direction_facts(summary([[0., 0.], [1., 1.]]), GOALS)['joint_direction']['status'] == 'unknown'
+    assert local_direction_facts(summary([[1., 1.], [-1., -1.]]), GOALS)['joint_direction']['status'] == 'not_found'

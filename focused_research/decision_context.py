@@ -22,7 +22,7 @@ def _finite(x):
 def local_direction_facts(summary, objectives):
     """Merge available top-k entries; never interpret omitted coordinates as zero."""
     result = {'status': 'unknown', 'limits': LIMITS[:], 'variables': [],
-              'same_direction_opportunities': [], 'joint_direction': {'status': 'not_found'},
+              'same_direction_opportunities': [], 'joint_direction': {'status': 'unknown', 'reason': 'insufficient_saved_derivatives'},
               'additional_forward_design_rows': 0, 'warnings': []}
     if not isinstance(summary, dict) or summary.get('status') != 'local_derivative_uncertified':
         result['reason'] = 'no usable saved local derivative'
@@ -82,15 +82,22 @@ def local_direction_facts(summary, objectives):
     # For two objectives, the minimum-norm point on the segment between their
     # normalized gradients is a useful candidate common direction. Verify actual
     # oriented dot products after enforcing the feasible tangent directions.
-    if len(goals) != 2 or not complete:
-        result['joint_direction']['reason'] = 'requires two objectives and a complete saved coordinate subset'
+    if not complete:
+        result['joint_direction'] = {'status': 'unknown', 'reason': 'insufficient_saved_derivatives',
+            'detail': 'No coordinate has saved derivatives for every objective; no joint-direction assessment was performed.'}
+        return result
+    if len(goals) != 2:
+        result['joint_direction'] = {'status': 'unsupported', 'reason': 'objective_count_not_supported',
+            'detail': 'This joint-direction helper supports exactly two objectives; all original objectives are retained.'}
         return result
     gids = list(goals)
     raw = [[r['improvement_rate_normalized'][g] for r in complete] for g in gids]
     norms = [math.hypot(*row) for row in raw]
     if any(n <= tol or not math.isfinite(n) for n in norms):
-        result['joint_direction']['reason'] = 'zero or invalid available gradient'
+        result['joint_direction'] = {'status': 'unknown', 'reason': 'zero_or_invalid_available_gradient',
+            'detail': 'The normalized-gradient candidate method was not applicable; no impossibility conclusion follows.'}
         return result
+    result['joint_direction'] = {'status': 'not_found'}
     a, b = [[v/n for v in row] for row, n in zip(raw, norms)]
     diff = [x-y for x,y in zip(a,b)]
     denom = sum(x*x for x in diff)
@@ -107,7 +114,10 @@ def local_direction_facts(summary, objectives):
     direction = [v/scale for v in direction]
     rates = {g: sum(v*d for v,d in zip(row,direction)) for g,row in zip(gids,raw)}
     if not all(_finite(v) and v > tol for v in rates.values()):
-        result['joint_direction']['reason'] = 'candidate did not improve every objective locally after bound projection'
+        if not all(_finite(v) for v in rates.values()):
+            result['joint_direction'] = {'status': 'unknown', 'reason': 'nonfinite_directional_rates'}
+        else:
+            result['joint_direction']['reason'] = 'candidate did not improve every objective locally after bound projection'
         return result
     steps = []
     for row, d in zip(complete, direction):
