@@ -1,0 +1,1652 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_8621b34ef6fca86327dc7d9875f489c28595fd5ee33de0e15e9b4a94f6c78133",
+      "source_quote": "TiO2/SiO2 pairs (x) equal to 1-3 are designed to fulfill a Bragg wavelength (λB) of ~950 nm According to a quarter of the Bragg wavelength relationship (t = λB/4n), the thickness o each oxide layer was 163.8 and 105.6 nm for SiO2 and TiO2, respectively.",
+      "structure_or_method": "Quarter-wave stack design targeting a specific Bragg wavelength.",
+      "physical_effect": "Constructive interference creates a high-reflection band centered at the Bragg wavelength; increasing pair count narrows the band and increases reflectivity.",
+      "conditions_and_unknowns": [
+        "Source targets NIR reflection (950 nm) for shielding, whereas the task requires visible reflection and NIR transmission.",
+        "Normal incidence assumed in source formula; task requires 45 degrees.",
+        "No explicit polarization averaging details provided in snippet."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Hypothesize that shifting the Bragg wavelength from NIR (950 nm) to visible (~550 nm) by reducing layer thicknesses will invert the spectral function to reflect visible and transmit NIR, subject to angular shift corrections."
+    },
+    {
+      "id": "D2",
+      "evidence_id": "E_5795be857a172a26c0b244073a2d2092b5d3ad750880cf9d1128662b2afacfce",
+      "source_quote": "There is an angular dependence of stop bands, which can lead to reduced reflectivity compared to normal incidence. This angular dependence indicates a blue shift (a shift towards shorter wavelengths) with an increase in angle of incidence, as illustrated in Figs. 3 and 4.",
+      "structure_or_method": "Oblique incidence evaluation of DBR stopbands.",
+      "physical_effect": "Blue shift of the reflection band center wavelength as incidence angle increases.",
+      "conditions_and_unknowns": [
+        "Quantitative shift magnitude (110 nm) cited for 0 to 60 degrees; exact shift at 45 degrees for TiO2/SiO2 is not explicitly calculated in text.",
+        "Polarization splitting effects mentioned generally but not quantified for this specific material pair in the snippet."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Propose compensating for the 45-degree blue shift by designing the normal-incidence Bragg wavelength slightly longer than the target visible center, ensuring the shifted band aligns with 450-650 nm at the operating angle."
+    },
+    {
+      "id": "D3",
+      "evidence_id": "E_290a5839a1ccaa53075f1f1b423f466ba8bf1809c05375ee9e9215832c8ad4f6",
+      "source_quote": "At oblique incidence, this interference becomes polarization-dependent due to the different boundary conditions experienced by s-and p-polarized light. As a result, both the amplitude and phase behavior of the coating must be evaluated separately for each polarization state.",
+      "structure_or_method": "Separate evaluation of s and p polarization states in multilayer design.",
+      "physical_effect": "Differential phase and amplitude response leads to polarization splitting and potential leakage in unpolarized averages.",
+      "conditions_and_unknowns": [
+        "Snippet describes the phenomenon generally for high-contrast systems; does not provide specific TiO2/SiO2 thickness corrections.",
+        "Task requires equal-s/p unpolarized average; source highlights the need to manage diattenuation."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Suggest testing non-quarter-wave thickness ratios (phase matching) to align s and p reflection edges, minimizing leakage in the unpolarized mean compared to standard quarter-wave stacks."
+    },
+    {
+      "id": "D4",
+      "evidence_id": "E_dc2a1cd6b43593027559e3da95a6f8f7e74ad8c5624242da63ec0e32a961dbe5",
+      "source_quote": "A dichroic beamsplitter divides the incident collimated beam, reflecting the VIS wavelengths portion of the bandpass (λ < 950 nm) and transmitting NIR wavelengths (λ > 950 nm). ... The 10%-90% zone at the crossover wavelength is approximately 50 nm wide.",
+      "structure_or_method": "Dichroic beamsplitter with sharp spectral edge.",
+      "physical_effect": "Steep transition between reflection and transmission bands.",
+      "conditions_and_unknowns": [
+        "Source cutoff is at 950 nm (reflecting VIS+NIR up to 950); task requires cutoff between 650 and 700 nm.",
+        "Substrate and angle specifics for this quote are not fully detailed in the snippet excerpt."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Use the concept of a sharp edge filter but relocate the crossover point to the 650-700 nm gap by adjusting optical thicknesses, aiming for a similarly narrow transition zone."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A standard quarter-wave stack centered at a blue-shifted visible wavelength will provide baseline visible reflection and NIR transmission at 45 degrees.",
+      "clue_ids": [
+        "D1",
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_8621b34ef6fca86327dc7d9875f489c28595fd5ee33de0e15e9b4a94f6c78133",
+        "E_5795be857a172a26c0b244073a2d2092b5d3ad750880cf9d1128662b2afacfce"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The quarter-wave principle transfers from NIR shielding (source) to visible reflection (task) by scaling thickness.",
+        "The blue shift observed in source (0-60 deg) applies similarly to TiO2/SiO2 at 45 degrees, requiring a design center wavelength longer than the target band center."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "Task specifies 45 degree incidence; design must account for angular shift."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task specifies equal-s/p unpolarized light."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            40,
+            80
+          ],
+          "dL": [
+            70,
+            130
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline_QW",
+          "parameters_nm": {
+            "dH": 55,
+            "dL": 95
+          }
+        },
+        {
+          "id": "shifted_QW",
+          "parameters_nm": {
+            "dH": 65,
+            "dL": 110
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_QW",
+          "candidate_instance_id": "shifted_QW",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Increasing thickness shifts the Bragg condition to longer wavelengths; if the baseline is too blue-shifted at 45 degrees, thicker layers may better center the stopband on the visible region."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_QW",
+          "candidate_instance_id": "shifted_QW",
+          "controlled_conditions": "Same material order, substrate, incident medium, 45-degree unpolarized illumination.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "decrease",
+          "reason": "Shifting the reflection band toward longer wavelengths risks encroaching on the NIR transmission band, potentially lowering NIR transmittance."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R2",
+      "claim": "Thickening the high-index layers relative to low-index layers (non-quarter-wave) can broaden the stopband to cover the full visible range at 45 degrees.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_8621b34ef6fca86327dc7d9875f489c28595fd5ee33de0e15e9b4a94f6c78133"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Deviation from quarter-wave condition alters the spectral width and shape of the stopband.",
+        "Source uses quarter-wave; we hypothesize that a specific ratio deviation improves visible coverage."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            90
+          ],
+          "dL": [
+            60,
+            100
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "quarter_wave",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "thick_H",
+          "parameters_nm": {
+            "dH": 80,
+            "dL": 95
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "quarter_wave",
+          "candidate_instance_id": "thick_H",
+          "controlled_conditions": "Same layer count, material order, substrate, 45-degree unpolarized light.",
+          "changed_variables": [
+            "dH"
+          ],
+          "direction": "increase",
+          "reason": "Increasing high-index optical thickness may shift and broaden the stopband edges to better encompass the 450-650 nm range, compensating for angular narrowing."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Quarter-wave stacks have symmetric stopbands; thickening the high-index layer breaks symmetry and can extend the long-wavelength edge of the stopband, which is useful if the 45-degree blue shift cuts off the red end of the visible spectrum."
+    },
+    {
+      "id": "R3",
+      "claim": "A model-knowledge hypothesis that matching the optical phase thickness of s and p polarizations via specific non-quarter-wave ratios reduces polarization leakage.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "At 45 degrees, s and p waves see different effective indices. Standard quarter-wave layers are not optimal for both simultaneously.",
+        "Adjusting thickness ratios can align the reflection phases for both polarizations."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task requires equal-s/p average; minimizing split improves the mean."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            80
+          ],
+          "dL": [
+            70,
+            120
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "standard_QW",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "phase_matched",
+          "parameters_nm": {
+            "dH": 68,
+            "dL": 85
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "standard_QW",
+          "candidate_instance_id": "phase_matched",
+          "controlled_conditions": "Same stack geometry, 45 degrees, unpolarized.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Hypothesis: Adjusting the ratio moves the s and p reflection bands closer together, reducing the 'dip' in the unpolarized average caused by polarization splitting."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Based on Fresnel equations, s and p admittances diverge at oblique angles. A quarter-wave stack optimized for normal incidence splits into two distinct bands at 45 degrees. By empirically tuning thicknesses (thickening H, thinning L or vice versa), one can attempt to overlap these bands or create a composite plateau that maximizes the unpolarized mean."
+    },
+    {
+      "id": "R4",
+      "claim": "Adding a matching layer or modifying the first/last layer thickness can reduce surface reflection losses in the NIR band, improving G2.",
+      "clue_ids": [
+        "D4"
+      ],
+      "evidence_ids": [
+        "E_dc2a1cd6b43593027559e3da95a6f8f7e74ad8c5624242da63ec0e32a961dbe5"
+      ],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Source mentions antireflection coatings on exit surfaces; we apply this concept to the incident interface of the multilayer stack itself.",
+        "Modifying the first layer thickness acts as an impedance matcher for the NIR passband."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "wavelength_nm",
+          "required_value": [
+            700,
+            1000
+          ],
+          "reason": "Target NIR transmission band."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "dMatch"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dMatch": [
+            20,
+            150
+          ],
+          "dH": [
+            50,
+            70
+          ],
+          "dL": [
+            80,
+            110
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "no_match",
+          "parameters_nm": {
+            "dMatch": 95,
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "optimized_match",
+          "parameters_nm": {
+            "dMatch": 45,
+            "dH": 60,
+            "dL": 95
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "no_match",
+          "candidate_instance_id": "optimized_match",
+          "controlled_conditions": "Same underlying stack, varying only the first layer thickness.",
+          "changed_variables": [
+            "dMatch"
+          ],
+          "direction": "increase",
+          "reason": "Tuning the first layer thickness can minimize Fresnel reflections at the air-coating interface for the NIR band, increasing total throughput."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "While source D4 discusses AR coatings on separate surfaces, physical reasoning suggests the first layer of the stack itself can serve as a single-layer AR coating for the passband if its thickness is optimized independently of the quarter-wave condition of the rest of the stack."
+    },
+    {
+      "id": "R5",
+      "claim": "Using a 'half-wave' defect or cavity within the stack can sharpen the edge between reflection and transmission, improving isolation between G1 and G2.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_8acf360acac314250c7a68de253625af288516ca597e39483c06b4a3e2d5f695"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Source E_8acf... describes Fabry-Perot filters with resonance cavities for narrow passbands. We adapt this to create a sharp cut-off edge for a dichroic.",
+        "Inserting a thicker layer (defect) modifies the density of states near the band edge."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dCav"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            70
+          ],
+          "dL": [
+            80,
+            110
+          ],
+          "dCav": [
+            100,
+            250
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "no_cavity",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95,
+            "dCav": 95
+          }
+        },
+        {
+          "id": "with_cavity",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95,
+            "dCav": 190
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "no_cavity",
+          "candidate_instance_id": "with_cavity",
+          "controlled_conditions": "Same stack, varying central layer thickness.",
+          "changed_variables": [
+            "dCav"
+          ],
+          "direction": "unchanged",
+          "reason": "The primary effect is on the edge steepness (G2 leakage reduction) rather than peak reflectance. Direction for G1 might be neutral or slightly negative if the cavity introduces a transmission spike in the visible."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "no_cavity",
+          "candidate_instance_id": "with_cavity",
+          "controlled_conditions": "Same stack, varying central layer thickness.",
+          "changed_variables": [
+            "dCav"
+          ],
+          "direction": "increase",
+          "reason": "A half-wave cavity can sharpen the band edge, reducing the 'tail' of the reflection band that leaks into the NIR, thus improving NIR transmission."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R6",
+      "claim": "Optimizing the thickness of the first incident layer independently (non-quarter-wave) improves NIR transmission by acting as an AR layer.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The first layer dominates the air-coating interface reflection.",
+        "Decoupling its thickness from the periodic stack allows independent optimization for the passband."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "wavelength_nm",
+          "required_value": [
+            700,
+            1000
+          ],
+          "reason": "NIR passband."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "dFirst"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dFirst": [
+            20,
+            150
+          ],
+          "dH": [
+            50,
+            70
+          ],
+          "dL": [
+            80,
+            110
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "QW_first",
+          "parameters_nm": {
+            "dFirst": 95,
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "thin_first",
+          "parameters_nm": {
+            "dFirst": 40,
+            "dH": 60,
+            "dL": 95
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "QW_first",
+          "candidate_instance_id": "thin_first",
+          "controlled_conditions": "Same stack, varying first layer thickness.",
+          "changed_variables": [
+            "dFirst"
+          ],
+          "direction": "increase",
+          "reason": "Reducing the first layer thickness from quarter-wave to a specific sub-wavelength value may minimize reflection at the design NIR wavelength."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Physical reasoning based on single-layer AR coating principles: a layer with thickness d != lambda/4n can still minimize reflection if its effective admittance matches the geometric mean of incident and substrate admittances at the specific angle and wavelength."
+    },
+    {
+      "id": "R7",
+      "claim": "Increasing the total number of periods (up to the 24-layer limit) will maximize visible reflectance (G1) by increasing the stopband depth.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_8621b34ef6fca86327dc7d9875f489c28595fd5ee33de0e15e9b4a94f6c78133"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "Source indicates reflectivity increases with pair count. We test this limit within the 24-layer constraint."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 45,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            70
+          ],
+          "dL": [
+            80,
+            110
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "12_pairs",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "12_pairs_alt",
+          "parameters_nm": {
+            "dH": 65,
+            "dL": 90
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "12_pairs",
+          "candidate_instance_id": "12_pairs_alt",
+          "controlled_conditions": "Same 24-layer stack, varying thickness ratio.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Testing if a slight detuning (thicker H, thinner L) in a high-count stack improves the angular performance compared to strict quarter-wave."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "While evidence supports more layers = higher reflectance, the specific thickness ratio adjustment for 45 degrees is a model-knowledge extrapolation to counteract angular blue-shift and polarization splitting in a deep stack."
+    },
+    {
+      "id": "R8",
+      "claim": "Model-knowledge route: Using a 'chirped' thickness profile (gradually changing layer thicknesses) can broaden the reflection band to cover the entire visible spectrum.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_9266746551d0dac081b4e7376ca1e36f1cf76d79db2f5a9065eadb2ebfd7f01d"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "Source mentions 'chirped' stacks for suppression of emission. We apply chirping to broaden the reflection band.",
+        "Varying thicknesses across the stack sums multiple narrow stopbands into one wide band."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "wavelength_nm",
+          "required_value": [
+            450,
+            650
+          ],
+          "reason": "Target visible band."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH2"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL2"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH3"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL3"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH4"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL4"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH5"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL5"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH6"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL6"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH1": [
+            50,
+            70
+          ],
+          "dL1": [
+            80,
+            110
+          ],
+          "dH2": [
+            50,
+            70
+          ],
+          "dL2": [
+            80,
+            110
+          ],
+          "dH3": [
+            50,
+            70
+          ],
+          "dL3": [
+            80,
+            110
+          ],
+          "dH4": [
+            50,
+            70
+          ],
+          "dL4": [
+            80,
+            110
+          ],
+          "dH5": [
+            50,
+            70
+          ],
+          "dL5": [
+            80,
+            110
+          ],
+          "dH6": [
+            50,
+            70
+          ],
+          "dL6": [
+            80,
+            110
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "uniform",
+          "parameters_nm": {
+            "dH1": 60,
+            "dL1": 95,
+            "dH2": 60,
+            "dL2": 95,
+            "dH3": 60,
+            "dL3": 95,
+            "dH4": 60,
+            "dL4": 95,
+            "dH5": 60,
+            "dL5": 95,
+            "dH6": 60,
+            "dL6": 95
+          }
+        },
+        {
+          "id": "chirped",
+          "parameters_nm": {
+            "dH1": 50,
+            "dL1": 80,
+            "dH2": 55,
+            "dL2": 88,
+            "dH3": 60,
+            "dL3": 95,
+            "dH4": 65,
+            "dL4": 102,
+            "dH5": 70,
+            "dL5": 110,
+            "dH6": 70,
+            "dL6": 110
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "uniform",
+          "candidate_instance_id": "chirped",
+          "controlled_conditions": "Same layer count, varying thickness distribution.",
+          "changed_variables": [
+            "dH1",
+            "dL1",
+            "dH2",
+            "dL2",
+            "dH3",
+            "dL3",
+            "dH4",
+            "dL4",
+            "dH5",
+            "dL5",
+            "dH6",
+            "dL6"
+          ],
+          "direction": "increase",
+          "reason": "Chirping the thicknesses creates overlapping stopbands at slightly different wavelengths, combining to form a broader high-reflection band covering the full visible range."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Source mentions chirped stacks; physical reasoning dictates that a gradient in optical thickness maps to a gradient in central wavelength, effectively tiling the spectrum to widen the aggregate stopband."
+    },
+    {
+      "id": "R9",
+      "claim": "Model-knowledge route: Thinning the final layer adjacent to the substrate can reduce substrate-induced interference ripples in the NIR band.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The interface between the multilayer stack and the fused silica substrate can cause standing waves or ripples in the transmission band.",
+        "An intermediate thickness layer can act as a matcher between the stack impedance and the substrate."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "substrate",
+          "required_value": "fused_silica",
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dLast"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            50,
+            70
+          ],
+          "dL": [
+            80,
+            110
+          ],
+          "dLast": [
+            20,
+            150
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "QW_last",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95,
+            "dLast": 95
+          }
+        },
+        {
+          "id": "matched_last",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95,
+            "dLast": 50
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                1000
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "QW_last",
+          "candidate_instance_id": "matched_last",
+          "controlled_conditions": "Same stack, varying last layer thickness.",
+          "changed_variables": [
+            "dLast"
+          ],
+          "direction": "increase",
+          "reason": "Optimizing the final layer thickness minimizes the reflectance at the stack-substrate interface, smoothing the NIR transmission curve and increasing the mean."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Transmission ripples often arise from impedance mismatch at the exit interface. Treating the last layer as a tuning element allows cancellation of residual reflections in the passband."
+    },
+    {
+      "id": "R10",
+      "claim": "Hybrid route: Combining a thick high-index layer with a thin low-index layer (inverse ratio) to specifically target the 45-degree s-polarization edge.",
+      "clue_ids": [
+        "D3"
+      ],
+      "evidence_ids": [
+        "E_290a5839a1ccaa53075f1f1b423f466ba8bf1809c05375ee9e9215832c8ad4f6"
+      ],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [
+        "Source notes polarization dependence. We hypothesize that a specific thickness ratio can align the s-polarization edge (which usually shifts less than p) to dominate the visible band.",
+        "This is an aggressive tuning strategy to rescue the red-end of the visible spectrum."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "TiO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            60,
+            90
+          ],
+          "dL": [
+            50,
+            80
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "standard_ratio",
+          "parameters_nm": {
+            "dH": 60,
+            "dL": 95
+          }
+        },
+        {
+          "id": "inverse_ratio",
+          "parameters_nm": {
+            "dH": 80,
+            "dL": 60
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                450,
+                650
+              ],
+              "angle_deg": 45,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "standard_ratio",
+          "candidate_instance_id": "inverse_ratio",
+          "controlled_conditions": "Same stack, inverted thickness ratio.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Hypothesis: Thickening H and thinning L shifts the s-polarization band significantly to the red, potentially covering the 600-650 nm range that standard QW stacks miss at 45 degrees."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Standard QW designs often fail at the red edge of the visible band at 45 degrees due to blue shift. By deliberately breaking the QW condition with a high H/L ratio, we attempt to push the s-band edge back into the visible, sacrificing some p-performance but gaining in the unpolarized mean if the s-band fills the gap."
+    }
+  ]
+}
