@@ -1,0 +1,83 @@
+{
+  "schema_version": "t036.local_harness_attempts.v1",
+  "task": "R3-T036",
+  "tested_source_sha": "408fef514d4ed156ffde03c868a26cea3aba9dfa",
+  "scope": "documentation-only record of bounded local helper attempts; no rerun authorized or performed after attempt04",
+  "material_preflight_attempts": [
+    {
+      "attempt": 1,
+      "raw_log": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_MATERIAL_PREFLIGHT_attempt01.log",
+      "partial_reports": [
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_PRECHECK_attempt01.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_ACCEPTANCE_attempt01.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/material-preflight/T036_CONSUMER_BINDING_attempt01.json"
+      ],
+      "observed": "Inventory, source binding and unchanged-question checks passed; consumer prepare and fixture preflight ran, but exact identity comparison failed for local CSV records because the resolver returned lowercase names (hfo2/tio2/al2o3) while the first mapping used canonical material strings.",
+      "repair_reason": "Align local execution record material fields with the actual resolved local record identities; preserve the failed reports and log."
+    },
+    {
+      "attempt": 2,
+      "raw_log": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_MATERIAL_PREFLIGHT_attempt02.log",
+      "partial_reports": [
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_PRECHECK_attempt02.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_ACCEPTANCE_attempt02.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/material-preflight/T036_CONSUMER_BINDING_attempt02.json"
+      ],
+      "observed": "Consumer identity binding passed and fixture preflight was ready; rejected ZrO2 sampling exceptions omitted resolved record provenance and source hash.",
+      "repair_reason": "Retain resolved ref, record filepath, source path and source SHA for rejected/uncovered records so no catalog record is silently dropped."
+    },
+    {
+      "attempt": 3,
+      "raw_log": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_MATERIAL_PREFLIGHT_attempt03.log",
+      "partial_reports": [
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_PRECHECK_attempt03.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_ACCEPTANCE_attempt03.json",
+        "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/material-preflight/T036_CONSUMER_BINDING_attempt03.json"
+      ],
+      "observed": "Inventory, source/question bindings, consumer identity and fixture preflight passed; ZrO2 rejection retained with exact RII record identity and cache hash.",
+      "repair_reason": "Complete acceptance input-hash coverage with the remaining T036 packet artifacts RELEASE.json, SOURCE_BLOCKER.json and T036.bundle; no behavioral change."
+    },
+    {
+      "attempt": 4,
+      "raw_log": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_MATERIAL_PREFLIGHT_attempt04.log",
+      "observed": "Final helper output: source unchanged, question/source bindings passed, 7 executable film records passed full 846-point n/k coverage without extrapolation, ZrO2 remained explicitly rejected, consumer identity and fixture preflight passed.",
+      "final_report": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_LOCAL_ACCEPTANCE.json",
+      "no_further_helper_run": true
+    }
+  ],
+  "targeted_tests": {
+    "ran_only_once": true,
+    "attempt_count": 1,
+    "argv": [
+      "D:/OptoMind-Article-3/local-integration/20261013/envs/tensor/Scripts/python.exe",
+      "-B",
+      "-X",
+      "utf8",
+      "-m",
+      "pytest",
+      "-q",
+      "focused_research/tests/test_material_capability_contract.py",
+      "focused_research/tests/test_category_material_consumer.py",
+      "--disable-socket"
+    ],
+    "raw_log": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/T036_TARGETED_TESTS_attempt01.log",
+    "result": "51 passed, 2 failed, exit 1",
+    "failed_tests": [
+      "test_source_hash_cache_reuses_reads_and_invalidates_changed_source[local_csv-sio2]",
+      "test_source_hash_cache_reuses_reads_and_invalidates_changed_source[rii_sqlite-1]"
+    ],
+    "failure_observed": "Both expected a second source read after content mutation with restored size/mtime; observed reads==1. No source fix or test rerun was made."
+  },
+  "parent_windows_cache_repro": {
+    "script": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/parent_windows_cache_repro.py",
+    "report": "D:/OptoMind-Article-3/local-r3-handoff/tasks/R3-T036/preflight/MINIMAL_WINDOWS_CACHE_REPRO.json",
+    "parent_observation": "Isolated Windows toy repro confirms the cache signature fields remain equal while actual content SHA changes and the cached hash remains stale; this is the real core failure."
+  },
+  "preservation": {
+    "first_failure_outputs_preserved": true,
+    "raw_attempt_logs_preserved": true,
+    "source_modified": false,
+    "network_model_retrieval_physics_or_ledger_calls": 0,
+    "no_assertions_removed": true
+  }
+}

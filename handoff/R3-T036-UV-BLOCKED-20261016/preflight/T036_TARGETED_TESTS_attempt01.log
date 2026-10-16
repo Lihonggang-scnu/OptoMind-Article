@@ -1,0 +1,86 @@
+..................................................FF.                    [100%]
+================================== FAILURES ===================================
+_ test_source_hash_cache_reuses_reads_and_invalidates_changed_source[local_csv-sio2] _
+
+registry = <tmm_engine.material_registry.MaterialRegistry object at 0x00000246EB464E60>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000246FFD81820>
+provider = 'local_csv', dataset = 'sio2'
+
+    @pytest.mark.parametrize('provider,dataset', [('local_csv', 'sio2'), ('rii_sqlite', 1)])
+    def test_source_hash_cache_reuses_reads_and_invalidates_changed_source(registry, monkeypatch, provider, dataset):
+        row = category_instance({'material': 'sio2', 'provider': provider, 'dataset_id': dataset})
+        path = (registry.local_provider.materials_dir / 'sio2.csv'
+            if provider == 'local_csv' else registry.rii_provider.db_path).resolve()
+        original_open = Path.open
+        reads = []
+    
+        def counted_open(self, mode='r', *args, **kwargs):
+            if self == path and mode == 'rb':
+                reads.append(self)
+            return original_open(self, mode, *args, **kwargs)
+    
+        monkeypatch.setattr(Path, 'open', counted_open)
+        first = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+        assert len(reads) == 1
+        assert prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256'] == first
+        assert len(reads) == 1
+        previous = path.stat()
+        if provider == 'local_csv':
+            path.write_text(path.read_text().replace('1.5', '1.6'))
+        else:
+            with sqlite3.connect(path) as connection:
+                connection.execute('UPDATE refractiveindex SET refindex=1.6 WHERE pageid=1')
+        # Content changes must invalidate even if size and mtime are preserved.
+        assert path.stat().st_size == previous.st_size
+        os.utime(path, ns=(previous.st_atime_ns, previous.st_mtime_ns))
+        assert path.stat().st_mtime_ns == previous.st_mtime_ns
+        second = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+>       assert len(reads) == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = len([WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1975/test_source_hash_cache_reuses_0/materials/sio2.csv')])
+
+focused_research\tests\test_category_material_consumer.py:244: AssertionError
+_ test_source_hash_cache_reuses_reads_and_invalidates_changed_source[rii_sqlite-1] _
+
+registry = <tmm_engine.material_registry.MaterialRegistry object at 0x00000246FFD829C0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x00000246FFD828D0>
+provider = 'rii_sqlite', dataset = 1
+
+    @pytest.mark.parametrize('provider,dataset', [('local_csv', 'sio2'), ('rii_sqlite', 1)])
+    def test_source_hash_cache_reuses_reads_and_invalidates_changed_source(registry, monkeypatch, provider, dataset):
+        row = category_instance({'material': 'sio2', 'provider': provider, 'dataset_id': dataset})
+        path = (registry.local_provider.materials_dir / 'sio2.csv'
+            if provider == 'local_csv' else registry.rii_provider.db_path).resolve()
+        original_open = Path.open
+        reads = []
+    
+        def counted_open(self, mode='r', *args, **kwargs):
+            if self == path and mode == 'rb':
+                reads.append(self)
+            return original_open(self, mode, *args, **kwargs)
+    
+        monkeypatch.setattr(Path, 'open', counted_open)
+        first = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+        assert len(reads) == 1
+        assert prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256'] == first
+        assert len(reads) == 1
+        previous = path.stat()
+        if provider == 'local_csv':
+            path.write_text(path.read_text().replace('1.5', '1.6'))
+        else:
+            with sqlite3.connect(path) as connection:
+                connection.execute('UPDATE refractiveindex SET refindex=1.6 WHERE pageid=1')
+        # Content changes must invalidate even if size and mtime are preserved.
+        assert path.stat().st_size == previous.st_size
+        os.utime(path, ns=(previous.st_atime_ns, previous.st_mtime_ns))
+        assert path.stat().st_mtime_ns == previous.st_mtime_ns
+        second = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+>       assert len(reads) == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = len([WindowsPath('C:/Users/Administrator/AppData/Local/Temp/pytest-of-Administrator/pytest-1975/test_source_hash_cache_reuses_1/rii.db')])
+
+focused_research\tests\test_category_material_consumer.py:244: AssertionError
+=========================== short test summary info ===========================
+FAILED focused_research/tests/test_category_material_consumer.py::test_source_hash_cache_reuses_reads_and_invalidates_changed_source[local_csv-sio2]
+FAILED focused_research/tests/test_category_material_consumer.py::test_source_hash_cache_reuses_reads_and_invalidates_changed_source[rii_sqlite-1]
+2 failed, 51 passed in 1.15s
