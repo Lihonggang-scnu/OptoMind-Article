@@ -5,7 +5,88 @@ future execution. This adapter neither creates optimization weights nor claims
 that a prepared instance passed physical checks.
 """
 from copy import deepcopy
+from functools import lru_cache
+import hashlib
 import math
+from pathlib import Path
+
+try:
+    from .material_capabilities import canonical_dielectric, validate_material_capabilities
+except ImportError:
+    from material_capabilities import canonical_dielectric, validate_material_capabilities
+
+
+def _material_registry():
+    # Keep the historical finite/constant adapter free of registry imports.
+    try:
+        from .research_execution import _engine
+    except ImportError:
+        from research_execution import _engine
+    _engine()
+    from tmm_engine.material_registry import MaterialRegistry
+    return MaterialRegistry()
+
+
+def _source_signature(path):
+    stat = path.stat()
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+
+
+@lru_cache(maxsize=128)
+def _source_sha256(path, signature):
+    """Reuse unchanged local sources across candidates, never caller hashes."""
+    digest = hashlib.sha256()
+    with path.open('rb') as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b''):
+            digest.update(block)
+    if _source_signature(path) != signature:
+        raise ValueError('material record source changed while hashing; repeat preparation')
+    return digest.hexdigest()
+
+
+def _category_bindings(instance, optical_media):
+    """Bind category-layer aliases to real local records, without sampling n/k.
+
+    A record identity and source hash do not establish spectral coverage or
+    physical feasibility. Existing execution preflight remains authoritative.
+    """
+    constraints = instance.get('design_constraints', {})
+    if not isinstance(constraints, dict):
+        raise ValueError('design_constraints requires an object')
+    inventory = validate_material_capabilities(constraints)
+    if 'allowed_material_category' not in constraints:
+        return None
+    if inventory is None:
+        raise ValueError('category material binding requires execution_materials inventory')
+    selected = {}
+    for layer in instance['layers']:
+        alias = layer['material']
+        if not isinstance(alias, str) or alias not in inventory:
+            raise ValueError('category layer material lacks execution inventory record: ' + str(alias))
+        if optical_media.get(alias) != inventory[alias]:
+            raise ValueError('category optical mapping must exactly match execution inventory: ' + alias)
+        selected[alias] = inventory[alias]
+    registry, bindings = _material_registry(), {}
+    for alias, record in selected.items():
+        ref = registry.resolve(record['material'], provider=record['provider'],
+                               dataset_id=record['dataset_id'])
+        # RII may match a query against a page/path and echo the query as its
+        # ref.name. The actual book is the chemical identity, not that echo.
+        resolved_material = ref.book if ref.provider == 'rii_sqlite' else ref.name
+        if ref.provider != record['provider'] or canonical_dielectric(resolved_material) != alias:
+            raise ValueError('resolved material record chemical identity differs from category alias: ' + alias)
+        path = Path(registry.rii_provider.db_path if ref.provider == 'rii_sqlite' else ref.filepath)
+        path = path.resolve()
+        bindings[alias] = {'material': resolved_material, 'provider': ref.provider,
+            'dataset_id': ref.dataset_id, 'source_path': str(path),
+            'source_sha256': _source_sha256(path, _source_signature(path)),
+            'record_filepath': ref.filepath,
+            'book': ref.book, 'page': ref.page}
+    return {'schema_version': 'focused_research.material_capability_binding.v1',
+        'allowed_material_category': constraints['allowed_material_category'],
+        'scope': 'selected_layer_record_identity_only',
+        'coverage_verified': False, 'numerical_preflight_required': True,
+        'bindings': bindings}
 
 
 def prepare_tmm_inputs(instance, *, optical_media, wavelengths_nm):
@@ -59,7 +140,8 @@ def prepare_tmm_inputs(instance, *, optical_media, wavelengths_nm):
         layers.append({**medium(layer['material']), 'thickness_nm': thickness})
     if not layers:
         raise ValueError('at least one layer required')
-    return {
+    binding = _category_bindings(instance, optical_media)
+    output = {
         'status': 'prepared_requires_material_and_numerical_preflight',
         'route_id': instance['route_id'], 'instance_id': instance['instance_id'],
         'simulation_performed': False, 'objectives': objectives,
@@ -79,3 +161,7 @@ def prepare_tmm_inputs(instance, *, optical_media, wavelengths_nm):
             'allow_material_extrapolation': False, 'requested_outputs': ['R', 'T', 'A']
         }
     }
+    if binding is not None:
+        output['design_constraints'] = deepcopy(instance['design_constraints'])
+        output['material_capability_binding'] = binding
+    return output

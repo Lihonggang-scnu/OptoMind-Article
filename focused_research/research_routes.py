@@ -16,10 +16,12 @@ try:
     from . import task_sheet as task_contract
     from .material_evidence import prompt_evidence_view, select_prompt_evidence
     from .route_quality import contract_change_audit
+    from .material_capabilities import canonical_dielectric, validate_material_capabilities
 except ImportError:
     import task_sheet as task_contract
     from material_evidence import prompt_evidence_view, select_prompt_evidence
     from route_quality import contract_change_audit
+    from material_capabilities import canonical_dielectric, validate_material_capabilities
 
 SCHEMA = 'focused_research.research_routes.v2'
 LEGACY_SCHEMA = 'focused_research.research_routes.v1'
@@ -74,9 +76,15 @@ def _number(value):
 def _inputs(sheet, evidence, constraints):
     task_contract.validate(sheet)
     fields = ['allowed_materials', 'max_layers', 'substrate', 'incident_medium']
-    _obj(constraints, fields + ['constraint_source_ids', 'assumptions'], 'design_constraints')
+    category_mode = isinstance(constraints, dict) and bool(
+        {'allowed_material_category', 'execution_materials'} & set(constraints))
+    if category_mode:
+        fields += ['allowed_material_category']
+    _obj(constraints, fields + ['constraint_source_ids', 'assumptions']
+         + (['execution_materials'] if category_mode else []), 'design_constraints')
     _obj(constraints['constraint_source_ids'], fields, 'constraint_source_ids')
-    if not isinstance(constraints['assumptions'], dict) or not set(constraints['assumptions']).issubset(fields):
+    assumption_fields = fields + (['execution_materials'] if category_mode else [])
+    if not isinstance(constraints['assumptions'], dict) or not set(constraints['assumptions']).issubset(assumption_fields):
         _fail('assumptions', 'requires explanations keyed by constraint field')
     cids = {c['id'] for c in sheet['explicit_constraints']}
     for field in fields:
@@ -85,6 +93,13 @@ def _inputs(sheet, evidence, constraints):
             _text(constraints['assumptions'][field], 'assumptions.' + field)
         if constraints[field] is not None and not constraints['constraint_source_ids'][field] and field not in constraints['assumptions']:
             _fail(field, 'requires existing task constraint IDs or an explicit configuration assumption')
+    if category_mode:
+        _refs(constraints['constraint_source_ids']['allowed_material_category'], cids,
+              'constraint_source_ids.allowed_material_category', 1)
+        if constraints['constraint_source_ids']['allowed_materials']:
+            _fail('allowed_materials', 'null finite permission must not claim category source IDs')
+        _text(constraints['assumptions'].get('execution_materials'), 'assumptions.execution_materials')
+        validate_material_capabilities(constraints)
     materials = constraints['allowed_materials']
     if materials is not None:
         _list(materials, 'allowed_materials')
@@ -123,10 +138,15 @@ def _family(family, constraints, path):
         if not isinstance(bounds, list) or len(bounds) != 2 or not all(_number(v) for v in bounds) or not 0 < bounds[0] <= bounds[1]:
             _fail(path + '.variable', 'requires finite positive [min_nm,max_nm]')
     used = set()
+    inventory = validate_material_capabilities(constraints)
     for layer in layers:
         _obj(layer, ['material', 'thickness_nm'], path + '.layer')
         if not isinstance(layer['material'], str) or (constraints['allowed_materials'] is not None and layer['material'] not in constraints['allowed_materials']):
             _fail(path + '.material', 'material not permitted by task')
+        if constraints.get('allowed_material_category') and canonical_dielectric(layer['material']) is None:
+            _fail(path + '.material', 'material has no reviewed dielectric category membership for execution')
+        if inventory is not None and layer['material'] not in inventory:
+            _fail(path + '.material', 'material unavailable in execution inventory; broad user category is unchanged')
         thickness = layer['thickness_nm']
         if isinstance(thickness, str) and thickness in variables:
             used.add(thickness)
@@ -155,7 +175,9 @@ def revision_reasons(route, sheet, design_constraints=None):
     """Structural blockers only; evidence strength is deliberately not scored."""
     reasons = []
     if design_constraints is not None:
-        reasons.extend('missing configuration: ' + key for key in ['allowed_materials', 'max_layers', 'substrate', 'incident_medium'] if design_constraints[key] is None)
+        material_field = ('execution_materials' if design_constraints.get('allowed_material_category')
+                          else 'allowed_materials')
+        reasons.extend('missing configuration: ' + key for key in [material_field, 'max_layers', 'substrate', 'incident_medium'] if design_constraints[key] is None)
     if sheet['readiness'] != 'ready':
         reasons.append('task sheet needs revision')
     for field in ('claim', 'family'):
