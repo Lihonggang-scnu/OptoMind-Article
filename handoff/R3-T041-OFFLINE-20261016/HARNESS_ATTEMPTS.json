@@ -1,0 +1,71 @@
+{
+  "schema_version": "T041_LOCAL_HARNESS_ATTEMPTS.v1",
+  "task_id": "R3-T041",
+  "note": "Raw helper failures are preserved; the exact four tests and saved replay were each executed once.",
+  "attempts": [
+    {
+      "id": "inspect-attempt00",
+      "kind": "read-only-inspection",
+      "status": "failed",
+      "cause": "PowerShell passed literal backslash-n sequences inside -c, producing SyntaxError: unexpected character after line continuation character.",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\inspect-attempt00-failure.log",
+      "repair": "Created an owned Python inspection helper; no acceptance check had run."
+    },
+    {
+      "id": "test-attempt01",
+      "kind": "targeted-tests",
+      "status": "passed",
+      "exit_code": 0,
+      "argv_record": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\test-attempt01\\argv.txt",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\test-attempt01\\pytest.log",
+      "observed": "114 passed in 0.80s"
+    },
+    {
+      "id": "replay-attempt01",
+      "kind": "saved-route-replay",
+      "status": "passed",
+      "exit_code": 0,
+      "argv_record": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\replay-attempt01\\argv.txt",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\replay-attempt01\\replay.log",
+      "observed": "10 accepted routes, 18 prepared instances, 2 isolated invalid instances"
+    },
+    {
+      "id": "audit-attempt01",
+      "kind": "acceptance-wrapper",
+      "status": "failed",
+      "exit_code": 2,
+      "argv_record": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt01\\argv.txt",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt01\\audit.log",
+      "cause": "Relative helper path was resolved under the fixed source cwd; Python could not open source\\preflight\\audit_t041.py.",
+      "repair": "Reran only the audit wrapper by absolute task-owned helper path."
+    },
+    {
+      "id": "audit-attempt02",
+      "kind": "acceptance-wrapper",
+      "status": "failed",
+      "exit_code": 1,
+      "argv_record": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt02\\argv.txt",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt02\\audit.log",
+      "failure_report": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\T041_LOCAL_ACCEPTANCE_attempt02_failure.json",
+      "cause": "Initial strict-protection probe used R2, whose D4 source quote is intentionally unverified; the corrected candidate-ready strict rejection could not isolate the readiness error.",
+      "repair": "Preserved the failed report, switched the pure probe to R6 with exact D1/D2 quotes, and reran only the audit wrapper; tests and replay were not rerun."
+    },
+    {
+      "id": "audit-attempt03",
+      "kind": "acceptance-wrapper",
+      "status": "passed",
+      "exit_code": 0,
+      "argv_record": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt03\\argv.txt",
+      "raw_log": "D:\\OptoMind-Article-3\\local-r3-handoff\\tasks\\R3-T041\\preflight\\audit-attempt03\\audit.log",
+      "observed": "global_pass true; all acceptance checks passed"
+    },
+    {
+      "id": "final-readback-attempt01",
+      "kind": "acceptance-json-readback",
+      "status": "failed_then_repaired",
+      "cause": "Post-audit reference update wrote a literal backslash-n suffix, so JSON parsing reported Extra data at the final line.",
+      "repair": "Removed only the literal suffix, wrote a real newline, and re-read acceptance plus preserved failure JSON successfully.",
+      "raw_error": "JSONDecodeError: Extra data: line 2830 column 2"
+    }
+  ]
+}
