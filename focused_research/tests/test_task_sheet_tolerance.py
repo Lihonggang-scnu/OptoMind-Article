@@ -46,11 +46,12 @@ def test_all_goals_can_have_descriptive_physical_tradeoff_without_repair():
     outcome = ts.generate(analysis['original_question'], planner)
     assert outcome['status'] == 'ok' and outcome['first_hit']
     assert len(planner.calls) == 1 and outcome['revision_rounds'] == 0
-    assert outcome['task_sheet'] == before
+    expected = ts.prepare_analysis(analysis['original_question'], before)[0]
+    assert outcome['task_sheet'] == expected
     assert outcome['task_sheet']['goal_relationships']['priority_order'] is None
     assert outcome['rounds'][0]['normalization_audit'] == []
     assert outcome['rounds'][0]['raw_response'] == planner.raw
-    assert outcome['rounds'][0]['effective_task_sheet'] == before
+    assert outcome['rounds'][0]['effective_task_sheet'] == expected
     assert analysis == before
 
 
@@ -83,8 +84,10 @@ def test_optional_span_demotion_is_lossless_explicit_and_idempotent():
         'source_path': 'known_data[0]', 'destination_path': 'unknowns_assumptions[2]',
         'reason': 'original_span_not_exact_native_question',
         'raw_row': before['known_data'][0], 'effective_row': demoted}]
-    for key in set(before) - {'original_question', 'known_data', 'unknowns_assumptions'}:
+    for key in set(before) - {'original_question', 'known_data', 'unknowns_assumptions', 'subgoals'}:
         assert sheet[key] == before[key]
+    for actual, original in zip(sheet['subgoals'], before['subgoals']):
+        assert actual == {**original, 'quote_status': ts.EXACT_GOAL_QUOTE}
     repeated = ts.prepare_analysis(question, sheet)
     assert repeated[0] == sheet
     assert repeated[1] == []
@@ -161,7 +164,7 @@ def test_demotion_does_not_hide_structurally_invalid_metadata(row):
         ts.validate(prepared[0])
 
 
-@pytest.mark.parametrize('field', ['subgoals', 'explicit_constraints', 'unsupported_requirements'])
+@pytest.mark.parametrize('field', ['explicit_constraints', 'unsupported_requirements'])
 def test_metadata_demotion_cannot_repair_goal_or_requirement_provenance(field):
     analysis = unverified_example()
     if field == 'unsupported_requirements':
@@ -230,9 +233,12 @@ def test_partial_indirect_research_links_are_preserved_and_advisory(links):
     analysis['search_queries'][0]['research_question_ids'] = links
     before = copy.deepcopy(analysis)
     sheet, audit = ts.prepare_analysis(analysis['original_question'], analysis)
-    assert sheet == before and analysis == before
-    assert ts.validate(sheet) == before
-    assert ts.validate_adapter(ts.adapt(sheet))['task_sheet'] == before
+    expected = copy.deepcopy(before)
+    for goal in expected['subgoals']:
+        goal['quote_status'] = ts.EXACT_GOAL_QUOTE
+    assert sheet == expected and analysis == before
+    assert ts.validate(sheet) == expected
+    assert ts.validate_adapter(ts.adapt(sheet))['task_sheet'] == expected
     first = audit[0]
     assert first['operation'] == 'retain_optional_query_links'
     assert first['source_path'] == 'search_queries[0].research_question_ids'

@@ -11,7 +11,8 @@ def test_recorded_second_response_recovers_without_model_or_metric_edits(fixture
     original=copy.deepcopy(fixture['analysis'])
     sheet,audit=rec.prepare_recovered_analysis(fixture['case_id'],fixture['question'],original)
     assert original==fixture['analysis']
-    assert sheet['subgoals']==original['subgoals']
+    assert [{k: v for k, v in g.items() if k != 'quote_status'}
+            for g in sheet['subgoals']] == original['subgoals']
     assert sheet['explicit_constraints']==original['explicit_constraints']
     assert sheet['original_question']==fixture['question']
     assert sheet['readiness']=='ready'

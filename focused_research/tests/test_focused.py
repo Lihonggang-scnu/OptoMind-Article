@@ -312,7 +312,7 @@ def test_task_contract_fail_closed_before_calls(tmp_path, mutation):
 
 def test_task_repair_and_raw_history(monkeypatch,tmp_path):
     import optomind_research.query_planner as pm
-    good=task_sheet(); bad=task_sheet(); bad['subgoals'][0]['original_span']='invented unsupported span'
+    good=task_sheet(); bad=task_sheet(); bad['subgoals'][0]['executable_metric']['metric']='invented_unsupported_metric'
     outputs=iter([bad,good]); calls=[]
     def fake(*args,**kwargs):
         calls.append(args)
@@ -320,7 +320,7 @@ def test_task_repair_and_raw_history(monkeypatch,tmp_path):
     monkeypatch.setattr(pm,'call_qwen_chat',fake)
     out=r.generate_plan(good['original_question'],tmp_path)
     assert out['status']=='ok' and out['revision_rounds']==1
-    assert out['rounds'][0]['raw_task_sheet']['subgoals'][0]['original_span']=='invented unsupported span'
+    assert out['rounds'][0]['raw_task_sheet']['subgoals'][0]['executable_metric']['metric']=='invented_unsupported_metric'
     assert 'validation_error' in json.loads(calls[1][1][1]['content'])
 
 

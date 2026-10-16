@@ -18,6 +18,9 @@ ENDPOINTS = {'paper_search': 'keyword_queries', 'snippet_search': 'question_quer
 METRICS = {'mean_reflectance', 'mean_transmittance', 'mean_absorption'}
 MEAN_REDUCTIONS = {'sample_mean', 'wavelength_integral_mean'}
 PURPOSES = ['analogous_case', 'material_structure', 'method_transfer', 'mechanism']
+GOAL_KEYS = ['id', 'objective', 'original_span', 'operational_definition', 'executable_metric']
+EXACT_GOAL_QUOTE = 'exact_user_quote'
+UNVERIFIED_GOAL_QUOTE = 'unverified_model_paraphrase'
 ROOT = Path(__file__).resolve().parent
 UNVERIFIED_BACKGROUND = (
     'Unverified model interpretation (not user-provided or accepted truth; '
@@ -31,8 +34,11 @@ def prepare_analysis(question, analysis):
     Keep their statements as explicitly unverified model assumptions instead of
     paying for another planning round. Raw rows remain in the audit; no quote is
     reconstructed. Incomplete optional research-question links are retained with
-    an advisory, never invented. Executable goals, constraints and query text are
-    untouched and still require validate(). Repeated preparation is idempotent;
+    an advisory, never invented. Subgoal quote_status is computed from native
+    input; a nonexact original_span
+    remains unverified model interpretation, never a user fact. Executable
+    metrics, original spans, constraints and query text remain untouched and
+    still require validate(). Repeated preparation is idempotent;
     retained metadata advisories repeat, while completed demotions do not.
     """
     if not isinstance(analysis, dict):
@@ -45,6 +51,22 @@ def prepare_analysis(question, analysis):
 
     def valid_text(value):
         return isinstance(value, str) and bool(value.strip()) and value == value.strip()
+
+    if isinstance(question, str) and isinstance(sheet.get('subgoals'), list):
+        for index, row in enumerate(sheet['subgoals']):
+            if not isinstance(row, dict) or not valid_text(row.get('original_span')):
+                continue
+            status = (EXACT_GOAL_QUOTE if row['original_span'] in question
+                      else UNVERIFIED_GOAL_QUOTE)
+            previous = row.get('quote_status')
+            if previous != status and (status == UNVERIFIED_GOAL_QUOTE or 'quote_status' in row):
+                audit.append({'operation': 'classify_subgoal_quote',
+                    'source_path': f'subgoals[{index}].original_span',
+                    'raw_original_span': row['original_span'],
+                    'raw_quote_status': copy.deepcopy(previous),
+                    'effective_quote_status': status,
+                    'reason': 'native_question_exact_substring_check_only_not_semantic_verification'})
+            row['quote_status'] = status
 
     if isinstance(question, str) and isinstance(known, list) and isinstance(assumptions, list):
         retained = []
@@ -109,11 +131,12 @@ def validate(sheet, *, question=None):
     def rows(value, path, minimum=0):
         if not isinstance(value, list) or len(value) < minimum:
             fail(path, 'requires a list with at least ' + str(minimum) + ' entries')
-    def identifiers(items, keys, path):
+    def identifiers(items, keys, path, optional_keys=()):
         rows(items, path)
         ids = set()
         for row in items:
-            obj(row, keys, path)
+            present = [key for key in optional_keys if isinstance(row, dict) and key in row]
+            obj(row, [*keys, *present], path)
             ident = row['id']
             if not isinstance(ident, str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]*', ident) or ident in ids:
                 fail(path, 'IDs must be unique simple identifiers')
@@ -140,9 +163,21 @@ def validate(sheet, *, question=None):
     if sheet['task_type'] not in TASK_TYPES:
         fail('task_type', 'unsupported task type')
     text(sheet['user_objective'], 'user_objective')
-    goals = identifiers(sheet['subgoals'], ['id', 'objective', 'original_span', 'operational_definition', 'executable_metric'], 'subgoals')
+    goals = identifiers(sheet['subgoals'], GOAL_KEYS, 'subgoals', optional_keys=('quote_status',))
     for row in sheet['subgoals']:
-        text(row['objective'], 'subgoal.objective'); span(row['original_span'], 'subgoal.original_span')
+        text(row['objective'], 'subgoal.objective')
+        text(row['original_span'], 'subgoal.original_span')
+        # Never trust model-supplied provenance. Legacy five-field goals are
+        # accepted only for exact quotes; nonquotes require an explicit label.
+        expected = (EXACT_GOAL_QUOTE if row['original_span'] in sheet['original_question']
+                    else UNVERIFIED_GOAL_QUOTE)
+        if 'quote_status' in row:
+            if row['quote_status'] != expected:
+                fail('subgoal.quote_status', 'must be ' + expected + ' based on original_question')
+        elif expected != EXACT_GOAL_QUOTE:
+            fail('subgoal.original_span', 'nonexact text requires quote_status ' + UNVERIFIED_GOAL_QUOTE)
+        # A provenance label makes no claim that the interpretation, metric,
+        # or objective is semantically supported by the user; that needs review.
         text(row['operational_definition'], 'subgoal.operational_definition', nullable=True)
         metric = row['executable_metric']
         obj(metric, ['objective_id', 'metric', 'sense', 'mean_reduction', 'region'], 'executable_metric')

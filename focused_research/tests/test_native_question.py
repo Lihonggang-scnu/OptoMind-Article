@@ -73,7 +73,7 @@ def test_native_unicode_and_whitespace_are_preserved_exactly():
 
 
 @pytest.mark.parametrize('field', ['subgoals', 'application_intents', 'explicit_constraints', 'unsupported_requirements'])
-def test_invalid_original_spans_still_fail_closed(field):
+def test_native_span_provenance_is_enforced_by_field(field):
     analysis = example()
     question = analysis['original_question']
     invalid_span = 'this text exists only in the model echo'
@@ -87,6 +87,19 @@ def test_invalid_original_spans_still_fail_closed(field):
         analysis[field][0]['original_span'] = invalid_span
     planner = OfflinePlanner(analysis)
     result = ts.generate(question, planner)
+    if field == 'subgoals':
+        assert result['status'] == 'ok' and result['first_hit']
+        assert len(planner.calls) == 1 and result['revision_rounds'] == 0
+        sheet = result['task_sheet']
+        assert sheet['original_question'] == question
+        goal = sheet['subgoals'][0]
+        assert goal['original_span'] == invalid_span
+        assert goal['quote_status'] == ts.UNVERIFIED_GOAL_QUOTE
+        assert result['plan']['task_sheet'] == sheet
+        assert result['rounds'][0]['raw_task_sheet'] == analysis
+        assert result['rounds'][0]['ignored_model_fields'] == ['original_question']
+        assert ts.validate_adapter(result['plan']) is result['plan']
+        return
     assert result['status'] == 'invalid' and result['plan'] == {}
     assert result['task_sheet'] == {}
     assert len(planner.calls) == 2

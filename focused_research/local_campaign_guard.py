@@ -163,6 +163,14 @@ class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
     search_revision may dispatch: at most three conservative attempts total.
     No task-sheet call, transport retry, automatic restart, or resume is added.
 
+    For a continuation sharing an earlier case-attempt ceiling, the caller must
+    supply both prior_dispatch_attempts and cumulative_dispatch_limit after
+    reconciling the original history. The continuation allowance is the smaller
+    of three and the remaining cumulative allowance. Both base stages are
+    reserved; two prior attempts under a four-attempt ceiling permit one route
+    call and one revision, with no route repair. Omitting both parameters keeps
+    the original three-attempt continuation contract and audit shape.
+
     The caller must verify the recovered sheet and its recovery manifest, and
     supply that manifest as recovered_task_sheet_binding. This constructor only
     checks a matching case ID, a canonical SHA-256 string, and JSON audit data;
@@ -170,7 +178,9 @@ class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
     binding accompanies every pre-dispatch durable audit without changing the
     forwarded prompt beyond the inherited CASE_PROTOCOLS.
 
-    Counts cover this continuation only. Prior task-sheet attempts and costs
+    Stage counts cover this continuation only. When explicitly supplied, the
+    prior-attempt limits and conservative cumulative count are separately
+    audited; they do not establish actual HTTP counts. Prior attempts and costs
     remain in the original durable ledger: admission must reconcile and reserve
     against the cumulative per-case/project limits there. Never recreate this
     object to reset attempts after a continuation failure or crash. The caller
@@ -179,7 +189,26 @@ class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
     _stage_order = ('route_generation', 'search_revision')
     _max_dispatch_attempts = 3
 
-    def __init__(self, planner, *, case_id, audit_sink, recovered_task_sheet_binding):
+    def __init__(self, planner, *, case_id, audit_sink, recovered_task_sheet_binding,
+                 prior_dispatch_attempts=None, cumulative_dispatch_limit=None):
+        self._recovered_attempt_budget = None
+        if prior_dispatch_attempts is not None or cumulative_dispatch_limit is not None:
+            if prior_dispatch_attempts is None or cumulative_dispatch_limit is None:
+                raise ValueError('prior_dispatch_attempts and cumulative_dispatch_limit must be supplied together')
+            if type(prior_dispatch_attempts) is not int or prior_dispatch_attempts < 0:
+                raise ValueError('prior_dispatch_attempts must be a nonnegative integer')
+            if type(cumulative_dispatch_limit) is not int or cumulative_dispatch_limit < 1:
+                raise ValueError('cumulative_dispatch_limit must be a positive integer')
+            remaining = cumulative_dispatch_limit - prior_dispatch_attempts
+            if remaining < len(self._stage_order):
+                raise ValueError('cumulative dispatch allowance must reserve route generation and revision')
+            self._max_dispatch_attempts = min(self._max_dispatch_attempts, remaining)
+            self._recovered_attempt_budget = {
+                'prior_dispatch_attempts': prior_dispatch_attempts,
+                'cumulative_dispatch_limit': cumulative_dispatch_limit,
+                'continuation_dispatch_limit': self._max_dispatch_attempts,
+                'actual_http_and_costs_source': 'original_audited_transport_and_ledger',
+            }
         if not isinstance(recovered_task_sheet_binding, dict):
             raise ValueError('explicit recovered_task_sheet_binding object is required')
         if recovered_task_sheet_binding.get('case_id') != case_id:
@@ -200,6 +229,11 @@ class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
     def audit(self):
         snapshot = super().audit
         snapshot['recovered_task_sheet_binding'] = copy.deepcopy(self._recovered_task_sheet_binding)
+        if self._recovered_attempt_budget is not None:
+            budget = copy.deepcopy(self._recovered_attempt_budget)
+            budget['cumulative_conservative_dispatch_attempts'] = (
+                budget['prior_dispatch_attempts'] + snapshot['dispatch_attempts'])
+            snapshot['recovered_attempt_budget'] = budget
         return snapshot
 
 
