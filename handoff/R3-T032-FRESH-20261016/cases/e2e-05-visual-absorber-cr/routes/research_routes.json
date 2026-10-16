@@ -1,0 +1,788 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b",
+      "source_quote": "The spectral characteristics of a typical four-layer structure using the transition metal Cr as the solar absorbing layer [SiO 2 (90nm)/Cr(10nm)/SiO 2 (80nm)/Al(100nm)] are in Fig. 5 to show that a very high optical absorption (>95%) over the wide wavelength range from 400nm to 1200nm can be achieved",
+      "structure_or_method": "Four-layer dielectric/metal/dielectric/metal stack with Cr absorber and Al reflector.",
+      "physical_effect": "High absorption in visible/NIR via interference and multiple reflections; high IR reflection from bottom Al.",
+      "conditions_and_unknowns": [
+        "Specific thicknesses (90/10/80 nm) are for a specific design point; optimal values for strict 400-700 vs 700-2000 split may differ.",
+        "Source uses Al substrate but does not explicitly detail HfO2 substitution effects."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Hypothesize that replacing SiO2 with HfO2 (higher index) or adjusting the dielectric thickness ratio can sharpen the transition between the absorption band (visible) and reflection band (NIR) to better match the task's specific cutoff at 700 nm."
+    },
+    {
+      "id": "D2",
+      "evidence_id": "E_a21f3fbb15b0d603c7761c0542c48b13b1358e044b3a28602fb7098b1e777bce",
+      "source_quote": "Moreover, alternate layers of dielectrics and semi-transparent metals can be used as interference stacks to maximize absorption. The dielectrics are selected to strongly absorb visible light, and the metals are selected to reflect IR light.",
+      "structure_or_method": "Alternating dielectric and semi-transparent metal layers.",
+      "physical_effect": "Interference-enhanced absorption in visible; IR reflection by metal layers.",
+      "conditions_and_unknowns": [
+        "Text contains a likely error stating dielectrics absorb visible light (usually they are transparent spacers); we interpret this as dielectrics enabling absorption via interference in the metal.",
+        "Does not specify HfO2/SiO2 combination specifically."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Propose a multi-cavity stack using HfO2/SiO2 pairs with thin Cr interlayers to broaden the visible absorption bandwidth while maintaining NIR reflectance through the cumulative effect of multiple reflective interfaces."
+    },
+    {
+      "id": "D3",
+      "evidence_id": "E_6b64f066b82f4fe1ca46484b331c60d42edf94c5c362464423524ae0c80edbb1",
+      "source_quote": "The use of HfO2 layer to replace SiO2 improves the absorption at 800 °C.",
+      "structure_or_method": "Substitution of SiO2 with HfO2 in anti-reflection or spacer layers.",
+      "physical_effect": "Improved thermal stability and potentially altered optical impedance matching.",
+      "conditions_and_unknowns": [
+        "Context is high-temperature stability (800 C); optical benefit at room temperature for spectral selectivity is inferred but not explicitly quantified in the snippet.",
+        "Specific layer architecture not fully detailed in snippet."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Utilize HfO2 as the primary high-index spacer instead of SiO2 to leverage its higher refractive index for stronger interference effects in fewer layers, potentially improving the sharpness of the visible/NIR transition."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A simple D/M/D/M stack (Dielectric/Metal/Dielectric/Metal) using HfO2/SiO2 mix and Cr/Al can achieve the spectral split via a single Fabry-Perot cavity tuned to the visible.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The SiO2/Cr/Al mechanism transfers to HfO2/SiO2/Cr/Al by adjusting thickness for the higher index of HfO2.",
+        "A single absorbing Cr layer is sufficient if the cavity Q-factor is optimized."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task specifies normal incidence."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task specifies unpolarized light."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d2"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d3"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d4"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d1": [
+            20,
+            80
+          ],
+          "d2": [
+            5,
+            15
+          ],
+          "d3": [
+            40,
+            120
+          ],
+          "d4": [
+            5,
+            20
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "d1": 50,
+            "d2": 10,
+            "d3": 80,
+            "d4": 10
+          }
+        },
+        {
+          "id": "tuned_visible",
+          "parameters_nm": {
+            "d1": 65,
+            "d2": 8,
+            "d3": 95,
+            "d4": 12
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_visible",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination.",
+          "changed_variables": [
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ],
+          "direction": "decrease",
+          "reason": "Optimizing the cavity resonance to center on the visible band should reduce average reflectance (increase absorption) in G1."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                2000
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "tuned_visible",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination.",
+          "changed_variables": [
+            "d1",
+            "d2",
+            "d3",
+            "d4"
+          ],
+          "direction": "increase",
+          "reason": "Shifting the absorption peak strictly into the visible should restore high reflectance in the NIR band."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "While evidence supports the D/M/D/M topology, the specific substitution of HfO2 as the first layer to tune the input impedance for air incidence relies on standard thin-film physics (higher index reduces physical thickness for quarter-wave condition) rather than a specific cited value for this exact stack."
+    },
+    {
+      "id": "R3",
+      "claim": "Using HfO2 as the sole dielectric spacer maximizes the refractive index contrast, allowing thinner layers to achieve the same phase shift, potentially reducing parasitic absorption in thicker dielectrics.",
+      "clue_ids": [
+        "D3"
+      ],
+      "evidence_ids": [
+        "E_6b64f066b82f4fe1ca46484b331c60d42edf94c5c362464423524ae0c80edbb1"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "High-index HfO2 can replace low-index SiO2 entirely if thicknesses are scaled down.",
+        "Thinner layers reduce the probability of defects and stress."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "d3"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d4"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d1": [
+            20,
+            60
+          ],
+          "d2": [
+            5,
+            15
+          ],
+          "d3": [
+            30,
+            80
+          ],
+          "d4": [
+            5,
+            15
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "mixed_dielectric",
+          "parameters_nm": {
+            "d1": 50,
+            "d2": 10,
+            "d3": 80,
+            "d4": 10
+          }
+        },
+        {
+          "id": "high_index_only",
+          "parameters_nm": {
+            "d1": 35,
+            "d2": 10,
+            "d3": 55,
+            "d4": 10
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "mixed_dielectric",
+          "candidate_instance_id": "high_index_only",
+          "controlled_conditions": "Same number of layers; dielectric material changed to pure HfO2.",
+          "changed_variables": [
+            "d1",
+            "d3"
+          ],
+          "direction": "decrease",
+          "reason": "Higher index contrast may provide better impedance matching at the air interface with thinner layers."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Evidence cites HfO2 for thermal stability; the optical advantage of an all-HfO2 spacer system for visible/NIR splitting is a physical inference based on index contrast principles, not explicitly claimed in the source for this spectral range."
+    },
+    {
+      "id": "R5",
+      "claim": "Increasing the number of Cr/HfO2 periods creates a Bragg-like reflector in the NIR while maintaining absorption in the visible through lossy resonance.",
+      "clue_ids": [
+        "D2"
+      ],
+      "evidence_ids": [
+        "E_a21f3fbb15b0d603c7761c0542c48b13b1358e044b3a28602fb7098b1e777bce"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "Periodic structures can be tuned to reflect specific bands (NIR) while losses in the metal handle the visible.",
+        "More layers allow sharper spectral features."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "dM"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "dM"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "dM"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            40,
+            90
+          ],
+          "dM": [
+            5,
+            12
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "3_period",
+          "parameters_nm": {
+            "dH": 60,
+            "dM": 8
+          }
+        },
+        {
+          "id": "5_period",
+          "parameters_nm": {
+            "dH": 60,
+            "dM": 8
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                2000
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "3_period",
+          "candidate_instance_id": "5_period",
+          "controlled_conditions": "Layer materials and individual thicknesses constant; stack height increased.",
+          "changed_variables": [],
+          "direction": "increase",
+          "reason": "Adding periods to a distributed Bragg reflector (even with lossy metals) typically increases reflectance in the stopband (NIR) if the period is tuned correctly."
+        }
+      ],
+      "open_requirements": [
+        "Note: This instance pair currently has no changed variables. A valid test requires changing dH or dM to tune the stopband position relative to 700nm."
+      ],
+      "readiness": "needs_revision",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R6",
+      "claim": "Optimizing the thickness of the bottom Cr layer specifically for IR reflectance while keeping the top structure optimized for visible absorption.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The bottom metal layer thickness primarily influences IR reflectance once it exceeds the skin depth.",
+        "Visible absorption is dominated by the top cavity."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "d3"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d4"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d1": [
+            50,
+            100
+          ],
+          "d2": [
+            5,
+            15
+          ],
+          "d3": [
+            50,
+            100
+          ],
+          "d4": [
+            10,
+            50
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "thin_bottom",
+          "parameters_nm": {
+            "d1": 80,
+            "d2": 10,
+            "d3": 80,
+            "d4": 15
+          }
+        },
+        {
+          "id": "thick_bottom",
+          "parameters_nm": {
+            "d1": 80,
+            "d2": 10,
+            "d3": 80,
+            "d4": 40
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                700,
+                2000
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "thin_bottom",
+          "candidate_instance_id": "thick_bottom",
+          "controlled_conditions": "Top cavity fixed; only bottom Cr thickness varied.",
+          "changed_variables": [
+            "d4"
+          ],
+          "direction": "increase",
+          "reason": "Increasing the bottom Cr thickness ensures it acts as an opaque mirror for NIR, minimizing transmission into the substrate (if any) and maximizing reflection."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Evidence supports the role of the bottom metal as an IR reflector. The specific decoupling assumption that thickening it beyond ~20nm yields diminishing returns for visible absorption but helps NIR reflectance is based on skin-depth physics."
+    },
+    {
+      "id": "R8",
+      "claim": "Using a SiO2 top layer instead of HfO2 reduces surface reflection due to better index matching with air, even if HfO2 is used internally.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1"
+      ],
+      "transfer_assumptions": [],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "SiO2",
+            "thickness_nm": "d_top"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "d_mid"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d_abs"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "d_bot"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d_ref"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d_top": [
+            50,
+            110
+          ],
+          "d_mid": [
+            30,
+            70
+          ],
+          "d_abs": [
+            5,
+            15
+          ],
+          "d_bot": [
+            30,
+            70
+          ],
+          "d_ref": [
+            5,
+            15
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "hf_top",
+          "parameters_nm": {
+            "d_top": 60,
+            "d_mid": 50,
+            "d_abs": 10,
+            "d_bot": 50,
+            "d_ref": 10
+          }
+        },
+        {
+          "id": "sio2_top",
+          "parameters_nm": {
+            "d_top": 90,
+            "d_mid": 50,
+            "d_abs": 10,
+            "d_bot": 50,
+            "d_ref": 10
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "hf_top",
+          "candidate_instance_id": "sio2_top",
+          "controlled_conditions": "Internal stack fixed; only top layer material and thickness changed.",
+          "changed_variables": [
+            "d_top"
+          ],
+          "direction": "decrease",
+          "reason": "SiO2 (n~1.45) is closer to air (n=1) than HfO2 (n~1.9), providing a better single-layer antireflection condition at the front surface."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "needs_revision",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Standard antireflection coating theory suggests low-index materials are superior for the air-interface layer. This is a direct application of Fresnel equations, not requiring specific experimental evidence for this multilayer context."
+    },
+    {
+      "id": "R9",
+      "claim": "A symmetric cavity design (Dielectric/Metal/Dielectric) on top of the reflector might produce a sharper absorption peak than an asymmetric one.",
+      "clue_ids": [],
+      "evidence_ids": [],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "aluminum",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d2"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "d1"
+          },
+          {
+            "material": "Cr",
+            "thickness_nm": "d3"
+          }
+        ],
+        "thickness_variables_nm": {
+          "d1": [
+            40,
+            90
+          ],
+          "d2": [
+            5,
+            15
+          ],
+          "d3": [
+            5,
+            15
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "asymmetric",
+          "parameters_nm": {
+            "d1": 60,
+            "d2": 10,
+            "d3": 10
+          }
+        },
+        {
+          "id": "symmetric_check",
+          "parameters_nm": {
+            "d1": 70,
+            "d2": 8,
+            "d3": 8
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_reflectance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                400,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "asymmetric",
+          "candidate_instance_id": "symmetric_check",
+          "controlled_conditions": "Enforcing d_top = d_mid.",
+          "changed_variables": [
+            "d1",
+            "d2",
+            "d3"
+          ],
+          "direction": "decrease",
+          "reason": "Symmetric cavities often support standing wave modes with maximum field intensity at the center (metal layer), potentially enhancing absorption efficiency."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "needs_revision",
+      "basis_mode": "model_knowledge",
+      "model_knowledge_rationale": "Resonant cavity theory suggests symmetry can enhance field buildup. Whether this translates to broadband integral improvement over an optimized asymmetric design is an open question suitable for testing."
+    }
+  ]
+}

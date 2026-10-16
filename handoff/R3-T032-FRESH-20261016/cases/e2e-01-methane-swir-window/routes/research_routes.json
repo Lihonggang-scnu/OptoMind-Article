@@ -1,0 +1,376 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D1",
+      "evidence_id": "E_1a57cc1a35727685e9f15f16fcce3632d8444f2ff9d9e4d7c2220202e67e8ee8",
+      "source_quote": "The proposed design consists of a cascaded dielectric multilayer architecture combining SiOF, Si3N4, and BaSnO3 to achieve high visible-light transmittance together with broadband NIR rejection.",
+      "structure_or_method": "Cascaded dielectric multilayer architecture for spectral separation.",
+      "physical_effect": "High transmission in one band with broadband rejection in another via photonic band gap.",
+      "conditions_and_unknowns": [
+        "Uses different materials (SiOF, Si3N4, BaSnO3) than the task (HfO2, SiO2).",
+        "Targets visible/NIR separation, not UV/SWIR.",
+        "Simulated under lossless-dielectric approximation."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Hypothesize that a cascaded stack principle using HfO2/SiO2 can similarly separate the UV/Blue reflection band from the SWIR transmission band by tuning layer optical thicknesses."
+    },
+    {
+      "id": "D4",
+      "evidence_id": "E_1e40795268d4914a7f14dcf2cc3122898f0d6e6e2822cbfc83b7037f32823cee",
+      "source_quote": "Our designed mirror based on TiO2/SiO2 shows an average transmission of less than 5 % in the spectrum range of 425-610 nm whereas it has an average transmission of 95 % in the spectrum range of 710-1500 nm.",
+      "structure_or_method": "Cold mirror design using alternating high/low index layers (TiO2/SiO2).",
+      "physical_effect": "Strong reflection in visible/near-UV and high transmission in NIR/SWIR.",
+      "conditions_and_unknowns": [
+        "Uses TiO2 instead of HfO2.",
+        "Designed for 45 degree incidence.",
+        "Transition edge is around 610-710 nm, different from the required 450-1000 nm gap."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "inference_bridge": "Transfer the cold mirror topology (alternating stacks) to HfO2/SiO2, hypothesizing that shifting the quarter-wave center wavelength can move the reflection band to 300-450 nm while maintaining SWIR transmission."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A standard quarter-wave stack centered in the UV/Blue band will create a high-reflectance stopband there, while allowing transmission in the SWIR band due to higher-order passbands.",
+      "clue_ids": [
+        "D4"
+      ],
+      "evidence_ids": [
+        "E_1e40795268d4914a7f14dcf2cc3122898f0d6e6e2822cbfc83b7037f32823cee"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The cold mirror mechanism using TiO2/SiO2 transfers to HfO2/SiO2 despite the lower index contrast of HfO2.",
+        "Centering the fundamental stopband at ~375 nm (midpoint of 300-450 nm) will sufficiently cover the UV/Blue goal without excessively encroaching on the SWIR band."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task execution assumption specifies normal incidence."
+        },
+        {
+          "goal_id": "G2",
+          "field": "polarization",
+          "required_value": "unpolarized",
+          "reason": "Task execution assumption specifies unpolarized light."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            40,
+            70
+          ],
+          "dL": [
+            60,
+            100
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline_QW_UV",
+          "parameters_nm": {
+            "dH": 50,
+            "dL": 80
+          }
+        },
+        {
+          "id": "thicker_UV_stack",
+          "parameters_nm": {
+            "dH": 55,
+            "dL": 85
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                300,
+                450
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_QW_UV",
+          "candidate_instance_id": "thicker_UV_stack",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "Increasing optical thickness shifts the stopband slightly red; if the baseline is blue-shifted relative to the target, this may improve overlap with the 300-450 nm band."
+        },
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1000,
+                1700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline_QW_UV",
+          "candidate_instance_id": "thicker_UV_stack",
+          "controlled_conditions": "Same material order, substrate, incident medium, 0-degree unpolarized illumination.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "unchanged",
+          "reason": "The SWIR band is far from the fundamental stopband; small thickness changes primarily affect the UV edge, leaving SWIR transmission largely determined by material absorption and higher-order effects."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    },
+    {
+      "id": "R9",
+      "claim": "A stack designed with a center wavelength slightly shorter than the UV band center may utilize the higher-order passband for SWIR more effectively.",
+      "clue_ids": [
+        "D1"
+      ],
+      "evidence_ids": [
+        "E_1a57cc1a35727685e9f15f16fcce3632d8444f2ff9d9e4d7c2220202e67e8ee8"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2"
+      ],
+      "transfer_assumptions": [
+        "The cascaded architecture concept implies managing multiple bands; here we rely on the natural harmonic spacing of a single periodic stack."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "angle_deg",
+          "required_value": 0,
+          "reason": "Task constraint."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          },
+          {
+            "material": "HfO2",
+            "thickness_nm": "dH"
+          },
+          {
+            "material": "SiO2",
+            "thickness_nm": "dL"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH": [
+            30,
+            50
+          ],
+          "dL": [
+            50,
+            80
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "centered_UV",
+          "parameters_nm": {
+            "dH": 45,
+            "dL": 70
+          }
+        },
+        {
+          "id": "blue_shifted",
+          "parameters_nm": {
+            "dH": 38,
+            "dL": 60
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_reflectance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                300,
+                450
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "centered_UV",
+          "candidate_instance_id": "blue_shifted",
+          "controlled_conditions": "Same stack topology.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "decrease",
+          "reason": "Shifting the design too far blue might move the stopband away from the 300-450 nm target, reducing reflectance."
+        },
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                1000,
+                1700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "centered_UV",
+          "candidate_instance_id": "blue_shifted",
+          "controlled_conditions": "Same stack topology.",
+          "changed_variables": [
+            "dH",
+            "dL"
+          ],
+          "direction": "increase",
+          "reason": "A blue-shifted fundamental stopband moves the second-order passband (SWIR) closer to the fundamental, potentially improving transmission uniformity or pushing sidelobes away."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "external_evidence",
+      "model_knowledge_rationale": null
+    }
+  ]
+}

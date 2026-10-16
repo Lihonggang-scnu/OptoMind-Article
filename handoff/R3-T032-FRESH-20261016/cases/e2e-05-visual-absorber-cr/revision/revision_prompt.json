@@ -1,0 +1,3080 @@
+{
+  "system_prompt": "Return JSON only, exactly {\"plans\":[...]}. Plan numerical refinement, never layer JSON. Each plan has parent_design_id, action (refine_family or refine_layers), diagnosis (diagnosis_id, observation_ids, explanation citing concrete measured changes), expected_goal_changes (every original objective_id mapped to increase/decrease/unchanged/unknown). Use supplied stable design_id/diagnosis_id or current parent_alias P001 etc / diagnosis_alias D001 etc. Short aliases belong only to the current identity_scope snapshot; historical labels are not current identities. Choose only supplied certified parents. Preserve all original objectives and physical conditions. Choose only an action listed in that exact parent row available_actions; unavailable_actions explains exclusions. refine_family preserves shared variables; refine_layers explicitly creates independent layer variables within original family bounds. Expectations are untested, not outcomes. No route or plan-count ceiling. Interpret measurements, local derivative arithmetic, and hypotheses separately. For a decreasing variable reverse the derivative sign; respect each goal sense and the supplied bounds. Local directional estimates do not establish finite-step outcomes or a unique mechanism. Explain why the chosen parent and action are informative; nearby parents need a reason, not a diversity quota. Exploratory actions, predicted tradeoffs, and unsuccessful hypotheses are legitimate; do not promise improvement. An empty plans list is allowed. Do not fabricate observations, material identities or new bounds.",
+  "user_payload": {
+    "task_sheet": {
+      "original_question": "为可见光吸热涂料的光谱选择性表面设计吸收膜：在 400-700 nm 可见波段吸收率尽可能高（反射率尽可能低），而在 700-2000 nm 近红外波段反射率尽可能高以抑制热输入。请在空气入射、铝基底条件下，仅使用 HfO2 和 SiO2 与金属 Cr 设计一个平面多层膜，膜系总层数不超过 20 层。",
+      "user_objective": "Design a planar HfO2/SiO2/Cr multilayer absorber on an aluminum substrate for solar-thermal applications, maximizing wavelength-integral mean absorption (minimizing reflectance) in the visible band and maximizing wavelength-integral mean reflectance in the NIR band at normal incidence under the stated constraints.",
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": null,
+        "coupling": "G1 and G2 are spectrally adjacent goals for the same coating stack; achieving high visible absorption often conflicts with maintaining high NIR reflectance due to material dispersion and interference coupling."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "Visible band: 400–700 nm",
+          "original_span": "400-700 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "NIR band: 700–2000 nm",
+          "original_span": "700-2000 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "Incident medium: air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C4",
+          "constraint": "Substrate: aluminum",
+          "original_span": "铝基底"
+        },
+        {
+          "id": "C5",
+          "constraint": "Coating materials: HfO2, SiO2, and Cr only",
+          "original_span": "仅使用 HfO2 和 SiO2 与金属 Cr"
+        },
+        {
+          "id": "C6",
+          "constraint": "Planar multilayer film",
+          "original_span": "平面多层膜"
+        },
+        {
+          "id": "C7",
+          "constraint": "No more than 20 layers",
+          "original_span": "膜系总层数不超过 20 层"
+        },
+        {
+          "id": "C8",
+          "constraint": "Suppress heat input in NIR",
+          "original_span": "以抑制热输入"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral band means, as these were not explicitly specified in the original question.",
+          "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "assumption",
+          "statement": "The aluminum substrate is treated as a semi-infinite absorbing exit medium for the planar-surface calculation; T_into_substrate is not zero but contributes to system absorptance.",
+          "assumed_value": "semi-infinite absorbing medium",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Optical constants/dispersion for HfO2, SiO2, Cr, and Al across 400-2000 nm, fabrication tolerances, and individual thickness bounds remain to be resolved.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Numerical acceptance thresholds and objective weights are unspecified; 'as high/low as possible' is not a fixed numeric threshold.",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "unsupported_requirements": [],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Interference in dielectric layers (HfO2/SiO2) can enhance absorption in the visible by trapping light in the Cr layer while maintaining high reflection in the NIR via a Bragg-like stack or impedance matching.",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Metal-dielectric composite effects or cermets involving Cr may provide intrinsic broadband absorption tuned by layer thickness.",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "status": "candidate"
+        }
+      ]
+    },
+    "constraints": {
+      "allowed_materials": [
+        "HfO2",
+        "SiO2",
+        "Cr"
+      ],
+      "max_layers": 20,
+      "substrate": "aluminum",
+      "incident_medium": "air",
+      "constraint_source_ids": {
+        "allowed_materials": [
+          "C5"
+        ],
+        "max_layers": [
+          "C2",
+          "C7"
+        ],
+        "substrate": [
+          "C4"
+        ],
+        "incident_medium": [
+          "C3"
+        ]
+      },
+      "assumptions": {}
+    },
+    "objectives": [
+      {
+        "objective_id": "G1",
+        "metric": "mean_reflectance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            400.0,
+            700.0
+          ],
+          "angle_deg": 0.0,
+          "polarization": "unpolarized"
+        }
+      },
+      {
+        "objective_id": "G2",
+        "metric": "mean_reflectance",
+        "sense": "maximize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            700.0,
+            2000.0
+          ],
+          "angle_deg": 0.0,
+          "polarization": "unpolarized"
+        }
+      }
+    ],
+    "route_rationales": [
+      {
+        "id": "R1",
+        "claim": "A simple D/M/D/M stack (Dielectric/Metal/Dielectric/Metal) using HfO2/SiO2 mix and Cr/Al can achieve the spectral split via a single Fabry-Perot cavity tuned to the visible.",
+        "basis_mode": "hybrid",
+        "model_knowledge_rationale": "While evidence supports the D/M/D/M topology, the specific substitution of HfO2 as the first layer to tune the input impedance for air incidence relies on standard thin-film physics (higher index reduces physical thickness for quarter-wave condition) rather than a specific cited value for this exact stack.",
+        "clue_ids": [
+          "D1"
+        ],
+        "evidence_ids": [
+          "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b"
+        ]
+      },
+      {
+        "id": "R3",
+        "claim": "Using HfO2 as the sole dielectric spacer maximizes the refractive index contrast, allowing thinner layers to achieve the same phase shift, potentially reducing parasitic absorption in thicker dielectrics.",
+        "basis_mode": "hybrid",
+        "model_knowledge_rationale": "Evidence cites HfO2 for thermal stability; the optical advantage of an all-HfO2 spacer system for visible/NIR splitting is a physical inference based on index contrast principles, not explicitly claimed in the source for this spectral range.",
+        "clue_ids": [
+          "D3"
+        ],
+        "evidence_ids": [
+          "E_6b64f066b82f4fe1ca46484b331c60d42edf94c5c362464423524ae0c80edbb1"
+        ]
+      },
+      {
+        "id": "R6",
+        "claim": "Optimizing the thickness of the bottom Cr layer specifically for IR reflectance while keeping the top structure optimized for visible absorption.",
+        "basis_mode": "hybrid",
+        "model_knowledge_rationale": "Evidence supports the role of the bottom metal as an IR reflector. The specific decoupling assumption that thickening it beyond ~20nm yields diminishing returns for visible absorption but helps NIR reflectance is based on skin-depth physics.",
+        "clue_ids": [
+          "D1"
+        ],
+        "evidence_ids": [
+          "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b"
+        ]
+      }
+    ],
+    "decision_clues": [
+      {
+        "id": "D1",
+        "evidence_id": "E_9d62ffb5cbfdd8c9bbd0da9a01625ee64154e281ac5a742f20e747a65fe7e25b",
+        "physical_effect": "High absorption in visible/NIR via interference and multiple reflections; high IR reflection from bottom Al.",
+        "inference_bridge": "Hypothesize that replacing SiO2 with HfO2 (higher index) or adjusting the dielectric thickness ratio can sharpen the transition between the absorption band (visible) and reflection band (NIR) to better match the task's specific cutoff at 700 nm.",
+        "conditions_and_unknowns": [
+          "Specific thicknesses (90/10/80 nm) are for a specific design point; optimal values for strict 400-700 vs 700-2000 split may differ.",
+          "Source uses Al substrate but does not explicitly detail HfO2 substitution effects."
+        ]
+      },
+      {
+        "id": "D3",
+        "evidence_id": "E_6b64f066b82f4fe1ca46484b331c60d42edf94c5c362464423524ae0c80edbb1",
+        "physical_effect": "Improved thermal stability and potentially altered optical impedance matching.",
+        "inference_bridge": "Utilize HfO2 as the primary high-index spacer instead of SiO2 to leverage its higher refractive index for stronger interference effects in fewer layers, potentially improving the sharpness of the visible/NIR transition.",
+        "conditions_and_unknowns": [
+          "Context is high-temperature stability (800 C); optical benefit at room temperature for spectral selectivity is inferred but not explicitly quantified in the snippet.",
+          "Specific layer architecture not fully detailed in snippet."
+        ]
+      }
+    ],
+    "certified_designs": [
+      {
+        "parent_alias": "P001",
+        "design_id": "design:1aa88efe90c0ee44fabb91522ede8e331fd87a5321bf25e7a1e5b34d1d04a87f",
+        "metrics": {
+          "G1": 0.024864014870873457,
+          "G2": 0.4342754229670458
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P002",
+        "design_id": "design:1d049c0bb6faac7708587f448cf0b2fc08eb9c9f3447555683cd4246eda5821b",
+        "metrics": {
+          "G1": 0.03623787216302562,
+          "G2": 0.5204373833054161
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P003",
+        "design_id": "design:2a83a61cfe68b42bdc3db9ee625137acfd16b376be55a8c3f495c79dcdc8a49d",
+        "metrics": {
+          "G1": 0.04240606935298323,
+          "G2": 0.5768503131554568
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P004",
+        "design_id": "design:2c6fef0681ea1ef5d64874915d6fc1514b31e430bfa500898927d421525faec7",
+        "metrics": {
+          "G1": 0.022598469308940196,
+          "G2": 0.43076788235742486
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P005",
+        "design_id": "design:2dcc1288e177d3be768506eb46ade3ee64c29657cc7ee8b2f357d50961fa57a9",
+        "metrics": {
+          "G1": 0.05874005364588631,
+          "G2": 0.6152770526436433
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P006",
+        "design_id": "design:3240554e348c03afd7080d06757cc8d4c9367319ce2b977075c64d6663e5e131",
+        "metrics": {
+          "G1": 0.05361761888655849,
+          "G2": 0.6008885472954195
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P007",
+        "design_id": "design:37d99da4f5ab79d597bfe226c958bcc16bc639337bc25bed9f603b179022134d",
+        "metrics": {
+          "G1": 0.05386324667058678,
+          "G2": 0.6065898109070681
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P008",
+        "design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce",
+        "metrics": {
+          "G1": 0.21348351730069828,
+          "G2": 0.21647728510198755
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P009",
+        "design_id": "design:429669353b8c7323c22c089b82681881a5246cf2ff17f133a863e8a2cb61d526",
+        "metrics": {
+          "G1": 0.04099023910756086,
+          "G2": 0.5630165466763307
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P010",
+        "design_id": "design:4bcf2ec64d0229e6cabe0d86b22f6b8333c2e7ff5948233252c62171be941a7b",
+        "metrics": {
+          "G1": 0.03831610790657225,
+          "G2": 0.527491655955904
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P011",
+        "design_id": "design:62c457bfb9a1a1c3c11d05b6c110da0f4bf6db5c6a6ba2d50f00e2096cd207e8",
+        "metrics": {
+          "G1": 0.08334479228910079,
+          "G2": 0.118335708213392
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P012",
+        "design_id": "design:6c28b9637a10cdf9c39580212ccfddf00d79a1eb232a7a98a0333e1325ff171d",
+        "metrics": {
+          "G1": 0.01467135963024167,
+          "G2": 0.4120434703083605
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P013",
+        "design_id": "design:756e14512906d3dcfb2efde37385d4ae88967acb5d8f7628b41e1981bdcb99dd",
+        "metrics": {
+          "G1": 0.013652494416531663,
+          "G2": 0.40883176457293624
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P014",
+        "design_id": "design:75a2ed205af5440f373391167d98d438d6d28f9f6e72dfd678857e52a94f517d",
+        "metrics": {
+          "G1": 0.07749103208967122,
+          "G2": 0.3281374602706305
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P015",
+        "design_id": "design:8c0df2be378f08ee97d504b6508f0a85f64383343ae7f5650fb1b72b3f91c6d3",
+        "metrics": {
+          "G1": 0.023354773951077264,
+          "G2": 0.431977112896431
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P016",
+        "design_id": "design:8fe5a5248b977a4fcfcc16765bb8f4e866ed9be2fffac52c74960077cc7ff54d",
+        "metrics": {
+          "G1": 0.03950558265405743,
+          "G2": 0.5317196828437355
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P017",
+        "design_id": "design:92b7c195334cd2d4faf761cc5b910ccb4926549d2e0d1f2f7bdcc969e1174fef",
+        "metrics": {
+          "G1": 0.013147879961958481,
+          "G2": 0.4069529830139695
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P018",
+        "design_id": "design:9b4773a016a8e1c915d0eb479250e08bf77ff1cd9673ba90fae6a31087731e96",
+        "metrics": {
+          "G1": 0.061208577341281226,
+          "G2": 0.6179308282174565
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P019",
+        "design_id": "design:9eaa092fdca85fbff92e4dd3756c53ec2e3b7e28f041c36d5d0a85a0208c1034",
+        "metrics": {
+          "G1": 0.07998141384037522,
+          "G2": 0.6316050048842367
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P020",
+        "design_id": "design:a4a511dc13b1c153902e54937a27f56eff8dcc11fd1c1229420ed539c07f9457",
+        "metrics": {
+          "G1": 0.04368559978686854,
+          "G2": 0.5811788582994087
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P021",
+        "design_id": "design:afb6fa2787cc9582afbb3dbd3e90efae579fa922b2c6a0759888b2327e9a4971",
+        "metrics": {
+          "G1": 0.05979640229276646,
+          "G2": 0.6164617405817154
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P022",
+        "design_id": "design:b45566282c293f8e537f0e87caeef16922acb8f5a3d6eefda5eabb71d707c908",
+        "metrics": {
+          "G1": 0.03481987514356054,
+          "G2": 0.5149735264764868
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P023",
+        "design_id": "design:c03c67598f3a598d88e22e946da6adcf3fc6ee8c618201834cd560e83ca5e0a4",
+        "metrics": {
+          "G1": 0.02705065057558078,
+          "G2": 0.4373859242513853
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P024",
+        "design_id": "design:c22ee07c935c99c53948bd063e40f6e827821603b0a64814a8cddd148d1ba7f3",
+        "metrics": {
+          "G1": 0.041433312824889955,
+          "G2": 0.5658623031226245
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P025",
+        "design_id": "design:d02231fff5eab705df318eaf0dd7557ca20ee9cff9151052afab21ee91de79f8",
+        "metrics": {
+          "G1": 0.04292689658837709,
+          "G2": 0.5788767328658841
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P026",
+        "design_id": "design:d232d03658ad094ba3e70bd8af93adebc7c69c62f6d085b4abfbf9cee16c12ed",
+        "metrics": {
+          "G1": 0.021441634439593613,
+          "G2": 0.42882852846206265
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P027",
+        "design_id": "design:d3173e3ff41305317e008e900007efccd67b9f280208999e363b6f274ed5b74f",
+        "metrics": {
+          "G1": 0.05408787514916727,
+          "G2": 0.6085184809619092
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P028",
+        "design_id": "design:dc3be58ce34748df4bbf97c630cb961f28bab2d453ae64608eabb9c846251da8",
+        "metrics": {
+          "G1": 0.09379456458766483,
+          "G2": 0.6386608580291324
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P029",
+        "design_id": "design:e5fcb9f324b9c64b6476046e32e4b0c605a6bf01a84c24cf37422043e9856c5e",
+        "metrics": {
+          "G1": 0.19847497630778088,
+          "G2": 0.20354321638191825
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F003",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P030",
+        "design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e",
+        "metrics": {
+          "G1": 0.044890173760034936,
+          "G2": 0.20411009445975922
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F002",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P031",
+        "design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae",
+        "metrics": {
+          "G1": 0.1441697719364305,
+          "G2": 0.1893363360293376
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": false,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P032",
+        "design_id": "design:fe48eb3975076ace38d00977bd5417c5abddeaa5185e19a9a56bea75513deefa",
+        "metrics": {
+          "G1": 0.057422123519408966,
+          "G2": 0.613668229455672
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      }
+    ],
+    "family_catalog": {
+      "F003": {
+        "family_key": "a1cb2b3bc14350562281c436477dcf8df1fd4308a13414d587062a502a21098c",
+        "specification": {
+          "route_id": "R6",
+          "family": {
+            "kind": "explicit_stack",
+            "incident_medium": "air",
+            "substrate": "aluminum",
+            "layers": [
+              {
+                "material": "SiO2",
+                "thickness_nm": "d1"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d2"
+              },
+              {
+                "material": "HfO2",
+                "thickness_nm": "d3"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d4"
+              }
+            ],
+            "thickness_variables_nm": {
+              "d1": [
+                50,
+                100
+              ],
+              "d2": [
+                5,
+                15
+              ],
+              "d3": [
+                50,
+                100
+              ],
+              "d4": [
+                10,
+                50
+              ]
+            }
+          },
+          "parameterization": "family"
+        }
+      },
+      "F002": {
+        "family_key": "265c8f6db2bdeaea23994fa72986827d2c6baf15b773331a9b94961eb5040624",
+        "specification": {
+          "route_id": "R1",
+          "family": {
+            "kind": "explicit_stack",
+            "incident_medium": "air",
+            "substrate": "aluminum",
+            "layers": [
+              {
+                "material": "HfO2",
+                "thickness_nm": "d1"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d2"
+              },
+              {
+                "material": "SiO2",
+                "thickness_nm": "d3"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d4"
+              }
+            ],
+            "thickness_variables_nm": {
+              "d1": [
+                20,
+                80
+              ],
+              "d2": [
+                5,
+                15
+              ],
+              "d3": [
+                40,
+                120
+              ],
+              "d4": [
+                5,
+                20
+              ]
+            }
+          },
+          "parameterization": "family"
+        }
+      },
+      "F001": {
+        "family_key": "12a8647c7ca678cab02ae6ed6cfd75f19924b84aeab084c50fc5c1280ceeed2d",
+        "specification": {
+          "route_id": "R3",
+          "family": {
+            "kind": "explicit_stack",
+            "incident_medium": "air",
+            "substrate": "aluminum",
+            "layers": [
+              {
+                "material": "HfO2",
+                "thickness_nm": "d1"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d2"
+              },
+              {
+                "material": "HfO2",
+                "thickness_nm": "d3"
+              },
+              {
+                "material": "Cr",
+                "thickness_nm": "d4"
+              }
+            ],
+            "thickness_variables_nm": {
+              "d1": [
+                20,
+                60
+              ],
+              "d2": [
+                5,
+                15
+              ],
+              "d3": [
+                30,
+                80
+              ],
+              "d4": [
+                5,
+                15
+              ]
+            }
+          },
+          "parameterization": "family"
+        }
+      }
+    },
+    "pareto_parent_aliases": [
+      "P001",
+      "P002",
+      "P003",
+      "P004",
+      "P005",
+      "P006",
+      "P007",
+      "P009",
+      "P010",
+      "P012",
+      "P013",
+      "P015",
+      "P016",
+      "P017",
+      "P018",
+      "P019",
+      "P020",
+      "P021",
+      "P022",
+      "P023",
+      "P024",
+      "P025",
+      "P026",
+      "P027",
+      "P028",
+      "P032"
+    ],
+    "representative_decisions": [
+      {
+        "parent_alias": "P008",
+        "design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce",
+        "thicknesses_nm": [
+          80.0,
+          10.0,
+          80.0,
+          15.0
+        ],
+        "local_direction_facts": {
+          "status": "unknown",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unknown",
+            "reason": "insufficient_saved_derivatives"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "recorded_bounds",
+          "reason": "no usable saved local derivative"
+        },
+        "derivative_source": {
+          "status": "unknown"
+        }
+      },
+      {
+        "parent_alias": "P017",
+        "design_id": "design:92b7c195334cd2d4faf761cc5b910ccb4926549d2e0d1f2f7bdcc969e1174fef",
+        "thicknesses_nm": [
+          66.1540041734282,
+          5.211826370504353,
+          50.0,
+          10.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "d1",
+              "current_value_nm": 66.1540041734282,
+              "bounds_nm": [
+                50.0,
+                100.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.0003931227441474636
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.01965613720737318
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": [
+                "G2"
+              ]
+            },
+            {
+              "name": "d2",
+              "current_value_nm": 5.211826370504353,
+              "bounds_nm": [
+                5.0,
+                15.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.005054382559890474,
+                "G2": -0.020220788866530386
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.05054382559890474,
+                "G2": -0.20220788866530387
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "d3",
+              "current_value_nm": 50.0,
+              "bounds_nm": [
+                50.0,
+                100.0
+              ],
+              "derivative_per_nm": {
+                "G2": -0.006928208960417999
+              },
+              "improvement_rate_normalized": {
+                "G2": -0.3464104480209
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": [
+                "G1"
+              ]
+            },
+            {
+              "name": "d4",
+              "current_value_nm": 10.0,
+              "bounds_nm": [
+                10.0,
+                50.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.0004985695346982662,
+                "G2": -0.006910667489035996
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.019942781387930646,
+                "G2": -0.27642669956143984
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "not_found",
+            "reason": "candidate did not improve every objective locally after bound projection"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "d1": [
+              50.0,
+              100.0
+            ],
+            "d2": [
+              5.0,
+              15.0
+            ],
+            "d3": [
+              50.0,
+              100.0
+            ],
+            "d4": [
+              10.0,
+              50.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 2,
+            "declared_variable_count": 4,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:92b7c195334cd2d4faf761cc5b910ccb4926549d2e0d1f2f7bdcc969e1174fef",
+          "source_instance_id": "search_6af34f16f609443a9984e69a4dfe1579_57",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P028",
+        "design_id": "design:dc3be58ce34748df4bbf97c630cb961f28bab2d453ae64608eabb9c846251da8",
+        "thicknesses_nm": [
+          20.0,
+          5.0,
+          30.0,
+          5.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "d1",
+              "current_value_nm": 20.0,
+              "bounds_nm": [
+                20.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.007638993357233973,
+                "G2": -0.0035344176158087033
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.3055597342893589,
+                "G2": -0.14137670463234814
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "d2",
+              "current_value_nm": 5.0,
+              "bounds_nm": [
+                5.0,
+                15.0
+              ],
+              "derivative_per_nm": {
+                "G1": 0.012409600842070106,
+                "G2": -0.024618487270166634
+              },
+              "improvement_rate_normalized": {
+                "G1": -0.12409600842070106,
+                "G2": -0.24618487270166634
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "d3",
+              "current_value_nm": 30.0,
+              "bounds_nm": [
+                30.0,
+                80.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.008351399979694514,
+                "G2": -0.00845622213568898
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.4175699989847257,
+                "G2": -0.422811106784449
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "not_found",
+            "reason": "candidate did not improve every objective locally after bound projection"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "d1": [
+              20.0,
+              60.0
+            ],
+            "d2": [
+              5.0,
+              15.0
+            ],
+            "d3": [
+              30.0,
+              80.0
+            ],
+            "d4": [
+              5.0,
+              15.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 4,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:dc3be58ce34748df4bbf97c630cb961f28bab2d453ae64608eabb9c846251da8",
+          "source_instance_id": "search_6af34f16f609443a9984e69a4dfe1579_27",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P011",
+        "design_id": "design:62c457bfb9a1a1c3c11d05b6c110da0f4bf6db5c6a6ba2d50f00e2096cd207e8",
+        "thicknesses_nm": [
+          65.0,
+          8.0,
+          95.0,
+          12.0
+        ],
+        "local_direction_facts": {
+          "status": "unknown",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unknown",
+            "reason": "insufficient_saved_derivatives"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "recorded_bounds",
+          "reason": "no usable saved local derivative"
+        },
+        "derivative_source": {
+          "status": "unknown"
+        }
+      },
+      {
+        "parent_alias": "P014",
+        "design_id": "design:75a2ed205af5440f373391167d98d438d6d28f9f6e72dfd678857e52a94f517d",
+        "thicknesses_nm": [
+          35.0,
+          10.0,
+          55.0,
+          10.0
+        ],
+        "local_direction_facts": {
+          "status": "unknown",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unknown",
+            "reason": "insufficient_saved_derivatives"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "recorded_bounds",
+          "reason": "no usable saved local derivative"
+        },
+        "derivative_source": {
+          "status": "unknown"
+        }
+      },
+      {
+        "parent_alias": "P031",
+        "design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae",
+        "thicknesses_nm": [
+          50.0,
+          10.0,
+          80.0,
+          10.0
+        ],
+        "local_direction_facts": {
+          "status": "unknown",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unknown",
+            "reason": "insufficient_saved_derivatives"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "recorded_bounds",
+          "reason": "no usable saved local derivative"
+        },
+        "derivative_source": {
+          "status": "unknown"
+        }
+      },
+      {
+        "parent_alias": "P009",
+        "design_id": "design:429669353b8c7323c22c089b82681881a5246cf2ff17f133a863e8a2cb61d526",
+        "thicknesses_nm": [
+          29.40626502907299,
+          5.0,
+          34.30222236151765,
+          5.256769566728962
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "d1",
+              "current_value_nm": 29.40626502907299,
+              "bounds_nm": [
+                20.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": 0.0004597301331652393,
+                "G2": -0.004062375165109664
+              },
+              "improvement_rate_normalized": {
+                "G1": -0.01838920532660957,
+                "G2": -0.16249500660438654
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "d2",
+              "current_value_nm": 5.0,
+              "bounds_nm": [
+                5.0,
+                15.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.006963590093372723,
+                "G2": -0.024680783938150725
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.06963590093372723,
+                "G2": -0.24680783938150724
+              },
+              "feasible_directions": [
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "d3",
+              "current_value_nm": 34.30222236151765,
+              "bounds_nm": [
+                30.0,
+                80.0
+              ],
+              "derivative_per_nm": {
+                "G1": -0.0011765249979480688,
+                "G2": -0.00864822936195197
+              },
+              "improvement_rate_normalized": {
+                "G1": 0.05882624989740344,
+                "G2": -0.4324114680975985
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [
+            {
+              "variable": "d1",
+              "direction": "decrease",
+              "improvement_rates_normalized": {
+                "G1": 0.01838920532660957,
+                "G2": 0.16249500660438654
+              },
+              "scope": "local_first_order_only"
+            }
+          ],
+          "joint_direction": {
+            "status": "local_common_ascent_candidate",
+            "normalized_coordinate_direction": {
+              "d1": -1.0,
+              "d2": 0.5464030860719212,
+              "d3": -0.38000900852825026
+            },
+            "nm_per_unit_epsilon": {
+              "d1": -40.0,
+              "d2": 5.4640308607192125,
+              "d3": -19.000450426412513
+            },
+            "improvement_rates_per_epsilon": {
+              "G1": 0.03408397159924935,
+              "G2": 0.19195869476760144
+            },
+            "maximum_epsilon_from_bounds_only": 0.2264273880337665,
+            "warning": "The bound limit is not a recommended step or a validity radius for the linear model."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "d1": [
+              20.0,
+              60.0
+            ],
+            "d2": [
+              5.0,
+              15.0
+            ],
+            "d3": [
+              30.0,
+              80.0
+            ],
+            "d4": [
+              5.0,
+              15.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 4,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:429669353b8c7323c22c089b82681881a5246cf2ff17f133a863e8a2cb61d526",
+          "source_instance_id": "search_6af34f16f609443a9984e69a4dfe1579_26",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P030",
+        "design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e",
+        "thicknesses_nm": [
+          50.0,
+          10.0,
+          80.0,
+          10.0
+        ],
+        "local_direction_facts": {
+          "status": "unknown",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unknown",
+            "reason": "insufficient_saved_derivatives"
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "recorded_bounds",
+          "reason": "no usable saved local derivative"
+        },
+        "derivative_source": {
+          "status": "unknown"
+        }
+      }
+    ],
+    "diagnostic_index": [
+      {
+        "diagnosis_alias": "D001",
+        "diagnosis_id": "diagnosis:3c5ab13ba5edcd66b62ba8bb2ab5298ac9444fd7b2aa2307714caafc83ea97f8",
+        "design_alias": "P030",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D002",
+        "diagnosis_id": "diagnosis:0740654a334039c9c99d7590145a0a1b2de67291f089c642869c495909093281",
+        "design_alias": "P011",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:62c457bfb9a1a1c3c11d05b6c110da0f4bf6db5c6a6ba2d50f00e2096cd207e8",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D003",
+        "diagnosis_id": "diagnosis:cf038bfa293e0221107cb99b9bcfecb7c8e6e4cee9a634e7c604531e3a8e2b93",
+        "design_alias": "P031",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D004",
+        "diagnosis_id": "diagnosis:3fc94e3850187808232f57357ee47e19587fed8bfcb853a178a36ce8578cb91b",
+        "design_alias": "P014",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:75a2ed205af5440f373391167d98d438d6d28f9f6e72dfd678857e52a94f517d",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D005",
+        "diagnosis_id": "diagnosis:3c2ae38cc52a87906f5fc47a1bfc0acf12945d3c2f1ad8a4544feb141142454d",
+        "design_alias": "P008",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D006",
+        "diagnosis_id": "diagnosis:2d4f7b0853e749549396939dd33c5a4f9df31c4e001810a5c7ba1bf18f8a8952",
+        "design_alias": "P029",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:e5fcb9f324b9c64b6476046e32e4b0c605a6bf01a84c24cf37422043e9856c5e",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D007",
+        "diagnosis_id": "diagnosis:4f3f4d3794b93277c5aa3bb6bd02a384eed28ed6694b5934eaa2c020581dd9fa",
+        "design_alias": "P017",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:92b7c195334cd2d4faf761cc5b910ccb4926549d2e0d1f2f7bdcc969e1174fef",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D008",
+        "diagnosis_id": "diagnosis:86d559039b86d02b3079d561c7d07e0b7bc87f63f8e6c29954680ead965d4112",
+        "design_alias": "P028",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:dc3be58ce34748df4bbf97c630cb961f28bab2d453ae64608eabb9c846251da8",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D009",
+        "diagnosis_id": "diagnosis:f7c084bc9542d62ce3d1e7b22fb830f0a358b25779746099505dc035d348d7b9",
+        "design_alias": "P009",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:429669353b8c7323c22c089b82681881a5246cf2ff17f133a863e8a2cb61d526",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D010",
+        "diagnosis_id": "diagnosis:84175e0a3fad959062c050c9edc17d0e33d77128bde8bdf219113e0e66cd8514",
+        "design_alias": "P018",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:9b4773a016a8e1c915d0eb479250e08bf77ff1cd9673ba90fae6a31087731e96",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D011",
+        "diagnosis_id": "diagnosis:70927e86869a8391f8d81760bed42a69428abfef0d491cc6780d3543b8ce9c2d",
+        "design_alias": "P022",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:b45566282c293f8e537f0e87caeef16922acb8f5a3d6eefda5eabb71d707c908",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D012",
+        "diagnosis_id": "diagnosis:86a7f9ee9877a5ccb72ffb85a1732061fa8e0ddd454086dc1d85a49e7191c50a",
+        "design_alias": "P023",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:c03c67598f3a598d88e22e946da6adcf3fc6ee8c618201834cd560e83ca5e0a4",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D013",
+        "diagnosis_id": "diagnosis:dcf895960fd315e0ba6811ce61a64ca3cd96c0cc2db9f86456cd178b8cf274eb",
+        "design_alias": "P019",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:9eaa092fdca85fbff92e4dd3756c53ec2e3b7e28f041c36d5d0a85a0208c1034",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D014",
+        "diagnosis_id": "diagnosis:7154debc6bd2ef5f8978a815fc305f5cea3f1fa9f5d145887bc8b6e81e673437",
+        "design_alias": "P006",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:3240554e348c03afd7080d06757cc8d4c9367319ce2b977075c64d6663e5e131",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D015",
+        "diagnosis_id": "diagnosis:015cf0d2d0478ae0f34f25a6a47381c9969bc61379de243eadfc384036fdc636",
+        "design_alias": "P016",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:8fe5a5248b977a4fcfcc16765bb8f4e866ed9be2fffac52c74960077cc7ff54d",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D016",
+        "diagnosis_id": "diagnosis:ffd0ae70288df1045af429e0c91bfd2611e020291b8ed168764c0c254d87a9bb",
+        "design_alias": "P020",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:a4a511dc13b1c153902e54937a27f56eff8dcc11fd1c1229420ed539c07f9457",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D017",
+        "diagnosis_id": "diagnosis:798a635291e4b18a3962063eb69f9bf00875f260f23c86975e4eab84737e817f",
+        "design_alias": "P026",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:d232d03658ad094ba3e70bd8af93adebc7c69c62f6d085b4abfbf9cee16c12ed",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D018",
+        "diagnosis_id": "diagnosis:f2a835d866c2ca3948d2685e162ccfb0e1ee4e92ddd5d32193b279f3123df0f9",
+        "design_alias": "P032",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:fe48eb3975076ace38d00977bd5417c5abddeaa5185e19a9a56bea75513deefa",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D019",
+        "diagnosis_id": "diagnosis:47ac5a557faebda2bb0d3de65b5a568d4ccd3a7fced22d7c95bfc2f46b41c5d5",
+        "design_alias": "P027",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:d3173e3ff41305317e008e900007efccd67b9f280208999e363b6f274ed5b74f",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D020",
+        "diagnosis_id": "diagnosis:b2e1d913766e877ab4ba083d4eb800ea634e70914be92746199d6965a3e0efcb",
+        "design_alias": "P001",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:1aa88efe90c0ee44fabb91522ede8e331fd87a5321bf25e7a1e5b34d1d04a87f",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D021",
+        "diagnosis_id": "diagnosis:a60f63fdb66443d8d0add1666b007ecf3887dda01ab07aa2d77b306990f48927",
+        "design_alias": "P002",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:1d049c0bb6faac7708587f448cf0b2fc08eb9c9f3447555683cd4246eda5821b",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D022",
+        "diagnosis_id": "diagnosis:b02225ae52ee9457135ad5563ef694010bfcb9babe323592749e36c8fd5ff7f1",
+        "design_alias": "P012",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:6c28b9637a10cdf9c39580212ccfddf00d79a1eb232a7a98a0333e1325ff171d",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D023",
+        "diagnosis_id": "diagnosis:9f7716595c35338701cf1a77a938466df33127acbb01b9ba4b70f9676ada60dc",
+        "design_alias": "P003",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:2a83a61cfe68b42bdc3db9ee625137acfd16b376be55a8c3f495c79dcdc8a49d",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D024",
+        "diagnosis_id": "diagnosis:312b2d5a734de26419d77c1df40f00560c8948139723445a9e4ee930870b238b",
+        "design_alias": "P010",
+        "comparison_baseline_alias": "P030",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:4bcf2ec64d0229e6cabe0d86b22f6b8333c2e7ff5948233252c62171be941a7b",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D025",
+        "diagnosis_id": "diagnosis:58ccb60639d8b8907b1151ecdbdd4bd00cbbf7bc763d78325d82feffd3189064",
+        "design_alias": "P015",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:8c0df2be378f08ee97d504b6508f0a85f64383343ae7f5650fb1b72b3f91c6d3",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D026",
+        "diagnosis_id": "diagnosis:5a9a54cb27b246dc8a0856dac31388696c80b2f4ce195167bbe9baaf418d638e",
+        "design_alias": "P021",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:afb6fa2787cc9582afbb3dbd3e90efae579fa922b2c6a0759888b2327e9a4971",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D027",
+        "diagnosis_id": "diagnosis:8366a8410e503b0e606072ddfa640a8fc618b66aed35bd4567f8b212f9852274",
+        "design_alias": "P005",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:2dcc1288e177d3be768506eb46ade3ee64c29657cc7ee8b2f357d50961fa57a9",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D028",
+        "diagnosis_id": "diagnosis:92fe11e0f0ea953522835dea8ddf65610575c4175e0feb7c5c0e412d466dcc80",
+        "design_alias": "P024",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:c22ee07c935c99c53948bd063e40f6e827821603b0a64814a8cddd148d1ba7f3",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D029",
+        "diagnosis_id": "diagnosis:4589cbe6307ab11bef5a9e7b0ce197934017222f0dea62ce51881918218dcc48",
+        "design_alias": "P025",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:d02231fff5eab705df318eaf0dd7557ca20ee9cff9151052afab21ee91de79f8",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D030",
+        "diagnosis_id": "diagnosis:66536dfc0b5c9b79cc1090888091df26f44081997f805b0c758e0186cfc7d7ad",
+        "design_alias": "P004",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:2c6fef0681ea1ef5d64874915d6fc1514b31e430bfa500898927d421525faec7",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D031",
+        "diagnosis_id": "diagnosis:ea31c0d08d6e40f3cc0b4811287c10ff5d977538f76567bed1a473a7fe6bcf4d",
+        "design_alias": "P013",
+        "comparison_baseline_alias": "P008",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:756e14512906d3dcfb2efde37385d4ae88967acb5d8f7628b41e1981bdcb99dd",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D032",
+        "diagnosis_id": "diagnosis:70ba9d9b391299bc3f90e93e62dc42118f75214453339a62309b46d4f891fd1b",
+        "design_alias": "P007",
+        "comparison_baseline_alias": "P031",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2"
+        ],
+        "design_id": "design:37d99da4f5ab79d597bfe226c958bcc16bc639337bc25bed9f603b179022134d",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      }
+    ],
+    "physics_diagnostics": [
+      {
+        "diagnosis_alias": "D005",
+        "diagnosis_id": "diagnosis:3c2ae38cc52a87906f5fc47a1bfc0acf12945d3c2f1ad8a4544feb141142454d",
+        "comparison_baseline_alias": "P008",
+        "design_alias": "P008",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.21348351730069828,
+            "candidate": 0.21348351730069828,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.421571884073009,
+                "candidate": 0.421571884073009,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.11468811097257127,
+                "candidate": 0.11468811097257127,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10691267550774006,
+                "candidate": 0.10691267550774006,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.21403381970378665,
+                "p_mean": 0.21403381970378665,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.21403381970378665,
+                "p_mean": 0.21403381970378665,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.21647728510198755,
+            "candidate": 0.21647728510198755,
+            "delta": 0.0,
+            "improvement": 0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.11379402055073126,
+                "candidate": 0.11379402055073126,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.14462329663468496,
+                "candidate": 0.14462329663468496,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.39108404275198116,
+                "candidate": 0.39108404275198116,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.21655570093481616,
+                "p_mean": 0.21655570093481616,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.21655570093481616,
+                "p_mean": 0.21655570093481616,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          }
+        ],
+        "design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D007",
+        "diagnosis_id": "diagnosis:4f3f4d3794b93277c5aa3bb6bd02a384eed28ed6694b5934eaa2c020581dd9fa",
+        "comparison_baseline_alias": "P008",
+        "design_alias": "P017",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.21348351730069828,
+            "candidate": 0.013147879961958481,
+            "delta": -0.2003356373387398,
+            "improvement": 0.2003356373387398,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.421571884073009,
+                "candidate": 0.02663083404416652,
+                "delta": -0.3949410500288425,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.11468811097257127,
+                "candidate": 0.0019824589240749297,
+                "delta": -0.11270565204849634,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10691267550774006,
+                "candidate": 0.011093501706344662,
+                "delta": -0.0958191738013954,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.21403381970378665,
+                "p_mean": 0.21403381970378665,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.013228481625132744,
+                "p_mean": 0.013228481625132744,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.20080533807865392,
+              "p_delta": -0.20080533807865392
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.21647728510198755,
+            "candidate": 0.4069529830139695,
+            "delta": 0.19047569791198193,
+            "improvement": 0.19047569791198193,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.11379402055073126,
+                "candidate": 0.0896904804079472,
+                "delta": -0.024103540142784055,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.14462329663468496,
+                "candidate": 0.4225809693532648,
+                "delta": 0.27795767271857985,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.39108404275198116,
+                "candidate": 0.7086161595456066,
+                "delta": 0.3175321167936255,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.21655570093481616,
+                "p_mean": 0.21655570093481616,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.40695053149101157,
+                "p_mean": 0.40695053149101157,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.1903948305561954,
+              "p_delta": 0.1903948305561954
+            }
+          }
+        ],
+        "design_id": "design:92b7c195334cd2d4faf761cc5b910ccb4926549d2e0d1f2f7bdcc969e1174fef",
+        "comparison_baseline_design_id": "design:4037cb7ed23ef9a2c13116c6e4bb6d61611f2434c5f6fb25bbb7334fb33006ce"
+      },
+      {
+        "diagnosis_alias": "D008",
+        "diagnosis_id": "diagnosis:86d559039b86d02b3079d561c7d07e0b7bc87f63f8e6c29954680ead965d4112",
+        "comparison_baseline_alias": "P031",
+        "design_alias": "P028",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.1441697719364305,
+            "candidate": 0.09379456458766483,
+            "delta": -0.05037520734876566,
+            "improvement": 0.05037520734876566,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.24685944705887933,
+                "candidate": 0.017456639258117027,
+                "delta": -0.2294028078007623,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.08670465602912386,
+                "candidate": 0.09250719112833529,
+                "delta": 0.005802535099211428,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10119350679686256,
+                "candidate": 0.1708585871885753,
+                "delta": 0.06966508039171274,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1447739352002772,
+                "p_mean": 0.1447739352002772,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.09386412074648286,
+                "p_mean": 0.09386412074648286,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.05090981445379435,
+              "p_delta": -0.05090981445379435
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.1893363360293376,
+            "candidate": 0.6386608580291324,
+            "delta": 0.4493245219997948,
+            "improvement": 0.4493245219997948,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.10932523909674212,
+                "candidate": 0.3578648787407023,
+                "delta": 0.24853963964396014,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.10188516088135938,
+                "candidate": 0.7011918361264126,
+                "delta": 0.5993066752450532,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.3568693424826144,
+                "candidate": 0.8568642655305436,
+                "delta": 0.4999949230479292,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1894271507048957,
+                "p_mean": 0.1894271507048957,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.6385922472378612,
+                "p_mean": 0.6385922472378612,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.44916509653296555,
+              "p_delta": 0.44916509653296555
+            }
+          }
+        ],
+        "design_id": "design:dc3be58ce34748df4bbf97c630cb961f28bab2d453ae64608eabb9c846251da8",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D002",
+        "diagnosis_id": "diagnosis:0740654a334039c9c99d7590145a0a1b2de67291f089c642869c495909093281",
+        "comparison_baseline_alias": "P030",
+        "design_alias": "P011",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.044890173760034936,
+            "candidate": 0.08334479228910079,
+            "delta": 0.03845461852906585,
+            "improvement": -0.03845461852906585,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.09718151296891867,
+                "candidate": 0.10520247581741513,
+                "delta": 0.00802096284849646,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.012920863811793262,
+                "candidate": 0.09425198239286779,
+                "delta": 0.08133111858107453,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.025282977212950808,
+                "candidate": 0.05050460555589416,
+                "delta": 0.02522162834294335,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.045062519523519015,
+                "p_mean": 0.045062519523519015,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.08321066771486246,
+                "p_mean": 0.08321066771486246,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.03814814819134345,
+              "p_delta": 0.03814814819134345
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.20411009445975922,
+            "candidate": 0.118335708213392,
+            "delta": -0.08577438624636723,
+            "improvement": -0.08577438624636723,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.0677785223662436,
+                "candidate": 0.03852351110438055,
+                "delta": -0.02925501126186305,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.1374909205875291,
+                "candidate": 0.035821136795139326,
+                "delta": -0.10166978379238978,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.40710839964126516,
+                "candidate": 0.2807519972136816,
+                "delta": -0.12635640242758356,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.2041771658460099,
+                "p_mean": 0.2041771658460099,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.11842899526697488,
+                "p_mean": 0.11842899526697488,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.08574817057903501,
+              "p_delta": -0.08574817057903501
+            }
+          }
+        ],
+        "design_id": "design:62c457bfb9a1a1c3c11d05b6c110da0f4bf6db5c6a6ba2d50f00e2096cd207e8",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      },
+      {
+        "diagnosis_alias": "D004",
+        "diagnosis_id": "diagnosis:3fc94e3850187808232f57357ee47e19587fed8bfcb853a178a36ce8578cb91b",
+        "comparison_baseline_alias": "P031",
+        "design_alias": "P014",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.1441697719364305,
+            "candidate": 0.07749103208967122,
+            "delta": -0.06667873984675927,
+            "improvement": 0.06667873984675927,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.24685944705887933,
+                "candidate": 0.05246874769824685,
+                "delta": -0.19439069936063247,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.08670465602912386,
+                "candidate": 0.06406787623985355,
+                "delta": -0.02263677978927031,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10119350679686256,
+                "candidate": 0.1159078595344117,
+                "delta": 0.014714352737549133,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1447739352002772,
+                "p_mean": 0.1447739352002772,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.07760915683317482,
+                "p_mean": 0.07760915683317482,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.06716477836710238,
+              "p_delta": -0.06716477836710238
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.1893363360293376,
+            "candidate": 0.3281374602706305,
+            "delta": 0.1388011242412929,
+            "improvement": 0.1388011242412929,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.10932523909674212,
+                "candidate": 0.14516166132072247,
+                "delta": 0.035836422223980355,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.10188516088135938,
+                "candidate": 0.27636249042821925,
+                "delta": 0.17447732954685988,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.3568693424826144,
+                "candidate": 0.5629412126703783,
+                "delta": 0.2060718701877639,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1894271507048957,
+                "p_mean": 0.1894271507048957,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.3281949313355547,
+                "p_mean": 0.3281949313355547,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.138767780630659,
+              "p_delta": 0.138767780630659
+            }
+          }
+        ],
+        "design_id": "design:75a2ed205af5440f373391167d98d438d6d28f9f6e72dfd678857e52a94f517d",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D003",
+        "diagnosis_id": "diagnosis:cf038bfa293e0221107cb99b9bcfecb7c8e6e4cee9a634e7c604531e3a8e2b93",
+        "comparison_baseline_alias": "P031",
+        "design_alias": "P031",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.1441697719364305,
+            "candidate": 0.1441697719364305,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.24685944705887933,
+                "candidate": 0.24685944705887933,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.08670465602912386,
+                "candidate": 0.08670465602912386,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10119350679686256,
+                "candidate": 0.10119350679686256,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1447739352002772,
+                "p_mean": 0.1447739352002772,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.1447739352002772,
+                "p_mean": 0.1447739352002772,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.1893363360293376,
+            "candidate": 0.1893363360293376,
+            "delta": 0.0,
+            "improvement": 0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.10932523909674212,
+                "candidate": 0.10932523909674212,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.10188516088135938,
+                "candidate": 0.10188516088135938,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.3568693424826144,
+                "candidate": 0.3568693424826144,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1894271507048957,
+                "p_mean": 0.1894271507048957,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.1894271507048957,
+                "p_mean": 0.1894271507048957,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          }
+        ],
+        "design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D009",
+        "diagnosis_id": "diagnosis:f7c084bc9542d62ce3d1e7b22fb830f0a358b25779746099505dc035d348d7b9",
+        "comparison_baseline_alias": "P031",
+        "design_alias": "P009",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.1441697719364305,
+            "candidate": 0.04099023910756086,
+            "delta": -0.10317953282886963,
+            "improvement": 0.10317953282886963,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.24685944705887933,
+                "candidate": 0.06831512337094804,
+                "delta": -0.17854432368793127,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.08670465602912386,
+                "candidate": 0.007113783561091999,
+                "delta": -0.07959087246803186,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.10119350679686256,
+                "candidate": 0.0483334386066564,
+                "delta": -0.052860068190206166,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1447739352002772,
+                "p_mean": 0.1447739352002772,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.04127763452649934,
+                "p_mean": 0.04127763452649934,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.10349630067377787,
+              "p_delta": -0.10349630067377787
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.1893363360293376,
+            "candidate": 0.5630165466763307,
+            "delta": 0.3736802106469931,
+            "improvement": 0.3736802106469931,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.10932523909674212,
+                "candidate": 0.2314768994796796,
+                "delta": 0.12215166038293747,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.10188516088135938,
+                "candidate": 0.629647974987365,
+                "delta": 0.5277628141060057,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.3568693424826144,
+                "candidate": 0.8278755785730856,
+                "delta": 0.47100623609047115,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.1894271507048957,
+                "p_mean": 0.1894271507048957,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.5629489228627433,
+                "p_mean": 0.5629489228627433,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.37352177215784765,
+              "p_delta": 0.37352177215784765
+            }
+          }
+        ],
+        "design_id": "design:429669353b8c7323c22c089b82681881a5246cf2ff17f133a863e8a2cb61d526",
+        "comparison_baseline_design_id": "design:fb41dfe80f15a25718bfb8ffa2757b4cce1aaef22ed38d8239262cd5625426ae"
+      },
+      {
+        "diagnosis_alias": "D001",
+        "diagnosis_id": "diagnosis:3c5ab13ba5edcd66b62ba8bb2ab5298ac9444fd7b2aa2307714caafc83ea97f8",
+        "comparison_baseline_alias": "P030",
+        "design_alias": "P030",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 0.044890173760034936,
+            "candidate": 0.044890173760034936,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  400.0,
+                  499.0
+                ],
+                "baseline": 0.09718151296891867,
+                "candidate": 0.09718151296891867,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  500.0,
+                  599.0
+                ],
+                "baseline": 0.012920863811793262,
+                "candidate": 0.012920863811793262,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  600.0,
+                  700.0
+                ],
+                "baseline": 0.025282977212950808,
+                "candidate": 0.025282977212950808,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.045062519523519015,
+                "p_mean": 0.045062519523519015,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.045062519523519015,
+                "p_mean": 0.045062519523519015,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.20411009445975922,
+            "candidate": 0.20411009445975922,
+            "delta": 0.0,
+            "improvement": 0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  1133.0
+                ],
+                "baseline": 0.0677785223662436,
+                "candidate": 0.0677785223662436,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1134.0,
+                  1566.0
+                ],
+                "baseline": 0.1374909205875291,
+                "candidate": 0.1374909205875291,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  1567.0,
+                  2000.0
+                ],
+                "baseline": 0.40710839964126516,
+                "candidate": 0.40710839964126516,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.2041771658460099,
+                "p_mean": 0.2041771658460099,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.2041771658460099,
+                "p_mean": 0.2041771658460099,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          }
+        ],
+        "design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e",
+        "comparison_baseline_design_id": "design:f0fb8030208a172cc66a82438a4b789b9ffbaa39b70651552a7f0e05c52eaf9e"
+      }
+    ],
+    "diagnostic_scope": "Certified sampled-grid objective values. Subband/s/p summaries are descriptive sample means, not objective reductions. Local derivatives remain uncertified; no mechanism or finite-step guarantee.",
+    "selection_scope": "Prefer detailed parents for informed choices; other parents remain selectable but omitted diagnostics are unknown. Every indexed parent remains selectable. Detailed views are representatives, not ranked recommendations. Missing detail is unknown; original full diagnostics and envelopes remain saved.",
+    "decision_guidance": [
+      "Check each variable sign and feasible bound direction before choosing an action.",
+      "A common local direction can exist despite coordinate-wise conflicts. Untying is an exploration option, never established as necessary by shared gradients.",
+      "Use actual subband/polarization values when making spectral claims; otherwise label the mechanism untested.",
+      "Explain why selected near-neighbor parents warrant separate searches; no family or action quota.",
+      "Predict all goals honestly, including possible tradeoffs or unknown changes; unchanged is not a synonym for a small acceptable loss."
+    ],
+    "identity_scope": {
+      "snapshot_manifest_sha256": "a2b6b6d04bb17090cf7e90eac5b84c881b6d47583d009a8cde7422f0168fa240",
+      "stable_identity_fields": [
+        "design_id",
+        "diagnosis_id"
+      ],
+      "parent_alias_index": "certified_designs",
+      "diagnosis_alias_index": "diagnostic_index",
+      "alias_lifetime": "Current snapshot only. P/D labels can change after archive growth; never resolve a historical label using this snapshot.",
+      "selection_contract": "Use a supplied stable design_id/diagnosis_id or its current alias. Choose an available action for that exact current parent."
+    }
+  }
+}
