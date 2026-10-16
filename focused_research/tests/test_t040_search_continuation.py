@@ -177,7 +177,8 @@ def test_authentic_t038_continuation_preflight_when_exports_supplied():
     current = st._continuation_context(previous,supplied)
     report = st.rr.compile_candidates(current['routes'],current['sheet'],current['evidence'],
                                      design_constraints=current['constraints'])['candidate_report']
-    assert report['executable_route_ids'] == ['R1','R4','R5','R9','R10']
+    # T041 admits existing legal seeds despite unresolved scientific TODOs.
+    assert report['executable_route_ids'] == ['R' + str(i) for i in range(1, 11)]
     # This is only a contract-subset check, never a claim to have loaded or
     # executed the unexported 51-design full historical archive.
 

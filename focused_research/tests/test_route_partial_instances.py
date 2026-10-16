@@ -9,13 +9,13 @@ def compile_values(values):
     return rr.compile_candidates(*values[:3], design_constraints=values[3])
 
 
-def test_empty_compatibility_is_not_a_candidate_blocker_but_open_requirements_are():
+def test_empty_compatibility_and_open_questions_do_not_block_candidates():
     values = fixture()
     route = values[0]['routes'][0]
     route['compatibility_conditions'] = []
     assert compile_values(values)['candidate_report']['executable_route_ids'] == ['R1']
     route['open_requirements'] = ['Verify material absorption before execution.']
-    assert compile_values(values)['candidate_report']['needs_revision_route_ids'] == ['R1']
+    assert compile_values(values)['candidate_report']['executable_route_ids'] == ['R1']
     route['open_requirements'] = []
     route['compatibility_conditions'] = copy.deepcopy(fixture()[0]['routes'][0]['compatibility_conditions'])
     route['compatibility_conditions'][0]['required_value'] = None
@@ -146,9 +146,9 @@ def test_saved_t038_replay_when_supplied():
         'design_constraints.json': '67a602f85043ab7ab75f7c860482d55e203edfaf9bd564ac8a4396b3129c474e'}
     report = result['candidate_report']
     assert report['accepted_route_ids'] == ['R' + str(i) for i in range(1, 11)]
-    assert report['executable_route_ids'] == ['R1', 'R4', 'R5', 'R9', 'R10']
-    assert report['needs_revision_route_ids'] == ['R2', 'R3', 'R6', 'R7', 'R8']
-    assert len(result['prepared_instances']) == 9
+    assert report['executable_route_ids'] == ['R' + str(i) for i in range(1, 11)]
+    assert report['needs_revision_route_ids'] == []
+    assert len(result['prepared_instances']) == 18
     assert sum(len(r['instances']) for r in result['accepted_contract']['routes']) == 18
     assert sum(len(r['rejected_instances']) for r in report['routes'].values()) == 2
     assert report['routes']['R10']['candidate_role'] == 'reference_seed_only'

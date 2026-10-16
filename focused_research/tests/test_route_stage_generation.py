@@ -99,6 +99,8 @@ def test_empty_retrieval_generates_explicit_model_knowledge(tmp_path):
 
 def test_revision_route_is_retained_without_preparation(tmp_path):
     routes = json.loads(response())
+    # A real missing recipe remains blocked; prose TODOs alone no longer do.
+    routes['routes'][0].update(family=None, instances=[], expectations=[])
     routes['routes'][0]['open_requirements'] = ['Missing an executable requirement.']
     routes['routes'][0]['readiness'] = 'needs_revision'
     planner = AuditedPlannerFixture([json.dumps(routes)])
@@ -129,7 +131,8 @@ def test_proxy_enforces_model_invocation_cap():
 def test_mixed_readiness_keeps_ready_instances(tmp_path):
     routes = json.loads(response())
     incomplete = copy.deepcopy(routes['routes'][0])
-    incomplete.update(id='R2', open_requirements=['Needs structure refinement.'], readiness='needs_revision')
+    incomplete.update(id='R2', family=None, instances=[], expectations=[],
+                      open_requirements=['Needs structure refinement.'], readiness='needs_revision')
     routes['routes'].append(incomplete)
     planner = AuditedPlannerFixture([json.dumps(routes)])
     assert route_stage.main(args(tmp_path), planner=planner) == 0

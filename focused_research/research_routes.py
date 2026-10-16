@@ -196,7 +196,9 @@ def revision_reasons(route, sheet, design_constraints=None, *, candidate_mode=Fa
     for field in required:
         if not route[field]:
             reasons.append('missing ' + field)
-    if route['open_requirements']:
+    # Free-form scientific TODOs do not override executable candidate checks.
+    # Strict contracts retain their historical all-requirements-resolved gate.
+    if route['open_requirements'] and not candidate_mode:
         reasons.extend(route['open_requirements'])
     goals = {g['id']: g for g in sheet['subgoals']}
     for condition in route['compatibility_conditions']:
@@ -508,6 +510,12 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
                 route['readiness'] = readiness
                 validate(envelope([route], linked), task_sheet, evidence_items,
                          design_constraints=design_constraints, candidate_mode=True)
+            for index, requirement in enumerate(route['open_requirements']):
+                info['warnings'].append({'code': 'open_requirement_unresolved',
+                    'path': path + '/open_requirements/' + str(index),
+                    'original': requirement, 'status': 'unresolved',
+                    'execution_scope': 'existing_legal_structures_only',
+                    'reason': 'Retained scientific risk or unfinished work; structural and material preflight gates still apply.'})
             info.update(status='accepted', readiness=route['readiness'],
                 basis_mode=route.get('basis_mode', 'external_evidence'),
                 source_confidence={cid: report['clues'][cid]['source_confidence'] for cid in route['clue_ids']},
