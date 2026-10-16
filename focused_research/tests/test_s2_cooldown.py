@@ -2,7 +2,9 @@
 import importlib.util
 import io
 import json
+import sqlite3
 import tempfile
+from contextlib import closing
 from pathlib import Path
 from types import SimpleNamespace
 import urllib.error
@@ -238,6 +240,84 @@ class CooldownTests(unittest.TestCase):
         self.assertEqual(capture.retry_after, 800)
         self.assertEqual(capture.request_count, 1)
         self.assertNotIn('headers', vars(capture))
+
+    def test_s2_cache_closes_connections_and_rolls_back_failed_write(self):
+        from optomind_research.s2_cache import (
+            S2PersistentCache,
+            canonical_request_key,
+        )
+
+        class TrackingConnection:
+            def __init__(self, real, *, fail_after_cache_insert=False):
+                self.real = real
+                self.fail_after_cache_insert = fail_after_cache_insert
+                self.closed = False
+
+            def __enter__(self):
+                self.real.__enter__()
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                return self.real.__exit__(exc_type, exc_value, traceback)
+
+            def execute(self, sql, *args, **kwargs):
+                result = self.real.execute(sql, *args, **kwargs)
+                if (self.fail_after_cache_insert and
+                        sql.lstrip().startswith('INSERT INTO s2_cache')):
+                    self.fail_after_cache_insert = False
+                    raise RuntimeError('forced write failure after sqlite insert')
+                return result
+
+            def close(self):
+                self.closed = True
+                return self.real.close()
+
+            def __getattr__(self, name):
+                return getattr(self.real, name)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / 'provider_cache.sqlite'
+            returned = []
+            original_connect = S2PersistentCache._connect
+            fail_next = [False]
+
+            def tracked_connect(cache):
+                real = original_connect(cache)
+                wrapper = TrackingConnection(real,
+                    fail_after_cache_insert=fail_next[0])
+                fail_next[0] = False
+                returned.append(wrapper)
+                return wrapper
+
+            with patch.object(S2PersistentCache, '_connect', tracked_connect):
+                cache = S2PersistentCache(db_path)
+                ok_key = cache.put('GET', '/ok', {}, {}, status_code=200,
+                    payload={'ok': True}, ttl_seconds=60)
+                self.assertTrue(returned[-1].closed)
+                with self.assertRaises(sqlite3.ProgrammingError):
+                    returned[-1].execute('SELECT 1')
+
+                with closing(sqlite3.connect(db_path)) as conn, conn:
+                    self.assertIsNotNone(conn.execute(
+                        'SELECT cache_key FROM s2_cache WHERE cache_key=?',
+                        (ok_key,)).fetchone())
+
+                fail_next[0] = True
+                with self.assertRaises(RuntimeError):
+                    cache.put('GET', '/error', {}, {}, status_code=200,
+                        payload={'error': True}, ttl_seconds=60)
+                self.assertTrue(returned[-1].closed)
+                with self.assertRaises(sqlite3.ProgrammingError):
+                    returned[-1].execute('SELECT 1')
+
+                error_key = canonical_request_key('GET', '/error', {}, {})
+                with closing(sqlite3.connect(db_path)) as conn, conn:
+                    self.assertIsNone(conn.execute(
+                        'SELECT cache_key FROM s2_cache WHERE cache_key=?',
+                        (error_key,)).fetchone())
+
+            self.assertTrue(returned)
+            self.assertTrue(all(conn.closed for conn in returned))
 
 
 if __name__ == '__main__':

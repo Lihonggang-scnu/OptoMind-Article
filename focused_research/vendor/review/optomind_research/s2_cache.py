@@ -6,6 +6,7 @@ import hashlib
 import json
 import sqlite3
 import threading
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,7 +68,7 @@ class S2PersistentCache:
         return conn
 
     def _init_db(self) -> None:
-        with self._connect() as conn:
+        with closing(self._connect()) as conn, conn:
             conn.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS s2_cache (
@@ -133,7 +134,7 @@ class S2PersistentCache:
         if interval <= 0:
             return 0.0
         current = utc_timestamp() if now is None else float(now)
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
                 "SELECT next_allowed_at FROM s2_rate_limit WHERE scope=?",
@@ -195,7 +196,7 @@ class S2PersistentCache:
             method, endpoint, params, body, schema_version=schema_version
         )
         current = utc_timestamp() if now is None else now
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             row = conn.execute(
                 "SELECT * FROM s2_cache WHERE cache_key=?", (key,)
             ).fetchone()
@@ -234,7 +235,7 @@ class S2PersistentCache:
             json.dumps(body or {}, sort_keys=True, default=str).encode("utf-8")
         ).hexdigest()
         response_json = json.dumps(payload, ensure_ascii=False, default=str)
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             conn.execute(
                 """
                 INSERT INTO s2_cache(
@@ -284,7 +285,7 @@ class S2PersistentCache:
         if not key:
             return
         current = utc_timestamp() if now is None else float(now)
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             conn.execute(
                 """
                 INSERT INTO s2_precise_empty_index(
@@ -304,7 +305,7 @@ class S2PersistentCache:
         paper can be re-checked once S2 may have indexed new full text.
         """
 
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             rows = conn.execute(
                 "SELECT paper_key FROM s2_precise_empty_index "
                 "WHERE last_confirmed_at >= ?",
@@ -324,7 +325,7 @@ class S2PersistentCache:
         key_slot: int | None,
         cache_hit: bool,
     ) -> None:
-        with self._lock, self._connect() as conn:
+        with self._lock, closing(self._connect()) as conn, conn:
             conn.execute(
                 """
                 INSERT INTO s2_request_metrics(
@@ -347,7 +348,7 @@ class S2PersistentCache:
             )
 
     def stats(self) -> dict[str, Any]:
-        with self._connect() as conn:
+        with closing(self._connect()) as conn, conn:
             total = int(conn.execute("SELECT count(*) FROM s2_cache").fetchone()[0])
             metrics = int(
                 conn.execute("SELECT count(*) FROM s2_request_metrics").fetchone()[0]
