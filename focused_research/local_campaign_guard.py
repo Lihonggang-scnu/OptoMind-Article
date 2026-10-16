@@ -70,6 +70,7 @@ class CampaignPlannerGuard:
     """
     _stage_order = STAGES
     _max_dispatch_attempts = 4
+    _stage_dispatch_limits = {'search_revision': 1}
 
     def __init__(self, planner, *, case_id, audit_sink):
         if case_id not in CASE_PROTOCOLS:
@@ -118,7 +119,7 @@ class CampaignPlannerGuard:
             raise ValueError('prompt requires an object user_payload')
         count = self._counts[stage]
         repair = count == 1 and stage != 'search_revision'
-        if count >= (1 if stage == 'search_revision' else 2):
+        if count >= self._stage_dispatch_limits.get(stage, 2):
             raise ValueError('stage dispatch limit reached')
         if repair:
             payload = prompt['user_payload']
@@ -235,6 +236,97 @@ class RecoveredCampaignPlannerGuard(CampaignPlannerGuard):
                 budget['prior_dispatch_attempts'] + snapshot['dispatch_attempts'])
             snapshot['recovered_attempt_budget'] = budget
         return snapshot
+
+
+class RecoveredRevisionPlannerGuard(RecoveredCampaignPlannerGuard):
+    """Explicit new-work-order continuation using already recovered routes.
+
+    Only search_revision may dispatch, at most twice and at most once per
+    distinct physical-search snapshot. No route call or format/transport repair
+    is admitted. A single revision is sufficient; another is allowed only after
+    the caller obtains new physical feedback and verifies its new manifest.
+
+    The continuation task ID, reconciled prior attempts, and cumulative ceiling
+    are mandatory. For T040 the launcher must verify and pass prior=4, limit=6;
+    this generic class does not infer, reset, or independently verify history.
+    The recovered binding must also identify the unchanged original question by
+    its UTF-8 SHA-256. Existing search_stage.revise prompts carry that question
+    and identity_scope.snapshot_manifest_sha256; no model text or opinion is
+    judged here. The caller verifies manifests, recovered routes, physical
+    feedback, and task-sheet identity before admission. This class checks only
+    their explicit bindings and dispatch allowance, never scientific quality.
+
+    Start search_revision once, then use the same object for the permitted
+    calls. Persist every pre-dispatch audit and the final audit in finally.
+    Audit/transport failure closes the guard; do not recreate it to retry.
+    Actual HTTP, prior/current money, pending/held/uncertain liabilities and
+    cumulative case/project caps remain the original transport/ledger's facts.
+    """
+    _stage_order = ('search_revision',)
+    _max_dispatch_attempts = 2
+    _stage_dispatch_limits = {'search_revision': 2}
+
+    def __init__(self, planner, *, case_id, audit_sink, recovered_task_sheet_binding,
+                 continuation_task_id, prior_dispatch_attempts, cumulative_dispatch_limit):
+        if not isinstance(continuation_task_id, str) or not continuation_task_id.strip():
+            raise ValueError('explicit continuation_task_id is required')
+        if type(prior_dispatch_attempts) is not int or prior_dispatch_attempts < 0:
+            raise ValueError('explicit reconciled prior_dispatch_attempts must be a nonnegative integer')
+        if type(cumulative_dispatch_limit) is not int or cumulative_dispatch_limit < 1:
+            raise ValueError('explicit cumulative_dispatch_limit must be a positive integer')
+        question_digest = (recovered_task_sheet_binding.get('original_question_sha256')
+                           if isinstance(recovered_task_sheet_binding, dict) else None)
+        if not isinstance(question_digest, str) or len(question_digest) != 64 or any(
+                char not in '0123456789abcdef' for char in question_digest):
+            raise ValueError('revision continuation requires a canonical original_question_sha256')
+        self._continuation_task_id = continuation_task_id
+        self._revision_snapshot_manifest_hashes = []
+        super().__init__(planner, case_id=case_id, audit_sink=audit_sink,
+                         recovered_task_sheet_binding=recovered_task_sheet_binding,
+                         prior_dispatch_attempts=prior_dispatch_attempts,
+                         cumulative_dispatch_limit=cumulative_dispatch_limit)
+
+    @property
+    def audit(self):
+        snapshot = super().audit
+        snapshot['revision_continuation'] = {
+            'task_id': self._continuation_task_id,
+            'allowed_stage': 'search_revision',
+            'snapshot_manifest_sha256': list(self._revision_snapshot_manifest_hashes),
+            'new_physical_feedback_verified_by': 'caller_before_each_revision',
+        }
+        return snapshot
+
+    def _call_query_plan_model(self, prompt):
+        if self._failed or self._stage_index < 0:
+            raise ValueError('active admitted stage required; failed guards cannot retry')
+        if not isinstance(prompt, dict) or not isinstance(prompt.get('user_payload'), dict):
+            raise ValueError('prompt requires an object user_payload')
+        payload = prompt['user_payload']
+        if any(key in row for row in (prompt, payload)
+               for key in ('previous_response', 'validation_error')):
+            raise ValueError('revision continuation does not admit contract repair requests')
+        identity = payload.get('identity_scope')
+        snapshot_digest = identity.get('snapshot_manifest_sha256') if isinstance(identity, dict) else None
+        if not isinstance(snapshot_digest, str) or len(snapshot_digest) != 64 or any(
+                char not in '0123456789abcdef' for char in snapshot_digest):
+            raise ValueError('revision requires an explicit search snapshot_manifest_sha256')
+        sheet = payload.get('task_sheet')
+        question = sheet.get('original_question') if isinstance(sheet, dict) else None
+        if (not isinstance(question, str) or hashlib.sha256(question.encode('utf-8')).hexdigest()
+                != self._recovered_task_sheet_binding['original_question_sha256']):
+            raise ValueError('revision original_question does not match the recovered binding')
+        if snapshot_digest in self._revision_snapshot_manifest_hashes:
+            raise ValueError('revision snapshot already dispatched; new physical feedback required')
+        # Record the identity in the same durable pre-dispatch audit as the
+        # forwarded prompt. Preflight rejections must not consume an identity.
+        previous_count = sum(self._counts.values())
+        self._revision_snapshot_manifest_hashes.append(snapshot_digest)
+        try:
+            return super()._call_query_plan_model(prompt)
+        finally:
+            if sum(self._counts.values()) == previous_count:
+                self._revision_snapshot_manifest_hashes.pop()
 
 
 def check_route_thickness_bounds(routes, *, case_id):

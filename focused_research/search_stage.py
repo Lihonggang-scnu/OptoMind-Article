@@ -323,9 +323,10 @@ def _refinement_action_availability(previous, parent):
     return {'available_actions': available, 'unavailable_actions': unavailable}
 
 
-def _revision_decision_view(previous, aliases):
+def _revision_decision_view(previous, aliases, material_feedback=None):
     """Bind ephemeral display aliases and executable choices to this snapshot."""
-    view = dc.build_decision_context(previous, aliases, _latest_local_derivative)
+    kwargs = {} if material_feedback is None else {'material_feedback': material_feedback}
+    view = dc.build_decision_context(previous, aliases, _latest_local_derivative, **kwargs)
     payload = view['user_payload']
     payload['identity_scope'] = {
         'snapshot_manifest_sha256': previous['manifest_sha256'],
@@ -469,7 +470,7 @@ def _compact_diagnostic(row, parent_alias, diagnosis_alias):
             'observed_objective_tradeoff':source['next_iteration_evidence']['observed_objective_tradeoff']}
 
 
-def revise(previous_search, *, output, planner):
+def revise(previous_search, *, output, planner, material_feedback=None):
     """One audited planner call, raw response retained even when invalid. No retries."""
     if planner is None:
         raise ValueError('revise requires an explicitly injected audited planner')
@@ -478,7 +479,7 @@ def revise(previous_search, *, output, planner):
         raise ValueError('certified designs and diagnostics required before revision')
     output = _new_output(output, [previous_search])
     aliases = _aliases(previous)
-    decision_view = _revision_decision_view(previous, aliases)
+    decision_view = _revision_decision_view(previous, aliases, material_feedback=material_feedback)
     prompt = {'system_prompt':
         'Return JSON only, exactly {"plans":[...]}. Plan numerical refinement, never layer JSON. '
         'Each plan has parent_design_id, action (refine_family or refine_layers), diagnosis '
@@ -536,6 +537,34 @@ def revise(previous_search, *, output, planner):
     return summary
 
 
+def _continuation_context(previous, supplied):
+    """Expand admission, never replace a prior task, evidence or legal recipe."""
+    context = copy.deepcopy(previous['context'])
+    for key, value in supplied.items():
+        if value is None:
+            continue
+        if key != 'routes' and value != context[key]:
+            raise ValueError('continuation must retain original ' + key)
+        context[key] = copy.deepcopy(value)
+    compiled = rr.compile_candidates(context['routes'], context['sheet'], context['evidence'],
+                                     design_constraints=context['constraints'])
+    current = {r['id']: r for r in compiled['accepted_contract']['routes']}
+    for old in previous['accepted']['routes']:
+        new = current.get(old['id'])
+        if new is None or old['family'] != new['family']:
+            raise ValueError('continuation may not replace an existing route family: ' + old['id'])
+        new_instances = {i['id']: i for i in new['instances']}
+        if any(new_instances.get(i['id']) != i for i in old['instances']):
+            raise ValueError('continuation may not replace an existing legal instance: ' + old['id'])
+        # Keep original scientific prose and goal declarations; only compiler-owned
+        # admission metadata may change when recovering a saved route draft.
+        for key in ('claim', 'goal_ids', 'transfer_assumptions', 'compatibility_conditions',
+                    'open_requirements', 'model_knowledge_rationale', 'clue_ids', 'evidence_ids', 'expectations'):
+            if old.get(key) != new.get(key):
+                raise ValueError('continuation may not rewrite an existing route: ' + old['id'] + '/' + key)
+    return context
+
+
 def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, optical_media=None,
                wavelengths_nm=None, output, cache_dir, max_forward_evaluations,
                max_new_evals, max_workers=1, seed=42, backend='auto', previous_search=None,
@@ -549,19 +578,23 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
     if parameterization not in ('family','layerwise_refinement'):
         raise ValueError('unsupported parameterization')
     previous = read_search(previous_search) if previous_search else None
+    continuation = previous is not None and plans is None
     if previous:
+        old_pols = {p for e in previous['envelopes'].values() for p in e['tmm_task']['illumination']['polarizations']}
         if include_polarization_channels is not None:
-            old_pols = {p for e in previous['envelopes'].values() for p in e['tmm_task']['illumination']['polarizations']}
             if include_polarization_channels != {'s','p'}.issubset(old_pols):
                 raise ValueError('refinement must retain original diagnostic polarization channels')
+        elif continuation and previous['envelopes']:
+            include_polarization_channels = {'s','p'}.issubset(old_pols)
         supplied = dict(routes=routes, sheet=sheet, evidence=evidence, constraints=constraints,
                         optical_media=optical_media, wavelengths_nm=wavelengths_nm)
-        if any(v is not None and v != previous['context'][k] for k,v in supplied.items()):
+        if not continuation and any(v is not None and v != previous['context'][k] for k,v in supplied.items()):
             raise ValueError('refinement must retain original inputs and physical conditions')
-        context = previous['context']
+        context = _continuation_context(previous, supplied) if continuation else previous['context']
         routes, sheet, evidence, constraints, optical_media, wavelengths_nm = (
             context[k] for k in ('routes','sheet','evidence','constraints','optical_media','wavelengths_nm'))
-        plans, plan_report = _compile_plans(plans, previous)
+        if not continuation:
+            plans, plan_report = _compile_plans(plans, previous)
     else:
         if plans is not None:
             raise ValueError('plans require previous_search')
@@ -574,10 +607,12 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
     save(output / 'accepted_contract.json', accepted)
     save(output / 'candidate_report.json', compiled['candidate_report'])
     if previous:
-        save(output / 'refinement_plans.json', plans)
-        save(output / 'plan_report.json', plan_report)
+        if not continuation:
+            save(output / 'refinement_plans.json', plans)
+            save(output / 'plan_report.json', plan_report)
         save(output / 'search_parent.json', {'previous_search': str(Path(previous_search).resolve()),
-                                            'manifest_sha256': previous['manifest_sha256']})
+            'manifest_sha256': previous['manifest_sha256'],
+            'mode': 'new_family_continuation' if continuation else 'refinement'})
     archive = copy.deepcopy(previous['archive']) if previous else None
     design_envelopes = copy.deepcopy(previous['envelopes']) if previous else {}
     diagnostics = copy.deepcopy(previous['diagnostics']) if previous else []
@@ -589,7 +624,9 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
     save(output / 'budget_reservation.json', {'max_forward_design_rows': max_forward_evaluations,
         'max_new_certification_evaluations': max_new_evals, 'seed': seed,
         'budget_scope': 'Separate search solver design rows and certification tasks; failures consume attempted work.'})
-    if previous:
+    continuation_audit = {'mode': 'new_family_continuation', 'historical_design_ids': sorted((archive or {}).get('designs', {})),
+                          'retained_seed_references': [], 'skipped_route_ids': []}
+    if previous and not continuation:
         for plan in plans['plans']:
             parent = plan['parent_design_id']
             envelope = copy.deepcopy(design_envelopes[parent])
@@ -610,6 +647,16 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
                         for pol in ('s', 'p'):
                             if pol not in pols:
                                 pols.append(pol)
+                    if continuation:
+                        physical_key = digest(da._physical(envelope['tmm_task']))
+                        existing = next((ident for ident, design in (archive or {}).get('designs', {}).items()
+                                         if digest(da._physical(design['physical_input'])) == physical_key), None)
+                        if existing:
+                            seed_ids[(route['id'], envelope['instance_id'])] = existing
+                            continuation_audit['retained_seed_references'].append({
+                                'route_id': route['id'], 'instance_id': envelope['instance_id'],
+                                'design_id': existing, 'new_evaluations': 0, 'cache_hit_claimed': False})
+                            continue
                     all_envelopes.append(envelope)
                 except (ValueError, TypeError, KeyError) as exc:
                     failures.append({'stage':'prepare','route_id':route['id'],
@@ -634,6 +681,13 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
             jobs.append({'route': route_map[rid], 'seeds':seeds, 'parent':None,'parameterization':parameterization})
     quotas = [max_forward_evaluations // len(jobs) + int(i < max_forward_evaluations % len(jobs))
               for i in range(len(jobs))]
+    if continuation:
+        job_routes = {job['route']['id'] for job in jobs}
+        continuation_audit['skipped_route_ids'] = sorted({r['route_id'] for r in
+            continuation_audit['retained_seed_references']} - job_routes)
+        continuation_audit['new_search_route_ids'] = sorted(job_routes)
+        continuation_audit['historical_counts_not_charged'] = True
+        save(output / 'continuation_audit.json', continuation_audit)
     save(output / 'search_reservations.json', [{'job_index':i, 'route_id':j['route']['id'],
         'parent_design_id':j['parent'], 'parameterization':j['parameterization'],
         'reserved_forward_design_rows':quotas[i]} for i,j in enumerate(jobs)])
@@ -706,8 +760,8 @@ def run_search(routes=None, sheet=None, evidence=None, constraints=None, *, opti
     forward_rows = sum(s['search']['metering']['forward_design_rows'] for s in searches)
     solver_rows = sum(s['search']['metering']['solver_channel_rows'] for s in searches)
     search_failures = [f for f in failures if f['stage']=='search']
-    summary = {'schema_version':SCHEMA,'stage':'refine' if previous else 'search',
-        'status':'search_complete' if archive and not failures and (not previous or not plan_report['rejected_count']) and all(r.get('physics_accepted') for r in seed_batch['results'] + candidate_batch['results']) else 'partial',
+    summary = {'schema_version':SCHEMA,'stage':'search_continuation' if continuation else 'refine' if previous else 'search',
+        'status':'search_complete' if archive and not failures and (not previous or continuation or not plan_report['rejected_count']) and all(r.get('physics_accepted') for r in seed_batch['results'] + candidate_batch['results']) else 'partial',
         'live_model_called':False,
         'diagnostic_polarization_channels':sorted({p for e in design_envelopes.values() for p in e['tmm_task']['illumination']['polarizations']}),
         'numerical_search_jobs':len(jobs),'candidate_count':len(candidates),
@@ -745,8 +799,10 @@ def main(argv=None, *, planner=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('stage',choices=['search','revise','refine'])
     for option in ('task-sheet','evidence-file','constraints-file','routes-file','optical-media','wavelengths',
-                   'previous-search','plans-file','revision-dir','cache-dir'):
+                   'previous-search','plans-file','revision-dir','cache-dir','material-feedback','cached-rta-feedback'):
         parser.add_argument('--'+option,type=Path)
+    parser.add_argument('--material-feedback-sha256')
+    parser.add_argument('--cached-rta-feedback-sha256')
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--max-forward-evaluations',type=int)
     parser.add_argument('--max-new-evals',type=int)
@@ -760,10 +816,22 @@ def main(argv=None, *, planner=None):
     try:
         if not args.execute:
             raise ValueError('explicit --execute required')
+        facts_args = (args.material_feedback, args.cached_rta_feedback,
+                      args.material_feedback_sha256, args.cached_rta_feedback_sha256)
+        material_feedback = None
+        if any(value is not None for value in facts_args):
+            if args.stage != 'revise' or any(value is None for value in facts_args):
+                raise ValueError('physical feedback requires revise and both files with their exact SHA256 values')
+            try:
+                from .material_feedback import load_material_feedback
+            except ImportError:
+                from material_feedback import load_material_feedback
+            material_feedback = load_material_feedback(args.material_feedback, args.cached_rta_feedback,
+                material_sha256=args.material_feedback_sha256, cached_rta_sha256=args.cached_rta_feedback_sha256)
         if args.stage == 'revise':
             if args.previous_search is None:
                 raise ValueError('revise requires --previous-search')
-            result = revise(args.previous_search,output=args.output,planner=planner)
+            result = revise(args.previous_search,output=args.output,planner=planner,material_feedback=material_feedback)
         else:
             if any(x is None for x in (args.cache_dir,args.max_forward_evaluations,args.max_new_evals)):
                 raise ValueError('explicit cache, search-row budget, and certification budget required')
@@ -771,6 +839,8 @@ def main(argv=None, *, planner=None):
                      'constraints':args.constraints_file,'optical_media':args.optical_media,'wavelengths_nm':args.wavelengths}
             if args.stage == 'search' and any(p is None for p in paths.values()):
                 raise ValueError('search requires original routes/task/evidence/constraints/media/grid')
+            if args.stage == 'search' and (args.plans_file is not None or args.revision_dir is not None):
+                raise ValueError('search continuation accepts route candidates, not refinement plans; use refine')
             plans = None
             if args.stage == 'refine':
                 if args.previous_search is None or (args.plans_file is None and args.revision_dir is None):
@@ -787,8 +857,6 @@ def main(argv=None, *, planner=None):
                     plans = load(args.revision_dir / 'refinement_plans.json')
                 else:
                     plans = load(args.plans_file)
-            elif args.previous_search is not None:
-                raise ValueError('use refine to continue a previous search')
             result = run_search(**{k:load(p) if p else None for k,p in paths.items()},output=args.output,
                 cache_dir=args.cache_dir,max_forward_evaluations=args.max_forward_evaluations,
                 max_new_evals=args.max_new_evals,max_workers=args.max_workers,seed=args.seed,backend=args.backend,

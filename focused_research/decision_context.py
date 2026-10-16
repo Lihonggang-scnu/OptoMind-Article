@@ -225,7 +225,7 @@ def _diagnostic(row, pa, da):
         'design_alias': pa[row['design_id']], 'goals': goals}
 
 
-def build_decision_context(previous, aliases, derivative_getter, *, detail_budget=8):
+def build_decision_context(previous, aliases, derivative_getter, *, detail_budget=8, material_feedback=None):
     """All parents remain selectable; representatives get rich diagnostic detail.
 
     detail_budget limits prompt detail only, never eligible designs or plans.
@@ -279,6 +279,12 @@ def build_decision_context(previous, aliases, derivative_getter, *, detail_budge
             'Use actual subband/polarization values when making spectral claims; otherwise label the mechanism untested.',
             'Explain why selected near-neighbor parents warrant separate searches; no family or action quota.',
             'Predict all goals honestly, including possible tradeoffs or unknown changes; unchanged is not a synonym for a small acceptable loss.']}
+    if material_feedback is not None:
+        try:
+            from .material_feedback import feedback_for_archive
+        except ImportError:
+            from material_feedback import feedback_for_archive
+        payload['material_feedback'] = feedback_for_archive(material_feedback, archive)
     audit = {'schema_version': 'focused_research.decision_context.v1', 'archive_design_count': len(rows),
         'detailed_design_count': len(selected), 'detail_budget': detail_budget,
         'representative_design_ids': selected, 'full_diagnostic_count': len(previous['diagnostics']),
@@ -288,4 +294,11 @@ def build_decision_context(previous, aliases, derivative_getter, *, detail_budge
         'payload_characters': len(json.dumps(payload, ensure_ascii=False, separators=(',',':'))),
         'payload_utf8_bytes': len(json.dumps(payload, ensure_ascii=False, separators=(',',':')).encode('utf-8')),
         'additional_forward_design_rows': 0}
+    if material_feedback is not None:
+        audit['material_feedback'] = {
+            'input_files': deepcopy(material_feedback['input_files']),
+            'source_content_sha256': material_feedback['content_sha256'],
+            'payload_utf8_bytes': len(json.dumps(payload['material_feedback'], ensure_ascii=False,
+                                                separators=(',', ':')).encode('utf-8')),
+            'additional_forward_design_rows': 0}
     return {'user_payload': payload, 'selection_report': audit}
