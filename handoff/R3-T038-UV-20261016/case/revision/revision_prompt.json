@@ -1,0 +1,3688 @@
+{
+  "system_prompt": "Return JSON only, exactly {\"plans\":[...]}. Plan numerical refinement, never layer JSON. Each plan has parent_design_id, action (refine_family or refine_layers), diagnosis (diagnosis_id, observation_ids, explanation citing concrete measured changes), expected_goal_changes (every original objective_id mapped to increase/decrease/unchanged/unknown). Use supplied stable design_id/diagnosis_id or current parent_alias P001 etc / diagnosis_alias D001 etc. Short aliases belong only to the current identity_scope snapshot; historical labels are not current identities. Choose only supplied certified parents. Preserve all original objectives and physical conditions. Choose only an action listed in that exact parent row available_actions; unavailable_actions explains exclusions. refine_family preserves shared variables; refine_layers explicitly creates independent layer variables within original family bounds. Expectations are untested, not outcomes. No route or plan-count ceiling. Interpret measurements, local derivative arithmetic, and hypotheses separately. For a decreasing variable reverse the derivative sign; respect each goal sense and the supplied bounds. Local directional estimates do not establish finite-step outcomes or a unique mechanism. Explain why the chosen parent and action are informative; nearby parents need a reason, not a diversity quota. Exploratory actions, predicted tradeoffs, and unsuccessful hypotheses are legitimate; do not promise improvement. An empty plans list is allowed. Do not fabricate observations, material identities or new bounds.",
+  "user_payload": {
+    "task_sheet": {
+      "original_question": "我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。",
+      "user_objective": "Design a metal-free planar multilayer dielectric filter for solar-blind UV detection on LEO platforms, maximizing transmission in 255–280 nm while minimizing transmission in 300–700 nm and 700–1100 nm, using conventional inorganic materials on fused silica with air incidence.",
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": null,
+        "coupling": "G1, G2, and G3 are spectrally adjacent or overlapping goals for the same coating; achieving high transmission in the narrow UV band while suppressing broad visible and NIR bands involves strong physical coupling and potential trade-offs in layer count and material selection."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "UV passband: 255–280 nm",
+          "original_span": "255–280 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "Visible rejection band: 300–700 nm",
+          "original_span": "300–700 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "NIR rejection band: 700–1100 nm",
+          "original_span": "700–1100 nm"
+        },
+        {
+          "id": "C4",
+          "constraint": "Incident medium: air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C5",
+          "constraint": "Substrate: fused silica",
+          "original_span": "熔融石英基底"
+        },
+        {
+          "id": "C6",
+          "constraint": "No metal layers allowed",
+          "original_span": "不含金属层"
+        },
+        {
+          "id": "C7",
+          "constraint": "Only conventional depositable inorganic dielectric materials",
+          "original_span": "仅使用常规可沉积无机介质材料"
+        },
+        {
+          "id": "C8",
+          "constraint": "Planar multilayer film",
+          "original_span": "平面多层膜"
+        },
+        {
+          "id": "C9",
+          "constraint": "Total layer count not exceeding 30",
+          "original_span": "膜系总层数不超过 30 层"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral mean definitions as these were not explicitly specified by the user but are required for the executable metric schema.",
+          "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Specific set of 'conventional depositable inorganic dielectric materials' and their UV optical constants (n, k) below 300 nm must be resolved from inventory; user did not name specific pairs like TiO2/SiO2.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Numerical thresholds for 'as high as possible' transmission or 'suppression' levels are unspecified; no combined score or weighting is defined.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Individual layer thickness bounds and fabrication tolerances are not specified by the user.",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "unsupported_requirements": [],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Interference in alternating high/low-index dielectric layers to create a narrow bandpass filter with wide stopbands",
+          "subgoal_ids": [
+            "G1",
+            "G2",
+            "G3"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Material absorption edges limiting usable high-index candidates in the deep/solar-blind UV region",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "status": "candidate"
+        }
+      ]
+    },
+    "constraints": {
+      "allowed_materials": null,
+      "allowed_material_category": "ordinary_depositable_inorganic_dielectrics_no_metals",
+      "execution_materials": {
+        "Al2O3": {
+          "dataset_id": "al2o3",
+          "material": "al2o3",
+          "provider": "local_csv"
+        },
+        "HfO2": {
+          "dataset_id": "hfo2",
+          "material": "hfo2",
+          "provider": "local_csv"
+        },
+        "MgF2": {
+          "dataset_id": 204,
+          "material": "MgF2",
+          "provider": "rii_sqlite"
+        },
+        "Nb2O5": {
+          "dataset_id": 397,
+          "material": "Nb2O5",
+          "provider": "rii_sqlite"
+        },
+        "SiO2": {
+          "dataset_id": 411,
+          "material": "SiO2",
+          "provider": "rii_sqlite"
+        },
+        "Ta2O5": {
+          "dataset_id": 414,
+          "material": "Ta2O5",
+          "provider": "rii_sqlite"
+        },
+        "TiO2": {
+          "dataset_id": "tio2",
+          "material": "tio2",
+          "provider": "local_csv"
+        }
+      },
+      "max_layers": 30,
+      "substrate": "fused_silica",
+      "incident_medium": "air",
+      "constraint_source_ids": {
+        "allowed_materials": [],
+        "allowed_material_category": [
+          "C6",
+          "C7"
+        ],
+        "max_layers": [
+          "C2",
+          "C9"
+        ],
+        "substrate": [
+          "C5"
+        ],
+        "incident_medium": [
+          "C4"
+        ]
+      },
+      "assumptions": {
+        "execution_materials": "The finite available execution inventory was verified against original local registry identities and complete255-1100nm n/k coverage with no extrapolation. It is not the user allowed-material set, an exhaustive dielectric classification, a transparency claim or a manufacturing guarantee. Unsupported identities require capability review; no automatic material substitution."
+      }
+    },
+    "objectives": [
+      {
+        "objective_id": "G1",
+        "metric": "mean_transmittance",
+        "sense": "maximize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            255.0,
+            280.0
+          ],
+          "angle_deg": 0.0,
+          "polarization": "unpolarized"
+        }
+      },
+      {
+        "objective_id": "G2",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            300.0,
+            700.0
+          ],
+          "angle_deg": 0.0,
+          "polarization": "unpolarized"
+        }
+      },
+      {
+        "objective_id": "G3",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            700.0,
+            1100.0
+          ],
+          "angle_deg": 0.0,
+          "polarization": "unpolarized"
+        }
+      }
+    ],
+    "route_rationales": [
+      {
+        "id": "R1",
+        "claim": "A symmetric Fabry-Perot cavity using MgF2 spacers and Nb2O5 mirrors can isolate the 255-280 nm band, leveraging high index contrast to widen the rejection bands towards visible and NIR.",
+        "basis_mode": "hybrid",
+        "model_knowledge_rationale": "Standard thin-film theory suggests that increasing the number of periods in the Bragg mirrors surrounding the cavity deepens the stopband. The specific thickness values are estimated based on quarter-wave optical thickness at the center of the UV passband (~267 nm), adjusted for the available material indices.",
+        "clue_ids": [
+          "D2",
+          "D5"
+        ],
+        "evidence_ids": [
+          "E_b35a9bfe8d10634bb5047d7712e1442b1fc755211809a1c37bfe0ec5bb64142e",
+          "E_a85cac2616592ec900363fecab20c1f508ae66ce5afe9cb2244d5e7e218ade7e"
+        ]
+      }
+    ],
+    "decision_clues": [
+      {
+        "id": "D2",
+        "evidence_id": "E_b35a9bfe8d10634bb5047d7712e1442b1fc755211809a1c37bfe0ec5bb64142e",
+        "physical_effect": "High peak reflectance/transmittance in UV; trade-off in out-of-band rejection width.",
+        "inference_bridge": "Transfer the principle of using low-absorption fluorides (MgF2) paired with a higher-index stable oxide (Al2O3/HfO2) to construct a bandpass filter, accepting that wider stopbands may require more layers or specific stacking sequences.",
+        "conditions_and_unknowns": [
+          "Source discusses reflective mirrors or Al-based filters; task requires all-dielectric transmission filters.",
+          "LaF3/GdF3 are not in the execution inventory; MgF2 is available.",
+          "Specific layer counts for broad stopbands not detailed."
+        ]
+      },
+      {
+        "id": "D5",
+        "evidence_id": "E_a85cac2616592ec900363fecab20c1f508ae66ce5afe9cb2244d5e7e218ade7e",
+        "physical_effect": "Higher index contrast enables broader stopbands or narrower passbands depending on design.",
+        "inference_bridge": "Utilize the high index contrast between Nb2O5 (or HfO2/Ta2O5) and MgF2/SiO2 to maximize the stopband width covering 300-1100 nm with fewer layers.",
+        "conditions_and_unknowns": [
+          "Source targets 1550 nm; UV indices and dispersion will differ.",
+          "SiO2 absorption edge may be relevant below 200nm, but likely acceptable at 255nm.",
+          "Nb2O5 is in the execution inventory."
+        ]
+      }
+    ],
+    "certified_designs": [
+      {
+        "parent_alias": "P001",
+        "design_id": "design:04a66609436dbe32ea51a3906990da69a6f14536f5f000cf94c9f234fb1b13b0",
+        "metrics": {
+          "G1": 2.8165246310042696e-06,
+          "G2": 0.2484458919885366,
+          "G3": 0.8040960633014628
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P002",
+        "design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef",
+        "metrics": {
+          "G1": 7.209620727701802e-06,
+          "G2": 0.35336722103759016,
+          "G3": 0.8350260897444005
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P003",
+        "design_id": "design:21f966c45f861391bf67a17593e8971a17a8f2c4a868774a7f75731254d25c36",
+        "metrics": {
+          "G1": 4.584452109734316e-05,
+          "G2": 0.41138583482078145,
+          "G3": 0.8801214616954078
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P004",
+        "design_id": "design:5267aebe2630d381835f9050ece355a8fe84efb4c67da81e9a374428e6f3195e",
+        "metrics": {
+          "G1": 2.4682759963583008e-06,
+          "G2": 0.2500760141852563,
+          "G3": 0.7986219069713133
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P005",
+        "design_id": "design:540f8d4ebf54cededb53ff4ded90583a162f2d4eabe197c0c08d147b8431657c",
+        "metrics": {
+          "G1": 2.6424115899450362e-06,
+          "G2": 0.24944043374068367,
+          "G3": 0.8008088305526865
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P006",
+        "design_id": "design:5a4087e3f47915dd2f4f79b8f32af8ca5c779ce19b46b822914dfb8c5ca03a7f",
+        "metrics": {
+          "G1": 4.312178956538091e-06,
+          "G2": 0.3419598450334603,
+          "G3": 0.8111085538253232
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P007",
+        "design_id": "design:602c6c703f2f2a39359096a988d93e10d896dd8e5791e48aa0f6470345f23800",
+        "metrics": {
+          "G1": 2.523038899517507e-06,
+          "G2": 0.24948519412776982,
+          "G3": 0.800427924467
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P008",
+        "design_id": "design:634e8d8320d63d9622e95c14e52dabc38ea0b0ee9f44e7d095f3e891e828cd23",
+        "metrics": {
+          "G1": 2.446542701666473e-06,
+          "G2": 0.24979993341189016,
+          "G3": 0.7993924931626196
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P009",
+        "design_id": "design:6824e64edcc9cef5fbcbf0d8d2a3f10bf2e1c7d365cd1ccfb0911f9d49fac590",
+        "metrics": {
+          "G1": 2.798421182246503e-06,
+          "G2": 0.24847902364722102,
+          "G3": 0.8039850596388738
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P010",
+        "design_id": "design:747f7db69647921cc8429b633f8673b4888e099a307c62564bded8412728ac8c",
+        "metrics": {
+          "G1": 2.9454940375150717e-06,
+          "G2": 0.2480702734850228,
+          "G3": 0.8055451532989787
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P011",
+        "design_id": "design:80b6d49301d97604f083892d43957326cebd033e95620e24f6f4df52923f2c19",
+        "metrics": {
+          "G1": 3.437068427154189e-06,
+          "G2": 0.29950632790910026,
+          "G3": 0.825108770734351
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P012",
+        "design_id": "design:8f61d0e8bd4436ab29bb478a3f6b6ae110c0c724f33146f61283fd18ad151bac",
+        "metrics": {
+          "G1": 2.4836171686497126e-06,
+          "G2": 0.25101246829409013,
+          "G3": 0.7969290774072426
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P013",
+        "design_id": "design:936c58f06f082da032dded1e922956409c0c810787f48eebed73e04f8a22aa54",
+        "metrics": {
+          "G1": 2.6135818392239424e-05,
+          "G2": 0.337456744855463,
+          "G3": 0.8773512637260746
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P014",
+        "design_id": "design:9ee71992b7dba3ffb495bafebbe6b72d618573abc9ca3378d3517d93d35c746f",
+        "metrics": {
+          "G1": 2.879011220156617e-06,
+          "G2": 0.24827772671019457,
+          "G3": 0.8047337764072303
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P015",
+        "design_id": "design:b0d6b894280ff32a51de100c2187a31221973b55eb61b726ff3b3551091e2f7a",
+        "metrics": {
+          "G1": 2.481478737996612e-06,
+          "G2": 0.2506043087330274,
+          "G3": 0.7975963531311488
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P016",
+        "design_id": "design:c0b7048d5a6682c12cfdf98477b5d7a2bd5f4eaed885a75e7305ab488d5cc79c",
+        "metrics": {
+          "G1": 3.0199806701793388e-06,
+          "G2": 0.292300364456764,
+          "G3": 0.8206192913219887
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P017",
+        "design_id": "design:c393ab8b42e30257e2adb73dd5546788318d86c54162cb61966e39cf7e4ce9f9",
+        "metrics": {
+          "G1": 2.95647340380843e-06,
+          "G2": 0.24802677906747786,
+          "G3": 0.8057177776691629
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P018",
+        "design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+        "metrics": {
+          "G1": 3.526149080469835e-05,
+          "G2": 0.3686304945654829,
+          "G3": 0.8512795540064978
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      },
+      {
+        "parent_alias": "P019",
+        "design_id": "design:f33c97f1ce552294ccbd587650bea64b7ecc947699e9946b83663386d7682521",
+        "metrics": {
+          "G1": 2.9676461303009152e-06,
+          "G2": 0.24798313536616245,
+          "G3": 0.805894037681925
+        },
+        "thickness_reference": "design_envelopes.json indexed by this design_id",
+        "family_id": "F001",
+        "lineage_parent_alias": null,
+        "parameterization": "family",
+        "pareto": true,
+        "lineage_parent_design_id": null,
+        "available_actions": [
+          "refine_family",
+          "refine_layers"
+        ],
+        "unavailable_actions": {}
+      }
+    ],
+    "family_catalog": {
+      "F001": {
+        "family_key": "7fc6a32f4a0d9d6d6bd69a0d5cac6a17de2b841868097387298d8ca6fc4e66a5",
+        "specification": {
+          "route_id": "R1",
+          "family": {
+            "kind": "explicit_stack",
+            "incident_medium": "air",
+            "substrate": "fused_silica",
+            "layers": [
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              },
+              {
+                "material": "MgF2",
+                "thickness_nm": "dL1"
+              },
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              },
+              {
+                "material": "MgF2",
+                "thickness_nm": "dL1"
+              },
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              },
+              {
+                "material": "MgF2",
+                "thickness_nm": "dCav"
+              },
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              },
+              {
+                "material": "MgF2",
+                "thickness_nm": "dL1"
+              },
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              },
+              {
+                "material": "MgF2",
+                "thickness_nm": "dL1"
+              },
+              {
+                "material": "Nb2O5",
+                "thickness_nm": "dH1"
+              }
+            ],
+            "thickness_variables_nm": {
+              "dH1": [
+                40,
+                60
+              ],
+              "dL1": [
+                60,
+                90
+              ],
+              "dCav": [
+                100,
+                150
+              ]
+            }
+          },
+          "parameterization": "family"
+        }
+      }
+    },
+    "pareto_parent_aliases": [
+      "P001",
+      "P002",
+      "P003",
+      "P004",
+      "P005",
+      "P006",
+      "P007",
+      "P008",
+      "P009",
+      "P010",
+      "P011",
+      "P012",
+      "P013",
+      "P014",
+      "P015",
+      "P016",
+      "P017",
+      "P018",
+      "P019"
+    ],
+    "representative_decisions": [
+      {
+        "parent_alias": "P003",
+        "design_id": "design:21f966c45f861391bf67a17593e8971a17a8f2c4a868774a7f75731254d25c36",
+        "thicknesses_nm": [
+          42.575870927384074,
+          67.22707606492082,
+          42.575870927384074,
+          67.22707606492082,
+          42.575870927384074,
+          107.80152286579855,
+          42.575870927384074,
+          67.22707606492082,
+          42.575870927384074,
+          67.22707606492082,
+          42.575870927384074
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 107.80152286579855,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": -4.176311552157787e-07,
+                "G2": -0.0009316458402990356,
+                "G3": -0.0006490606734840831
+              },
+              "improvement_rate_normalized": {
+                "G1": -2.0881557760788936e-05,
+                "G2": 0.04658229201495178,
+                "G3": 0.03245303367420416
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 42.575870927384074,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -1.2628742973506415e-05,
+                "G2": -0.003507742049145049,
+                "G3": -0.008048702483959896
+              },
+              "improvement_rate_normalized": {
+                "G1": -0.0002525748594701283,
+                "G2": 0.07015484098290098,
+                "G3": 0.16097404967919793
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 67.22707606492082,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 2.12220314553182e-06,
+                "G2": -0.0006354531576043231,
+                "G3": -0.0024667682720010504
+              },
+              "improvement_rate_normalized": {
+                "G1": 6.36660943659546e-05,
+                "G2": 0.01906359472812969,
+                "G3": 0.07400304816003152
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [
+            {
+              "variable": "dL1",
+              "direction": "increase",
+              "improvement_rates_normalized": {
+                "G1": 6.36660943659546e-05,
+                "G2": 0.01906359472812969,
+                "G3": 0.07400304816003152
+              },
+              "scope": "local_first_order_only"
+            }
+          ],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:21f966c45f861391bf67a17593e8971a17a8f2c4a868774a7f75731254d25c36",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_0",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P008",
+        "design_id": "design:634e8d8320d63d9622e95c14e52dabc38ea0b0ee9f44e7d095f3e891e828cd23",
+        "thicknesses_nm": [
+          60.0,
+          88.24716762990012,
+          60.0,
+          88.24716762990012,
+          60.0,
+          150.0,
+          60.0,
+          88.24716762990012,
+          60.0,
+          88.24716762990012,
+          60.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 150.0,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": 3.760354590212691e-08,
+                "G2": -0.0006358411735257418,
+                "G3": -0.001640259394912255
+              },
+              "improvement_rate_normalized": {
+                "G1": 1.8801772951063455e-06,
+                "G2": 0.03179205867628709,
+                "G3": 0.08201296974561276
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 60.0,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -3.854081779297095e-07,
+                "G2": 0.002332240733365445,
+                "G3": -0.007818096897776286
+              },
+              "improvement_rate_normalized": {
+                "G1": -7.70816355859419e-06,
+                "G2": -0.046644814667308895,
+                "G3": 0.15636193795552572
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 88.24716762990012,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 4.2061946715699767e-08,
+                "G2": 0.000291953092567431,
+                "G3": -0.0011200638245632932
+              },
+              "improvement_rate_normalized": {
+                "G1": 1.261858401470993e-06,
+                "G2": -0.00875859277702293,
+                "G3": 0.033601914736898796
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:634e8d8320d63d9622e95c14e52dabc38ea0b0ee9f44e7d095f3e891e828cd23",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_17",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P019",
+        "design_id": "design:f33c97f1ce552294ccbd587650bea64b7ecc947699e9946b83663386d7682521",
+        "thicknesses_nm": [
+          58.91672710782719,
+          90.0,
+          58.91672710782719,
+          90.0,
+          58.91672710782719,
+          150.0,
+          58.91672710782719,
+          90.0,
+          58.91672710782719,
+          90.0,
+          58.91672710782719
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 150.0,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": 4.395224170068594e-08,
+                "G2": -0.0007226427947340104,
+                "G3": -0.001599613448793293
+              },
+              "improvement_rate_normalized": {
+                "G1": 2.197612085034297e-06,
+                "G2": 0.03613213973670052,
+                "G3": 0.07998067243966465
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 58.91672710782719,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -4.850205246536258e-07,
+                "G2": 0.0018702407073937209,
+                "G3": -0.007622787182704124
+              },
+              "improvement_rate_normalized": {
+                "G1": -9.700410493072516e-06,
+                "G2": -0.037404814147874416,
+                "G3": 0.1524557436540825
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 90.0,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 1.440231658824612e-08,
+                "G2": 0.00023498202994369518,
+                "G3": -0.0010067692693525813
+              },
+              "improvement_rate_normalized": {
+                "G1": 4.320694976473836e-07,
+                "G2": -0.007049460898310856,
+                "G3": 0.03020307808057744
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:f33c97f1ce552294ccbd587650bea64b7ecc947699e9946b83663386d7682521",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_1",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P012",
+        "design_id": "design:8f61d0e8bd4436ab29bb478a3f6b6ae110c0c724f33146f61283fd18ad151bac",
+        "thicknesses_nm": [
+          60.0,
+          90.0,
+          60.0,
+          90.0,
+          60.0,
+          150.0,
+          60.0,
+          90.0,
+          60.0,
+          90.0,
+          60.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 150.0,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": 3.6585279566568195e-08,
+                "G2": -0.0005654949911337345,
+                "G3": -0.001708362453865675
+              },
+              "improvement_rate_normalized": {
+                "G1": 1.8292639783284097e-06,
+                "G2": 0.028274749556686723,
+                "G3": 0.08541812269328375
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 60.0,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -4.107428196170445e-07,
+                "G2": 0.0036561056816175044,
+                "G3": -0.008859692860969945
+              },
+              "improvement_rate_normalized": {
+                "G1": -8.21485639234089e-06,
+                "G2": -0.07312211363235009,
+                "G3": 0.1771938572193989
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 90.0,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 2.795075206065582e-10,
+                "G2": 0.001072766641489079,
+                "G3": -0.0016719189253512673
+              },
+              "improvement_rate_normalized": {
+                "G1": 8.385225618196747e-09,
+                "G2": -0.03218299924467237,
+                "G3": 0.05015756776053802
+              },
+              "feasible_directions": [
+                "decrease"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:8f61d0e8bd4436ab29bb478a3f6b6ae110c0c724f33146f61283fd18ad151bac",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_2",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P002",
+        "design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef",
+        "thicknesses_nm": [
+          50.0,
+          75.0,
+          50.0,
+          75.0,
+          50.0,
+          125.0,
+          50.0,
+          75.0,
+          50.0,
+          75.0,
+          50.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 125.0,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": -1.1966967610115021e-07,
+                "G2": -0.0010369436128596936,
+                "G3": -0.0009503300696312391
+              },
+              "improvement_rate_normalized": {
+                "G1": -5.983483805057511e-06,
+                "G2": 0.05184718064298468,
+                "G3": 0.04751650348156196
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 50.0,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -1.9016628175271527e-06,
+                "G2": -0.005757579421262278,
+                "G3": -0.0005397597518501094
+              },
+              "improvement_rate_normalized": {
+                "G1": -3.8033256350543054e-05,
+                "G2": 0.11515158842524556,
+                "G3": 0.010795195037002188
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 75.0,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 4.6805390244165937e-07,
+                "G2": -0.003422959012025899,
+                "G3": 0.002625831662235512
+              },
+              "improvement_rate_normalized": {
+                "G1": 1.404161707324978e-05,
+                "G2": 0.10268877036077698,
+                "G3": -0.07877494986706536
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_4",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P013",
+        "design_id": "design:936c58f06f082da032dded1e922956409c0c810787f48eebed73e04f8a22aa54",
+        "thicknesses_nm": [
+          47.675439903135455,
+          89.52911326056176,
+          47.675439903135455,
+          89.52911326056176,
+          47.675439903135455,
+          116.86981373636037,
+          47.675439903135455,
+          89.52911326056176,
+          47.675439903135455,
+          89.52911326056176,
+          47.675439903135455
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 116.86981373636037,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": -5.117444247835357e-07,
+                "G2": -0.0011997858761613426,
+                "G3": -0.0008708368762536334
+              },
+              "improvement_rate_normalized": {
+                "G1": -2.5587221239176783e-05,
+                "G2": 0.059989293808067126,
+                "G3": 0.04354184381268167
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 47.675439903135455,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -5.529654375803094e-06,
+                "G2": -0.004875428749518383,
+                "G3": -0.001836768926849251
+              },
+              "improvement_rate_normalized": {
+                "G1": -0.00011059308751606188,
+                "G2": 0.09750857499036766,
+                "G3": 0.03673537853698502
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 89.52911326056176,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 1.9058146121266085e-08,
+                "G2": -0.001569839560829256,
+                "G3": 0.0014156890755194133
+              },
+              "improvement_rate_normalized": {
+                "G1": 5.717443836379826e-07,
+                "G2": 0.047095186824877684,
+                "G3": -0.0424706722655824
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:936c58f06f082da032dded1e922956409c0c810787f48eebed73e04f8a22aa54",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_7",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P018",
+        "design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+        "thicknesses_nm": [
+          45.0,
+          80.0,
+          45.0,
+          80.0,
+          45.0,
+          125.0,
+          45.0,
+          80.0,
+          45.0,
+          80.0,
+          45.0
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 125.0,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": -4.246677432014561e-07,
+                "G2": -0.0010370405448010987,
+                "G3": -0.0007797010950269341
+              },
+              "improvement_rate_normalized": {
+                "G1": -2.1233387160072805e-05,
+                "G2": 0.051852027240054936,
+                "G3": 0.038985054751346705
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 45.0,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -9.232286219732437e-06,
+                "G2": -0.006333886521618461,
+                "G3": -0.0013783563010764466
+              },
+              "improvement_rate_normalized": {
+                "G1": -0.00018464572439464875,
+                "G2": 0.1266777304323692,
+                "G3": 0.027567126021528932
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 80.0,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 1.2846856595557603e-06,
+                "G2": -0.0026299317340433416,
+                "G3": 0.0020233866617509295
+              },
+              "improvement_rate_normalized": {
+                "G1": 3.854056978667281e-05,
+                "G2": 0.07889795202130025,
+                "G3": -0.060701599852527884
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_5",
+          "parameterization": "family"
+        }
+      },
+      {
+        "parent_alias": "P011",
+        "design_id": "design:80b6d49301d97604f083892d43957326cebd033e95620e24f6f4df52923f2c19",
+        "thicknesses_nm": [
+          54.520449599731116,
+          80.88619193364585,
+          54.520449599731116,
+          80.88619193364585,
+          54.520449599731116,
+          137.97154834310558,
+          54.520449599731116,
+          80.88619193364585,
+          54.520449599731116,
+          80.88619193364585,
+          54.520449599731116
+        ],
+        "local_direction_facts": {
+          "status": "local_derivative_uncertified",
+          "limits": [
+            "Saved local derivatives are not independently certified.",
+            "Directional rates are first-order hypotheses, not finite-step outcomes.",
+            "Shared-variable derivatives do not identify individual layer effects.",
+            "Failure to find a common direction does not prove none exists or require untying."
+          ],
+          "variables": [
+            {
+              "name": "dCav",
+              "current_value_nm": 137.97154834310558,
+              "bounds_nm": [
+                100.0,
+                150.0
+              ],
+              "derivative_per_nm": {
+                "G1": -4.539245352071254e-09,
+                "G2": -0.0011562278968594729,
+                "G3": -0.0012276474136720568
+              },
+              "improvement_rate_normalized": {
+                "G1": -2.269622676035627e-07,
+                "G2": 0.057811394842973644,
+                "G3": 0.06138237068360284
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dH1",
+              "current_value_nm": 54.520449599731116,
+              "bounds_nm": [
+                40.0,
+                60.0
+              ],
+              "derivative_per_nm": {
+                "G1": -6.30247785981842e-07,
+                "G2": -0.0039758609283978485,
+                "G3": -0.002910635178184555
+              },
+              "improvement_rate_normalized": {
+                "G1": -1.260495571963684e-05,
+                "G2": 0.07951721856795697,
+                "G3": 0.058212703563691105
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            },
+            {
+              "name": "dL1",
+              "current_value_nm": 80.88619193364585,
+              "bounds_nm": [
+                60.0,
+                90.0
+              ],
+              "derivative_per_nm": {
+                "G1": 2.6706395164487736e-07,
+                "G2": -0.00276123144822666,
+                "G3": 0.0014206216659359465
+              },
+              "improvement_rate_normalized": {
+                "G1": 8.011918549346321e-06,
+                "G2": 0.0828369434467998,
+                "G3": -0.0426186499780784
+              },
+              "feasible_directions": [
+                "decrease",
+                "increase"
+              ],
+              "missing_goal_derivatives": []
+            }
+          ],
+          "same_direction_opportunities": [],
+          "joint_direction": {
+            "status": "unsupported",
+            "reason": "objective_count_not_supported",
+            "detail": "This joint-direction helper supports exactly two objectives; all original objectives are retained."
+          },
+          "additional_forward_design_rows": 0,
+          "warnings": [],
+          "direction_feasibility_scope": "original_family_bounds",
+          "original_family_bounds_nm": {
+            "dH1": [
+              40.0,
+              60.0
+            ],
+            "dL1": [
+              60.0,
+              90.0
+            ],
+            "dCav": [
+              100.0,
+              150.0
+            ]
+          },
+          "derivative_coverage": {
+            "available_complete_coordinates": 3,
+            "declared_variable_count": 3,
+            "omitted_coordinates": "unknown, not zero; joint direction uses complete coordinates only"
+          }
+        },
+        "derivative_source": {
+          "status": "local_derivative_uncertified",
+          "observation_design_id": "design:80b6d49301d97604f083892d43957326cebd033e95620e24f6f4df52923f2c19",
+          "source_instance_id": "search_d37856d420614af6821e4b9236404336_8",
+          "parameterization": "family"
+        }
+      }
+    ],
+    "diagnostic_index": [
+      {
+        "diagnosis_alias": "D001",
+        "diagnosis_id": "diagnosis:f7bca344c49b7389e7ebeeafdc4d39be9c0d73a0edb7ca9291504eda89769cf6",
+        "design_alias": "P002",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D002",
+        "diagnosis_id": "diagnosis:23b1ba023002dd588cfb0742f69ad1857142b5ce9b9da39d7184ae9b3ec6bc17",
+        "design_alias": "P018",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D003",
+        "diagnosis_id": "diagnosis:084832beaf797653e1e2e6f352425e0670657bb7f7eda4856bac6ddfa9140a20",
+        "design_alias": "P003",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:21f966c45f861391bf67a17593e8971a17a8f2c4a868774a7f75731254d25c36",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D004",
+        "diagnosis_id": "diagnosis:e0241aa99a4edb338491fec3e6b85b6faa90944fb4010e745e625939545e5566",
+        "design_alias": "P019",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:f33c97f1ce552294ccbd587650bea64b7ecc947699e9946b83663386d7682521",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D005",
+        "diagnosis_id": "diagnosis:2134bdf932a4d3fa4ce1bd07969ad2c65672e443f3761ddaac5a61d1eb06a398",
+        "design_alias": "P012",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:8f61d0e8bd4436ab29bb478a3f6b6ae110c0c724f33146f61283fd18ad151bac",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D006",
+        "diagnosis_id": "diagnosis:7e28061d3e80d987e8ac8df38d0821fffe7b08b1fd3f38a2a972999a3cfb8fe6",
+        "design_alias": "P013",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:936c58f06f082da032dded1e922956409c0c810787f48eebed73e04f8a22aa54",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D007",
+        "diagnosis_id": "diagnosis:8dd991418b9ccf2cede479e7446618ec72a33364457ca109e715b8bb49e3e8f8",
+        "design_alias": "P018",
+        "comparison_baseline_alias": "P018",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+        "comparison_baseline_design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23"
+      },
+      {
+        "diagnosis_alias": "D008",
+        "diagnosis_id": "diagnosis:2da1755f9ce4f331faf09e0581e4b6a2c28e68c32fc15b628dcf3b9761496120",
+        "design_alias": "P011",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:80b6d49301d97604f083892d43957326cebd033e95620e24f6f4df52923f2c19",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D009",
+        "diagnosis_id": "diagnosis:420272fa061261c9f582be7e1db2f1585bb2e92dcd764589189bd27bd545d99e",
+        "design_alias": "P006",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:5a4087e3f47915dd2f4f79b8f32af8ca5c779ce19b46b822914dfb8c5ca03a7f",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D010",
+        "diagnosis_id": "diagnosis:e1d1b5e1eb991be8e3d404abe9f1b7532af3719cf08a03a4ffb7cf964ffa1824",
+        "design_alias": "P016",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:c0b7048d5a6682c12cfdf98477b5d7a2bd5f4eaed885a75e7305ab488d5cc79c",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D011",
+        "diagnosis_id": "diagnosis:dac40c94a50b202641e3bfb78ce257c4c061e7a028638a24b1ec7360ab07c5d9",
+        "design_alias": "P005",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:540f8d4ebf54cededb53ff4ded90583a162f2d4eabe197c0c08d147b8431657c",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D012",
+        "diagnosis_id": "diagnosis:6dc9a3f64db83561ab4bcc3a9496241aa7de21c5d734dc79c344b377942aac70",
+        "design_alias": "P009",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:6824e64edcc9cef5fbcbf0d8d2a3f10bf2e1c7d365cd1ccfb0911f9d49fac590",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D013",
+        "diagnosis_id": "diagnosis:e19751817d6a3c7eefeec4a1524bf024747cb99bd0eba98d4e51baedf59ed9ff",
+        "design_alias": "P004",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:5267aebe2630d381835f9050ece355a8fe84efb4c67da81e9a374428e6f3195e",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D014",
+        "diagnosis_id": "diagnosis:b8f97304b7a202f234d86f8c5a2e2b5e41b1068aa08292bd824b0e7a5281f43b",
+        "design_alias": "P008",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:634e8d8320d63d9622e95c14e52dabc38ea0b0ee9f44e7d095f3e891e828cd23",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D015",
+        "diagnosis_id": "diagnosis:8f2b7ea6968c76d35c59e77aa825f509a610a2a44180b50dfe6d80187cb43901",
+        "design_alias": "P014",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:9ee71992b7dba3ffb495bafebbe6b72d618573abc9ca3378d3517d93d35c746f",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D016",
+        "diagnosis_id": "diagnosis:b75fd4b2c9336c00f57ab4157ce324e19150d98087be48cfa43e3859994fff40",
+        "design_alias": "P015",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:b0d6b894280ff32a51de100c2187a31221973b55eb61b726ff3b3551091e2f7a",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D017",
+        "diagnosis_id": "diagnosis:1614e2ba2122c97d215ed2f4605024bcabdd229c81bc53c0fbce3a43b70556eb",
+        "design_alias": "P007",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:602c6c703f2f2a39359096a988d93e10d896dd8e5791e48aa0f6470345f23800",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D018",
+        "diagnosis_id": "diagnosis:4fe4ebf9a7b81fd79fdf83bd1c5c11264c5831838f123e3cb9517146e64a312d",
+        "design_alias": "P010",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:747f7db69647921cc8429b633f8673b4888e099a307c62564bded8412728ac8c",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D019",
+        "diagnosis_id": "diagnosis:49f0cd1b9cb5f2f85603deb123ff067fe5d78f86200aa866b558fdc89f1d056e",
+        "design_alias": "P017",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:c393ab8b42e30257e2adb73dd5546788318d86c54162cb61966e39cf7e4ce9f9",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D020",
+        "diagnosis_id": "diagnosis:94b92b0ba1e5a2e1dd00a1ada08ed4923d31085bb2df8eb730705893e7f8e3da",
+        "design_alias": "P001",
+        "comparison_baseline_alias": "P002",
+        "observation_ids": [
+          "goal:G1",
+          "goal:G2",
+          "goal:G3"
+        ],
+        "design_id": "design:04a66609436dbe32ea51a3906990da69a6f14536f5f000cf94c9f234fb1b13b0",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      }
+    ],
+    "physics_diagnostics": [
+      {
+        "diagnosis_alias": "D003",
+        "diagnosis_id": "diagnosis:084832beaf797653e1e2e6f352425e0670657bb7f7eda4856bac6ddfa9140a20",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P003",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 4.584452109734316e-05,
+            "delta": 3.863490036964136e-05,
+            "improvement": 3.863490036964136e-05,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 3.50664111815882e-06,
+                "delta": 3.0210176440511426e-06,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 2.0189378121564248e-05,
+                "delta": 1.7236753070949582e-05,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 0.00011895706466110361,
+                "delta": 9.985063048921516e-05,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 4.860339911484138e-05,
+                "p_mean": 4.860339911484138e-05,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 4.0913032991038205e-05,
+              "p_delta": 4.0913032991038205e-05
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.41138583482078145,
+            "delta": 0.058018613783191286,
+            "improvement": -0.058018613783191286,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.086735333054672,
+                "delta": -0.18644743151004428,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.32536701326253264,
+                "delta": 0.30126023135965163,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.8207214693695238,
+                "delta": 0.05941307514142857,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.41115467403680567,
+                "p_mean": 0.41115467403680567,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.057468845430022786,
+              "p_delta": 0.057468845430022786
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.8801214616954078,
+            "delta": 0.045095371951007324,
+            "improvement": -0.045095371951007324,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.785552677415461,
+                "delta": 0.0588957214621475,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.9425116365155946,
+                "delta": 0.10817527247823222,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.9120737397925527,
+                "delta": -0.03271511454570408,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8798902432978751,
+                "p_mean": 0.8798902432978751,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.04462721338256437,
+              "p_delta": 0.04462721338256437
+            }
+          }
+        ],
+        "design_id": "design:21f966c45f861391bf67a17593e8971a17a8f2c4a868774a7f75731254d25c36",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D014",
+        "diagnosis_id": "diagnosis:b8f97304b7a202f234d86f8c5a2e2b5e41b1068aa08292bd824b0e7a5281f43b",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P008",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 2.446542701666473e-06,
+            "delta": -4.76307802603533e-06,
+            "improvement": -4.76307802603533e-06,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 6.148828077906423e-08,
+                "delta": -4.24135193328613e-07,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 7.396812026913791e-07,
+                "delta": -2.2129438479232853e-06,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 6.891695656225148e-06,
+                "delta": -1.2214738515663312e-05,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 2.6344655790218828e-06,
+                "p_mean": 2.6344655790218828e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -5.055900544781292e-06,
+              "p_delta": -5.055900544781292e-06
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.24979993341189016,
+            "delta": -0.1035672876257,
+            "improvement": 0.1035672876257,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.5192370054128723,
+                "delta": 0.24605424084815603,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.1435846740961666,
+                "delta": 0.11947789219328558,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.08575785681744691,
+                "delta": -0.6755505374106483,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.24979070621858587,
+                "p_mean": 0.24979070621858587,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.10389512238819701,
+              "p_delta": -0.10389512238819701
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.7993924931626196,
+            "delta": -0.03563359658178089,
+            "improvement": 0.03563359658178089,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.9098420132140292,
+                "delta": 0.18318505726071577,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.7287249862682574,
+                "delta": -0.1056113777691049,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.7583950748577721,
+                "delta": -0.18639377948048463,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.7991625759982535,
+                "p_mean": 0.7991625759982535,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.036100453917057296,
+              "p_delta": -0.036100453917057296
+            }
+          }
+        ],
+        "design_id": "design:634e8d8320d63d9622e95c14e52dabc38ea0b0ee9f44e7d095f3e891e828cd23",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D004",
+        "diagnosis_id": "diagnosis:e0241aa99a4edb338491fec3e6b85b6faa90944fb4010e745e625939545e5566",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P019",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 2.9676461303009152e-06,
+            "delta": -4.2419745974008874e-06,
+            "improvement": -4.2419745974008874e-06,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 7.246955371989146e-08,
+                "delta": -4.131539203877858e-07,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 8.809111342719109e-07,
+                "delta": -2.0717139163427537e-06,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 8.3873084788983e-06,
+                "delta": -1.071912569299016e-05,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 3.1994342833745776e-06,
+                "p_mean": 3.1994342833745776e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -4.490931840428597e-06,
+              "p_delta": -4.490931840428597e-06
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.24798313536616245,
+            "delta": -0.10538408567142771,
+            "improvement": 0.10538408567142771,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.5120839395519062,
+                "delta": 0.23890117498718993,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.14086554699803217,
+                "delta": 0.11675876509515115,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.09029513175263723,
+                "delta": -0.671013262475458,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.2480147463978731,
+                "p_mean": 0.2480147463978731,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.10567108220890978,
+              "p_delta": -0.10567108220890978
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.805894037681925,
+            "delta": -0.02913205206247549,
+            "improvement": 0.02913205206247549,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.9134891648136894,
+                "delta": 0.18683220886037588,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.7334317496986663,
+                "delta": -0.10090461433869602,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.7696190877298521,
+                "delta": -0.17516976660840466,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8056930886552548,
+                "p_mean": 0.8056930886552548,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.029569941260055965,
+              "p_delta": -0.029569941260055965
+            }
+          }
+        ],
+        "design_id": "design:f33c97f1ce552294ccbd587650bea64b7ecc947699e9946b83663386d7682521",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D005",
+        "diagnosis_id": "diagnosis:2134bdf932a4d3fa4ce1bd07969ad2c65672e443f3761ddaac5a61d1eb06a398",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P012",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 2.4836171686497126e-06,
+            "delta": -4.726003559052089e-06,
+            "improvement": -4.726003559052089e-06,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 5.461988876473389e-08,
+                "delta": -4.310035853429434e-07,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 6.981068725179561e-07,
+                "delta": -2.2545181780967086e-06,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 7.0857612936044445e-06,
+                "delta": -1.2020672878284016e-05,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 2.686472523902548e-06,
+                "p_mean": 2.686472523902548e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -5.003893599900626e-06,
+              "p_delta": -5.003893599900626e-06
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.25101246829409013,
+            "delta": -0.10235475274350003,
+            "improvement": 0.10235475274350003,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.5302624447547807,
+                "delta": 0.2570796801900644,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.15135633398638573,
+                "delta": 0.12724955208350472,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.0702829339325906,
+                "delta": -0.6910254602955047,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.25088147921271087,
+                "p_mean": 0.25088147921271087,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.10280434939407201,
+              "p_delta": -0.10280434939407201
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.7969290774072426,
+            "delta": -0.0380970123371579,
+            "improvement": 0.0380970123371579,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.889569662674753,
+                "delta": 0.16291270672143954,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.7513107169874316,
+                "delta": -0.08302564704993076,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.7484926873211238,
+                "delta": -0.19629616701713293,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.7965702749595408,
+                "p_mean": 0.7965702749595408,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.03869275495576996,
+              "p_delta": -0.03869275495576996
+            }
+          }
+        ],
+        "design_id": "design:8f61d0e8bd4436ab29bb478a3f6b6ae110c0c724f33146f61283fd18ad151bac",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D001",
+        "diagnosis_id": "diagnosis:f7bca344c49b7389e7ebeeafdc4d39be9c0d73a0edb7ca9291504eda89769cf6",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P002",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 7.209620727701802e-06,
+            "delta": 0.0,
+            "improvement": 0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 4.856234741076772e-07,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 2.9526250506146646e-06,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 1.910643417188846e-05,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.35336722103759016,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.2731827645647163,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.02410678190288102,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.7613083942280953,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.8350260897444005,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.7266569559533135,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.8343363640373623,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.9447888543382568,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          }
+        ],
+        "design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D006",
+        "diagnosis_id": "diagnosis:7e28061d3e80d987e8ac8df38d0821fffe7b08b1fd3f38a2a972999a3cfb8fe6",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P013",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 2.6135818392239424e-05,
+            "delta": 1.8926197664537622e-05,
+            "improvement": 1.8926197664537622e-05,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 1.1000781770751515e-06,
+                "delta": 6.144547029674743e-07,
+                "direction": "gain"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 9.541921681102618e-06,
+                "delta": 6.589296630487953e-06,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 7.119871820699407e-05,
+                "delta": 5.209228403510561e-05,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 2.7962482342517077e-05,
+                "p_mean": 2.7962482342517077e-05,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 2.0272116218713904e-05,
+              "p_delta": 2.0272116218713904e-05
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.337456744855463,
+            "delta": -0.015910476182127153,
+            "improvement": 0.015910476182127153,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.38770733562316345,
+                "delta": 0.11452457105844716,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.018568948445240395,
+                "delta": -0.005537833457640626,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.6044669811558145,
+                "delta": -0.15684141307228072,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.3377083007271821,
+                "p_mean": 0.3377083007271821,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.015977527879600772,
+              "p_delta": -0.015977527879600772
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.8773512637260746,
+            "delta": 0.042325173981674125,
+            "improvement": -0.042325173981674125,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.8568453533114322,
+                "delta": 0.1301883973581187,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.8225074002115843,
+                "delta": -0.011828963825778027,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.9523591009412418,
+                "delta": 0.007570246602984998,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8773737683241871,
+                "p_mean": 0.8773737683241871,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.04211073840887636,
+              "p_delta": 0.04211073840887636
+            }
+          }
+        ],
+        "design_id": "design:936c58f06f082da032dded1e922956409c0c810787f48eebed73e04f8a22aa54",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      },
+      {
+        "diagnosis_alias": "D007",
+        "diagnosis_id": "diagnosis:8dd991418b9ccf2cede479e7446618ec72a33364457ca109e715b8bb49e3e8f8",
+        "comparison_baseline_alias": "P018",
+        "design_alias": "P018",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 3.526149080469835e-05,
+            "candidate": 3.526149080469835e-05,
+            "delta": 0.0,
+            "improvement": 0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 2.4732086012647936e-06,
+                "candidate": 2.4732086012647936e-06,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 1.5104389060384925e-05,
+                "candidate": 1.5104389060384925e-05,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 9.228879230593144e-05,
+                "candidate": 9.228879230593144e-05,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 3.744973540953252e-05,
+                "p_mean": 3.744973540953252e-05,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 3.744973540953252e-05,
+                "p_mean": 3.744973540953252e-05,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.3686304945654829,
+            "candidate": 0.3686304945654829,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.22229568387726492,
+                "candidate": 0.22229568387726492,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.03254687628754935,
+                "candidate": 0.03254687628754935,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.8492437263072988,
+                "candidate": 0.8492437263072988,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.36886537533909125,
+                "p_mean": 0.36886537533909125,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.36886537533909125,
+                "p_mean": 0.36886537533909125,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8512795540064978,
+            "candidate": 0.8512795540064978,
+            "delta": 0.0,
+            "improvement": -0.0,
+            "objective_direction": "unchanged",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7247480260381054,
+                "candidate": 0.7247480260381054,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.9005470175607723,
+                "candidate": 0.9005470175607723,
+                "delta": 0.0,
+                "direction": "unchanged"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9293390784591633,
+                "candidate": 0.9293390784591633,
+                "delta": 0.0,
+                "direction": "unchanged"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8514225070778472,
+                "p_mean": 0.8514225070778472,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8514225070778472,
+                "p_mean": 0.8514225070778472,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": 0.0,
+              "p_delta": 0.0
+            }
+          }
+        ],
+        "design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23",
+        "comparison_baseline_design_id": "design:c6ae77a3d1618eba8fb2bebba1332ac193cd57b86c472385b955150c3b597b23"
+      },
+      {
+        "diagnosis_alias": "D008",
+        "diagnosis_id": "diagnosis:2da1755f9ce4f331faf09e0581e4b6a2c28e68c32fc15b628dcf3b9761496120",
+        "comparison_baseline_alias": "P002",
+        "design_alias": "P011",
+        "goals": [
+          {
+            "observation_id": "goal:G1",
+            "goal_id": "G1",
+            "status": "observed",
+            "baseline": 7.209620727701802e-06,
+            "candidate": 3.437068427154189e-06,
+            "delta": -3.7725523005476134e-06,
+            "improvement": -3.7725523005476134e-06,
+            "objective_direction": "loss",
+            "red_gain_blue_loss": false,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  255.0,
+                  263.0
+                ],
+                "baseline": 4.856234741076772e-07,
+                "candidate": 2.2682091560521335e-07,
+                "delta": -2.588025585024639e-07,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  264.0,
+                  271.0
+                ],
+                "baseline": 2.9526250506146646e-06,
+                "candidate": 1.563895788224757e-06,
+                "delta": -1.3887292623899077e-06,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  272.0,
+                  280.0
+                ],
+                "baseline": 1.910643417188846e-05,
+                "candidate": 8.877993657818141e-06,
+                "delta": -1.022844051407032e-05,
+                "direction": "loss"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 7.690366123803175e-06,
+                "p_mean": 7.690366123803175e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 3.6328652871772403e-06,
+                "p_mean": 3.6328652871772403e-06,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -4.057500836625934e-06,
+              "p_delta": -4.057500836625934e-06
+            }
+          },
+          {
+            "observation_id": "goal:G2",
+            "goal_id": "G2",
+            "status": "observed",
+            "baseline": 0.35336722103759016,
+            "candidate": 0.29950632790910026,
+            "delta": -0.053860893128489906,
+            "improvement": 0.053860893128489906,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  300.0,
+                  433.0
+                ],
+                "baseline": 0.2731827645647163,
+                "candidate": 0.34624692935522283,
+                "delta": 0.07306416479050654,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  434.0,
+                  566.0
+                ],
+                "baseline": 0.02410678190288102,
+                "candidate": 0.10360165732952495,
+                "delta": 0.07949487542664394,
+                "direction": "loss"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  567.0,
+                  700.0
+                ],
+                "baseline": 0.7613083942280953,
+                "candidate": 0.44838270056001583,
+                "delta": -0.31292569366807943,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.3536858286067829,
+                "p_mean": 0.3536858286067829,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.29989873025802694,
+                "p_mean": 0.29989873025802694,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.053787098348755946,
+              "p_delta": -0.053787098348755946
+            }
+          },
+          {
+            "observation_id": "goal:G3",
+            "goal_id": "G3",
+            "status": "observed",
+            "baseline": 0.8350260897444005,
+            "candidate": 0.825108770734351,
+            "delta": -0.009917319010049552,
+            "improvement": 0.009917319010049552,
+            "objective_direction": "gain",
+            "red_gain_blue_loss": true,
+            "subband_sample_means": [
+              {
+                "subband": "blue",
+                "status": "observed",
+                "sampled_range_nm": [
+                  700.0,
+                  833.0
+                ],
+                "baseline": 0.7266569559533135,
+                "candidate": 0.8640650372596627,
+                "delta": 0.13740808130634918,
+                "direction": "loss"
+              },
+              {
+                "subband": "middle",
+                "status": "observed",
+                "sampled_range_nm": [
+                  834.0,
+                  966.0
+                ],
+                "baseline": 0.8343363640373623,
+                "candidate": 0.6721854359913516,
+                "delta": -0.16215092804601072,
+                "direction": "gain"
+              },
+              {
+                "subband": "red",
+                "status": "observed",
+                "sampled_range_nm": [
+                  967.0,
+                  1100.0
+                ],
+                "baseline": 0.9447888543382568,
+                "candidate": 0.9387873021621942,
+                "delta": -0.0060015521760625745,
+                "direction": "gain"
+              }
+            ],
+            "polarization_sample_means": {
+              "status": "observed",
+              "baseline": {
+                "s_mean": 0.8352630299153108,
+                "p_mean": 0.8352630299153108,
+                "s_minus_p_mean": 0.0
+              },
+              "candidate": {
+                "s_mean": 0.8253937069061811,
+                "p_mean": 0.8253937069061811,
+                "s_minus_p_mean": 0.0
+              },
+              "s_delta": -0.009869323009129682,
+              "p_delta": -0.009869323009129682
+            }
+          }
+        ],
+        "design_id": "design:80b6d49301d97604f083892d43957326cebd033e95620e24f6f4df52923f2c19",
+        "comparison_baseline_design_id": "design:0e933543f2f1eea8951459b223e945999c92de7de7992b8cfb29cd81e17cb3ef"
+      }
+    ],
+    "diagnostic_scope": "Certified sampled-grid objective values. Subband/s/p summaries are descriptive sample means, not objective reductions. Local derivatives remain uncertified; no mechanism or finite-step guarantee.",
+    "selection_scope": "Prefer detailed parents for informed choices; other parents remain selectable but omitted diagnostics are unknown. Every indexed parent remains selectable. Detailed views are representatives, not ranked recommendations. Missing detail is unknown; original full diagnostics and envelopes remain saved.",
+    "decision_guidance": [
+      "Check each variable sign and feasible bound direction before choosing an action.",
+      "A common local direction can exist despite coordinate-wise conflicts. Untying is an exploration option, never established as necessary by shared gradients.",
+      "Use actual subband/polarization values when making spectral claims; otherwise label the mechanism untested.",
+      "Explain why selected near-neighbor parents warrant separate searches; no family or action quota.",
+      "Predict all goals honestly, including possible tradeoffs or unknown changes; unchanged is not a synonym for a small acceptable loss."
+    ],
+    "identity_scope": {
+      "snapshot_manifest_sha256": "433996c99c1c6ae5e05f7dcbd22933c70d0a0a6ee553eb1e2d79c3c29ed856ea",
+      "stable_identity_fields": [
+        "design_id",
+        "diagnosis_id"
+      ],
+      "parent_alias_index": "certified_designs",
+      "diagnosis_alias_index": "diagnostic_index",
+      "alias_lifetime": "Current snapshot only. P/D labels can change after archive growth; never resolve a historical label using this snapshot.",
+      "selection_contract": "Use a supplied stable design_id/diagnosis_id or its current alias. Choose an available action for that exact current parent."
+    }
+  }
+}

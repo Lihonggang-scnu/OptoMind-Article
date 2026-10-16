@@ -1,0 +1,234 @@
+{
+  "schema_version": "focused_research.research_routes.v2",
+  "decision_clues": [
+    {
+      "id": "D2",
+      "evidence_id": "E_b35a9bfe8d10634bb5047d7712e1442b1fc755211809a1c37bfe0ec5bb64142e",
+      "source_quote": "Reflective multilayer coatings based on two dielectrics have higher peak performance but lower out-ofband rejection than Al/MgF 2 transmittance filters. The main material combinations are (MgF 2 or AlF 3 )/(LaF 3 or GdF 3 ).",
+      "structure_or_method": "All-dielectric reflective multilayers using fluoride pairs.",
+      "physical_effect": "High peak reflectance/transmittance in UV; trade-off in out-of-band rejection width.",
+      "conditions_and_unknowns": [
+        "Source discusses reflective mirrors or Al-based filters; task requires all-dielectric transmission filters.",
+        "LaF3/GdF3 are not in the execution inventory; MgF2 is available.",
+        "Specific layer counts for broad stopbands not detailed."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "inference_bridge": "Transfer the principle of using low-absorption fluorides (MgF2) paired with a higher-index stable oxide (Al2O3/HfO2) to construct a bandpass filter, accepting that wider stopbands may require more layers or specific stacking sequences."
+    },
+    {
+      "id": "D5",
+      "evidence_id": "E_a85cac2616592ec900363fecab20c1f508ae66ce5afe9cb2244d5e7e218ade7e",
+      "source_quote": "To achieve an arbitrary BW, the refractive indices of the coating materials must be changed... assume that the high-index material is Nb 2 O 5 with n H = 2.25... and the low-index material is SiO 2 with n L = 1.45",
+      "structure_or_method": "Refractive index contrast manipulation for bandwidth control.",
+      "physical_effect": "Higher index contrast enables broader stopbands or narrower passbands depending on design.",
+      "conditions_and_unknowns": [
+        "Source targets 1550 nm; UV indices and dispersion will differ.",
+        "SiO2 absorption edge may be relevant below 200nm, but likely acceptable at 255nm.",
+        "Nb2O5 is in the execution inventory."
+      ],
+      "goal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "inference_bridge": "Utilize the high index contrast between Nb2O5 (or HfO2/Ta2O5) and MgF2/SiO2 to maximize the stopband width covering 300-1100 nm with fewer layers."
+    }
+  ],
+  "routes": [
+    {
+      "id": "R1",
+      "claim": "A symmetric Fabry-Perot cavity using MgF2 spacers and Nb2O5 mirrors can isolate the 255-280 nm band, leveraging high index contrast to widen the rejection bands towards visible and NIR.",
+      "clue_ids": [
+        "D2",
+        "D5"
+      ],
+      "evidence_ids": [
+        "E_b35a9bfe8d10634bb5047d7712e1442b1fc755211809a1c37bfe0ec5bb64142e",
+        "E_a85cac2616592ec900363fecab20c1f508ae66ce5afe9cb2244d5e7e218ade7e"
+      ],
+      "goal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "transfer_assumptions": [
+        "Nb2O5 and MgF2 maintain sufficient transparency and index contrast at 255 nm despite source data being at visible/NIR wavelengths.",
+        "A single-cavity design can provide adequate rejection across the broad 300-1100 nm range without exceeding 30 layers."
+      ],
+      "compatibility_conditions": [
+        {
+          "goal_id": "G1",
+          "field": "wavelength_nm",
+          "required_value": [
+            255,
+            280
+          ],
+          "reason": "Passband definition."
+        },
+        {
+          "goal_id": "G2",
+          "field": "wavelength_nm",
+          "required_value": [
+            300,
+            700
+          ],
+          "reason": "Rejection band definition."
+        },
+        {
+          "goal_id": "G3",
+          "field": "wavelength_nm",
+          "required_value": [
+            700,
+            1100
+          ],
+          "reason": "Rejection band definition."
+        }
+      ],
+      "family": {
+        "kind": "explicit_stack",
+        "incident_medium": "air",
+        "substrate": "fused_silica",
+        "layers": [
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "MgF2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "MgF2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "MgF2",
+            "thickness_nm": "dCav"
+          },
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "MgF2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          },
+          {
+            "material": "MgF2",
+            "thickness_nm": "dL1"
+          },
+          {
+            "material": "Nb2O5",
+            "thickness_nm": "dH1"
+          }
+        ],
+        "thickness_variables_nm": {
+          "dH1": [
+            40,
+            60
+          ],
+          "dL1": [
+            60,
+            90
+          ],
+          "dCav": [
+            100,
+            150
+          ]
+        }
+      },
+      "instances": [
+        {
+          "id": "baseline",
+          "parameters_nm": {
+            "dH1": 50,
+            "dL1": 75,
+            "dCav": 125
+          }
+        },
+        {
+          "id": "wider_stopband",
+          "parameters_nm": {
+            "dH1": 45,
+            "dL1": 80,
+            "dCav": 125
+          }
+        }
+      ],
+      "expectations": [
+        {
+          "goal_id": "G1",
+          "metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                255,
+                280
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "wider_stopband",
+          "controlled_conditions": "Same stack symmetry, materials, and substrate.",
+          "changed_variables": [
+            "dH1",
+            "dL1"
+          ],
+          "direction": "unchanged",
+          "reason": "Baseline is tuned for peak; candidate adjusts mirror thicknesses primarily to affect stopband width, potentially slightly shifting but maintaining high UV transmission."
+        },
+        {
+          "goal_id": "G2",
+          "metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                300,
+                700
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "baseline_instance_id": "baseline",
+          "candidate_instance_id": "wider_stopband",
+          "controlled_conditions": "Same stack symmetry, materials, and substrate.",
+          "changed_variables": [
+            "dH1",
+            "dL1"
+          ],
+          "direction": "decrease",
+          "reason": "Increasing index contrast effect via optimized quarter-wave matching in mirrors should deepen/widen the rejection band."
+        }
+      ],
+      "open_requirements": [],
+      "readiness": "ready",
+      "basis_mode": "hybrid",
+      "model_knowledge_rationale": "Standard thin-film theory suggests that increasing the number of periods in the Bragg mirrors surrounding the cavity deepens the stopband. The specific thickness values are estimated based on quarter-wave optical thickness at the center of the UV passband (~267 nm), adjusted for the available material indices."
+    }
+  ]
+}

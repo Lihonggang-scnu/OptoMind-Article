@@ -1,0 +1,302 @@
+{
+  "schema_version": "focused_research.task_sheet.v2",
+  "task_type": "design/optimization",
+  "user_objective": "Design a metal-free planar multilayer dielectric filter for solar-blind UV detection on LEO platforms, maximizing transmission in 255–280 nm while minimizing transmission in 300–700 nm and 700–1100 nm, using conventional inorganic materials on fused silica with air incidence.",
+  "subgoals": [
+    {
+      "id": "G1",
+      "objective": "Maximize solar-blind UV signal transmission",
+      "original_span": "尽可能透过 255–280 nm 的太阳盲紫外信号",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for equal-s/p unpolarized light at 0 degrees (execution assumption).",
+      "executable_metric": {
+        "objective_id": "G1",
+        "metric": "mean_transmittance",
+        "sense": "maximize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            255,
+            280
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      },
+      "quote_status": "exact_user_quote"
+    },
+    {
+      "id": "G2",
+      "objective": "Minimize visible background transmission",
+      "original_span": "尽可能抑制 300–700 nm 可见光背景",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for equal-s/p unpolarized light at 0 degrees (execution assumption). Suppression interpreted as transmission minimization.",
+      "executable_metric": {
+        "objective_id": "G2",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            300,
+            700
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      },
+      "quote_status": "exact_user_quote"
+    },
+    {
+      "id": "G3",
+      "objective": "Minimize NIR stray light transmission",
+      "original_span": "尽可能抑制 700–1100 nm 近红外杂散光",
+      "operational_definition": "Wavelength integral of transmittance over the band, divided by band width, for equal-s/p unpolarized light at 0 degrees (execution assumption). Suppression interpreted as transmission minimization.",
+      "executable_metric": {
+        "objective_id": "G3",
+        "metric": "mean_transmittance",
+        "sense": "minimize",
+        "mean_reduction": "wavelength_integral_mean",
+        "region": {
+          "wavelength_nm": [
+            700,
+            1100
+          ],
+          "angle_deg": 0,
+          "polarization": "unpolarized"
+        }
+      },
+      "quote_status": "unverified_model_paraphrase"
+    }
+  ],
+  "application_intents": [
+    {
+      "id": "A1",
+      "intent": "Solar-blind UV ozone and high-altitude combustion plume detection on low-Earth orbit platforms",
+      "original_span": "低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "operational_definition": null
+    }
+  ],
+  "goal_relationships": {
+    "mode": "all",
+    "priority_order": null,
+    "tradeoff": null,
+    "coupling": "G1, G2, and G3 are spectrally adjacent or overlapping goals for the same coating; achieving high transmission in the narrow UV band while suppressing broad visible and NIR bands involves strong physical coupling and potential trade-offs in layer count and material selection."
+  },
+  "explicit_constraints": [
+    {
+      "id": "C1",
+      "constraint": "UV passband: 255–280 nm",
+      "original_span": "255–280 nm"
+    },
+    {
+      "id": "C2",
+      "constraint": "Visible rejection band: 300–700 nm",
+      "original_span": "300–700 nm"
+    },
+    {
+      "id": "C3",
+      "constraint": "NIR rejection band: 700–1100 nm",
+      "original_span": "700–1100 nm"
+    },
+    {
+      "id": "C4",
+      "constraint": "Incident medium: air",
+      "original_span": "空气入射"
+    },
+    {
+      "id": "C5",
+      "constraint": "Substrate: fused silica",
+      "original_span": "熔融石英基底"
+    },
+    {
+      "id": "C6",
+      "constraint": "No metal layers allowed",
+      "original_span": "不含金属层"
+    },
+    {
+      "id": "C7",
+      "constraint": "Only conventional depositable inorganic dielectric materials",
+      "original_span": "仅使用常规可沉积无机介质材料"
+    },
+    {
+      "id": "C8",
+      "constraint": "Planar multilayer film",
+      "original_span": "平面多层膜"
+    },
+    {
+      "id": "C9",
+      "constraint": "Total layer count not exceeding 30",
+      "original_span": "膜系总层数不超过 30 层"
+    }
+  ],
+  "known_data": [
+    {
+      "statement": "Application is for LEO space platforms detecting ozone and combustion plumes",
+      "original_span": "低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器"
+    }
+  ],
+  "unknowns_assumptions": [
+    {
+      "kind": "assumption",
+      "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral mean definitions as these were not explicitly specified by the user but are required for the executable metric schema.",
+      "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Specific set of 'conventional depositable inorganic dielectric materials' and their UV optical constants (n, k) below 300 nm must be resolved from inventory; user did not name specific pairs like TiO2/SiO2.",
+      "assumed_value": null,
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Numerical thresholds for 'as high as possible' transmission or 'suppression' levels are unspecified; no combined score or weighting is defined.",
+      "assumed_value": null,
+      "needs_user_input": false
+    },
+    {
+      "kind": "unknown",
+      "statement": "Individual layer thickness bounds and fabrication tolerances are not specified by the user.",
+      "assumed_value": null,
+      "needs_user_input": false
+    }
+  ],
+  "research_questions": [
+    {
+      "id": "R1",
+      "question": "What all-dielectric multilayer designs achieve high solar-blind UV transmission with broad visible/NIR rejection?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ]
+    },
+    {
+      "id": "R2",
+      "question": "Which conventional inorganic dielectric materials maintain low absorption and suitable refractive index contrast in the 255-280 nm range?",
+      "subgoal_ids": [
+        "G1"
+      ]
+    },
+    {
+      "id": "R3",
+      "question": "How can layer count be minimized while maintaining deep suppression across two distinct broad rejection bands flanking a narrow passband?",
+      "subgoal_ids": [
+        "G2",
+        "G3"
+      ]
+    }
+  ],
+  "candidate_mechanisms": [
+    {
+      "id": "M1",
+      "mechanism": "Interference in alternating high/low-index dielectric layers to create a narrow bandpass filter with wide stopbands",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "M2",
+      "mechanism": "Material absorption edges limiting usable high-index candidates in the deep/solar-blind UV region",
+      "subgoal_ids": [
+        "G1"
+      ],
+      "status": "candidate"
+    }
+  ],
+  "search_queries": [
+    {
+      "id": "Q1",
+      "endpoint": "paper_search",
+      "query": "solar blind ultraviolet bandpass filter multilayer dielectric design visible infrared rejection",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Find complete design cases for solar-blind UV filters that also suppress visible and IR backgrounds."
+    },
+    {
+      "id": "Q2",
+      "endpoint": "snippet_search",
+      "query": "Which dielectric multilayer coatings transmit 255 to 280 nm while blocking 300 to 1100 nm?",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R1"
+      ],
+      "purpose": "analogous_case",
+      "rationale": "Seek specific spectral performance descriptions matching the triple-band requirement."
+    },
+    {
+      "id": "Q3",
+      "endpoint": "paper_search",
+      "query": "low loss inorganic dielectric materials solar blind ultraviolet 250 nm refractive index",
+      "subgoal_ids": [
+        "G1"
+      ],
+      "mechanism_ids": [
+        "M2"
+      ],
+      "research_question_ids": [
+        "R2"
+      ],
+      "purpose": "material_structure",
+      "rationale": "Identify conventional inorganic materials with low absorption and suitable indices specifically in the solar-blind UV range."
+    },
+    {
+      "id": "Q4",
+      "endpoint": "snippet_search",
+      "query": "How to design narrow bandpass filters with wide stopbands using fewer than 30 dielectric layers?",
+      "subgoal_ids": [
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [
+        "M1"
+      ],
+      "research_question_ids": [
+        "R3"
+      ],
+      "purpose": "method_transfer",
+      "rationale": "Find optimization strategies for achieving broad rejection with limited layer counts."
+    },
+    {
+      "id": "Q5",
+      "endpoint": "paper_search",
+      "query": "metal free ultraviolet optical coating fused silica substrate space application",
+      "subgoal_ids": [
+        "G1",
+        "G2",
+        "G3"
+      ],
+      "mechanism_ids": [],
+      "research_question_ids": [],
+      "purpose": "analogous_case",
+      "rationale": "Verify constraints regarding metal-free compositions and fused silica substrates in space-rated UV optics."
+    }
+  ],
+  "unsupported_requirements": [],
+  "readiness": "ready",
+  "original_question": "我正在为低轨空间平台上的太阳盲紫外臭氧与高空燃烧羽流探测器设计前端滤光膜。探测器需要尽可能透过 255–280 nm 的太阳盲紫外信号，同时尽可能抑制 300–700 nm 可见光背景和 700–1100 nm 近红外杂散光。请在空气入射、熔融石英基底的条件下，设计一个不含金属层、仅使用常规可沉积无机介质材料的平面多层膜，膜系总层数不超过 30 层。"
+}
