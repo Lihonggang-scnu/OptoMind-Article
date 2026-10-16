@@ -1,0 +1,45 @@
+"""The returned audit callback must retain its case directory, without live services."""
+import importlib.util
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
+def test_returned_audit_callback_is_bound_without_live_ledger_or_model(tmp_path):
+    path = Path(__file__).parents[1] / 'run_t042.py'
+    spec = importlib.util.spec_from_file_location('t042_callback_fixture', path)
+    launcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(launcher)
+    snapshot = {'dispatch_attempts': 1, 'stage_counts': {'task_sheet': 1}}
+    class Campaign:
+        def __init__(self, planner, *, case_id, audit_sink):
+            self.audit = snapshot
+            audit_sink(snapshot)
+    aggregate = SimpleNamespace(guard_class=lambda *args: lambda *a, **k: object())
+    native = SimpleNamespace(GlobalBudgetLedger=lambda **kwargs: object())
+    entry = SimpleNamespace(make_audited_client=lambda *args: object())
+    base = SimpleNamespace(TaskBudgetGuard=object)
+    adapter = SimpleNamespace(
+        load_native_runtime=lambda *args: native,
+        _load_budget_factory=lambda *args: (entry, base),
+        Dedicated20Config=lambda **kwargs: SimpleNamespace(factory_config=lambda: {}),
+        _load_vendored_model_resolver=lambda *args: (lambda ref: 'qwen3.5-plus', {}),
+        FocusedQwenCallAdapter=lambda **kwargs: object(),
+    )
+    planner = SimpleNamespace(__file__=str(path), QueryPlannerAgent=lambda **kwargs: object())
+    def imported(name):
+        if name == 'optomind_research.query_planner': return planner
+        if name == 'focused_research.local_campaign_guard': return SimpleNamespace(CampaignPlannerGuard=Campaign)
+        raise AssertionError('unexpected module: '+name)
+    def local_module(path, name):
+        if Path(path).name == 'aggregate_budget.py': return aggregate
+        if Path(path).name == 'dedicated_qwen_adapter.py': return adapter
+        raise AssertionError('unexpected local module: '+str(path))
+    record = Mock()
+    with patch.object(launcher, 'module', local_module), \
+         patch.object(launcher.importlib, 'import_module', imported), \
+         patch.object(launcher, '_persist_guard_audit', record):
+        guard, money, persist = launcher.make_audited_guard(tmp_path, {'paths': {'review_runtime': 'unused', 'key_file': 'unused'}})
+        persist(guard.audit)
+    assert record.call_count == 2
+    for call in record.call_args_list:
+        assert call.args == (tmp_path, snapshot)

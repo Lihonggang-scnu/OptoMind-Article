@@ -1,0 +1,106 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_ CooldownTests.test_s2_cache_closes_connections_and_rolls_back_failed_write __
+
+path = 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpa4nqqmlc'
+onexc = <function TemporaryDirectory._rmtree.<locals>.onexc at 0x0000020862FC0E00>
+
+    def _rmtree_unsafe(path, onexc):
+        def onerror(err):
+            onexc(os.scandir, err.filename, err)
+        results = os.walk(path, topdown=False, onerror=onerror, followlinks=os._walk_symlinks_as_files)
+        for dirpath, dirnames, filenames in results:
+            for name in dirnames:
+                fullname = os.path.join(dirpath, name)
+                try:
+                    os.rmdir(fullname)
+                except OSError as err:
+                    onexc(os.rmdir, fullname, err)
+            for name in filenames:
+                fullname = os.path.join(dirpath, name)
+                try:
+>                   os.unlink(fullname)
+E                   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpa4nqqmlc\\provider_cache.sqlite'
+
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:633: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_s2_cooldown.CooldownTests testMethod=test_s2_cache_closes_connections_and_rolls_back_failed_write>
+
+    def test_s2_cache_closes_connections_and_rolls_back_failed_write(self):
+        from optomind_research.s2_cache import (
+            S2PersistentCache,
+            canonical_request_key,
+        )
+    
+        class TrackingConnection:
+            def __init__(self, real, *, fail_after_cache_insert=False):
+                self.real = real
+                self.fail_after_cache_insert = fail_after_cache_insert
+                self.closed = False
+    
+            def __enter__(self):
+                self.real.__enter__()
+                return self
+    
+            def __exit__(self, exc_type, exc_value, traceback):
+                return self.real.__exit__(exc_type, exc_value, traceback)
+    
+            def execute(self, sql, *args, **kwargs):
+                result = self.real.execute(sql, *args, **kwargs)
+                if (self.fail_after_cache_insert and
+                        sql.lstrip().startswith('INSERT INTO s2_cache')):
+                    self.fail_after_cache_insert = False
+                    raise RuntimeError('forced write failure after sqlite insert')
+                return result
+    
+            def close(self):
+                self.closed = True
+                return self.real.close()
+    
+            def __getattr__(self, name):
+                return getattr(self.real, name)
+    
+>       with tempfile.TemporaryDirectory() as tmp:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+focused_research\tests\test_s2_cooldown.py:277: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:950: in __exit__
+    self.cleanup()
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:954: in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:934: in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:781: in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:635: in _rmtree_unsafe
+    onexc(os.unlink, fullname, err)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+func = <built-in function unlink>
+path = 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpa4nqqmlc\\provider_cache.sqlite'
+exc = PermissionError(13, '另一个程序正在使用此文件，进程无法访问。')
+
+    def onexc(func, path, exc):
+        if isinstance(exc, PermissionError):
+            if repeated and path == name:
+                if ignore_errors:
+                    return
+                raise
+    
+            try:
+                if path != name:
+                    _resetperms(_os.path.dirname(path))
+                _resetperms(path)
+    
+                try:
+>                   _os.unlink(path)
+E                   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmpa4nqqmlc\\provider_cache.sqlite'
+
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:909: PermissionError
+=========================== short test summary info ===========================
+FAILED focused_research/tests/test_s2_cooldown.py::CooldownTests::test_s2_cache_closes_connections_and_rolls_back_failed_write
+1 failed in 0.15s

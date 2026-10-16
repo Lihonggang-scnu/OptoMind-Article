@@ -1,0 +1,1482 @@
+{
+  "status": "ok",
+  "plan": {
+    "schema_version": "focused_research.task_queries.v1",
+    "question_en": "Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.",
+    "facets": [
+      {
+        "id": "Q1",
+        "ask": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection.",
+        "keyword_queries": [
+          "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design"
+        ],
+        "question_queries": [],
+        "filters": {
+          "publication_type": [],
+          "fields_of_study": [],
+          "text_availability": []
+        },
+        "must_exclude": []
+      },
+      {
+        "id": "Q2",
+        "ask": "Seek specific application contexts involving cooled detectors and thermal background suppression.",
+        "keyword_queries": [],
+        "question_queries": [
+          "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?"
+        ],
+        "filters": {
+          "publication_type": [],
+          "fields_of_study": [],
+          "text_availability": []
+        },
+        "must_exclude": []
+      },
+      {
+        "id": "Q3",
+        "ask": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast.",
+        "keyword_queries": [
+          "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient"
+        ],
+        "question_queries": [],
+        "filters": {
+          "publication_type": [],
+          "fields_of_study": [],
+          "text_availability": []
+        },
+        "must_exclude": []
+      },
+      {
+        "id": "Q4",
+        "ask": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints.",
+        "keyword_queries": [],
+        "question_queries": [
+          "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?"
+        ],
+        "filters": {
+          "publication_type": [],
+          "fields_of_study": [],
+          "text_availability": []
+        },
+        "must_exclude": []
+      },
+      {
+        "id": "Q5",
+        "ask": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design.",
+        "keyword_queries": [],
+        "question_queries": [
+          "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?"
+        ],
+        "filters": {
+          "publication_type": [],
+          "fields_of_study": [],
+          "text_availability": []
+        },
+        "must_exclude": []
+      }
+    ],
+    "additional_constraints": [],
+    "criteria": {
+      "must_include_topic": [],
+      "must_exclude_domain": [],
+      "synonyms": {}
+    },
+    "task_sheet": {
+      "schema_version": "focused_research.task_sheet.v2",
+      "task_type": "design/optimization",
+      "user_objective": "Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.",
+      "subgoals": [
+        {
+          "id": "G1",
+          "objective": "Maximize long-wave infrared transmittance",
+          "original_span": "需要该波段尽可能高的透过率",
+          "operational_definition": "Wavelength integral of transmittance over 8000-11000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium.",
+          "executable_metric": {
+            "objective_id": "G1",
+            "metric": "mean_transmittance",
+            "sense": "maximize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                8000,
+                11000
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "quote_status": "exact_user_quote"
+        },
+        {
+          "id": "G2",
+          "objective": "Minimize mid-wave infrared transmittance to suppress thermal background",
+          "original_span": "尽可能抑制 3000-5000 nm 中波红外的热背景辐射",
+          "operational_definition": "Wavelength integral of transmittance over 3000-5000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium. Minimizing transmission here reduces flux reaching the detector from the warm side.",
+          "executable_metric": {
+            "objective_id": "G2",
+            "metric": "mean_transmittance",
+            "sense": "minimize",
+            "mean_reduction": "wavelength_integral_mean",
+            "region": {
+              "wavelength_nm": [
+                3000,
+                5000
+              ],
+              "angle_deg": 0,
+              "polarization": "unpolarized"
+            }
+          },
+          "quote_status": "exact_user_quote"
+        }
+      ],
+      "application_intents": [
+        {
+          "id": "A1",
+          "intent": "Cooled HgCdTe infrared focal plane detector window",
+          "original_span": "制冷型碲镉汞红外焦平面探测器",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "operational_definition": null
+        },
+        {
+          "id": "A2",
+          "intent": "Reduce thermal load on the focal plane by blocking MWIR radiation",
+          "original_span": "降低焦平面的热负载",
+          "subgoal_ids": [
+            "G2"
+          ],
+          "operational_definition": "Motivation for minimizing MWIR transmittance; no explicit heat-load calculation or temperature-weighted metric is defined in this sheet."
+        },
+        {
+          "id": "A3",
+          "intent": "Report power transmission into the semi-infinite Ge exit substrate",
+          "original_span": "锗（Ge）基底条件下",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "operational_definition": "Transmission is defined as optical flux entering the semi-infinite Ge substrate, excluding rear-surface effects of a finite window."
+        }
+      ],
+      "goal_relationships": {
+        "mode": "all",
+        "priority_order": null,
+        "tradeoff": null,
+        "coupling": "G1 and G2 are spectrally adjacent goals for the same coating stack; maximizing transmission in one band while minimizing it in another creates a sharp spectral edge requirement that may couple layer thickness sensitivities."
+      },
+      "explicit_constraints": [
+        {
+          "id": "C1",
+          "constraint": "LWIR passband: 8000-11000 nm",
+          "original_span": "8000-11000 nm"
+        },
+        {
+          "id": "C2",
+          "constraint": "MWIR stopband: 3000-5000 nm",
+          "original_span": "3000-5000 nm"
+        },
+        {
+          "id": "C3",
+          "constraint": "Incident medium: Air",
+          "original_span": "空气入射"
+        },
+        {
+          "id": "C4",
+          "constraint": "Substrate: Germanium (Ge)",
+          "original_span": "锗（Ge）基底"
+        },
+        {
+          "id": "C5",
+          "constraint": "Coating materials: Only ZnS and ZnSe",
+          "original_span": "仅使用 ZnS 和 ZnSe"
+        },
+        {
+          "id": "C6",
+          "constraint": "Planar multilayer dielectric film",
+          "original_span": "平面多层介质膜"
+        },
+        {
+          "id": "C7",
+          "constraint": "Maximum layer count: 16 layers",
+          "original_span": "膜系总层数不超过 16 层"
+        }
+      ],
+      "known_data": [
+        {
+          "statement": "Application involves a cooled HgCdTe detector",
+          "original_span": "制冷型碲镉汞红外焦平面探测器"
+        }
+      ],
+      "unknowns_assumptions": [
+        {
+          "kind": "assumption",
+          "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral means as per protocol, though not explicitly stated in the original question.",
+          "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+          "needs_user_input": false
+        },
+        {
+          "kind": "assumption",
+          "statement": "The Ge substrate is treated as a semi-infinite exit medium for the planar-stack calculation; rear surface conditions and substrate thickness are not modeled.",
+          "assumed_value": "Semi-infinite exit medium",
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Optical constants (n, k) dispersion data sources and specific values for ZnS, ZnSe, and Ge in these bands are not provided; extinction coefficients (k) must be verified as non-zero where physically appropriate.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "Operating temperature, exact detector geometry, and rear-surface anti-reflection conditions are unspecified.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "unknown",
+          "statement": "No global user thickness bounds or fabrication tolerances were specified; model-proposed domains will be used.",
+          "assumed_value": null,
+          "needs_user_input": false
+        },
+        {
+          "kind": "assumption",
+          "statement": "Unverified model interpretation (not user-provided or accepted truth; original_span is not an exact native-question quote): Target bands are LWIR atmospheric window and MWIR thermal background",
+          "assumed_value": null,
+          "needs_user_input": false
+        }
+      ],
+      "research_questions": [
+        {
+          "id": "R1",
+          "question": "What are effective ZnS/ZnSe multilayer designs for LWIR high-transmission and MWIR blocking on Ge substrates?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R2",
+          "question": "How do material absorption edges and refractive index contrasts of ZnS and ZnSe affect performance in the 3-11 micron range?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        },
+        {
+          "id": "R3",
+          "question": "Which optimization strategies can achieve steep spectral edges between MWIR and LWIR with limited layer counts (<16)?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ]
+        }
+      ],
+      "candidate_mechanisms": [
+        {
+          "id": "M1",
+          "mechanism": "Quarter-wave stack interference using high/low index contrast between ZnSe and ZnS to create a stopband in MWIR and passband in LWIR.",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "status": "candidate"
+        },
+        {
+          "id": "M2",
+          "mechanism": "Material intrinsic absorption limits may constrain maximum achievable transmittance if not accounted for in design.",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "status": "candidate"
+        }
+      ],
+      "search_queries": [
+        {
+          "id": "Q1",
+          "endpoint": "paper_search",
+          "query": "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection."
+        },
+        {
+          "id": "Q2",
+          "endpoint": "snippet_search",
+          "query": "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R1"
+          ],
+          "purpose": "analogous_case",
+          "rationale": "Seek specific application contexts involving cooled detectors and thermal background suppression."
+        },
+        {
+          "id": "Q3",
+          "endpoint": "paper_search",
+          "query": "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "material_structure",
+          "rationale": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast."
+        },
+        {
+          "id": "Q4",
+          "endpoint": "snippet_search",
+          "query": "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?",
+          "subgoal_ids": [
+            "G1",
+            "G2"
+          ],
+          "mechanism_ids": [
+            "M1"
+          ],
+          "research_question_ids": [
+            "R3"
+          ],
+          "purpose": "method_transfer",
+          "rationale": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints."
+        },
+        {
+          "id": "Q5",
+          "endpoint": "snippet_search",
+          "query": "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?",
+          "subgoal_ids": [
+            "G1"
+          ],
+          "mechanism_ids": [
+            "M2"
+          ],
+          "research_question_ids": [
+            "R2"
+          ],
+          "purpose": "mechanism",
+          "rationale": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design."
+        }
+      ],
+      "unsupported_requirements": [],
+      "readiness": "ready",
+      "original_question": "我负责制冷型碲镉汞红外焦平面探测器的长波红外窗口膜层研发。探测器工作在 8000-11000 nm 长波红外大气窗口，需要该波段尽可能高的透过率，同时尽可能抑制 3000-5000 nm 中波红外的热背景辐射，以降低焦平面的热负载。请在空气入射、锗（Ge）基底条件下，仅使用 ZnS 和 ZnSe 设计一个平面多层介质膜，膜系总层数不超过 16 层。"
+    },
+    "task_query_mappings": {
+      "Q1_KQ_01": {
+        "id": "Q1",
+        "endpoint": "paper_search",
+        "query": "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R1"
+        ],
+        "purpose": "analogous_case",
+        "rationale": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection."
+      },
+      "Q2_QQ_01": {
+        "id": "Q2",
+        "endpoint": "snippet_search",
+        "query": "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R1"
+        ],
+        "purpose": "analogous_case",
+        "rationale": "Seek specific application contexts involving cooled detectors and thermal background suppression."
+      },
+      "Q3_KQ_01": {
+        "id": "Q3",
+        "endpoint": "paper_search",
+        "query": "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M2"
+        ],
+        "research_question_ids": [
+          "R2"
+        ],
+        "purpose": "material_structure",
+        "rationale": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast."
+      },
+      "Q4_QQ_01": {
+        "id": "Q4",
+        "endpoint": "snippet_search",
+        "query": "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R3"
+        ],
+        "purpose": "method_transfer",
+        "rationale": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints."
+      },
+      "Q5_QQ_01": {
+        "id": "Q5",
+        "endpoint": "snippet_search",
+        "query": "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?",
+        "subgoal_ids": [
+          "G1"
+        ],
+        "mechanism_ids": [
+          "M2"
+        ],
+        "research_question_ids": [
+          "R2"
+        ],
+        "purpose": "mechanism",
+        "rationale": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design."
+      }
+    }
+  },
+  "task_sheet": {
+    "schema_version": "focused_research.task_sheet.v2",
+    "task_type": "design/optimization",
+    "user_objective": "Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.",
+    "subgoals": [
+      {
+        "id": "G1",
+        "objective": "Maximize long-wave infrared transmittance",
+        "original_span": "需要该波段尽可能高的透过率",
+        "operational_definition": "Wavelength integral of transmittance over 8000-11000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium.",
+        "executable_metric": {
+          "objective_id": "G1",
+          "metric": "mean_transmittance",
+          "sense": "maximize",
+          "mean_reduction": "wavelength_integral_mean",
+          "region": {
+            "wavelength_nm": [
+              8000,
+              11000
+            ],
+            "angle_deg": 0,
+            "polarization": "unpolarized"
+          }
+        },
+        "quote_status": "exact_user_quote"
+      },
+      {
+        "id": "G2",
+        "objective": "Minimize mid-wave infrared transmittance to suppress thermal background",
+        "original_span": "尽可能抑制 3000-5000 nm 中波红外的热背景辐射",
+        "operational_definition": "Wavelength integral of transmittance over 3000-5000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium. Minimizing transmission here reduces flux reaching the detector from the warm side.",
+        "executable_metric": {
+          "objective_id": "G2",
+          "metric": "mean_transmittance",
+          "sense": "minimize",
+          "mean_reduction": "wavelength_integral_mean",
+          "region": {
+            "wavelength_nm": [
+              3000,
+              5000
+            ],
+            "angle_deg": 0,
+            "polarization": "unpolarized"
+          }
+        },
+        "quote_status": "exact_user_quote"
+      }
+    ],
+    "application_intents": [
+      {
+        "id": "A1",
+        "intent": "Cooled HgCdTe infrared focal plane detector window",
+        "original_span": "制冷型碲镉汞红外焦平面探测器",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "operational_definition": null
+      },
+      {
+        "id": "A2",
+        "intent": "Reduce thermal load on the focal plane by blocking MWIR radiation",
+        "original_span": "降低焦平面的热负载",
+        "subgoal_ids": [
+          "G2"
+        ],
+        "operational_definition": "Motivation for minimizing MWIR transmittance; no explicit heat-load calculation or temperature-weighted metric is defined in this sheet."
+      },
+      {
+        "id": "A3",
+        "intent": "Report power transmission into the semi-infinite Ge exit substrate",
+        "original_span": "锗（Ge）基底条件下",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "operational_definition": "Transmission is defined as optical flux entering the semi-infinite Ge substrate, excluding rear-surface effects of a finite window."
+      }
+    ],
+    "goal_relationships": {
+      "mode": "all",
+      "priority_order": null,
+      "tradeoff": null,
+      "coupling": "G1 and G2 are spectrally adjacent goals for the same coating stack; maximizing transmission in one band while minimizing it in another creates a sharp spectral edge requirement that may couple layer thickness sensitivities."
+    },
+    "explicit_constraints": [
+      {
+        "id": "C1",
+        "constraint": "LWIR passband: 8000-11000 nm",
+        "original_span": "8000-11000 nm"
+      },
+      {
+        "id": "C2",
+        "constraint": "MWIR stopband: 3000-5000 nm",
+        "original_span": "3000-5000 nm"
+      },
+      {
+        "id": "C3",
+        "constraint": "Incident medium: Air",
+        "original_span": "空气入射"
+      },
+      {
+        "id": "C4",
+        "constraint": "Substrate: Germanium (Ge)",
+        "original_span": "锗（Ge）基底"
+      },
+      {
+        "id": "C5",
+        "constraint": "Coating materials: Only ZnS and ZnSe",
+        "original_span": "仅使用 ZnS 和 ZnSe"
+      },
+      {
+        "id": "C6",
+        "constraint": "Planar multilayer dielectric film",
+        "original_span": "平面多层介质膜"
+      },
+      {
+        "id": "C7",
+        "constraint": "Maximum layer count: 16 layers",
+        "original_span": "膜系总层数不超过 16 层"
+      }
+    ],
+    "known_data": [
+      {
+        "statement": "Application involves a cooled HgCdTe detector",
+        "original_span": "制冷型碲镉汞红外焦平面探测器"
+      }
+    ],
+    "unknowns_assumptions": [
+      {
+        "kind": "assumption",
+        "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral means as per protocol, though not explicitly stated in the original question.",
+        "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+        "needs_user_input": false
+      },
+      {
+        "kind": "assumption",
+        "statement": "The Ge substrate is treated as a semi-infinite exit medium for the planar-stack calculation; rear surface conditions and substrate thickness are not modeled.",
+        "assumed_value": "Semi-infinite exit medium",
+        "needs_user_input": false
+      },
+      {
+        "kind": "unknown",
+        "statement": "Optical constants (n, k) dispersion data sources and specific values for ZnS, ZnSe, and Ge in these bands are not provided; extinction coefficients (k) must be verified as non-zero where physically appropriate.",
+        "assumed_value": null,
+        "needs_user_input": false
+      },
+      {
+        "kind": "unknown",
+        "statement": "Operating temperature, exact detector geometry, and rear-surface anti-reflection conditions are unspecified.",
+        "assumed_value": null,
+        "needs_user_input": false
+      },
+      {
+        "kind": "unknown",
+        "statement": "No global user thickness bounds or fabrication tolerances were specified; model-proposed domains will be used.",
+        "assumed_value": null,
+        "needs_user_input": false
+      },
+      {
+        "kind": "assumption",
+        "statement": "Unverified model interpretation (not user-provided or accepted truth; original_span is not an exact native-question quote): Target bands are LWIR atmospheric window and MWIR thermal background",
+        "assumed_value": null,
+        "needs_user_input": false
+      }
+    ],
+    "research_questions": [
+      {
+        "id": "R1",
+        "question": "What are effective ZnS/ZnSe multilayer designs for LWIR high-transmission and MWIR blocking on Ge substrates?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ]
+      },
+      {
+        "id": "R2",
+        "question": "How do material absorption edges and refractive index contrasts of ZnS and ZnSe affect performance in the 3-11 micron range?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ]
+      },
+      {
+        "id": "R3",
+        "question": "Which optimization strategies can achieve steep spectral edges between MWIR and LWIR with limited layer counts (<16)?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ]
+      }
+    ],
+    "candidate_mechanisms": [
+      {
+        "id": "M1",
+        "mechanism": "Quarter-wave stack interference using high/low index contrast between ZnSe and ZnS to create a stopband in MWIR and passband in LWIR.",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "status": "candidate"
+      },
+      {
+        "id": "M2",
+        "mechanism": "Material intrinsic absorption limits may constrain maximum achievable transmittance if not accounted for in design.",
+        "subgoal_ids": [
+          "G1"
+        ],
+        "status": "candidate"
+      }
+    ],
+    "search_queries": [
+      {
+        "id": "Q1",
+        "endpoint": "paper_search",
+        "query": "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R1"
+        ],
+        "purpose": "analogous_case",
+        "rationale": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection."
+      },
+      {
+        "id": "Q2",
+        "endpoint": "snippet_search",
+        "query": "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R1"
+        ],
+        "purpose": "analogous_case",
+        "rationale": "Seek specific application contexts involving cooled detectors and thermal background suppression."
+      },
+      {
+        "id": "Q3",
+        "endpoint": "paper_search",
+        "query": "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M2"
+        ],
+        "research_question_ids": [
+          "R2"
+        ],
+        "purpose": "material_structure",
+        "rationale": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast."
+      },
+      {
+        "id": "Q4",
+        "endpoint": "snippet_search",
+        "query": "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?",
+        "subgoal_ids": [
+          "G1",
+          "G2"
+        ],
+        "mechanism_ids": [
+          "M1"
+        ],
+        "research_question_ids": [
+          "R3"
+        ],
+        "purpose": "method_transfer",
+        "rationale": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints."
+      },
+      {
+        "id": "Q5",
+        "endpoint": "snippet_search",
+        "query": "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?",
+        "subgoal_ids": [
+          "G1"
+        ],
+        "mechanism_ids": [
+          "M2"
+        ],
+        "research_question_ids": [
+          "R2"
+        ],
+        "purpose": "mechanism",
+        "rationale": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design."
+      }
+    ],
+    "unsupported_requirements": [],
+    "readiness": "ready",
+    "original_question": "我负责制冷型碲镉汞红外焦平面探测器的长波红外窗口膜层研发。探测器工作在 8000-11000 nm 长波红外大气窗口，需要该波段尽可能高的透过率，同时尽可能抑制 3000-5000 nm 中波红外的热背景辐射，以降低焦平面的热负载。请在空气入射、锗（Ge）基底条件下，仅使用 ZnS 和 ZnSe 设计一个平面多层介质膜，膜系总层数不超过 16 层。"
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "raw_response": "{\n  \"schema_version\": \"focused_research.task_sheet.v2\",\n  \"task_type\": \"design/optimization\",\n  \"user_objective\": \"Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.\",\n  \"subgoals\": [\n    {\n      \"id\": \"G1\",\n      \"objective\": \"Maximize long-wave infrared transmittance\",\n      \"original_span\": \"需要该波段尽可能高的透过率\",\n      \"operational_definition\": \"Wavelength integral of transmittance over 8000-11000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium.\",\n      \"executable_metric\": {\n        \"objective_id\": \"G1\",\n        \"metric\": \"mean_transmittance\",\n        \"sense\": \"maximize\",\n        \"mean_reduction\": \"wavelength_integral_mean\",\n        \"region\": {\n          \"wavelength_nm\": [\n            8000,\n            11000\n          ],\n          \"angle_deg\": 0,\n          \"polarization\": \"unpolarized\"\n        }\n      }\n    },\n    {\n      \"id\": \"G2\",\n      \"objective\": \"Minimize mid-wave infrared transmittance to suppress thermal background\",\n      \"original_span\": \"尽可能抑制 3000-5000 nm 中波红外的热背景辐射\",\n      \"operational_definition\": \"Wavelength integral of transmittance over 3000-5000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium. Minimizing transmission here reduces flux reaching the detector from the warm side.\",\n      \"executable_metric\": {\n        \"objective_id\": \"G2\",\n        \"metric\": \"mean_transmittance\",\n        \"sense\": \"minimize\",\n        \"mean_reduction\": \"wavelength_integral_mean\",\n        \"region\": {\n          \"wavelength_nm\": [\n            3000,\n            5000\n          ],\n          \"angle_deg\": 0,\n          \"polarization\": \"unpolarized\"\n        }\n      }\n    }\n  ],\n  \"application_intents\": [\n    {\n      \"id\": \"A1\",\n      \"intent\": \"Cooled HgCdTe infrared focal plane detector window\",\n      \"original_span\": \"制冷型碲镉汞红外焦平面探测器\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"operational_definition\": null\n    },\n    {\n      \"id\": \"A2\",\n      \"intent\": \"Reduce thermal load on the focal plane by blocking MWIR radiation\",\n      \"original_span\": \"降低焦平面的热负载\",\n      \"subgoal_ids\": [\n        \"G2\"\n      ],\n      \"operational_definition\": \"Motivation for minimizing MWIR transmittance; no explicit heat-load calculation or temperature-weighted metric is defined in this sheet.\"\n    },\n    {\n      \"id\": \"A3\",\n      \"intent\": \"Report power transmission into the semi-infinite Ge exit substrate\",\n      \"original_span\": \"锗（Ge）基底条件下\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"operational_definition\": \"Transmission is defined as optical flux entering the semi-infinite Ge substrate, excluding rear-surface effects of a finite window.\"\n    }\n  ],\n  \"goal_relationships\": {\n    \"mode\": \"all\",\n    \"priority_order\": null,\n    \"tradeoff\": null,\n    \"coupling\": \"G1 and G2 are spectrally adjacent goals for the same coating stack; maximizing transmission in one band while minimizing it in another creates a sharp spectral edge requirement that may couple layer thickness sensitivities.\"\n  },\n  \"explicit_constraints\": [\n    {\n      \"id\": \"C1\",\n      \"constraint\": \"LWIR passband: 8000-11000 nm\",\n      \"original_span\": \"8000-11000 nm\"\n    },\n    {\n      \"id\": \"C2\",\n      \"constraint\": \"MWIR stopband: 3000-5000 nm\",\n      \"original_span\": \"3000-5000 nm\"\n    },\n    {\n      \"id\": \"C3\",\n      \"constraint\": \"Incident medium: Air\",\n      \"original_span\": \"空气入射\"\n    },\n    {\n      \"id\": \"C4\",\n      \"constraint\": \"Substrate: Germanium (Ge)\",\n      \"original_span\": \"锗（Ge）基底\"\n    },\n    {\n      \"id\": \"C5\",\n      \"constraint\": \"Coating materials: Only ZnS and ZnSe\",\n      \"original_span\": \"仅使用 ZnS 和 ZnSe\"\n    },\n    {\n      \"id\": \"C6\",\n      \"constraint\": \"Planar multilayer dielectric film\",\n      \"original_span\": \"平面多层介质膜\"\n    },\n    {\n      \"id\": \"C7\",\n      \"constraint\": \"Maximum layer count: 16 layers\",\n      \"original_span\": \"膜系总层数不超过 16 层\"\n    }\n  ],\n  \"known_data\": [\n    {\n      \"statement\": \"Application involves a cooled HgCdTe detector\",\n      \"original_span\": \"制冷型碲镉汞红外焦平面探测器\"\n    },\n    {\n      \"statement\": \"Target bands are LWIR atmospheric window and MWIR thermal background\",\n      \"original_span\": \"长波红外大气窗口... 中波红外的热背景辐射\"\n    }\n  ],\n  \"unknowns_assumptions\": [\n    {\n      \"kind\": \"assumption\",\n      \"statement\": \"Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral means as per protocol, though not explicitly stated in the original question.\",\n      \"assumed_value\": \"0 deg, unpolarized, wavelength_integral_mean\",\n      \"needs_user_input\": false\n    },\n    {\n      \"kind\": \"assumption\",\n      \"statement\": \"The Ge substrate is treated as a semi-infinite exit medium for the planar-stack calculation; rear surface conditions and substrate thickness are not modeled.\",\n      \"assumed_value\": \"Semi-infinite exit medium\",\n      \"needs_user_input\": false\n    },\n    {\n      \"kind\": \"unknown\",\n      \"statement\": \"Optical constants (n, k) dispersion data sources and specific values for ZnS, ZnSe, and Ge in these bands are not provided; extinction coefficients (k) must be verified as non-zero where physically appropriate.\",\n      \"assumed_value\": null,\n      \"needs_user_input\": false\n    },\n    {\n      \"kind\": \"unknown\",\n      \"statement\": \"Operating temperature, exact detector geometry, and rear-surface anti-reflection conditions are unspecified.\",\n      \"assumed_value\": null,\n      \"needs_user_input\": false\n    },\n    {\n      \"kind\": \"unknown\",\n      \"statement\": \"No global user thickness bounds or fabrication tolerances were specified; model-proposed domains will be used.\",\n      \"assumed_value\": null,\n      \"needs_user_input\": false\n    }\n  ],\n  \"research_questions\": [\n    {\n      \"id\": \"R1\",\n      \"question\": \"What are effective ZnS/ZnSe multilayer designs for LWIR high-transmission and MWIR blocking on Ge substrates?\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ]\n    },\n    {\n      \"id\": \"R2\",\n      \"question\": \"How do material absorption edges and refractive index contrasts of ZnS and ZnSe affect performance in the 3-11 micron range?\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ]\n    },\n    {\n      \"id\": \"R3\",\n      \"question\": \"Which optimization strategies can achieve steep spectral edges between MWIR and LWIR with limited layer counts (<16)?\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ]\n    }\n  ],\n  \"candidate_mechanisms\": [\n    {\n      \"id\": \"M1\",\n      \"mechanism\": \"Quarter-wave stack interference using high/low index contrast between ZnSe and ZnS to create a stopband in MWIR and passband in LWIR.\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"status\": \"candidate\"\n    },\n    {\n      \"id\": \"M2\",\n      \"mechanism\": \"Material intrinsic absorption limits may constrain maximum achievable transmittance if not accounted for in design.\",\n      \"subgoal_ids\": [\n        \"G1\"\n      ],\n      \"status\": \"candidate\"\n    }\n  ],\n  \"search_queries\": [\n    {\n      \"id\": \"Q1\",\n      \"endpoint\": \"paper_search\",\n      \"query\": \"ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"mechanism_ids\": [\n        \"M1\"\n      ],\n      \"research_question_ids\": [\n        \"R1\"\n      ],\n      \"purpose\": \"analogous_case\",\n      \"rationale\": \"Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection.\"\n    },\n    {\n      \"id\": \"Q2\",\n      \"endpoint\": \"snippet_search\",\n      \"query\": \"How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"mechanism_ids\": [\n        \"M1\"\n      ],\n      \"research_question_ids\": [\n        \"R1\"\n      ],\n      \"purpose\": \"analogous_case\",\n      \"rationale\": \"Seek specific application contexts involving cooled detectors and thermal background suppression.\"\n    },\n    {\n      \"id\": \"Q3\",\n      \"endpoint\": \"paper_search\",\n      \"query\": \"optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"mechanism_ids\": [\n        \"M2\"\n      ],\n      \"research_question_ids\": [\n        \"R2\"\n      ],\n      \"purpose\": \"material_structure\",\n      \"rationale\": \"Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast.\"\n    },\n    {\n      \"id\": \"Q4\",\n      \"endpoint\": \"snippet_search\",\n      \"query\": \"What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?\",\n      \"subgoal_ids\": [\n        \"G1\",\n        \"G2\"\n      ],\n      \"mechanism_ids\": [\n        \"M1\"\n      ],\n      \"research_question_ids\": [\n        \"R3\"\n      ],\n      \"purpose\": \"method_transfer\",\n      \"rationale\": \"Identify synthesis techniques for sharp cutoffs under strict layer-count constraints.\"\n    },\n    {\n      \"id\": \"Q5\",\n      \"endpoint\": \"snippet_search\",\n      \"query\": \"How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?\",\n      \"subgoal_ids\": [\n        \"G1\"\n      ],\n      \"mechanism_ids\": [\n        \"M2\"\n      ],\n      \"research_question_ids\": [\n        \"R2\"\n      ],\n      \"purpose\": \"mechanism\",\n      \"rationale\": \"Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design.\"\n    }\n  ],\n  \"unsupported_requirements\": [],\n  \"readiness\": \"ready\"\n}",
+      "usage": {
+        "module": "R3-T019-DEDICATED20",
+        "agent_name": "QueryPlannerAgent",
+        "model_tier": "QueryPlannerAgent",
+        "model_name": "qwen3.5-plus",
+        "mock_llm": false,
+        "success": true,
+        "failure": false,
+        "error_type": "",
+        "transport_error": "",
+        "provider_usage": {
+          "prompt_tokens": 5113,
+          "completion_tokens": 2876,
+          "total_tokens": 7989,
+          "completion_tokens_details": {
+            "text_tokens": 2876
+          },
+          "prompt_tokens_details": {
+            "text_tokens": 5113
+          }
+        },
+        "input_tokens": 5113,
+        "output_tokens": 2876,
+        "token_usage_source": "provider_response",
+        "replayed": false,
+        "request_attempt_count": 1,
+        "reserved_attempt_count": 1,
+        "attempt_count_source": "guard.task_budget.attempted_calls_delta",
+        "budget_hold_preserved": false,
+        "adapter_schema": "r3-t019-dedicated20-focused-qwen.v1",
+        "cost_cny": 0.0178952
+      },
+      "transport": {
+        "fallback_used": false,
+        "transport_error": "",
+        "json_contract_repaired": false,
+        "finish_reason": "stop",
+        "partial_stream": false,
+        "stream_interrupted_error": ""
+      },
+      "raw_task_sheet": {
+        "schema_version": "focused_research.task_sheet.v2",
+        "task_type": "design/optimization",
+        "user_objective": "Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.",
+        "subgoals": [
+          {
+            "id": "G1",
+            "objective": "Maximize long-wave infrared transmittance",
+            "original_span": "需要该波段尽可能高的透过率",
+            "operational_definition": "Wavelength integral of transmittance over 8000-11000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium.",
+            "executable_metric": {
+              "objective_id": "G1",
+              "metric": "mean_transmittance",
+              "sense": "maximize",
+              "mean_reduction": "wavelength_integral_mean",
+              "region": {
+                "wavelength_nm": [
+                  8000,
+                  11000
+                ],
+                "angle_deg": 0,
+                "polarization": "unpolarized"
+              }
+            }
+          },
+          {
+            "id": "G2",
+            "objective": "Minimize mid-wave infrared transmittance to suppress thermal background",
+            "original_span": "尽可能抑制 3000-5000 nm 中波红外的热背景辐射",
+            "operational_definition": "Wavelength integral of transmittance over 3000-5000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium. Minimizing transmission here reduces flux reaching the detector from the warm side.",
+            "executable_metric": {
+              "objective_id": "G2",
+              "metric": "mean_transmittance",
+              "sense": "minimize",
+              "mean_reduction": "wavelength_integral_mean",
+              "region": {
+                "wavelength_nm": [
+                  3000,
+                  5000
+                ],
+                "angle_deg": 0,
+                "polarization": "unpolarized"
+              }
+            }
+          }
+        ],
+        "application_intents": [
+          {
+            "id": "A1",
+            "intent": "Cooled HgCdTe infrared focal plane detector window",
+            "original_span": "制冷型碲镉汞红外焦平面探测器",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "operational_definition": null
+          },
+          {
+            "id": "A2",
+            "intent": "Reduce thermal load on the focal plane by blocking MWIR radiation",
+            "original_span": "降低焦平面的热负载",
+            "subgoal_ids": [
+              "G2"
+            ],
+            "operational_definition": "Motivation for minimizing MWIR transmittance; no explicit heat-load calculation or temperature-weighted metric is defined in this sheet."
+          },
+          {
+            "id": "A3",
+            "intent": "Report power transmission into the semi-infinite Ge exit substrate",
+            "original_span": "锗（Ge）基底条件下",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "operational_definition": "Transmission is defined as optical flux entering the semi-infinite Ge substrate, excluding rear-surface effects of a finite window."
+          }
+        ],
+        "goal_relationships": {
+          "mode": "all",
+          "priority_order": null,
+          "tradeoff": null,
+          "coupling": "G1 and G2 are spectrally adjacent goals for the same coating stack; maximizing transmission in one band while minimizing it in another creates a sharp spectral edge requirement that may couple layer thickness sensitivities."
+        },
+        "explicit_constraints": [
+          {
+            "id": "C1",
+            "constraint": "LWIR passband: 8000-11000 nm",
+            "original_span": "8000-11000 nm"
+          },
+          {
+            "id": "C2",
+            "constraint": "MWIR stopband: 3000-5000 nm",
+            "original_span": "3000-5000 nm"
+          },
+          {
+            "id": "C3",
+            "constraint": "Incident medium: Air",
+            "original_span": "空气入射"
+          },
+          {
+            "id": "C4",
+            "constraint": "Substrate: Germanium (Ge)",
+            "original_span": "锗（Ge）基底"
+          },
+          {
+            "id": "C5",
+            "constraint": "Coating materials: Only ZnS and ZnSe",
+            "original_span": "仅使用 ZnS 和 ZnSe"
+          },
+          {
+            "id": "C6",
+            "constraint": "Planar multilayer dielectric film",
+            "original_span": "平面多层介质膜"
+          },
+          {
+            "id": "C7",
+            "constraint": "Maximum layer count: 16 layers",
+            "original_span": "膜系总层数不超过 16 层"
+          }
+        ],
+        "known_data": [
+          {
+            "statement": "Application involves a cooled HgCdTe detector",
+            "original_span": "制冷型碲镉汞红外焦平面探测器"
+          },
+          {
+            "statement": "Target bands are LWIR atmospheric window and MWIR thermal background",
+            "original_span": "长波红外大气窗口... 中波红外的热背景辐射"
+          }
+        ],
+        "unknowns_assumptions": [
+          {
+            "kind": "assumption",
+            "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral means as per protocol, though not explicitly stated in the original question.",
+            "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+            "needs_user_input": false
+          },
+          {
+            "kind": "assumption",
+            "statement": "The Ge substrate is treated as a semi-infinite exit medium for the planar-stack calculation; rear surface conditions and substrate thickness are not modeled.",
+            "assumed_value": "Semi-infinite exit medium",
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "Optical constants (n, k) dispersion data sources and specific values for ZnS, ZnSe, and Ge in these bands are not provided; extinction coefficients (k) must be verified as non-zero where physically appropriate.",
+            "assumed_value": null,
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "Operating temperature, exact detector geometry, and rear-surface anti-reflection conditions are unspecified.",
+            "assumed_value": null,
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "No global user thickness bounds or fabrication tolerances were specified; model-proposed domains will be used.",
+            "assumed_value": null,
+            "needs_user_input": false
+          }
+        ],
+        "research_questions": [
+          {
+            "id": "R1",
+            "question": "What are effective ZnS/ZnSe multilayer designs for LWIR high-transmission and MWIR blocking on Ge substrates?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          },
+          {
+            "id": "R2",
+            "question": "How do material absorption edges and refractive index contrasts of ZnS and ZnSe affect performance in the 3-11 micron range?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          },
+          {
+            "id": "R3",
+            "question": "Which optimization strategies can achieve steep spectral edges between MWIR and LWIR with limited layer counts (<16)?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          }
+        ],
+        "candidate_mechanisms": [
+          {
+            "id": "M1",
+            "mechanism": "Quarter-wave stack interference using high/low index contrast between ZnSe and ZnS to create a stopband in MWIR and passband in LWIR.",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "status": "candidate"
+          },
+          {
+            "id": "M2",
+            "mechanism": "Material intrinsic absorption limits may constrain maximum achievable transmittance if not accounted for in design.",
+            "subgoal_ids": [
+              "G1"
+            ],
+            "status": "candidate"
+          }
+        ],
+        "search_queries": [
+          {
+            "id": "Q1",
+            "endpoint": "paper_search",
+            "query": "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R1"
+            ],
+            "purpose": "analogous_case",
+            "rationale": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection."
+          },
+          {
+            "id": "Q2",
+            "endpoint": "snippet_search",
+            "query": "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R1"
+            ],
+            "purpose": "analogous_case",
+            "rationale": "Seek specific application contexts involving cooled detectors and thermal background suppression."
+          },
+          {
+            "id": "Q3",
+            "endpoint": "paper_search",
+            "query": "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M2"
+            ],
+            "research_question_ids": [
+              "R2"
+            ],
+            "purpose": "material_structure",
+            "rationale": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast."
+          },
+          {
+            "id": "Q4",
+            "endpoint": "snippet_search",
+            "query": "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R3"
+            ],
+            "purpose": "method_transfer",
+            "rationale": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints."
+          },
+          {
+            "id": "Q5",
+            "endpoint": "snippet_search",
+            "query": "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?",
+            "subgoal_ids": [
+              "G1"
+            ],
+            "mechanism_ids": [
+              "M2"
+            ],
+            "research_question_ids": [
+              "R2"
+            ],
+            "purpose": "mechanism",
+            "rationale": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design."
+          }
+        ],
+        "unsupported_requirements": [],
+        "readiness": "ready"
+      },
+      "ignored_model_fields": [],
+      "normalization_audit": [
+        {
+          "operation": "demote_unverified_known_data",
+          "source_path": "known_data[1]",
+          "destination_path": "unknowns_assumptions[5]",
+          "reason": "original_span_not_exact_native_question",
+          "raw_row": {
+            "statement": "Target bands are LWIR atmospheric window and MWIR thermal background",
+            "original_span": "长波红外大气窗口... 中波红外的热背景辐射"
+          },
+          "effective_row": {
+            "kind": "assumption",
+            "statement": "Unverified model interpretation (not user-provided or accepted truth; original_span is not an exact native-question quote): Target bands are LWIR atmospheric window and MWIR thermal background",
+            "assumed_value": null,
+            "needs_user_input": false
+          }
+        }
+      ],
+      "effective_task_sheet": {
+        "schema_version": "focused_research.task_sheet.v2",
+        "task_type": "design/optimization",
+        "user_objective": "Design a planar ZnS/ZnSe multilayer coating on a Germanium substrate to maximize LWIR (8000-11000 nm) transmittance and minimize MWIR (3000-5000 nm) transmittance for a cooled HgCdTe detector, subject to layer count and material constraints.",
+        "subgoals": [
+          {
+            "id": "G1",
+            "objective": "Maximize long-wave infrared transmittance",
+            "original_span": "需要该波段尽可能高的透过率",
+            "operational_definition": "Wavelength integral of transmittance over 8000-11000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium.",
+            "executable_metric": {
+              "objective_id": "G1",
+              "metric": "mean_transmittance",
+              "sense": "maximize",
+              "mean_reduction": "wavelength_integral_mean",
+              "region": {
+                "wavelength_nm": [
+                  8000,
+                  11000
+                ],
+                "angle_deg": 0,
+                "polarization": "unpolarized"
+              }
+            },
+            "quote_status": "exact_user_quote"
+          },
+          {
+            "id": "G2",
+            "objective": "Minimize mid-wave infrared transmittance to suppress thermal background",
+            "original_span": "尽可能抑制 3000-5000 nm 中波红外的热背景辐射",
+            "operational_definition": "Wavelength integral of transmittance over 3000-5000 nm divided by band width, for unpolarized light at 0 degrees incidence into a semi-infinite Ge exit medium. Minimizing transmission here reduces flux reaching the detector from the warm side.",
+            "executable_metric": {
+              "objective_id": "G2",
+              "metric": "mean_transmittance",
+              "sense": "minimize",
+              "mean_reduction": "wavelength_integral_mean",
+              "region": {
+                "wavelength_nm": [
+                  3000,
+                  5000
+                ],
+                "angle_deg": 0,
+                "polarization": "unpolarized"
+              }
+            },
+            "quote_status": "exact_user_quote"
+          }
+        ],
+        "application_intents": [
+          {
+            "id": "A1",
+            "intent": "Cooled HgCdTe infrared focal plane detector window",
+            "original_span": "制冷型碲镉汞红外焦平面探测器",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "operational_definition": null
+          },
+          {
+            "id": "A2",
+            "intent": "Reduce thermal load on the focal plane by blocking MWIR radiation",
+            "original_span": "降低焦平面的热负载",
+            "subgoal_ids": [
+              "G2"
+            ],
+            "operational_definition": "Motivation for minimizing MWIR transmittance; no explicit heat-load calculation or temperature-weighted metric is defined in this sheet."
+          },
+          {
+            "id": "A3",
+            "intent": "Report power transmission into the semi-infinite Ge exit substrate",
+            "original_span": "锗（Ge）基底条件下",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "operational_definition": "Transmission is defined as optical flux entering the semi-infinite Ge substrate, excluding rear-surface effects of a finite window."
+          }
+        ],
+        "goal_relationships": {
+          "mode": "all",
+          "priority_order": null,
+          "tradeoff": null,
+          "coupling": "G1 and G2 are spectrally adjacent goals for the same coating stack; maximizing transmission in one band while minimizing it in another creates a sharp spectral edge requirement that may couple layer thickness sensitivities."
+        },
+        "explicit_constraints": [
+          {
+            "id": "C1",
+            "constraint": "LWIR passband: 8000-11000 nm",
+            "original_span": "8000-11000 nm"
+          },
+          {
+            "id": "C2",
+            "constraint": "MWIR stopband: 3000-5000 nm",
+            "original_span": "3000-5000 nm"
+          },
+          {
+            "id": "C3",
+            "constraint": "Incident medium: Air",
+            "original_span": "空气入射"
+          },
+          {
+            "id": "C4",
+            "constraint": "Substrate: Germanium (Ge)",
+            "original_span": "锗（Ge）基底"
+          },
+          {
+            "id": "C5",
+            "constraint": "Coating materials: Only ZnS and ZnSe",
+            "original_span": "仅使用 ZnS 和 ZnSe"
+          },
+          {
+            "id": "C6",
+            "constraint": "Planar multilayer dielectric film",
+            "original_span": "平面多层介质膜"
+          },
+          {
+            "id": "C7",
+            "constraint": "Maximum layer count: 16 layers",
+            "original_span": "膜系总层数不超过 16 层"
+          }
+        ],
+        "known_data": [
+          {
+            "statement": "Application involves a cooled HgCdTe detector",
+            "original_span": "制冷型碲镉汞红外焦平面探测器"
+          }
+        ],
+        "unknowns_assumptions": [
+          {
+            "kind": "assumption",
+            "statement": "Execution assumes 0 degree incidence, equal-s/p unpolarized light, and wavelength-integral means as per protocol, though not explicitly stated in the original question.",
+            "assumed_value": "0 deg, unpolarized, wavelength_integral_mean",
+            "needs_user_input": false
+          },
+          {
+            "kind": "assumption",
+            "statement": "The Ge substrate is treated as a semi-infinite exit medium for the planar-stack calculation; rear surface conditions and substrate thickness are not modeled.",
+            "assumed_value": "Semi-infinite exit medium",
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "Optical constants (n, k) dispersion data sources and specific values for ZnS, ZnSe, and Ge in these bands are not provided; extinction coefficients (k) must be verified as non-zero where physically appropriate.",
+            "assumed_value": null,
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "Operating temperature, exact detector geometry, and rear-surface anti-reflection conditions are unspecified.",
+            "assumed_value": null,
+            "needs_user_input": false
+          },
+          {
+            "kind": "unknown",
+            "statement": "No global user thickness bounds or fabrication tolerances were specified; model-proposed domains will be used.",
+            "assumed_value": null,
+            "needs_user_input": false
+          },
+          {
+            "kind": "assumption",
+            "statement": "Unverified model interpretation (not user-provided or accepted truth; original_span is not an exact native-question quote): Target bands are LWIR atmospheric window and MWIR thermal background",
+            "assumed_value": null,
+            "needs_user_input": false
+          }
+        ],
+        "research_questions": [
+          {
+            "id": "R1",
+            "question": "What are effective ZnS/ZnSe multilayer designs for LWIR high-transmission and MWIR blocking on Ge substrates?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          },
+          {
+            "id": "R2",
+            "question": "How do material absorption edges and refractive index contrasts of ZnS and ZnSe affect performance in the 3-11 micron range?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          },
+          {
+            "id": "R3",
+            "question": "Which optimization strategies can achieve steep spectral edges between MWIR and LWIR with limited layer counts (<16)?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ]
+          }
+        ],
+        "candidate_mechanisms": [
+          {
+            "id": "M1",
+            "mechanism": "Quarter-wave stack interference using high/low index contrast between ZnSe and ZnS to create a stopband in MWIR and passband in LWIR.",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "status": "candidate"
+          },
+          {
+            "id": "M2",
+            "mechanism": "Material intrinsic absorption limits may constrain maximum achievable transmittance if not accounted for in design.",
+            "subgoal_ids": [
+              "G1"
+            ],
+            "status": "candidate"
+          }
+        ],
+        "search_queries": [
+          {
+            "id": "Q1",
+            "endpoint": "paper_search",
+            "query": "ZnS ZnSe multilayer coating germanium substrate LWIR MWIR filter design",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R1"
+            ],
+            "purpose": "analogous_case",
+            "rationale": "Find complete design cases for ZnS/ZnSe stacks on Ge targeting LWIR transmission and MWIR rejection."
+          },
+          {
+            "id": "Q2",
+            "endpoint": "snippet_search",
+            "query": "How to design a cold shield filter for HgCdTe detectors using ZnS and ZnSe layers to block 3-5 micron radiation?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R1"
+            ],
+            "purpose": "analogous_case",
+            "rationale": "Seek specific application contexts involving cooled detectors and thermal background suppression."
+          },
+          {
+            "id": "Q3",
+            "endpoint": "paper_search",
+            "query": "optical constants ZnS ZnSe germanium 3 micron 11 micron extinction coefficient",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M2"
+            ],
+            "research_question_ids": [
+              "R2"
+            ],
+            "purpose": "material_structure",
+            "rationale": "Retrieve accurate n and k data for the relevant IR bands to ensure realistic modeling of absorption and index contrast."
+          },
+          {
+            "id": "Q4",
+            "endpoint": "snippet_search",
+            "query": "What optimization methods allow steep spectral transitions between MWIR and LWIR with fewer than 20 dielectric layers?",
+            "subgoal_ids": [
+              "G1",
+              "G2"
+            ],
+            "mechanism_ids": [
+              "M1"
+            ],
+            "research_question_ids": [
+              "R3"
+            ],
+            "purpose": "method_transfer",
+            "rationale": "Identify synthesis techniques for sharp cutoffs under strict layer-count constraints."
+          },
+          {
+            "id": "Q5",
+            "endpoint": "snippet_search",
+            "query": "How does the absorption edge of ZnSe and ZnS limit transmittance in the 8-11 micron range?",
+            "subgoal_ids": [
+              "G1"
+            ],
+            "mechanism_ids": [
+              "M2"
+            ],
+            "research_question_ids": [
+              "R2"
+            ],
+            "purpose": "mechanism",
+            "rationale": "Understand fundamental material limits that might prevent 'as high as possible' transmittance regardless of coating design."
+          }
+        ],
+        "unsupported_requirements": [],
+        "readiness": "ready",
+        "original_question": "我负责制冷型碲镉汞红外焦平面探测器的长波红外窗口膜层研发。探测器工作在 8000-11000 nm 长波红外大气窗口，需要该波段尽可能高的透过率，同时尽可能抑制 3000-5000 nm 中波红外的热背景辐射，以降低焦平面的热负载。请在空气入射、锗（Ge）基底条件下，仅使用 ZnS 和 ZnSe 设计一个平面多层介质膜，膜系总层数不超过 16 层。"
+      },
+      "ok": true
+    }
+  ],
+  "round_usages": [
+    {
+      "module": "R3-T019-DEDICATED20",
+      "agent_name": "QueryPlannerAgent",
+      "model_tier": "QueryPlannerAgent",
+      "model_name": "qwen3.5-plus",
+      "mock_llm": false,
+      "success": true,
+      "failure": false,
+      "error_type": "",
+      "transport_error": "",
+      "provider_usage": {
+        "prompt_tokens": 5113,
+        "completion_tokens": 2876,
+        "total_tokens": 7989,
+        "completion_tokens_details": {
+          "text_tokens": 2876
+        },
+        "prompt_tokens_details": {
+          "text_tokens": 5113
+        }
+      },
+      "input_tokens": 5113,
+      "output_tokens": 2876,
+      "token_usage_source": "provider_response",
+      "replayed": false,
+      "request_attempt_count": 1,
+      "reserved_attempt_count": 1,
+      "attempt_count_source": "guard.task_budget.attempted_calls_delta",
+      "budget_hold_preserved": false,
+      "adapter_schema": "r3-t019-dedicated20-focused-qwen.v1",
+      "cost_cny": 0.0178952
+    }
+  ],
+  "transport": {
+    "fallback_used": false,
+    "transport_error": "",
+    "json_contract_repaired": false,
+    "finish_reason": "stop",
+    "partial_stream": false,
+    "stream_interrupted_error": ""
+  },
+  "errors": [],
+  "prompt_hash": "7d6d8aa0e4f261569ac7940b43c7e3e259da3023402111921d88a744d48744ab",
+  "revision_rounds": 0,
+  "first_hit": true
+}

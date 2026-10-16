@@ -1,0 +1,85 @@
+........................................................................ [ 57%]
+..................................................F...             [100%]
+================================== FAILURES ===================================
+_____ CooldownTests.test_real_vendor_transport_and_gateway_429_to_success _____
+
+path = 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmp4m83n46t'
+onexc = <function TemporaryDirectory._rmtree.<locals>.onexc at 0x0000021451714B80>
+
+    def _rmtree_unsafe(path, onexc):
+        def onerror(err):
+            onexc(os.scandir, err.filename, err)
+        results = os.walk(path, topdown=False, onerror=onerror, followlinks=os._walk_symlinks_as_files)
+        for dirpath, dirnames, filenames in results:
+            for name in dirnames:
+                fullname = os.path.join(dirpath, name)
+                try:
+                    os.rmdir(fullname)
+                except OSError as err:
+                    onexc(os.rmdir, fullname, err)
+            for name in filenames:
+                fullname = os.path.join(dirpath, name)
+                try:
+>                   os.unlink(fullname)
+E                   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmp4m83n46t\\provider_cache.sqlite'
+
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:633: PermissionError
+
+During handling of the above exception, another exception occurred:
+
+self = <test_s2_cooldown.CooldownTests testMethod=test_real_vendor_transport_and_gateway_429_to_success>
+
+    def test_real_vendor_transport_and_gateway_429_to_success(self):
+        from optomind_research.s2_intelligence_gateway import S2GatewayResponse
+        clock = Clock()
+        sent = []
+        class Reply(io.BytesIO):
+            status = 200
+        def opener(request, **kwargs):
+            sent.append(request.full_url)
+            if len(sent) <= 3:
+                raise urllib.error.HTTPError(request.full_url, 429, 'limited',
+                    {'Retry-After': '400'}, io.BytesIO(b'limited'))
+            return Reply(json.dumps({'data': [{'paperId': 'p1', 'title': 'Result'}]}).encode())
+>       with tempfile.TemporaryDirectory() as tmp, patch.object(run.time, 'monotonic', clock.monotonic):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+focused_research\tests\test_s2_cooldown.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:950: in __exit__
+    self.cleanup()
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:954: in cleanup
+    self._rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:934: in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:781: in rmtree
+    return _rmtree_unsafe(path, onexc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\shutil.py:635: in _rmtree_unsafe
+    onexc(os.unlink, fullname, err)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+func = <built-in function unlink>
+path = 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmp4m83n46t\\provider_cache.sqlite'
+exc = PermissionError(13, '另一个程序正在使用此文件，进程无法访问。')
+
+    def onexc(func, path, exc):
+        if isinstance(exc, PermissionError):
+            if repeated and path == name:
+                if ignore_errors:
+                    return
+                raise
+    
+            try:
+                if path != name:
+                    _resetperms(_os.path.dirname(path))
+                _resetperms(path)
+    
+                try:
+>                   _os.unlink(path)
+E                   PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\tmp4m83n46t\\provider_cache.sqlite'
+
+..\local-integration\20261013\runtimes\cpython-3.12.13-windows-x86_64-none\Lib\tempfile.py:909: PermissionError
+=========================== short test summary info ===========================
+FAILED focused_research/tests/test_s2_cooldown.py::CooldownTests::test_real_vendor_transport_and_gateway_429_to_success
+1 failed, 125 passed, 6 subtests passed in 0.55s
