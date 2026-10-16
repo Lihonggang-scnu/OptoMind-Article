@@ -213,7 +213,7 @@ def test_binding_hash_is_recomputed_from_record_source(registry):
 
 
 @pytest.mark.parametrize('provider,dataset', [('local_csv', 'sio2'), ('rii_sqlite', 1)])
-def test_source_hash_cache_reuses_reads_and_invalidates_changed_source(registry, monkeypatch, provider, dataset):
+def test_source_hash_rereads_bytes_and_tracks_source_changes(registry, monkeypatch, provider, dataset):
     row = category_instance({'material': 'sio2', 'provider': provider, 'dataset_id': dataset})
     path = (registry.local_provider.materials_dir / 'sio2.csv'
         if provider == 'local_csv' else registry.rii_provider.db_path).resolve()
@@ -229,7 +229,7 @@ def test_source_hash_cache_reuses_reads_and_invalidates_changed_source(registry,
     first = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
     assert len(reads) == 1
     assert prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256'] == first
-    assert len(reads) == 1
+    assert len(reads) == 2
     previous = path.stat()
     if provider == 'local_csv':
         path.write_text(path.read_text().replace('1.5', '1.6'))
@@ -241,12 +241,37 @@ def test_source_hash_cache_reuses_reads_and_invalidates_changed_source(registry,
     os.utime(path, ns=(previous.st_atime_ns, previous.st_mtime_ns))
     assert path.stat().st_mtime_ns == previous.st_mtime_ns
     second = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
-    assert len(reads) == 2
+    assert len(reads) == 3
     assert first != second
     assert second == hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_source_changed_during_hash_is_not_cached(tmp_path, monkeypatch):
+@pytest.mark.parametrize('provider,dataset', [('local_csv', 'sio2'), ('rii_sqlite', 1)])
+def test_current_bytes_are_hashed_when_entire_source_signature_is_unchanged(registry, monkeypatch, provider, dataset):
+    row = category_instance({'material': 'sio2', 'provider': provider, 'dataset_id': dataset})
+    path = (registry.local_provider.materials_dir / 'sio2.csv'
+        if provider == 'local_csv' else registry.rii_provider.db_path).resolve()
+    original_stat = path.stat()
+    original_signature = consumer._source_signature(path)
+    # On Windows, ctime may be creation time. A same-size edit followed by
+    # restoring mtime can leave every signature field unchanged. Reproduce
+    # that observable state on every platform, without relying on its clocks.
+    monkeypatch.setattr(consumer, '_source_signature', lambda source: original_signature)
+    first = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+    if provider == 'local_csv':
+        path.write_bytes(path.read_bytes().replace(b'1.5', b'1.6'))
+    else:
+        with sqlite3.connect(path) as connection:
+            connection.execute('UPDATE refractiveindex SET refindex=1.6 WHERE pageid=1')
+    assert path.stat().st_size == original_stat.st_size
+    os.utime(path, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    assert consumer._source_signature(path) == original_signature
+    second = prepare(row)['material_capability_binding']['bindings']['SiO2']['source_sha256']
+    assert first != second
+    assert second == hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_source_metadata_change_during_hash_is_rejected(tmp_path, monkeypatch):
     path = tmp_path / 'record.csv'
     path.write_bytes(b'first')
     signature = consumer._source_signature(path)

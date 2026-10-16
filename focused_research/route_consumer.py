@@ -5,7 +5,6 @@ future execution. This adapter neither creates optimization weights nor claims
 that a prepared instance passed physical checks.
 """
 from copy import deepcopy
-from functools import lru_cache
 import hashlib
 import math
 from pathlib import Path
@@ -32,9 +31,13 @@ def _source_signature(path):
     return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
 
 
-@lru_cache(maxsize=128)
 def _source_sha256(path, signature):
-    """Reuse unchanged local sources across candidates, never caller hashes."""
+    """Hash actual bytes on every call; metadata cannot establish immutability.
+
+    In particular, Windows ctime may be creation time, so a same-size edit
+    with restored mtime can preserve the complete signature. The post-read
+    check only rejects observable concurrent changes; it is not a snapshot.
+    """
     digest = hashlib.sha256()
     with path.open('rb') as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b''):
