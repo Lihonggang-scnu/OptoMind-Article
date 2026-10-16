@@ -1,0 +1,89 @@
+[
+  {
+    "id": "Q1_local_sign_misread",
+    "kind": "model reasoning error, not source projection failure",
+    "revision": 1,
+    "stable_parent": "design:ac120d6a5619d8c0e81f0f2941dcfa6f510b133e346db1f9106f335b2da14028",
+    "model_statement": "Increasing layer_8:dH1 is feasible and predicted to help G1 slightly while hurting G2/G3",
+    "actual_forwarded_facts": {
+      "name": "layer_8:dH1",
+      "current_value_nm": 40.0,
+      "bounds_nm": [
+        40.0,
+        60.0
+      ],
+      "derivative_per_nm": {
+        "G1": -1.2625130114575821e-07,
+        "G2": 0.0014501486055111222,
+        "G3": 0.001211496976532885
+      },
+      "improvement_rate_normalized": {
+        "G1": -2.525026022915164e-06,
+        "G2": -0.029002972110222444,
+        "G3": -0.0242299395306577
+      },
+      "feasible_directions": [
+        "increase"
+      ],
+      "missing_goal_derivatives": [],
+      "action_effects": {
+        "decrease": {
+          "feasible_in_recorded_bounds": false,
+          "goals": {
+            "G1": {
+              "metric_delta_direction": "increase",
+              "effect_on_goal": "helps"
+            },
+            "G2": {
+              "metric_delta_direction": "decrease",
+              "effect_on_goal": "helps"
+            },
+            "G3": {
+              "metric_delta_direction": "decrease",
+              "effect_on_goal": "helps"
+            }
+          }
+        },
+        "increase": {
+          "feasible_in_recorded_bounds": true,
+          "goals": {
+            "G1": {
+              "metric_delta_direction": "decrease",
+              "effect_on_goal": "hurts"
+            },
+            "G2": {
+              "metric_delta_direction": "increase",
+              "effect_on_goal": "hurts"
+            },
+            "G3": {
+              "metric_delta_direction": "increase",
+              "effect_on_goal": "hurts"
+            }
+          }
+        }
+      }
+    },
+    "finding": "Feasibility is true, but actual transmitted G1 slope is negative; increasing thickness hurts G1 as well as G2/G3. All three original signs were supplied.",
+    "minimal_reproduction": "Read revision1/ACTUAL_REQUEST.json messages[1].content JSON, representative_decisions parent P088 layer_8:dH1, and compare revision1/raw_response.json first plan. No model rerun required."
+  },
+  {
+    "id": "Q2_metric_direction_language",
+    "kind": "model explanation/expectation inconsistency; predictions remain hypotheses",
+    "revision": 1,
+    "stable_parent": "design:3735c07a02486e21fec0f115d8278d659dbe09b448bbff319fa8494ff2d81742",
+    "finding": "Narrative seeks stronger G2/G3 rejection, while expected raw changes are G2 increase and G3 increase (both minimized transmission metrics). Actual three certified children decrease all three metrics, losing G1 but improving G2/G3. Do not turn an incorrect forecast into a production stop-rule failure."
+  },
+  {
+    "id": "Q3_layer_absorption_overclaim",
+    "kind": "untested causal claim by model",
+    "revision": 2,
+    "finding": "Model attributes P113 low UV to absorption in Nb2O5 layers as fact. Delivered facts establish three other cached finite-stack absorption balances and material k; per-layer absorption is explicitly missing. Plausible explanation requires a hypothesis label; contributing layers/mechanism were not measured for this selected structure."
+  },
+  {
+    "id": "Q4_untying_already_independent_variables",
+    "kind": "model structural reasoning error",
+    "revision": 2,
+    "stable_parent": "design:3735c07a02486e21fec0f115d8278d659dbe09b448bbff319fa8494ff2d81742",
+    "finding": "R5 already assigns six distinct thickness variables t1..t6 to six distinct layers. Calling refine_layers decoupling shared t1/t3/t5 inaccurately describes existing parameterization; executable action was legal and no core source changed."
+  }
+]
