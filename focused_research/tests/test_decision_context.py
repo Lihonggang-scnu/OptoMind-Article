@@ -103,7 +103,9 @@ def test_context_retains_every_parent_goal_and_binding_without_repeated_detail()
     for d in u['physics_diagnostics']:
         assert a['diagnostics'][d['diagnosis_alias']]==d['diagnosis_id']
         assert {g['goal_id'] for g in d['goals']}=={'G1','G2'}
-    assert len(json.dumps(u).encode('utf-8'))<70000
+    # T039 adds both explicit coordinate signs for each detailed goal; detail
+    # remains bounded by eight representatives rather than archive size.
+    assert len(json.dumps(u).encode('utf-8'))<75000
     assert all('thicknesses_nm' in d for d in u['representative_decisions'])
     assert all('thickness_reference' in d for d in u['certified_designs'])
     assert 'search_queries' not in u['task_sheet']
@@ -114,7 +116,7 @@ def test_126_parent_context_has_explicit_byte_budget_and_no_fabricated_tokens():
     p,a=realistic_previous(126)
     r=build_decision_context(p,a,lambda e,d:e)
     assert len(r['user_payload']['certified_designs'])==126
-    assert len(json.dumps(r['user_payload']).encode('utf-8'))<105000
+    assert len(json.dumps(r['user_payload']).encode('utf-8'))<112000
     assert 'token_count' not in r['selection_report']
 
 

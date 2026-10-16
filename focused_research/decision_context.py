@@ -11,12 +11,39 @@ LIMITS = [
     'Saved local derivatives are not independently certified.',
     'Directional rates are first-order hypotheses, not finite-step outcomes.',
     'Shared-variable derivatives do not identify individual layer effects.',
+    'Action effects describe one existing coordinate changing with all others fixed; they are uncertified local first-order signs, not finite-step predictions or refinement-search outcomes.',
     'Failure to find a common direction does not prove none exists or require untying.',
 ]
 
 
 def _finite(x):
     return type(x) in (int, float) and math.isfinite(x)
+
+
+def _coordinate_action_effects(derivatives, goals, feasible_directions):
+    """Expose saved sign arithmetic without asking a planner to reverse signs.
+
+    Bounds feasibility is separate from the hypothetical local effect. Missing
+    and exactly zero derivatives cannot establish a helpful or harmful change;
+    no tolerance across different metric units is invented here.
+    """
+    effects = {}
+    for direction, sign in [('decrease', -1), ('increase', 1)]:
+        goal_effects = {}
+        for gid, sense in goals.items():
+            derivative = derivatives.get(gid)
+            delta = sign * derivative if _finite(derivative) else None
+            metric_direction, effect = 'unknown', 'unknown'
+            if delta == 0:
+                metric_direction = 'zero_first_order'
+            elif delta is not None:
+                metric_direction = 'increase' if delta > 0 else 'decrease'
+                effect = 'helps' if (delta > 0) == (sense == 'maximize') else 'hurts'
+            goal_effects[gid] = {'metric_delta_direction': metric_direction,
+                                 'effect_on_goal': effect}
+        effects[direction] = {'feasible_in_recorded_bounds': direction in feasible_directions,
+                              'goals': goal_effects}
+    return effects
 
 
 def local_direction_facts(summary, objectives):
@@ -93,6 +120,8 @@ def local_direction_facts(summary, objectives):
         lo, hi = row['bounds_nm']; x = row['current_value_nm']
         row['feasible_directions'] = (['decrease'] if x > lo else []) + (['increase'] if x < hi else [])
         row['missing_goal_derivatives'] = sorted(set(goals)-set(row['derivative_per_nm']))
+        row['action_effects'] = _coordinate_action_effects(
+            row['derivative_per_nm'], goals, row['feasible_directions'])
         result['variables'].append(row)
         if row['missing_goal_derivatives']:
             continue
@@ -115,7 +144,7 @@ def local_direction_facts(summary, objectives):
         return result
     if len(goals) != 2:
         result['joint_direction'] = {'status': 'unsupported', 'reason': 'objective_count_not_supported',
-            'detail': 'This joint-direction helper supports exactly two objectives; all original objectives are retained.'}
+            'detail': 'This joint-direction helper supports exactly two objectives; all original objectives are retained. Joint-direction assessment was not performed for this objective count; this is not evidence that a common feasible direction does not exist.'}
         return result
     gids = list(goals)
     raw = [[r['improvement_rate_normalized'][g] for r in complete] for g in gids]
@@ -245,7 +274,7 @@ def build_decision_context(previous, aliases, derivative_getter, *, detail_budge
         'physics_diagnostics': diagnostic_details,
         'diagnostic_scope': 'Certified sampled-grid objective values. Subband/s/p summaries are descriptive sample means, not objective reductions. Local derivatives remain uncertified; no mechanism or finite-step guarantee.',
         'selection_scope': 'Prefer detailed parents for informed choices; other parents remain selectable but omitted diagnostics are unknown. Every indexed parent remains selectable. Detailed views are representatives, not ranked recommendations. Missing detail is unknown; original full diagnostics and envelopes remain saved.',
-        'decision_guidance': ['Check each variable sign and feasible bound direction before choosing an action.',
+        'decision_guidance': ['Use action_effects for local single-coordinate sign arithmetic; check feasible_in_recorded_bounds separately. Missing or zero derivatives do not establish a finite-step effect.',
             'A common local direction can exist despite coordinate-wise conflicts. Untying is an exploration option, never established as necessary by shared gradients.',
             'Use actual subband/polarization values when making spectral claims; otherwise label the mechanism untested.',
             'Explain why selected near-neighbor parents warrant separate searches; no family or action quota.',

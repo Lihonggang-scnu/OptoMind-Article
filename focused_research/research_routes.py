@@ -171,7 +171,7 @@ def _instances(instances, family, path):
     return indexed
 
 
-def revision_reasons(route, sheet, design_constraints=None):
+def revision_reasons(route, sheet, design_constraints=None, *, candidate_mode=False):
     """Structural blockers only; evidence strength is deliberately not scored."""
     reasons = []
     if design_constraints is not None:
@@ -190,7 +190,10 @@ def revision_reasons(route, sheet, design_constraints=None):
                 reasons.append('missing ' + field)
     if mode in ('model_knowledge', 'hybrid') and route['model_knowledge_rationale'] is None:
         reasons.append('missing model_knowledge_rationale')
-    for field in ('goal_ids', 'transfer_assumptions', 'compatibility_conditions', 'instances', 'expectations'):
+    required = ['goal_ids', 'transfer_assumptions', 'instances']
+    if not candidate_mode:
+        required += ['compatibility_conditions', 'expectations']
+    for field in required:
         if not route[field]:
             reasons.append('missing ' + field)
     if route['open_requirements']:
@@ -257,7 +260,7 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints, candidat
         linked = [clues[c] for c in route['clue_ids']]
         if set(route['evidence_ids']) != {c['evidence_id'] for c in linked}:
             _fail('route.evidence_ids', 'must equal the evidence IDs of the cited clues')
-        if any(not set(c['goal_ids']).intersection(route['goal_ids']) for c in linked):
+        if not candidate_mode and any(not set(c['goal_ids']).intersection(route['goal_ids']) for c in linked):
             _fail('route.clue_ids', 'each clue must relate to a route goal')
         for key in ('transfer_assumptions', 'open_requirements'):
             _list(route[key], key)
@@ -300,7 +303,7 @@ def validate(routes, task_sheet, evidence_items, *, design_constraints, candidat
             _text(expectation['reason'], 'expectation.reason')
             if expectation['direction'] not in ['increase', 'decrease', 'unchanged']:
                 _fail('expectation.direction', 'requires an untested qualitative direction')
-        expected = 'needs_revision' if revision_reasons(route, task_sheet, design_constraints) else 'ready'
+        expected = 'needs_revision' if revision_reasons(route, task_sheet, design_constraints, candidate_mode=candidate_mode) else 'ready'
         if route['readiness'] != expected:
             _fail('route.readiness', 'must be ' + expected)
     return routes
@@ -312,10 +315,12 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
     Global input/envelope/ID ambiguity raises ValueError. Local clue/route failures
     are reported and excluded from the accepted dependency closure. Acceptance is
     executable syntax only, never endorsement of a quotation or physical claim.
-    Only evidence-ID sets, changed-variable sets and readiness are derived; no
+    Only evidence-ID sets, basis labels, changed-variable sets and readiness are derived; no
     material, layer, thickness, metric, prediction or explanation is repaired.
+    Invalid instances and their dependent comparisons are quarantined separately;
+    legal reference seeds remain candidates without asserting an intervention.
     """
-    _, evidence = _inputs(task_sheet, evidence_items, design_constraints)
+    goals, evidence = _inputs(task_sheet, evidence_items, design_constraints)
     _obj(routes, ['schema_version', 'decision_clues', 'routes'], '$')
     if routes['schema_version'] not in (SCHEMA, LEGACY_SCHEMA):
         _fail('schema_version', 'unsupported version')
@@ -328,7 +333,7 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
         'accepted_route_ids': [], 'rejected_route_ids': [], 'needs_revision_route_ids': [],
         'clues': {}, 'routes': {}, 'warnings': [], 'rejections': [],
         'failure_semantics': {'global': 'Invalid inputs, envelope or ambiguous IDs abort the batch.',
-            'local': 'Invalid clues reject dependent routes; invalid recipes reject only their route.',
+            'local': 'Invalid clues reject dependent routes; invalid families reject their route; invalid instances and dependent comparisons are quarantined individually.',
             'soft': 'Unverified paraphrases, uncertain physics, citation-set and declared-diff mismatches do not reject executable candidates.',
             'zero_change': 'A zero-change comparison is a baseline_reference, never a new intervention.'}}
 
@@ -371,7 +376,8 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
     for position, (rid, original) in enumerate(indexed_routes.items()):
         path = '/routes/' + str(position)
         route = copy.deepcopy(original)
-        info = {'status': 'rejected', 'scientific_status': 'untested', 'warnings': [], 'comparisons': []}
+        info = {'status': 'rejected', 'scientific_status': 'untested', 'warnings': [], 'comparisons': [],
+                'rejected_instances': [], 'deferred_expectations': []}
         report['routes'][rid] = info
         try:
             _refs(route.get('clue_ids'), clues, path + '/clue_ids')
@@ -379,6 +385,13 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
             if blocked:
                 _fail(path + '/clue_ids', 'invalid clue dependencies: ' + ', '.join(blocked))
             linked = [accepted_clues[cid] for cid in route['clue_ids']]
+            for clue in linked:
+                if not set(clue['goal_ids']).intersection(route.get('goal_ids', [])):
+                    info['warnings'].append({'code': 'clue_goal_relevance_unverified',
+                        'clue_id': clue['id'], 'clue_goal_ids': copy.deepcopy(clue['goal_ids']),
+                        'route_goal_ids': copy.deepcopy(route.get('goal_ids')),
+                        'semantic_support': 'not_verified',
+                        'reason': 'Declared goal labels do not overlap; retained as an unverified transfer hypothesis.'})
             derived_eids = list(dict.fromkeys(clue['evidence_id'] for clue in linked))
             # Keep original order when the set is correct; otherwise record the
             # program-owned dependency set explicitly, with original in raw draft.
@@ -388,17 +401,67 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
                 info['warnings'].append({'code': 'evidence_ids_derived', 'path': path + '/evidence_ids',
                     'declared': copy.deepcopy(route.get('evidence_ids')), 'actual': derived_eids})
                 route['evidence_ids'] = derived_eids
+            # A label is not scientific evidence. Derive only from typed fields,
+            # after resolving clue dependencies; never invent a source or rationale.
+            mode = route.get('basis_mode', 'external_evidence')
+            if mode not in ('external_evidence', 'model_knowledge', 'hybrid'):
+                _fail(path + '/basis_mode', 'unsupported basis mode')
+            if routes['schema_version'] == SCHEMA:
+                rationale = route.get('model_knowledge_rationale')
+                _text(rationale, path + '/model_knowledge_rationale', nullable=True)
+                actual_mode = mode
+                if linked and rationale is not None:
+                    actual_mode = 'hybrid'
+                elif mode == 'model_knowledge' and linked:
+                    actual_mode = 'external_evidence'
+                if actual_mode != mode:
+                    info['warnings'].append({'code': 'basis_mode_derived', 'path': path + '/basis_mode',
+                        'declared': mode, 'actual': actual_mode,
+                        'semantic_support': 'not_verified', 'model_knowledge_status': 'unverified'})
+                    route['basis_mode'] = actual_mode
             if route.get('family') is not None:
                 _family(route['family'], design_constraints, path + '/family')
-                instances = _instances(route.get('instances'), route['family'], path + '/instances')
+                original_instances = _index(route.get('instances'), 'id', path + '/instances')
+                retained = []
+                for index, instance in enumerate(route['instances']):
+                    try:
+                        _instances([instance], route['family'], path + '/instances/' + str(index))
+                    except (ValueError, TypeError, KeyError) as exc:
+                        info['rejected_instances'].append({'id': instance['id'],
+                            'path': path + '/instances/' + str(index), 'reason': str(exc),
+                            'original': copy.deepcopy(instance)})
+                    else:
+                        retained.append(instance)
+                route['instances'] = retained
+                instances = {instance['id']: instance for instance in retained}
                 _list(route.get('expectations'), path + '/expectations')
+                retained_expectations = []
                 for index, expectation in enumerate(route['expectations']):
-                    if not isinstance(expectation, dict):
-                        _fail(path + '/expectations/' + str(index), 'requires an object')
+                    ep = path + '/expectations/' + str(index)
+                    # Even deferred comparisons may not smuggle altered task metrics
+                    # or fabricated instance IDs through candidate admission.
+                    _obj(expectation, ['goal_id', 'metric', 'baseline_instance_id', 'candidate_instance_id',
+                        'controlled_conditions', 'changed_variables', 'direction', 'reason'], ep)
+                    gid = expectation['goal_id']
+                    if gid not in goals or gid not in route.get('goal_ids', []):
+                        _fail(ep, 'requires existing route goal')
+                    if expectation['metric'] != goals[gid]['executable_metric']:
+                        _fail(ep + '/metric', 'must inherit complete task metric, region and reduction exactly')
+                    for field in ('controlled_conditions', 'reason'):
+                        _text(expectation[field], ep + '/' + field)
+                    if expectation['direction'] not in ('increase', 'decrease', 'unchanged'):
+                        _fail(ep + '/direction', 'requires an untested qualitative direction')
+                    for field in ('baseline_instance_id', 'candidate_instance_id'):
+                        if not isinstance(expectation[field], str) or expectation[field] not in original_instances:
+                            _fail(ep, 'comparison references an unknown instance')
                     baseline = instances.get(expectation.get('baseline_instance_id'))
                     candidate = instances.get(expectation.get('candidate_instance_id'))
                     if baseline is None or candidate is None:
-                        _fail(path + '/expectations/' + str(index), 'comparison references an unknown instance')
+                        info['deferred_expectations'].append({'expectation_index': index,
+                            'reason': 'comparison depends on a rejected instance',
+                            'original': copy.deepcopy(expectation), 'physical_prediction_status': 'untested'})
+                        continue
+                    retained_expectations.append(expectation)
                     before, after = baseline['parameters_nm'], candidate['parameters_nm']
                     actual = [key for key in before if before[key] != after[key]]
                     declared = expectation.get('changed_variables')
@@ -428,6 +491,10 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
                         info['warnings'].append({'code': 'zero_change_baseline_reference',
                             'path': path + '/expectations/' + str(index),
                             'reason': 'No physical change. Retained only as a reference; intervention remains to be supplied.'})
+                route['expectations'] = retained_expectations
+                info['candidate_role'] = ('intervention_candidate' if any(
+                    row['classification'] == 'thickness_intervention' for row in info['comparisons'])
+                    else 'reference_seed_only')
             # Validate before deriving readiness, so malformed goal/condition data
             # cannot turn into an uncaught lookup failure or bypass a hard gate.
             try:
@@ -436,7 +503,7 @@ def compile_candidates(routes, task_sheet, evidence_items, *, design_constraints
             except ValueError as exc:
                 if 'research routes route.readiness: must be ' not in str(exc):
                     raise
-                readiness = 'needs_revision' if revision_reasons(route, task_sheet, design_constraints) else 'ready'
+                readiness = 'needs_revision' if revision_reasons(route, task_sheet, design_constraints, candidate_mode=True) else 'ready'
                 info['warnings'].append({'code': 'readiness_derived', 'declared': route.get('readiness'), 'actual': readiness})
                 route['readiness'] = readiness
                 validate(envelope([route], linked), task_sheet, evidence_items,
@@ -517,7 +584,9 @@ def materialize(routes, route_id, task_sheet, evidence_items, *, design_constrai
                 item['proposal_derivation_audit'] = {
                     'status': 'caller_supplied_history_not_authoritative',
                     'warnings': copy.deepcopy(prior.get('warnings', [])),
-                    'comparisons': copy.deepcopy(prior.get('comparisons', []))}
+                    'comparisons': copy.deepcopy(prior.get('comparisons', [])),
+                    'rejected_instances': copy.deepcopy(prior.get('rejected_instances', [])),
+                    'deferred_expectations': copy.deepcopy(prior.get('deferred_expectations', []))}
     return output
 
 

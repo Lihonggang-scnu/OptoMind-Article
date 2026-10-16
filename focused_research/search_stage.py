@@ -491,8 +491,11 @@ def revise(previous_search, *, output, planner):
         'refine_family preserves shared variables; refine_layers explicitly creates independent layer variables '
         'within original family bounds. Expectations are untested, not outcomes. No route or plan-count ceiling. '
         'Interpret measurements, local derivative arithmetic, and hypotheses separately. '
-        'For a decreasing variable reverse the derivative sign; respect each goal sense and the supplied bounds. '
+        'Use program-derived action_effects for local coordinate sign arithmetic, and check bounds feasibility separately. '
+        'These effects change one existing coordinate with others fixed; shared-variable effects do not identify individual layer effects. '
+        'Missing or zero derivatives leave finite-step effects unknown. An unsupported joint-direction helper means no assessment, not no common feasible direction. '
         'Local directional estimates do not establish finite-step outcomes or a unique mechanism. '
+        'Keep alternative physical hypotheses and refinement-search expectations distinct from saved local estimates; they need not match single-coordinate signs. '
         'Explain why the chosen parent and action are informative; nearby parents need a reason, not a diversity quota. '
         'Exploratory actions, predicted tradeoffs, and unsuccessful hypotheses are legitimate; do not promise improvement. '
         'An empty plans list is allowed. Do not fabricate observations, material identities or new bounds.',

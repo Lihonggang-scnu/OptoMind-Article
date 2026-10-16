@@ -382,7 +382,9 @@ def test_revision_persists_context_selection_and_sign_guidance(tmp_path):
     report=st.load(tmp_path/'revision/decision_context_report.json')
     assert report['all_parent_identities_retained'] and report['additional_forward_design_rows']==0
     prompt=planner.calls[0]
-    assert 'reverse the derivative sign' in prompt['system_prompt']
+    assert 'Use program-derived action_effects for local coordinate sign arithmetic' in prompt['system_prompt']
+    assert 'check bounds feasibility separately' in prompt['system_prompt']
+    assert 'Local directional estimates do not establish finite-step outcomes' in prompt['system_prompt']
     assert prompt['user_payload']['representative_decisions']
     assert prompt['user_payload']['diagnostic_index']
     assert len(prompt['user_payload']['objectives'])==2
