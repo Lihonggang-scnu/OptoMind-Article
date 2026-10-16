@@ -45,6 +45,21 @@ CASE_PROTOCOLS.update({
         'requirements': ['Use the original explicit low-reflectance parenthetical to minimize mean R in 400–700 nm, and maximize mean R in 700–2000 nm. Preserve the user absorption motivation, HfO2/SiO2/Cr film allowance, aluminum substrate, air incidence and at most 20 layers.', 'A_finite=1-R-T_into_exit measures finite-film absorption only. Do not label it coating-plus-substrate absorption. For the stated absorbing semi-infinite surface system, 1-R is system absorptance; this does not add a third optimization goal or a heat-power objective.', 'No global user thickness bounds were specified. Use finite positive model-proposed family domains without inventing manufacturing constraints.'],
     },
 })
+# T042 admits the original LWIR Ge-window question to the existing cold-start
+# flow. This protocol supplies no solver, new material data, or thermal model.
+CASE_PROTOCOLS['e2e-12-lwir-ge-window'] = {
+    'assumptions': [
+        'Use 0 degree incidence, equal-s/p unpolarized light and wavelength-integral band means as separately labeled execution assumptions, not original user facts.',
+        'Treat the Ge substrate as a semi-infinite exit medium for the planar-stack calculation; disclose this boundary assumption.',
+    ],
+    'requirements': [
+        'Maximize mean transmittance in 8000–11000 nm and minimize mean transmittance in 3000–5000 nm. Preserve air incidence, Ge substrate, only ZnS/ZnSe film materials and at most 16 layers. Do not replace either transmission goal with reflection or absorption objectives.',
+        'T_into_exit is optical flux entering the semi-infinite Ge substrate, not transmission through an entire finite-thickness window including its rear surface. Keep this scope explicit in results.',
+        'For any optical-constant source without extinction coefficient k, disclose the existing provider k=0 convention. Missing source k does not establish physically absent absorption.',
+        'Temperature, substrate thickness and rear-surface conditions were not supplied; do not invent them. Preserve thermal-background and focal-plane heat-load reduction as application motivation, without adding heat-load, blackbody-power or temperature-weighted objectives or claiming those quantities were calculated.',
+        'No global user thickness bounds were specified. Use finite positive model-proposed family domains without inventing manufacturing constraints.',
+    ],
+}
 CASE_THICKNESS_BOUNDS = {
     'e2e-09-si-photonics-ar-dualband': (20.0, 400.0),
     'e2e-08-advanced-packaging-uv': (20.0, 350.0),
@@ -52,6 +67,7 @@ CASE_THICKNESS_BOUNDS = {
     'e2e-01-methane-swir-window': None,
     'e2e-04-solarblind-uv-triple': None,
     'e2e-05-visual-absorber-cr': None,
+    'e2e-12-lwir-ge-window': None,
 }
 
 
